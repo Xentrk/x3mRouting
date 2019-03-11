@@ -105,14 +105,14 @@ if [ ! -z "$(echo $TARGET_ROUTE | grep -oE "SRC|DST|^D|^S")" ];then
  case "$TARGET_ROUTE" in         # TBA review static 'case' with a regexp? ;-)
     SRC|DST) DIM=$(echo $TARGET_ROUTE | tr 'A-Z' 'a-z');;
     *) case $TARGET_ROUTE in
-           DD)  DIM="dst,dst"; logger "the value of DIM is $DIM" ;;
-           SS)  DIM="src,src"; logger "the value of DIM is $DIM" ;;
-           DS)  DIM="dst,src"; logger "the value of DIM is $DIM" ;;
-           SD)  DIM="src,dst"; logger "the value of DIM is $DIM" ;;
-           DDS) DIM="dst,dst,src"; logger "the value of DIM is $DIM" ;;
-           SSS) DIM="src,src,src"; logger "the value of DIM is $DIM" ;;
-           SSD) DIM="src,src,dst"; logger "the value of DIM is $DIM" ;;
-           DDD) DIM="dst,dst,dst"; logger "the value of DIM is $DIM" ;;
+           DD)  DIM="dst,dst" ;;
+           SS)  DIM="src,src" ;;
+           DS)  DIM="dst,src" ;;
+           SD)  DIM="src,dst" ;;
+           DDS) DIM="dst,dst,src" ;;
+           SSS) DIM="src,src,src" ;;
+           SSD) DIM="src,src,dst" ;;
+           DDD) DIM="dst,dst,dst" ;;
        esac
  esac
 
@@ -125,8 +125,20 @@ if [ ! -z "$(echo $TARGET_ROUTE | grep -oE "SRC|DST|^D|^S")" ];then
         logger "IPSET list name $IPSET_NAME does not exist. $IPSET_NAME routing not created."
     else
         logger "create iptables for ipset lists"
-        iptables -t mangle -D PREROUTING $SRC -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
-        iptables -t mangle -A PREROUTING $SRC -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
+        logger "The value of SRC at create iptables is $SRC"
+        logger "iptables -t mangle -D PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK"
+        logger "iptables -t mangle -A PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK"
+
+        iptables -nvL PREROUTING -t mangle --line > /tmp/befored
+
+        iptables -t mangle -D PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
+
+        iptables -nvL PREROUTING -t mangle --line > /tmp/afterd
+
+        iptables -t mangle -A PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
+
+        iptables -nvL PREROUTING -t mangle --line > /tmp/aftera
+
     fi
 
 fi
@@ -171,6 +183,9 @@ fi
 		if [ "$SRCC" != "" -o "$DSTC" != "" ]
 		then
     logger "Do I get here?"
+#################################################################
+## prevent creating ip rule for ipset lists here
+#################################################################
 			ip rule add $SRCC $SRCA $DSTC $DSTA table $TARGET_LOOKUP priority $RULE_PRIO
      logger "ip rule add $SRCC $SRCA $DSTC $DSTA table $TARGET_LOOKUP priority $RULE_PRIO"
 			my_logger "Adding route for $VPN_IP to $DST_IP through $TARGET_NAME"
@@ -207,6 +222,7 @@ logger -st "($(basename $0))" $$  "x3mRouting Checking Custom fwmark/bitmask"
 }
 
 purge_client_list(){
+logger "At purge_client_list function"
 	IP_LIST=$(ip rule show | cut -d ":" -f 1)
 	for PRIO in $IP_LIST
 	do
@@ -231,62 +247,100 @@ purge_client_list(){
      fi
 ############### Xentrk Hack
 	done
-#  purge_x3mRouting_destination_IP_addresses
-    purge_ipset_prerouting_chain
+
+##########
+##########
+##########
+  case "$VPN_UNIT" in
+            1)  FWMARK=0x1000 ;; # table 111
+            2)  FWMARK=0x2000 ;; # table 112
+            3)  FWMARK=0x4000 ;; # table 113
+            4)  FWMARK=0x7000 ;; # table 114
+            5)  FWMARK=0x3000 ;; # table 115
+        esac
+
+  logger "The value of FWMARK is $FWMARK"
+
+
+ logger "The value of TARGET_ROUTE at purge is $TARGET_ROUTE"
+        DESC="CBS"
+        IPSET_NAME=$DESC
+ logger "The value of IPSET_NAME at purge is $IPSET_NAME"
+
+     iptables -nvL PREROUTING -t mangle --line | grep "$FWMARK" | cut -f 1 -d " " |  sort -r | while read -r CHAIN_NUM
+        do
+                logger "Deleting PREROUTING CHAIN=> $CHAIN_NUM for IPSET List $IPSET_NAME"
+                iptables -t mangle -D PREROUTING "$CHAIN_NUM"
+        done
+
 }
 
 ############################################################################################ Xentrk Modification to purge routes
 ## need to filter by client!
 
 purge_ipset_prerouting_chain () {
-
+logger "at purge_ipset_prerouting_chain"
 	OLDIFS=$IFS
 	IFS="<"
 
 ######################################## Xentrk
 #  ipset flush OVPNC${VPN_UNIT}
 
-	for ENTRY in $VPN_IP_LIST
+	for ENTRY in $VPN_IP_LISTO
 	do
-   logger "Value of ENTRY is: $ENTRY"
+   logger "Value of ENTRY at purge_iptables is: $ENTRY"
 		if [ "$ENTRY" = "" ]
 		then
 			continue
 		fi
-		TARGET_ROUTE=$(echo $ENTRY | cut -d ">" -f 4)
-    logger "Value of TARGET_ROUTE is: $TARGET_ROUTE"
+
 ######################################################## Xentrk Hack
 # Skip if entry is DummyVPN
    	DESC=$(echo $ENTRY | cut -d ">" -f 1)
-    logger "Value of DESC is: $DESC"
+    logger "Value of DESC at purge is: $DESC"
     if [ "$(echo "$DESC" | cut -c1-8)" = "DummyVPN" ]; then
         continue
     fi
-#### Martineau hack for web gui ipset lists
 
+#### Purge routing rules for pset lists
+  TARGET_ROUTE=$(echo $ENTRY | cut -d ">" -f 4)
+if [ ! -z "$(echo $TARGET_ROUTE | grep -oE "SRC|DST|^D|^S")" ];then
+
+ IPSET_NAME=$DESC
+
+ # Allow for 2-dimension and 3-dimension IPSETs.....
+ logger "The value of VAR is $TARGET_ROUTE"
+ case "$TARGET_ROUTE" in         # TBA review static 'case' with a regexp? ;-)
+    SRC|DST) DIM=$(echo $TARGET_ROUTE | tr 'A-Z' 'a-z');;
+    *) case $TARGET_ROUTE in
+           DD)  DIM="dst,dst"; logger "the value of DIM is $DIM" ;;
+           SS)  DIM="src,src"; logger "the value of DIM is $DIM" ;;
+           DS)  DIM="dst,src"; logger "the value of DIM is $DIM" ;;
+           SD)  DIM="src,dst"; logger "the value of DIM is $DIM" ;;
+           DDS) DIM="dst,dst,src"; logger "the value of DIM is $DIM" ;;
+           SSS) DIM="src,src,src"; logger "the value of DIM is $DIM" ;;
+           SSD) DIM="src,src,dst"; logger "the value of DIM is $DIM" ;;
+           DDD) DIM="dst,dst,dst"; logger "the value of DIM is $DIM" ;;
+       esac
+ esac
   case "$VPN_UNIT" in
-            1)  FWMARK=0x1000/0x1000; PRIO=9995 ;; # table 111
-            2)  FWMARK=0x2000/0x2000; PRIO=9994 ;; # table 112
-            3)  FWMARK=0x4000/0x4000; PRIO=9993 ;; # table 113
-            4)  FWMARK=0x7000/0x7000; PRIO=9992 ;; # table 114
-            5)  FWMARK=0x3000/0x3000; PRIO=9991 ;; # table 115
+            1)  FWMARK=0x1000/0x1000 ;; # table 111
+            2)  FWMARK=0x2000/0x2000 ;; # table 112
+            3)  FWMARK=0x4000/0x4000 ;; # table 113
+            4)  FWMARK=0x7000/0x7000 ;; # table 114
+            5)  FWMARK=0x3000/0x3000 ;; # table 115
         esac
 
-  logger "The value of FWMARK is $FWMARK"
-
-if [ ! -z "$(echo $TARGET_ROUTE | grep -oE "SRC|DST|^D|^S")" ];then
- logger "The value of TARGET_ROUTE is $TARGET_ROUTE"
-        IPSET_NAME=$DESC
- logger "The value of IPSET_NAME is $IPSET_NAME"
-
-     iptables -nvL PREROUTING -t mangle --line | grep "$FWMARK" | cut -f 1 -d " " |  sort -r | while read -r CHAIN_NUM
-        do
-                logger "Deleting PREROUTING CHAIN=> $CHAIN_NUM"
-                iptables -t mangle -D PREROUTING "$CHAIN_NUM"
-        done
-    fi
-  done
-
+  logger "The value of FWMARK at purge is $FWMARK"
+  logger "purge iptables for ipset lists"
+  logger "The value of SRC at delete iptables is $SRC"
+  logger "hey now"
+  logger "iptables -t mangle -D PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK"
+        iptables -nvL PREROUTING -t mangle --line > /tmp/atpurge1
+        iptables -t mangle -D PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
+        iptables -nvL PREROUTING -t mangle --line > /tmp/atpurge2
+fi
+done
 }
 
 purge_x3mRouting_destination_IP_addresses () {
@@ -352,6 +406,7 @@ logger "..at Begin of custom /jffs/scripts/vpnrouting.sh"
 if [ "$dev" == "tun11" ]
 then
 	VPN_IP_LIST=$(nvram get vpn_client1_clientlist)$(nvram get vpn_client1_clientlist1)$(nvram get vpn_client1_clientlist2)$(nvram get vpn_client1_clientlist3)$(nvram get vpn_client1_clientlist4)$(nvram get vpn_client1_clientlist5)
+ 	VPN_IP_LISTO=$(nvram get vpn_client1_clientlist)$(nvram get vpn_client1_clientlist1)$(nvram get vpn_client1_clientlist2)$(nvram get vpn_client1_clientlist3)$(nvram get vpn_client1_clientlist4)$(nvram get vpn_client1_clientlist5)
 	VPN_REDIR=$(nvram get vpn_client1_rgw)
 	VPN_FORCE=$(nvram get vpn_client1_enforce)
 	VPN_UNIT=1
@@ -360,11 +415,11 @@ then
   if [ -s "/jffs/configs/ovpnc${VPN_UNIT}.nvram" ]; then
    VPN_IP_LIST=${VPN_IP_LIST}$(cat "/jffs/configs/ovpnc${VPN_UNIT}.nvram")
    logger -st "($(basename $0))" $$  "x3mRouting adding /jffs/configs/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
-      logger -st "($(basename $0))" $$  "The value of VPN_IP_LIST is ==> $VPN_IP_LIST"
   fi
 elif [ "$dev" == "tun12" ]
 then
 	VPN_IP_LIST=$(nvram get vpn_client2_clientlist)$(nvram get vpn_client2_clientlist1)$(nvram get vpn_client2_clientlist2)$(nvram get vpn_client2_clientlist3)$(nvram get vpn_client2_clientlist4)$(nvram get vpn_client2_clientlist5)
+ 	VPN_IP_LISTO=$(nvram get vpn_client2_clientlist)$(nvram get vpn_client2_clientlist1)$(nvram get vpn_client2_clientlist2)$(nvram get vpn_client2_clientlist3)$(nvram get vpn_client2_clientlist4)$(nvram get vpn_client2_clientlist5)
 	VPN_REDIR=$(nvram get vpn_client2_rgw)
 	VPN_FORCE=$(nvram get vpn_client2_enforce)
 	VPN_UNIT=2
@@ -378,6 +433,7 @@ then
 elif [ "$dev" == "tun13" ]
 then
 	VPN_IP_LIST=$(nvram get vpn_client3_clientlist)$(nvram get vpn_client3_clientlist1)$(nvram get vpn_client3_clientlist2)$(nvram get vpn_client3_clientlist3)$(nvram get vpn_client3_clientlist4)$(nvram get vpn_client3_clientlist5)
+ 	VPN_IP_LISTO=$(nvram get vpn_client3_clientlist)$(nvram get vpn_client3_clientlist1)$(nvram get vpn_client3_clientlist2)$(nvram get vpn_client3_clientlist3)$(nvram get vpn_client3_clientlist4)$(nvram get vpn_client3_clientlist5)
 	VPN_REDIR=$(nvram get vpn_client3_rgw)
 	VPN_FORCE=$(nvram get vpn_client3_enforce)
 	VPN_UNIT=3
@@ -390,6 +446,7 @@ then
 elif [ "$dev" == "tun14" ]
 then
 	VPN_IP_LIST=$(nvram get vpn_client4_clientlist)$(nvram get vpn_client4_clientlist1)$(nvram get vpn_client4_clientlist2)$(nvram get vpn_client4_clientlist3)$(nvram get vpn_client4_clientlist4)$(nvram get vpn_client4_clientlist5)
+ 	VPN_IP_LISTO=$(nvram get vpn_client4_clientlist)$(nvram get vpn_client4_clientlist1)$(nvram get vpn_client4_clientlist2)$(nvram get vpn_client4_clientlist3)$(nvram get vpn_client4_clientlist4)$(nvram get vpn_client4_clientlist5)
 	VPN_REDIR=$(nvram get vpn_client4_rgw)
 	VPN_FORCE=$(nvram get vpn_client4_enforce)
 	VPN_UNIT=4
@@ -402,6 +459,7 @@ then
 elif [ "$dev" == "tun15" ]
 then
 	VPN_IP_LIST=$(nvram get vpn_client5_clientlist)$(nvram get vpn_client5_clientlist1)$(nvram get vpn_client5_clientlist2)$(nvram get vpn_client5_clientlist3)$(nvram get vpn_client5_clientlist4)$(nvram get vpn_client5_clientlist5)
+ 	VPN_IP_LISTO=$(nvram get vpn_client5_clientlist)$(nvram get vpn_client5_clientlist1)$(nvram get vpn_client5_clientlist2)$(nvram get vpn_client5_clientlist3)$(nvram get vpn_client5_clientlist4)$(nvram get vpn_client5_clientlist5)
 	VPN_REDIR=$(nvram get vpn_client5_rgw)
 	VPN_FORCE=$(nvram get vpn_client5_enforce)
 	VPN_UNIT=5

@@ -95,54 +95,7 @@ create_client_list(){
     if [ "$(echo "$DESC" | cut -c1-8)" = "DummyVPN" ]; then
         continue
     fi
-########################################################################
-if [ ! -z "$(echo $TARGET_ROUTE | grep -oE "SRC|DST|^D|^S")" ];then
-
- IPSET_NAME=$DESC
-
- # Allow for 2-dimension and 3-dimension IPSETs.....
- logger "The value of VAR is $TARGET_ROUTE"
- case "$TARGET_ROUTE" in         # TBA review static 'case' with a regexp? ;-)
-    SRC|DST) DIM=$(echo $TARGET_ROUTE | tr 'A-Z' 'a-z');;
-    *) case $TARGET_ROUTE in
-           DD)  DIM="dst,dst" ;;
-           SS)  DIM="src,src" ;;
-           DS)  DIM="dst,src" ;;
-           SD)  DIM="src,dst" ;;
-           DDS) DIM="dst,dst,src" ;;
-           SSS) DIM="src,src,src" ;;
-           SSD) DIM="src,src,dst" ;;
-           DDD) DIM="dst,dst,dst" ;;
-       esac
- esac
-
- # If the Source IP is a real LAN IP then include it in the IPSET fwmark rule
-
-# <snip>
-
- # Validate that $IPSET_NAME does physically exist etc.
-    if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$IPSET_NAME" ]; then
-        logger "IPSET list name $IPSET_NAME does not exist. $IPSET_NAME routing not created."
-    else
-        logger "create iptables for ipset lists"
-        logger "The value of SRC at create iptables is $SRC"
-        logger "iptables -t mangle -D PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK"
-        logger "iptables -t mangle -A PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK"
-
-        iptables -nvL PREROUTING -t mangle --line > /tmp/befored
-
-        iptables -t mangle -D PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
-
-        iptables -nvL PREROUTING -t mangle --line > /tmp/afterd
-
-        iptables -t mangle -A PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
-
-        iptables -nvL PREROUTING -t mangle --line > /tmp/aftera
-
-    fi
-
-fi
-#########################################################################################################################################
+###########################################################
 		if [ "$TARGET_ROUTE" = "WAN" ]
 		then
 			TARGET_LOOKUP="main"
@@ -185,11 +138,53 @@ fi
     logger "Do I get here?"
 #################################################################
 ## prevent creating ip rule for ipset lists here
+## Value of ENTRY is: CBS>192.168.4.1>0.0.0.0>DD
 #################################################################
-			ip rule add $SRCC $SRCA $DSTC $DSTA table $TARGET_LOOKUP priority $RULE_PRIO
-     logger "ip rule add $SRCC $SRCA $DSTC $DSTA table $TARGET_LOOKUP priority $RULE_PRIO"
-			my_logger "Adding route for $VPN_IP to $DST_IP through $TARGET_NAME"
+        if [ "$TARGET_ROUTE" = "VPN" ] ||  "$TARGET_ROUTE" = "WAN" ]; then
+            logger "hit a IPSET list condition"
+####################################################################
+			      ip rule add $SRCC $SRCA $DSTC $DSTA table $TARGET_LOOKUP priority $RULE_PRIO
+            logger "ip rule add $SRCC $SRCA $DSTC $DSTA table $TARGET_LOOKUP priority $RULE_PRIO"
+			      my_logger "Adding route for $VPN_IP to $DST_IP through $TARGET_NAME"
+        fi
 		fi
+
+   ########################################################################
+if [ ! -z "$(echo $TARGET_ROUTE | grep -oE "SRC|DST|^D|^S")" ];then
+
+ IPSET_NAME=$DESC
+
+ # Allow for 2-dimension and 3-dimension IPSETs.....
+ logger "The value of VAR is $TARGET_ROUTE"
+ case "$TARGET_ROUTE" in         # TBA review static 'case' with a regexp? ;-)
+    SRC|DST) DIM=$(echo $TARGET_ROUTE | tr 'A-Z' 'a-z');;
+    *) case $TARGET_ROUTE in
+           DD)  DIM="dst,dst" ;;
+           SS)  DIM="src,src" ;;
+           DS)  DIM="dst,src" ;;
+           SD)  DIM="src,dst" ;;
+           DDS) DIM="dst,dst,src" ;;
+           SSS) DIM="src,src,src" ;;
+           SSD) DIM="src,src,dst" ;;
+           DDD) DIM="dst,dst,dst" ;;
+       esac
+ esac
+
+ # If the Source IP is a real LAN IP then include it in the IPSET fwmark rule
+
+# <snip>
+
+ # Validate that $IPSET_NAME does physically exist etc.
+    if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$IPSET_NAME" ]; then
+        logger "IPSET list name $IPSET_NAME does not exist. $IPSET_NAME routing not created."
+    else
+        iptables -t mangle -D PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
+        iptables -t mangle -A PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
+    fi
+
+fi
+#########################################################################################################################################
+
 	done
 	IFS=$OLDIFS
 ########################################################################################## Modified Martineau Hack 1 of 5
@@ -248,9 +243,6 @@ logger "At purge_client_list function"
 ############### Xentrk Hack
 	done
 
-##########
-##########
-##########
   case "$VPN_UNIT" in
             1)  FWMARK=0x1000 ;; # table 111
             2)  FWMARK=0x2000 ;; # table 112
@@ -259,13 +251,7 @@ logger "At purge_client_list function"
             5)  FWMARK=0x3000 ;; # table 115
         esac
 
-  logger "The value of FWMARK is $FWMARK"
-
-
- logger "The value of TARGET_ROUTE at purge is $TARGET_ROUTE"
-        DESC="CBS"
         IPSET_NAME=$DESC
- logger "The value of IPSET_NAME at purge is $IPSET_NAME"
 
      iptables -nvL PREROUTING -t mangle --line | grep "$FWMARK" | cut -f 1 -d " " |  sort -r | while read -r CHAIN_NUM
         do
@@ -275,73 +261,7 @@ logger "At purge_client_list function"
 
 }
 
-############################################################################################ Xentrk Modification to purge routes
-## need to filter by client!
-
-purge_ipset_prerouting_chain () {
-logger "at purge_ipset_prerouting_chain"
-	OLDIFS=$IFS
-	IFS="<"
-
-######################################## Xentrk
-#  ipset flush OVPNC${VPN_UNIT}
-
-	for ENTRY in $VPN_IP_LISTO
-	do
-   logger "Value of ENTRY at purge_iptables is: $ENTRY"
-		if [ "$ENTRY" = "" ]
-		then
-			continue
-		fi
-
-######################################################## Xentrk Hack
-# Skip if entry is DummyVPN
-   	DESC=$(echo $ENTRY | cut -d ">" -f 1)
-    logger "Value of DESC at purge is: $DESC"
-    if [ "$(echo "$DESC" | cut -c1-8)" = "DummyVPN" ]; then
-        continue
-    fi
-
-#### Purge routing rules for pset lists
-  TARGET_ROUTE=$(echo $ENTRY | cut -d ">" -f 4)
-if [ ! -z "$(echo $TARGET_ROUTE | grep -oE "SRC|DST|^D|^S")" ];then
-
- IPSET_NAME=$DESC
-
- # Allow for 2-dimension and 3-dimension IPSETs.....
- logger "The value of VAR is $TARGET_ROUTE"
- case "$TARGET_ROUTE" in         # TBA review static 'case' with a regexp? ;-)
-    SRC|DST) DIM=$(echo $TARGET_ROUTE | tr 'A-Z' 'a-z');;
-    *) case $TARGET_ROUTE in
-           DD)  DIM="dst,dst"; logger "the value of DIM is $DIM" ;;
-           SS)  DIM="src,src"; logger "the value of DIM is $DIM" ;;
-           DS)  DIM="dst,src"; logger "the value of DIM is $DIM" ;;
-           SD)  DIM="src,dst"; logger "the value of DIM is $DIM" ;;
-           DDS) DIM="dst,dst,src"; logger "the value of DIM is $DIM" ;;
-           SSS) DIM="src,src,src"; logger "the value of DIM is $DIM" ;;
-           SSD) DIM="src,src,dst"; logger "the value of DIM is $DIM" ;;
-           DDD) DIM="dst,dst,dst"; logger "the value of DIM is $DIM" ;;
-       esac
- esac
-  case "$VPN_UNIT" in
-            1)  FWMARK=0x1000/0x1000 ;; # table 111
-            2)  FWMARK=0x2000/0x2000 ;; # table 112
-            3)  FWMARK=0x4000/0x4000 ;; # table 113
-            4)  FWMARK=0x7000/0x7000 ;; # table 114
-            5)  FWMARK=0x3000/0x3000 ;; # table 115
-        esac
-
-  logger "The value of FWMARK at purge is $FWMARK"
-  logger "purge iptables for ipset lists"
-  logger "The value of SRC at delete iptables is $SRC"
-  logger "hey now"
-  logger "iptables -t mangle -D PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK"
-        iptables -nvL PREROUTING -t mangle --line > /tmp/atpurge1
-        iptables -t mangle -D PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
-        iptables -nvL PREROUTING -t mangle --line > /tmp/atpurge2
-fi
-done
-}
+## Need to decide if want to keep this function
 
 purge_x3mRouting_destination_IP_addresses () {
 #    IP_LIST=$(ip rule | grep -E "([0-9]{1,3}[\.]){3}[0-9]{1,3}" | grep "ovpnc${VPN_UNIT}" | grep "from all to" | cut -d ":" -f 1)

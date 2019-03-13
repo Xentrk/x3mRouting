@@ -141,7 +141,7 @@ create_client_list(){
 ## Value of ENTRY is: CBS>192.168.4.1>0.0.0.0>DD
 #################################################################
         if [ "$TARGET_ROUTE" = "VPN" ] ||  "$TARGET_ROUTE" = "WAN" ]; then
-            logger "hit a IPSET list condition"
+            logger "hit a valid IPSET list condition"
 ####################################################################
 			      ip rule add $SRCC $SRCA $DSTC $DSTA table $TARGET_LOOKUP priority $RULE_PRIO
             logger "ip rule add $SRCC $SRCA $DSTC $DSTA table $TARGET_LOOKUP priority $RULE_PRIO"
@@ -150,7 +150,7 @@ create_client_list(){
 		fi
 
    ########################################################################
-if [ ! -z "$(echo $TARGET_ROUTE | grep -oE "SRC|DST|^D|^S")" ];then
+if [ ! -z "$(echo $TARGET_ROUTE | grep -oE "SRC|DST|^D|^S")" ]; then
 
  IPSET_NAME=$DESC
 
@@ -170,16 +170,44 @@ if [ ! -z "$(echo $TARGET_ROUTE | grep -oE "SRC|DST|^D|^S")" ];then
        esac
  esac
 
+###########################################################################################
  # If the Source IP is a real LAN IP then include it in the IPSET fwmark rule
 
-# <snip>
+LAN_IP=$(nvram get lan_ipaddr)
+DEST_IP="$VPN_IP"
+SRC=""
+
+lanip_oct1=$(echo $LAN_IP | cut -d "." -f1)
+lanip_oct2=$(echo $LAN_IP | cut -d "." -f2)
+lanip_oct3=$(echo $LAN_IP | cut -d "." -f3)
+lanip_oct4=$(echo $LAN_IP | cut -d "." -f4)
+
+# Set SRC parm for iptables command if SRC ip address is a valid LAN IP
+
+if [ ! -z $(echo $DEST_IP | grep -Eo '(([0-9]{1,3})\.){3}([0-9]{1,3}){1}' | grep -vE '25[6-9]|2[6-9][0-9]|[3-9][0-9][0-9]') ]; then
+    srcip_oct1=$(echo $DEST_IP | cut -d "." -f1)
+    srcip_oct2=$(echo $DEST_IP | cut -d "." -f2)
+    srcip_oct3=$(echo $DEST_IP | cut -d "." -f3)
+    srcip_oct4=$(echo $DEST_IP | cut -d "." -f4)
+
+    if [ "$srcip_oct1" -eq "$lanip_oct1" ]; then
+        if [ "$srcip_oct2" -eq "$lanip_oct2" ]; then
+            if [ "$srcip_oct3" -eq "$lanip_oct3" ]; then
+                if [ "$srcip_oct4" -gt 1 ] && [ "$srcip_oct4" -le 254 ]; then
+                    SRC="-s $DEST_IP"
+                fi
+            fi
+        fi
+    fi
+
+fi
 
  # Validate that $IPSET_NAME does physically exist etc.
     if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$IPSET_NAME" ]; then
         logger "IPSET list name $IPSET_NAME does not exist. $IPSET_NAME routing not created."
     else
-        iptables -t mangle -D PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
-        iptables -t mangle -A PREROUTING -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
+        iptables -t mangle -D PREROUTING $SRC -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
+        iptables -t mangle -A PREROUTING $SRC -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
     fi
 
 fi

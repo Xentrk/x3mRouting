@@ -13,10 +13,14 @@
 #####################################################################################################
 # Script Description:
 #
-# Selectively route Netflix and AmazonAWS US traffic to an OpenVPN Client interface on AsusWRT-Merlin firmware
-# Netflix also hosts on Amazon AWS servers. Because of this, the script will also route Amazon AWS
-# traffic, including Amazon and Amazon Prime traffic, to the OpenVPN interface.
+# This script will create an IPSET list called AMAZON containing all IPv4 address for the Amazon
+# AWS US region.  The IPSET list is required to route Amazon Prime traffic.  The script must also
+# be used in combination with the NETFLIX IPSET list to selectively route Netflix traffic since
+# Netflix hosts on Amazon AWS servers.
 #
+# Usage example:
+#
+#    sh /jffs/scripts/Asuswrt-Merlin-Selective-Routing/load_AMAZON_ipset.sh
 #####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 

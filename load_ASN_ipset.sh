@@ -13,6 +13,14 @@
 #   and on-going support!
 #
 ####################################################################################################
+# This script will create an IPSET list using the AS Number.  The IPv4 addresses are downloaded
+# from https://ipinfo.io/. https://ipinfo.io/ may require whitelisting if you use an ad-blocker
+# program.  You must pass the script the name of the IPSET list followed by the AS Number.
+#
+# Usage example:
+#
+#    sh /jffs/scripts/Asuswrt-Merlin-Selective-Routing/load_ASN_ipset.sh NETFLIX AS2906
+####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
 set -x

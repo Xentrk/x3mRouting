@@ -1,45 +1,26 @@
 #!/bin/sh
 ####################################################################################################
 # Script: load_DNSMASQ_ipset.sh
-# Version 1.3
-# Author: Xentrk
-# Date: 7-September-2018
-#       22-October-2018        v1.1 Modified by Martineau to be generic rather than Netflix specific.
-#       24-October-2018        v1.2 Modified by Martineau Added 'dir=' to allow using custom directory rather than Entware's '/opt/tmp' directory for ipset save/rstore
-#       10-December-2018       v1.3 Modified by Martineau Added 'autoscan[{=}[logfile]]' option to extract domains from logfile or '/opt/var/log/dnsmasq.log' if 'autoscan=' used
-#
-# Description:
-#    Selective Routing Script for domains using Asuswrt-Merlin firmware.  This version uses the ipset method
-#    built into dnsmasq.
-#
-#
-# Usage:     IPSET_Domains.sh   {[0|1|2|3|4|5]  ipset_name  domains[,...]} ['autoscan'] [del]  [dir='directory']
-#
-# Usage:     IPSET_Domains.sh   2   BBC   bbc.co.uk
-#                               Create IPSET BBC via VPN Client 2 and autopopulate IPs for domain 'bbc.co.uk'
-# Usage:     IPSET_Domains.sh   2   BBC   bbc.co.uk   del
-#                               Delete IPSET BBC and remove from VPN Client 2
-# Usage:     IPSET_Domains.sh   2   BBC   bbc.co.uk   dir=/mnt/sda1/Backups
-#                               As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore
-# Usage:     IPSET_Domains.sh   0   x3mRouting_NETFLIX_DNSMASQ   amazonaws.com,netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
-#                               Create IPSET x3mRouting_NETFLIX_DNSMASQ via WAN and autopopulate IPs for multiple Netflix domains
-# Usage:     IPSET_Domains.sh   2 SKY sky.com autoscan
-#                               Create IPSET SKY and extract all matching Top-Level domains containing 'sky.com' from '/opt/var/log/dnsmasq.log'
-#                               e.g. ipset=/akadns.net/edgekey.net/edgesuite.net/epgsky.com/sky.com/SKY
-#                                    from 'a674.hsar.cdn.sky.com.edgesuite.net/adm.sky.com/assets.sky.com/assets.sky.com-secure.edgekey.net/awk.epgsky.com' etc.
-
-
-# Print the names of IPSETs defined in dnsmasq
-#for IPSET in $(grep -E "^ipset=" /etc/dnsmasq.conf | awk -F "/" '{print $NF}');do echo $IPSET;ipset list $IPSET -t;done
-
-# Loop through all of the domains and perform 'nslookup'
-#for DOMAIN in $(grep -E "^ipset=" /etc/dnsmasq.conf | sed 's~/~ ~g; s/ipset=//' | awk '$NF=" " {print $0}');do echo -e "\n\t\tDomain="$DOMAIN"\n";nslookup $DOMAIN;done
-
+# Version 1.0
+# Author: Martineau, Xentrk
+# Date: 15-March-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise
 #   and on-going support!
 #
+####################################################################################################
+# Script Description:
+#
+# This script will create an IPSET list using the ipset feature inside of dnsmasq to collect IPv4
+# addresses when the domain is looked up by dnsmasq.  The script will also create a cron job to
+# backup the list every 24 hours to the /opt/tmp directory so the IPSET list can be restored on
+# system boot.  Pass the script the name of the IPSET list followed by the domain names separated
+# by a comma.
+#
+# Usage example:
+#
+#    sh load_DNSMASQ_ipset.sh BBC_WEB bbc.com,bbci.co.uk,bbc.co.uk
 ####################################################################################################
 logger -st "($(basename "$0"))" $$ Starting Script Execution
 
@@ -195,7 +176,7 @@ check_cron_job () {
     fi
 }
 
-#==================================================================================================Martineau Hack
+#======================================================================================Martineau Hack
 IPSET_NAME=
 DOMAINS_LIST=
 DIR="/opt/tmp"

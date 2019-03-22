@@ -5,13 +5,22 @@
 # Author: Xentrk
 # Date: 15-March-2019
 #
-# Description:
-#   Selective Routing Script for Hulu
-#
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise
 #   and on-going support!
 #
+####################################################################################################
+# Script Description:
+#
+# This script will create an IPSET list from a file containing IPv4 addresses stored in the
+# /opt/tmp directory on entware.  For example, I mined the domain names from dnsmasq for BBC
+# and converted the domain names to their respective IPv4 addresses.  You must pass the script
+# the IPSET list name.  The IPSET list name must match the name of the file containing the IPv4
+# addresses stored in /opt/tmp.
+#
+# Usage example:
+#
+#    sh /jffs/scripts/Asuswrt-Merlin-Selective-Routing/load_MANUAL_ipset.sh BBC
 ####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging

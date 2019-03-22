@@ -4,12 +4,7 @@
 104.16.55.28
 104.92.16.0/20
 104.92.19.219
-151.101.56.0/22
-151.101.58.68
-151.101.68.0/22
-192.243.223.0/24
-192.243.223.3
-67.21.54.0/23
 8.240.0.0/12
 8.249.71.244
 66.235.134.195 #dishanalyticsandtesting.sc.omtrdc.net may require whitelisting, blocking prevents some cloud DVR shows from playing
+66.170.250.200

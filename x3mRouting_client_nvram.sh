@@ -3,20 +3,20 @@
 # Script: x3mRouting_rules.sh
 # Version 1.0
 # Author: Xentrk
-# 29-July-2018
+# 22-March-2019
 #
 #####################################################################################################
 # Description:
+#   Create nvram LAN client files based on the routing configuration defined in the file
+#   /jffs/configs/x3mRouting_lan_client_rules
 #
 #####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
-
-set -x
+# set -x
 
 create_lan_client_routes () {
-# Implement routing rules for LAN clients configured in /jffs/configs/x3mRouting_lan_client_rules
 
     OLDIFS="$IFS"
     IFS=" "
@@ -41,44 +41,34 @@ create_lan_client_routes () {
     done < /jffs/configs/x3mRouting_lan_client_rules
      IFS=$OLDIFS
 
-# route OVPNC1 clients
+# OVPNC1 clients
     if [ -s "/tmp/ovpnc1.$$" ]; then
             awk '{ print }' ORS='' < "/tmp/ovpnc1.$$" > /jffs/configs/ovpnc1.nvram
-#            nvram set vpn_client1_clientlist=$(cat /jffs/configs/ovpnc1.nvram)
-#            nvram commit
-#            service restart_vpnclient1 &
+            rm /tmp/ovpnc1.$$
     fi
 
-# route OVPNC2 clients
+# OVPNC2 clients
     if [ -s "/tmp/ovpnc2.$$" ]; then
             awk '{ print }' ORS='' < "/tmp/ovpnc2.$$" > /jffs/configs/ovpnc2.nvram
-#            nvram set vpn_client2_clientlist=$(cat /jffs/configs/ovpnc2.nvram)
-#            nvram commit
-#            service restart_vpnclient2 &
+            rm /tmp/ovpnc2.$$
     fi
 
-# route OVPNC3 clients
+# OVPNC3 clients
     if [ -s "/tmp/ovpnc3.$$" ]; then
             awk '{ print }' ORS='' < "/tmp/ovpnc3.$$" > /jffs/configs/ovpnc3.nvram
-#            nvram set vpn_client3_clientlist=$(cat /jffs/configs/ovpnc3.nvram)
-#            nvram commit
-#            service restart_vpnclient3 &
+            rm /tmp/ovpnc3.$$
     fi
 
-# route OVPNC4 clients
+# OVPNC4 clients
     if [ -s "/tmp/ovpnc4.$$" ]; then
             awk '{ print }' ORS='' < "/tmp/ovpnc4.$$" > /jffs/configs/ovpnc4.nvram
-#            nvram set vpn_client4_clientlist=$(cat /jffs/configs/ovpnc4.nvram)
-#            nvram commit
-#            service restart_vpnclient4 &
+            rm /tmp/ovpnc4.$$
     fi
 
-# route OVPNC5 clients
+# OVPNC5 clients
     if [ -s "/tmp/ovpnc5.$$" ]; then
             awk '{ print }' ORS='' < "/tmp/ovpnc5.$$" > /jffs/configs/ovpnc5.nvram
-#            nvram set vpn_client5_clientlist=$(cat /jffs/configs/ovpnc5.nvram)
-#            nvram commit
-#            service restart_vpnclient5 &
+            rm /tmp/ovpnc5.$$
     fi
 }
 

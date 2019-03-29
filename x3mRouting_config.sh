@@ -25,32 +25,28 @@ set -x
 VERSION="1.0"
 GITHUB_URL="https://github.com/Xentrk/Asuswrt-Merlin-Selective-Routing"
 GIT_REPO="Asuswrt-Merlin-Selective-Routing"
-SELECTIVE_ROUTING_DIR="/jffs/scripts/$GIT_REPO"
-TORGUARD="https://x3mtek.com/why-i-use-torguard-as-my-vpn-provider/"
-TORGUARD_CONFIG="https://x3mtek.com/torguard-openvpn-2-4-client-setup-for-asuswrt-merlin-firmware/"
-
 COLOR_WHITE='\033[0m'
 COLOR_GREEN='\e[0;32m'
 
-    printf '\n'
-    printf '#############################################################################################################\n'
-    printf '##                                                                                                         ##\n'
-    printf '##  Welcome to the %bAsuswrt-Merlin-Selective-Routing%b configuration script                                   ##\n' "$COLOR_GREEN" "$COLOR_WHITE"
-    printf '##  Version %s by Xentrk                                                                                  ##\n' "$VERSION"
-    printf '##                                                                                                         ##\n'
-    printf '##  Configuration instuctions available at %b%s%b      ##\n' "$COLOR_GREEN" "$GITHUB_URL" "$COLOR_WHITE"
-    printf '##         ____        _         _                                                                         ##\n'
-    printf '##        |__  |      | |       | |                                                                        ##\n'
-    printf '##  __  __  _| |_ _ _ | |_  ___ | | __    ____ ____  _ _ _                                                 ##\n'
-    printf '##  \ \/ / |_  | %b %b \  __|/ _ \| |/ /   /  _//    \| %b %b \                                                ##\n' "\`" "\`" "\`" "\`"
-    printf '##   /  /  __| | | | |  |_ | __/|   <   (  (_ | [] || | | |                                                ##\n'
-    printf '##  /_/\_\|___ |_|_|_|\___|\___||_|\_\[] \___\\\____/|_|_|_|                                                ##\n'
-    printf '##                                                                                                         ##\n'
-    printf '#############################################################################################################\n'
-    printf '\n'
+printf '\n'
+printf '#############################################################################################################\n'
+printf '##                                                                                                         ##\n'
+printf '##  Welcome to the %bAsuswrt-Merlin-Selective-Routing%b configuration script                                   ##\n' "$COLOR_GREEN" "$COLOR_WHITE"
+printf '##  Version %s by Xentrk                                                                                  ##\n' "$VERSION"
+printf '##                                                                                                         ##\n'
+printf '##  Configuration instuctions available at %b%s%b      ##\n' "$COLOR_GREEN" "$GITHUB_URL" "$COLOR_WHITE"
+printf '##         ____        _         _                                                                         ##\n'
+printf '##        |__  |      | |       | |                                                                        ##\n'
+printf '##  __  __  _| |_ _ _ | |_  ___ | | __    ____ ____  _ _ _                                                 ##\n'
+printf '##  \ \/ / |_  | %b %b \  __|/ _ \| |/ /   /  _//    \| %b %b \                                                ##\n' "\`" "\`" "\`" "\`"
+printf '##   /  /  __| | | | |  |_ | __/|   <   (  (_ | [] || | | |                                                ##\n'
+printf '##  /_/\_\|___ |_|_|_|\___|\___||_|\_\[] \___\\\____/|_|_|_|                                                ##\n'
+printf '##                                                                                                         ##\n'
+printf '#############################################################################################################\n'
+printf '\n'
 
 # Retrieve Static DHCP assignments; remove < and > symbols and separate fields with a space.
-nvram get dhcp_staticlist | sed 's/<//;s/>/ /g;s/</ /g' > /tmp/my-scripts.$$
+nvram get dhcp_staticlist | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/my-scripts.$$
 
 # count number of fields in the file
 word_count=$(head -1 /tmp/my-scripts.$$ | wc -w)
@@ -61,12 +57,12 @@ static_leases_count=$((word_count / 3))
 
 # Check to see if a prior x3mRouting_rules file exists. Make a backup if it does.
 if [ -s "/jffs/configs/x3mRouting_rules" ]; then
-    TIMESTAMP=$(date +"%Y-%m-%d-%H.%M.%S")
-    if ! mv /jffs/configs/x3mRouting_rules /jffs/configs/x3mRouting_rules."$TIMESTAMP"; then
-        printf '\nBackup of the prior %b/jffs/configs/x3mRouting_rules%b file could not be made\n' "$COLOR_GREEN" "$COLOR_WHITE"
-    else
-        printf '\nExisting %b/jffs/configs/x3mRouting_rules%b file found.  A backup of the existing %b/jffs/configs/x3mRouting_rules%b file was made\n' "$COLOR_GREEN" "$COLOR_WHITE" "$COLOR_GREEN" "$COLOR_WHITE"
-    fi
+  TIMESTAMP=$(date +"%Y-%m-%d-%H.%M.%S")
+  if ! mv /jffs/configs/x3mRouting_rules /jffs/configs/x3mRouting_rules."$TIMESTAMP"; then
+    printf '\nBackup of the prior %b/jffs/configs/x3mRouting_rules%b file could not be made\n' "$COLOR_GREEN" "$COLOR_WHITE"
+  else
+    printf '\nExisting %b/jffs/configs/x3mRouting_rules%b file found.  A backup of the existing %b/jffs/configs/x3mRouting_rules%b file was made\n' "$COLOR_GREEN" "$COLOR_WHITE" "$COLOR_GREEN" "$COLOR_WHITE"
+  fi
 fi
 
 #Write IP address and Client Name to lan_clients
@@ -78,15 +74,14 @@ CLIENT=3
 true > /jffs/configs/x3mRouting_rules
 
 # write Static DHCP LAN Clients to /jffs/scripts/x3mRouting_rules
-while [ "$loop_count" -le "$static_leases_count" ]
-do
-  cut -d' ' -f$IP,$CLIENT < /tmp/my-scripts.$$ >> /jffs/configs/x3mRouting_rules
+while [ "$loop_count" -le "$static_leases_count" ]; do
+  cut -d' ' -f$IP,$CLIENT </tmp/my-scripts.$$ >>/jffs/configs/x3mRouting_rules
   IP=$((IP + 3))
   CLIENT=$((CLIENT + 3))
   loop_count=$((loop_count + 1))
 done
 
-sort /jffs/configs/x3mRouting_rules  -o /jffs/configs/x3mRouting_rules
+sort /jffs/configs/x3mRouting_rules -o /jffs/configs/x3mRouting_rules
 
 rm /tmp/my-scripts.$$
 

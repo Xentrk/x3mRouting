@@ -12,11 +12,15 @@
 #
 #####################################################################################################
 # Script Description:
+#  This script will create an IPSET list called AMAZON containing all IPv4 address for the Amazon
+#  AWS US region.  The IPSET list is required to route Amazon Prime traffic.  The script must also
+#  be used in combination with the NETFLIX IPSET list to selectively route Netflix traffic since
+#  Netflix hosts on Amazon AWS servers.
 #
-# This script will create an IPSET list called AMAZON containing all IPv4 address for the Amazon
-# AWS US region.  The IPSET list is required to route Amazon Prime traffic.  The script must also
-# be used in combination with the NETFLIX IPSET list to selectively route Netflix traffic since
-# Netflix hosts on Amazon AWS servers.
+# Requirements:
+#  This script requires the entware package 'jq'. To install, enter the command:
+#    opkg install jq
+#  from an SSH session.
 #
 # Usage example:
 #

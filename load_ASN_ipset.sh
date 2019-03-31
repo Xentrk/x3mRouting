@@ -118,7 +118,6 @@ check_ASN_ipset_list_values() {
     if [ ! -s "$FILE_DIR/$IPSET_NAME" ] || [ "$(find "$FILE_DIR" -name $IPSET_NAME -mtime +1 -print)" = "$FILE_DIR/$IPSET_NAME" ]; then
       download_ASN_ipset_list $ASN $NUMBER
     fi
-    COMMAND="add $IPSET_NAME"
     awk '{print "add '"$IPSET_NAME"' " $1}' "$FILE_DIR/$IPSET_NAME" | ipset restore -!
   else
     if [ ! -s "$FILE_DIR/$IPSET_NAME" ]; then

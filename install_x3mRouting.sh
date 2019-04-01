@@ -330,6 +330,7 @@ install_x3mRouting_LAN_clients() {
   download_file /jffs/scripts/Asuswrt-Merlin-Selective-Routing updown.sh
   download_file /jffs/scripts/Asuswrt-Merlin-Selective-Routing mount_files_lan.sh
   init_start_update "sh /jffs/scripts/Asuswrt-Merlin-Selective-Routing/mount_files_lan.sh"
+  sh /jffs/scripts/init-start
   echo "Installation of x3mRouting for LAN Clients completed"
 }
 
@@ -364,6 +365,7 @@ install_x3mRouting_IPSET_lists() {
   download_file /jffs/scripts/Asuswrt-Merlin-Selective-Routing load_AMAZON_ipset.sh
   download_file /jffs/scripts/Asuswrt-Merlin-Selective-Routing mount_files_ipset.sh
   init_start_update "sh /jffs/scripts/Asuswrt-Merlin-Selective-Routing/mount_files_ipset.sh"
+  sh /jffs/scripts/init-start
   echo "Installation of x3mRouting for IPSET lists completed"
 }
 

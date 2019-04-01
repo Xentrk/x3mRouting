@@ -45,7 +45,7 @@
       font-size: 14px;
       z-index: 200;
       position: relative;
-      background-color: balck:
+      background-color: black;
     }
 
     .QISform_wireless {
@@ -740,6 +740,11 @@ if(document.form.clientlist_IPSETName.value=="")
 return false;
 if (!validator.safeName(document.form.clientlist_IPSETName))
 return false;
+if (!validator.ipv4cidr(document.form.clientlist_IPSETipAddr)) {
+document.form.clientlist_IPSETipAddr.focus();
+document.form.clientlist_IPSETipAddr.select();
+return false;
+}
 if(document.form.clientlist_DIM1.value=="")
 document.form.clientlist_DIM1.value="DST";
 if(document.form.clientlist_DIM1.value=="DST")

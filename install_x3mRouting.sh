@@ -56,7 +56,7 @@ welcome_message() {
       printf '%b[1]%b = Install Selective Routing for LAN Clients\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
       printf '%b[2]%b = Install Selective Routing for IPSET lists\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
       printf '%b[3]%b = Update current Selective Routing installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-      printf '%b[4]%b = Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+      printf '%b[4]%b = Remove Selective Routing Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
       printf '\n%b[e]%b = Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
       printf '\n%bOption ==>%b ' "${COLOR_GREEN}" "${COLOR_WHITE}"
       read -r "menu1"

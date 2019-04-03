@@ -240,6 +240,8 @@ else
   check_ipset_list "$IPSET_NAME"       # Martineau Hack
   check_restore_file_age "$IPSET_NAME" # Martineau Hack
   check_cron_job "$IPSET_NAME"         # Martineau Hack
-  if [ "$lock_load_DNSMASQ_ipset" = "true" ]; then rm -rf "/tmp/load_DNSMASQ_ipset.lock"; fi
+
 fi
+
+if [ "$lock_load_DNSMASQ_ipset" = "true" ]; then rm -rf "/tmp/load_DNSMASQ_ipset.lock"; fi
 logger -st "($(basename "$0"))" $$ Completed Script Execution

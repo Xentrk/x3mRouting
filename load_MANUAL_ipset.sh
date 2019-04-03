@@ -26,8 +26,30 @@ logger -t "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
 set -x
 
-IPSET_NAME="$1"
-FILE_DIR="/opt/tmp"
+Kill_Lock () {
+        if [ -f "/tmp/load_MANUAL_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)" ]; then
+            logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_MANUAL_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_MANUAL_ipset.lock))"
+            logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)" '$1 == pid')"
+            kill "$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)"
+            rm -rf /tmp/load_MANUAL_ipset.lock
+            echo
+        fi
+}
+
+Check_Lock () {
+        if [ -f "/tmp/load_MANUAL_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)" ] && [ "$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)" != "$$" ]; then
+            if [ "$(($(date +%s)-$(sed -n '3p' /tmp/load_MANUAL_ipset.lock)))" -gt "1800" ]; then
+                Kill_Lock
+            else
+                logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_MANUAL_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)) - Exiting (cpid=$$)"
+                echo; exit 1
+            fi
+        fi
+        echo "$@" > /tmp/load_MANUAL_ipset.lock
+        echo "$$" >> /tmp/load_MANUAL_ipset.lock
+        date +%s >> /tmp/load_MANUAL_ipset.lock
+        lock_load_MANUAL_ipset="true"
+}
 
 # Chk_Entware function provided by @Martineau at snbforums.com
 
@@ -100,10 +122,16 @@ check_MANUAL_ipset_list_values() {
     awk '{print "add '"$IPSET_NAME"' " $1}' "$FILE_DIR/$IPSET_NAME" | ipset restore -!
   fi
 }
+Check_Lock  "$@"
+
+IPSET_NAME="$1"
+FILE_DIR="/opt/tmp"
 
 Chk_Entware 30
 
 check_MANUAL_ipset_list_exist $IPSET_NAME
-check_MANUAL_ipset_list_values $IPSET_NAME $ASN $NUMBER
+check_MANUAL_ipset_list_values $IPSET_NAME
+
+if [ "$lock_load_MANUAL_ipset" = "true" ]; then rm -rf "/tmp/load_MANUAL_ipset.lock"; fi
 
 logger -t "($(basename "$0"))" $$ Ending Script Execution

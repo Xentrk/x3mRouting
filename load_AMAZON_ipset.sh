@@ -31,6 +31,32 @@ logger -t "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
 set -x
 
+Kill_Lock () {
+        if [ -f "/tmp/load_AMAZON_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" ]; then
+            logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_AMAZON_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset.lock))"
+            logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" '$1 == pid')"
+            kill "$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)"
+            rm -rf /tmp/load_AMAZON_ipset.lock
+            echo
+        fi
+}
+
+Check_Lock () {
+        if [ -f "/tmp/load_AMAZON_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" ] && [ "$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" != "$$" ]; then
+            if [ "$(($(date +%s)-$(sed -n '3p' /tmp/load_AMAZON_ipset.lock)))" -gt "1800" ]; then
+                Kill_Lock
+            else
+                logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_AMAZON_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)) - Exiting (cpid=$$)"
+                echo; exit 1
+            fi
+        fi
+        echo "$@" > /tmp/load_AMAZON_ipset.lock
+        echo "$$" >> /tmp/load_AMAZON_ipset.lock
+        date +%s >> /tmp/load_AMAZON_ipset.lock
+        lock_load_AMAZON_ipset="true"
+}
+
+
 FILE_DIR="/opt/tmp"
 
 # Chk_Entware function provided by @Martineau at snbforums.com
@@ -120,10 +146,13 @@ check_ipset_list_values_AMAZON() {
 }
 
 # Call functions below this line
+Check_Lock  "$@"
 
 Chk_Entware 30 jq
 
 check_ipset_list_exist_AMAZON
 check_ipset_list_values_AMAZON
+
+if [ "$lock_load_AMAZON_ipset" = "true" ]; then rm -rf "/tmp/load_AMAZON_ipset.lock"; fi
 
 logger -t "($(basename "$0"))" $$ Completed Script Execution

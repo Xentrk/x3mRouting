@@ -10,7 +10,7 @@
   <link rel="shortcut icon" href="images/favicon.png">
   <link rel="icon" href="images/favicon.png">
   <title>
-    <#656#> - OpenVPN Client Settings
+    <#Web_Title#> - OpenVPN Client Settings
   </title>
   <link rel="stylesheet" type="text/css" href="index_style.css">
   <link rel="stylesheet" type="text/css" href="form_style.css">
@@ -21,6 +21,7 @@
   <script type="text/javascript" src="/validator.js"></script>
   <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
   <script type="text/javascript" language="JavaScript" src="/base64.js"></script>
+
   <script type="text/javascript" src="/js/jquery.js"></script>
   <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
   <script type="text/javascript" src="/js/httpApi.js"></script>
@@ -136,826 +137,901 @@
   </style>
   <script>
     wan_route_x = '<% nvram_get("wan_route_x"); %>';
-wan_nat_x = '<% nvram_get("wan_nat_x"); %>';
-wan_proto = '<% nvram_get("wan_proto"); %>';
-<% vpn_client_get_parameter(); %>
-openvpn_unit = '<% nvram_get("vpn_client_unit"); %>';
-switch (openvpn_unit) {
-case "1":
-client_state = (<% sysinfo("pid.vpnclient1"); %> > 0 ? 2 : 0);
-break;
-case "2":
-client_state = (<% sysinfo("pid.vpnclient2"); %> > 0 ? 2 : 0);
-break;
-case "3":
-client_state = (<% sysinfo("pid.vpnclient3"); %> > 0 ? 2 : 0);
-break;
-case "4":
-client_state = (<% sysinfo("pid.vpnclient4"); %> > 0 ? 2 : 0);
-break;
-case "5":
-client_state = (<% sysinfo("pid.vpnclient5"); %> > 0 ? 2 : 0);
-break;
-default:
-client_state = 0;
-break;
-}
-enforce_ori = "<% nvram_get("vpn_client_enforce"); %>";
-policy_ori = "<% nvram_get("vpn_client_rgw"); %>";
-ciphersarray = [
-["AES-128-CBC"],
-["AES-128-CFB"],
-["AES-128-OFB"],
-["AES-192-CBC"],
-["AES-192-CFB"],
-["AES-192-OFB"],
-["AES-256-CBC"],
-["AES-256-CFB"],
-["AES-256-OFB"],
-["AES-128-GCM"],
-["AES-192-GCM"],
-["AES-256-GCM"],
-["BF-CBC"],
-["BF-CFB"],
-["BF-OFB"],
-["CAST5-CBC"],
-["CAST5-CFB"],
-["CAST5-OFB"],
-["DES-CBC"],
-["DES-CFB"],
-["DES-EDE3-CBC"],
-["DES-EDE3-CFB"],
-["DES-EDE3-OFB"],
-["DES-EDE-CBC"],
-["DES-EDE-CFB"],
-["DES-EDE-OFB"],
-["DES-OFB"],
-["DESX-CBC"],
-["IDEA-CBC"],
-["IDEA-CFB"],
-["IDEA-OFB"]
-];
-var digestsarray = [
-["DSA"],
-["DSA-SHA"],
-["DSA-SHA1"],
-["DSA-SHA1-old"],
-["ecdsa-with-SHA1"],
-["MD4"],
-["MD5"],
-["MDC2"],
-["RIPEMD160"],
-["RSA-MD4"],
-["RSA-MD5"],
-["RSA-MDC2"],
-["RSA-RIPEMD160"],
-["RSA-SHA"],
-["RSA-SHA1"],
-["RSA-SHA1-2"],
-["RSA-SHA224"],
-["RSA-SHA256"],
-["RSA-SHA384"],
-["RSA-SHA512"],
-["SHA"],
-["SHA1"],
-["SHA224"],
-["SHA256"],
-["SHA384"],
-["SHA512"],
-["whirlpool"]
-];
-var clientlist_array = "<% nvram_get("vpn_client_clientlist"); %>";
-if (isSupport("hnd")) {
-clientlist_array += "<% nvram_get("vpn_client_clientlist1"); %>"+
-"<% nvram_get("vpn_client_clientlist2"); %>"+
-"<% nvram_get("vpn_client_clientlist3"); %>"+
-"<% nvram_get("vpn_client_clientlist4"); %>"+
-"<% nvram_get("vpn_client_clientlist5"); %>";
-}
-function initial()
-{
-show_menu();
-if(vpnc_support) {
-var vpn_client_array = {"OpenVPN" : ["OpenVPN", "Advanced_OpenVPNClient_Content.asp"], "PPTP" : ["PPTP/L2TP", "Advanced_VPNClient_Content.asp"]};
-$('#divSwitchMenu').html(gen_switch_menu(vpn_client_array, "OpenVPN"));
-document.getElementById("divSwitchMenu").style.display = "";
-}
-showclientlist();
-showLANIPList();
-<!-- Martineau Hack 1 of 3 #####################################################################-->
-document.form.clientlist_DIM1.value="DST";
-document.form.clientlist_DIM2.value="";
-document.form.clientlist_DIM3.value="";
-<!-- Martineau Hack ############################################################################-->
-free_options(document.form.vpn_client_unit);
-add_option(document.form.vpn_client_unit, "1: <% nvram_get("vpn_client1_desc"); %>", "1", (openvpn_unit == 1));
-add_option(document.form.vpn_client_unit, "2: <% nvram_get("vpn_client2_desc"); %>", "2", (openvpn_unit == 2));
-add_option(document.form.vpn_client_unit, "3: <% nvram_get("vpn_client3_desc"); %>", "3", (openvpn_unit == 3));
-add_option(document.form.vpn_client_unit, "4: <% nvram_get("vpn_client4_desc"); %>", "4", (openvpn_unit == 4));
-add_option(document.form.vpn_client_unit, "5: <% nvram_get("vpn_client5_desc"); %>", "5", (openvpn_unit == 5));
-free_options(document.form.vpn_client_cipher);
-currentcipher = "<% nvram_get("vpn_client_cipher"); %>";
-add_option(document.form.vpn_client_cipher, "Default","default",(currentcipher.toLowerCase() == "default"));
-add_option(document.form.vpn_client_cipher, "None","none",(currentcipher.toLowerCase() == "none"));
-free_options(document.form.vpn_client_digest);
-currentdigest = "<% nvram_get("vpn_client_digest"); %>";
-add_option(document.form.vpn_client_digest, "Default","default",(currentdigest.toLowerCase() == "default"));
-add_option(document.form.vpn_client_digest, "None","none",(currentdigest.toLowerCase() == "none"));
-currentiface = "<% nvram_get("vpn_client_if"); %>";
-add_option(document.form.vpn_client_if_x, "TUN","tun",(currentiface.indexOf("tun") != -1));
-add_option(document.form.vpn_client_if_x, "TAP","tap",(currentiface.indexOf("tap") != -1));
-for(var i = 0; i < ciphersarray.length; i++){
-add_option(document.form.vpn_client_cipher,
-ciphersarray[i][0], ciphersarray[i][0],
-(currentcipher.toLowerCase() == ciphersarray[i][0].toLowerCase()));
-}
-for(var i = 0; i < digestsarray.length; i++){
-add_option(document.form.vpn_client_digest,
-digestsarray[i][0], digestsarray[i][0],
-(currentdigest.toLowerCase() == digestsarray[i][0].toLowerCase()));
-}
-setRadioValue(document.form.vpn_client_x_eas, ((document.form.vpn_clientx_eas.value.indexOf(''+(openvpn_unit)) >= 0) ? "1" : "0"));
-getTLS(openvpn_unit);
-update_rgw_options();
-document.form.vpn_client_rgw.value = policy_ori;
-update_visibility();
-var custom2 = document.form.vpn_client_custom2.value;
-if (isSupport("hnd")) {
-document.getElementById("vpn_client_custom_x").maxLength = 170 * 3; // 255 * 3 - base64 overhead
-custom2 += document.form.vpn_client_custom21.value +
-document.form.vpn_client_custom22.value;
-}
-document.getElementById("vpn_client_custom_x").value = Base64.decode(custom2);
-setTimeout("getConnStatus()", 1000);
-}
-function getTLS(unit){
-$.ajax({
-url: '/ajax_openvpn_server.asp',
-dataType: 'script',
-timeout: 1500,
-error: function(xhr){
-setTimeout("getTLS(" + unit + ");",1000);
-},
-success: function(){
-setTLSTable(unit);
-}
-});
-}
-function setTLSTable(unit) {
-switch (unit) {
-case "1" :
-document.getElementById('edit_vpn_crt_client_ca').value = vpn_crt_client1_ca[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_crt').value = vpn_crt_client1_crt[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_key').value = vpn_crt_client1_key[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_static').value = vpn_crt_client1_static[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_crl').value = vpn_crt_client1_crl[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_extra').value = vpn_crt_client1_extra[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-break;
-case "2" :
-document.getElementById('edit_vpn_crt_client_ca').value = vpn_crt_client2_ca[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_crt').value = vpn_crt_client2_crt[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_key').value = vpn_crt_client2_key[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_static').value = vpn_crt_client2_static[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_crl').value = vpn_crt_client2_crl[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_extra').value = vpn_crt_client2_extra[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-break;
-case "3" :
-document.getElementById('edit_vpn_crt_client_ca').value = vpn_crt_client3_ca[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_crt').value = vpn_crt_client3_crt[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_key').value = vpn_crt_client3_key[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_static').value = vpn_crt_client3_static[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_crl').value = vpn_crt_client3_crl[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_extra').value = vpn_crt_client3_extra[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-break;
-case "4" :
-document.getElementById('edit_vpn_crt_client_ca').value = vpn_crt_client4_ca[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_crt').value = vpn_crt_client4_crt[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_key').value = vpn_crt_client4_key[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_static').value = vpn_crt_client4_static[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_crl').value = vpn_crt_client4_crl[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_extra').value = vpn_crt_client4_extra[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-break;
-case "5" :
-document.getElementById('edit_vpn_crt_client_ca').value = vpn_crt_client5_ca[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_crt').value = vpn_crt_client5_crt[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_key').value = vpn_crt_client5_key[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_static').value = vpn_crt_client5_static[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_crl').value = vpn_crt_client5_crl[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-document.getElementById('edit_vpn_crt_client_extra').value = vpn_crt_client5_extra[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
-break;
-}
-}
-function update_visibility(){
-auth = document.form.vpn_client_crypt.value;
-iface = document.form.vpn_client_if_x.value;
-bridge = getRadioValue(document.form.vpn_client_bridge);
-nat = getRadioValue(document.form.vpn_client_nat);
-hmac = document.form.vpn_client_hmac.value;
-rgw = document.form.vpn_client_rgw.value;
-tlsremote = getRadioValue(document.form.vpn_client_tlsremote);
-userauth = (getRadioValue(document.form.vpn_client_userauth) == 1) && (auth == 'tls') ? 1 : 0;
-useronly = userauth && getRadioValue(document.form.vpn_client_useronly);
-ncp = document.form.vpn_client_ncp_enable.value;
-showhide("client_userauth", (auth == "tls"));
-showhide("client_hmac", (auth == "tls"));
-showhide("client_username", userauth);
-showhide("client_password", userauth);
-showhide("client_useronly", userauth);
-showhide("client_ca_warn_text", useronly);
-showhide("client_bridge", (iface == "tap"));
-showhide("client_bridge_warn_text", (bridge == 0));
-showhide("client_nat", ((iface == "tun") || (bridge == 0)));
-showhide("client_nat_warn_text", (((nat == 0) || (auth == "secret" && iface == "tun"))));
-showhide("client_local_1", (iface == "tun" && auth == "secret"));
-showhide("client_local_2", (iface == "tap" && (bridge == 0 && auth == "secret")));
-showhide("client_adns", (auth == "tls"));
-showhide("client_reneg", (auth == "tls"));
-showhide("client_gateway_label", (iface == "tap" && rgw > 0));
-showhide("vpn_client_gw", (iface == "tap" && rgw > 0));
-showhide("client_tlsremote", (auth == "tls"));
-showhide("vpn_client_cn", ((auth == "tls") && (tlsremote == 1)));
-showhide("client_cn_label", ((auth == "tls") && (tlsremote == 1)));
-showhide("clientlist_Block", (rgw >= 2));
-showhide("selectiveTable", (rgw >= 2));
-showhide("client_enforce", (rgw >= 2));
-showhide("client_cipher", (ncp != 2));
-showhide("ncp_enable", (auth == "tls"));
-showhide("ncp_ciphers", ((ncp > 0) && (auth == "tls")));
-}
-function update_rgw_options(){
-currentpolicy = document.form.vpn_client_rgw.value;
-iface = document.form.vpn_client_if_x.value;
-if ((iface == "tap") && (currentpolicy >= 2)) {
-currentpolicy = 1;
-document.form.vpn_client_rgw.value = 1;
-}
-free_options(document.form.vpn_client_rgw);
-add_option(document.form.vpn_client_rgw, "No","0",(currentpolicy == 0));
-add_option(document.form.vpn_client_rgw, "All","1",(currentpolicy == 1));
-if (iface == "tun") {
-add_option(document.form.vpn_client_rgw, "Policy Rules","2",(currentpolicy == 2));
-add_option(document.form.vpn_client_rgw, "Policy Rules (strict)","3",(currentpolicy == 3));
-}
-}
-function edit_Keys(){
-cal_panel_block();
-$("#tlsKey_panel").fadeIn(300);
-}
-function cancel_Keys(){
-this.FromObject ="0";
-$("#tlsKey_panel").fadeOut(300);
-setTLSTable(openvpn_unit);
-}
-function save_Keys(){
-switch (openvpn_unit) {
-case "1" :
-document.form.vpn_crt_client1_ca.value = document.getElementById('edit_vpn_crt_client_ca').value;
-document.form.vpn_crt_client1_crt.value = document.getElementById('edit_vpn_crt_client_crt').value;
-document.form.vpn_crt_client1_key.value = document.getElementById('edit_vpn_crt_client_key').value;
-document.form.vpn_crt_client1_static.value = document.getElementById('edit_vpn_crt_client_static').value;
-document.form.vpn_crt_client1_crl.value = document.getElementById('edit_vpn_crt_client_crl').value;
-document.form.vpn_crt_client1_extra.value = document.getElementById('edit_vpn_crt_client_extra').value;
-document.form.vpn_crt_client1_ca.disabled = false;
-document.form.vpn_crt_client1_crt.disabled = false;
-document.form.vpn_crt_client1_key.disabled = false;
-document.form.vpn_crt_client1_static.disabled = false;
-document.form.vpn_crt_client1_crl.disabled = false;
-document.form.vpn_crt_client1_extra.disabled = false;
-break;
-case "2" :
-document.form.vpn_crt_client2_ca.value = document.getElementById('edit_vpn_crt_client_ca').value;
-document.form.vpn_crt_client2_crt.value = document.getElementById('edit_vpn_crt_client_crt').value;
-document.form.vpn_crt_client2_key.value = document.getElementById('edit_vpn_crt_client_key').value;
-document.form.vpn_crt_client2_static.value = document.getElementById('edit_vpn_crt_client_static').value;
-document.form.vpn_crt_client2_crl.value = document.getElementById('edit_vpn_crt_client_crl').value;
-document.form.vpn_crt_client2_extra.value = document.getElementById('edit_vpn_crt_client_extra').value;
-document.form.vpn_crt_client2_ca.disabled = false;
-document.form.vpn_crt_client2_crt.disabled = false;
-document.form.vpn_crt_client2_key.disabled = false;
-document.form.vpn_crt_client2_static.disabled = false;
-document.form.vpn_crt_client2_crl.disabled = false;
-document.form.vpn_crt_client2_extra.disabled = false;
-break;
-case "3" :
-document.form.vpn_crt_client3_ca.value = document.getElementById('edit_vpn_crt_client_ca').value;
-document.form.vpn_crt_client3_crt.value = document.getElementById('edit_vpn_crt_client_crt').value;
-document.form.vpn_crt_client3_key.value = document.getElementById('edit_vpn_crt_client_key').value;
-document.form.vpn_crt_client3_static.value = document.getElementById('edit_vpn_crt_client_static').value;
-document.form.vpn_crt_client3_crl.value = document.getElementById('edit_vpn_crt_client_crl').value;
-document.form.vpn_crt_client3_extra.value = document.getElementById('edit_vpn_crt_client_extra').value;
-document.form.vpn_crt_client3_ca.disabled = false;
-document.form.vpn_crt_client3_crt.disabled = false;
-document.form.vpn_crt_client3_key.disabled = false;
-document.form.vpn_crt_client3_static.disabled = false;
-document.form.vpn_crt_client3_crl.disabled = false;
-document.form.vpn_crt_client3_extra.disabled = false;
-break;
-case "4" :
-document.form.vpn_crt_client4_ca.value = document.getElementById('edit_vpn_crt_client_ca').value;
-document.form.vpn_crt_client4_crt.value = document.getElementById('edit_vpn_crt_client_crt').value;
-document.form.vpn_crt_client4_key.value = document.getElementById('edit_vpn_crt_client_key').value;
-document.form.vpn_crt_client4_static.value = document.getElementById('edit_vpn_crt_client_static').value;
-document.form.vpn_crt_client4_crl.value = document.getElementById('edit_vpn_crt_client_crl').value;
-document.form.vpn_crt_client4_extra.value = document.getElementById('edit_vpn_crt_client_extra').value;
-document.form.vpn_crt_client4_ca.disabled = false;
-document.form.vpn_crt_client4_crt.disabled = false;
-document.form.vpn_crt_client4_key.disabled = false;
-document.form.vpn_crt_client4_static.disabled = false;
-document.form.vpn_crt_client4_crl.disabled = false;
-document.form.vpn_crt_client4_extra.disabled = false;
-break;
-case "5" :
-document.form.vpn_crt_client5_ca.value = document.getElementById('edit_vpn_crt_client_ca').value;
-document.form.vpn_crt_client5_crt.value = document.getElementById('edit_vpn_crt_client_crt').value;
-document.form.vpn_crt_client5_key.value = document.getElementById('edit_vpn_crt_client_key').value;
-document.form.vpn_crt_client5_static.value = document.getElementById('edit_vpn_crt_client_static').value;
-document.form.vpn_crt_client5_crl.value = document.getElementById('edit_vpn_crt_client_crl').value;
-document.form.vpn_crt_client5_extra.value = document.getElementById('edit_vpn_crt_client_extra').value;
-document.form.vpn_crt_client5_ca.disabled = false;
-document.form.vpn_crt_client5_crt.disabled = false;
-document.form.vpn_crt_client5_key.disabled = false;
-document.form.vpn_crt_client5_static.disabled = false;
-document.form.vpn_crt_client5_crl.disabled = false;
-document.form.vpn_crt_client5_extra.disabled = false;
-break;
-}
-this.FromObject ="0";
-$("#tlsKey_panel").fadeOut(300);
-}
-function cal_panel_block(){
-var blockmarginLeft;
-if (window.innerWidth)
-winWidth = window.innerWidth;
-else if ((document.body) && (document.body.clientWidth))
-winWidth = document.body.clientWidth;
-if (document.documentElement && document.documentElement.clientHeight && document.documentElement.clientWidth){
-winWidth = document.documentElement.clientWidth;
-}
-if(winWidth >1050){
-winPadding = (winWidth-1050)/2;
-winWidth = 1105;
-blockmarginLeft= (winWidth*0.15)+winPadding;
-}
-else if(winWidth <=1050){
-blockmarginLeft= (winWidth)*0.15+document.body.scrollLeft;
-}
-document.getElementById("tlsKey_panel").style.marginLeft = blockmarginLeft+"px";
-}
-function validForm(){
-var addrobj = document.form.vpn_client_addr;
-var alert_str = validator.domainName(addrobj);
-if ((addrobj.value != "") && (alert_str != "") && (!validator.ipv4_addr(addrobj.value))) {
-alert("Invalid remote server address!");
-addrobj.focus();
-return false;
-}
-if (!validator.safeName(document.form.vpn_client_desc) ||
-!validator.numberRange(document.form.vpn_client_verb, 0, 6) ||
-!validator.numberRange(document.form.vpn_client_reneg, -1, 2147483647) ||
-!validator.numberRange(document.form.vpn_client_connretry, -1, 999) ||
-!validator.numberRange(document.form.vpn_client_port, 1, 65535))
-return false;
-return true;
-}
-function applyRule(manual_switch){
-if (!validForm()){
-return false;
-}
-if (manual_switch == 0) {
-showLoading();
-if (client_state != 0) {
-document.form.action_wait.value = 15;
-document.form.action_script.value = "restart_vpnclient"+openvpn_unit;
-}
-}
-tmp_value = "";
-for (var i=1; i < 6; i++) {
-if (i == openvpn_unit) {
-if (getRadioValue(document.form.vpn_client_x_eas) == 1)
-tmp_value += ""+i+",";
-} else {
-if (document.form.vpn_clientx_eas.value.indexOf(''+(i)) >= 0)
-tmp_value += ""+i+","
-}
-}
-document.form.vpn_clientx_eas.value = tmp_value;
-document.form.vpn_client_if.value = document.form.vpn_client_if_x.value;
-var rule_num = document.getElementById('clientlist_table').rows.length;
-var item_num = document.getElementById('clientlist_table').rows[0].cells.length;
-var tmp_value = "";
-for(i=0; i<rule_num; i++){
-tmp_value += "<";
-for(j=0; j<item_num-1; j++){
-tmp_value += document.getElementById('clientlist_table').rows[i].cells[j].innerHTML;
-if(j != item_num-2)
-tmp_value += ">";
-}
-}
-if(tmp_value == "<"+"<#1735#>" || tmp_value == "<")
-tmp_value = "";
-if (isSupport("hnd")) {
-split_clientlist(tmp_value);
-split_custom2(Base64.encode(document.getElementById("vpn_client_custom_x").value));
-} else {
-document.form.vpn_client_clientlist.value = tmp_value;
-document.form.vpn_client_custom2.value = Base64.encode(document.getElementById("vpn_client_custom_x").value);
-}
-if (((enforce_ori != getRadioValue(document.form.vpn_client_enforce)) ||
-(policy_ori != document.form.vpn_client_rgw.value)) &&
-(client_state == 0) && (manual_switch == 0))
-document.form.action_script.value += "start_vpnrouting"+openvpn_unit;
-document.form.submit();
-}
-function split_clientlist(clientlist){
-var counter = 0;
-document.form.vpn_client_clientlist.value = clientlist.substring(counter, (counter+=255));
-document.form.vpn_client_clientlist1.value = clientlist.substring(counter, (counter+=255));
-document.form.vpn_client_clientlist2.value = clientlist.substring(counter, (counter+=255));
-document.form.vpn_client_clientlist3.value = clientlist.substring(counter, (counter+=255));
-document.form.vpn_client_clientlist4.value = clientlist.substring(counter, (counter+=255));
-document.form.vpn_client_clientlist5.value = clientlist.substring(counter, (counter+=255));
-}
-function split_custom2(custom2){
-var counter = 0;
-document.form.vpn_client_custom2.value = custom2.substring(counter, (counter+=255));
-document.form.vpn_client_custom21.value = custom2.substring(counter, (counter+=255));
-document.form.vpn_client_custom22.value = custom2.substring(counter, (counter+=255));
-}
-function change_vpn_unit(val){
-document.form.action_mode.value = "change_vpn_client_unit";
-document.form.action = "apply.cgi";
-document.form.target = "";
-document.form.submit();
-}
-/* password item show or not */
-function pass_checked(obj){
-switchType(obj, document.form.show_pass_1.checked, true);
-}
-function ImportOvpn(){
-if (document.getElementById('ovpnfile').value == "") return false;
-document.getElementById('importOvpnFile').style.display = "none";
-document.getElementById('loadingicon').style.display = "";
-document.form.action = "vpnupload.cgi";
-document.form.enctype = "multipart/form-data";
-document.form.encoding = "multipart/form-data";
-document.form.vpn_upload_unit.value = openvpn_unit;
-document.form.submit();
-setTimeout("ovpnFileChecker();",2000);
-}
-var vpn_upload_state = "init";
-function ovpnFileChecker(){
-var missing;
-document.getElementById("importOvpnFile").innerHTML = "<#241#>";
-$.ajax({
-url: '/ajax_openvpn_server.asp',
-dataType: 'script',
-timeout: 1500,
-error: function(xhr){
-setTimeout("ovpnFileChecker();",1000);
-},
-success: function(){
-document.getElementById('importOvpnFile').style.display = "";
-document.getElementById('loadingicon').style.display = "none";
-if(vpn_upload_state == "init"){
-setTimeout("ovpnFileChecker();",1000);
-}
-else if(vpn_upload_state > 0){
-document.getElementById("importOvpnFile").innerHTML = "Warning!";
-missing = upload_build_report(vpn_upload_state);
-alert("Warning (" + vpn_upload_state +") while importing file - you will need to manually provide the " + missing.replace(/,\s*$/, "") + " content, on the keys/certificates page.");
-setTimeout("location.href='Advanced_OpenVPNClient_Content.asp';", 3000);
-}
-else{
-setTimeout("location.href='Advanced_OpenVPNClient_Content.asp';", 3000);
-}
-}
-});
-}
-function upload_build_report(ret){
-var missing = "";
-if (ret & 1)
-missing += "CA, ";
-if (ret & 2)
-missing += "Certificate, ";
-if (ret & 4)
-missing += "Key, ";
-if (ret & 8)
-missing += "Static Key, ";
-if (ret & 16)
-missing += "CRL, ";
-if (ret & 32)
-missing += "Extra certificate, "
-return missing;
-}
-function update_local_ip(object){
-if (object.name == "vpn_client_local_1")
-document.form.vpn_client_local_2.value = object.value;
-else if (object.name == "vpn_client_local_2")
-document.form.vpn_client_local_1.value = object.value;
-document.form.vpn_client_local.value = object.value;
-}
-function showclientlist(){
-var clientlist_row = clientlist_array.split('&#60');
-var code = "";
-var width = ["24%", "29%", "25%", "10%", "12%"];
-code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="clientlist_table">';
-if(clientlist_row.length == 1)
-code +='<tr><td style="color:#FFCC00;" colspan="6"><#1735#></td></tr>';
-else{
-for(var i = 1; i < clientlist_row.length; i++){
-code +='<tr id="row'+i+'">';
-var clientlist_col = clientlist_row[i].split('&#62');
-for(var j = 0; j < clientlist_col.length; j++){
-code +='<td width="' + width[j] +'">'+ clientlist_col[j] +'</td>';
-}
-if (j < 4) {
-code +='<td width="' + width[j++] +'">VPN</td>';
-}
-code +='<td width="' + width[j] +'">';
-code +='<input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';
-}
-}
-code +='</table>';
-document.getElementById("clientlist_Block").innerHTML = code;
-}
-function addRow(obj, head){
-if(head == 1)
-clientlist_array += "&#60" /*&#60*/
-else
-clientlist_array += "&#62" /*&#62*/
-clientlist_array += obj.value;
-obj.value = "";
-}
-function addRow_Group(upper){
-var rule_num = document.getElementById('clientlist_table').rows.length;
-var item_num = document.getElementById('clientlist_table').rows[0].cells.length;
-if(rule_num >= upper){
-alert("<#1784#> " + upper + " <#1785#>");
-return false;
-}
-if (!validator.safeName(document.form.clientlist_deviceName))
-return false;
-if(document.form.clientlist_ipAddr.value=="")
-document.form.clientlist_ipAddr.value="0.0.0.0";
-if(document.form.clientlist_dstipAddr.value=="")
-document.form.clientlist_dstipAddr.value="0.0.0.0";
-if (!validator.ipv4cidr(document.form.clientlist_ipAddr)) {
-document.form.clientlist_ipAddr.focus();
-document.form.clientlist_ipAddr.select();
-return false;
-}
-if (!validator.ipv4cidr(document.form.clientlist_dstipAddr)) {
-document.form.clientlist_dstipAddr.focus();
-document.form.clientlist_dstipAddr.select();
-return false;
-}
-if(item_num >=2){
-for(i=0; i<rule_num; i++){
-if(document.form.clientlist_ipAddr.value.toLowerCase() == document.getElementById('clientlist_table').rows[i].cells[1].innerHTML.toLowerCase() &&
-document.form.clientlist_dstipAddr.value.toLowerCase() == document.getElementById('clientlist_table').rows[i].cells[2].innerHTML.toLowerCase()){
-alert("<#290#> " + "<#861#> " + "<#636#>");   <!-- Martineau Hack 2 of 5 -->
-document.form.clientlist_ipAddr.focus();
-document.form.clientlist_ipAddr.select();
-return false;
-}
-}
-}
-addRow(document.form.clientlist_deviceName ,1);
-addRow(document.form.clientlist_ipAddr, 0);
-addRow(document.form.clientlist_dstipAddr, 0);
-addRow(document.form.clientlist_iface, 0);
-document.form.clientlist_iface.value = "VPN";
-showclientlist();
-}
-<!-- Martineau Hack 3 of 5 IPSET  processing ###################################################-->
-function addRow_Group2(upper){
-var rule_num = document.getElementById('clientlist_table').rows.length;
-var item_num = document.getElementById('clientlist_table').rows[0].cells.length;
-var dimx = ""
-if(rule_num >= upper){
-alert("<#1784#> " + upper + " <#1785#>");
-return false;
-}
-if(document.form.clientlist_IPSETName.value=="")
-return false;
-if (!validator.safeName(document.form.clientlist_IPSETName))
-return false;
-if (!validator.ipv4cidr(document.form.clientlist_IPSETipAddr)) {
-document.form.clientlist_IPSETipAddr.focus();
-document.form.clientlist_IPSETipAddr.select();
-return false;
-}
-if(document.form.clientlist_DIM1.value=="")
-document.form.clientlist_DIM1.value="DST";
-if(document.form.clientlist_DIM1.value=="DST")
-dimx = "D";
-if(document.form.clientlist_DIM1.value=="SRC")
-dimx = "S";
-if(document.form.clientlist_DIM2.value!=""){
-if(document.form.clientlist_DIM2.value=="DST")
-dimx += "D";
-if(document.form.clientlist_DIM2.value=="SRC")
-dimx += "S";
-}
-if(document.form.clientlist_DIM3.value!=""){
-if(document.form.clientlist_DIM3.value=="DST")
-dimx += "D";
-if(document.form.clientlist_DIM3.value=="SRC")
-dimx += "S";
-}
-if(dimx == "D")
-dimx="DST";
-if(dimx == "S")
-dimx="SRC";
-addRow(document.form.clientlist_IPSETName ,1);
-if(document.form.clientlist_IPSETipAddr.value=="")
-document.form.clientlist_IPSETipAddr.value="0.0.0.0";
-addRow(document.form.clientlist_IPSETipAddr, 0);
-document.form.clientlist_dstipAddr.value="0.0.0.0"
-addRow(document.form.clientlist_dstipAddr, 0);
-document.form.clientlist_IPSETName.value =dimx;		// So use the IPSET name field to save the dimension e.g.DDS
-addRow(document.form.clientlist_IPSETName, 0);      // Fortunately addRow() wipes the GUI object for us ;-)
-document.form.clientlist_DIM1.value="DST";
-document.form.clientlist_DIM2.value="";
-document.form.clientlist_DIM3.value="";
-document.form.clientlist_IPSETName.focus();
-document.form.clientlist_IPSETName.select();
-showclientlist();
-}
-<!-- Martineau Hack ############################################################################-->
-function del_Row(r){
-var i=r.parentNode.parentNode.rowIndex;
-document.getElementById('clientlist_table').deleteRow(i);
-var clientlist_value = "";
-for(k=0; k<document.getElementById('clientlist_table').rows.length; k++){
-clientlist_value += "&#60";
-clientlist_value += document.getElementById('clientlist_table').rows[k].cells[0].innerHTML;
-clientlist_value += "&#62";
-clientlist_value += document.getElementById('clientlist_table').rows[k].cells[1].innerHTML;
-clientlist_value += "&#62";
-clientlist_value += document.getElementById('clientlist_table').rows[k].cells[2].innerHTML;
-clientlist_value += "&#62";
-clientlist_value += document.getElementById('clientlist_table').rows[k].cells[3].innerHTML;
-}
-clientlist_array = clientlist_value;
-if(clientlist_array == "")
-showclientlist();
-}
-function showLANIPList(){
-if(clientList.length == 0){
-setTimeout(function() {
-genClientList();
-showLANIPList();
-}, 500);
-return false;
-}
-var htmlCode = "";
-for(var i=0; i<clientList.length;i++){
-var clientObj = clientList[clientList[i]];
-if(clientObj.ip != "offline"){
-if(clientObj.name.length > 20) clientObj.name = clientObj.name.substring(0, 16) + "..";
-htmlCode += '<a><div onmouseover="over_var=1;" onmouseout="over_var=0;" onclick="setClientIP(\'';
-htmlCode += clientObj.name;
-htmlCode += '\', \'';
-htmlCode += clientObj.ip;
-htmlCode += '\');"><strong>';
-htmlCode += clientObj.name;
-htmlCode += '</strong> ('+clientObj.ip+')</div></a><!--[if lte IE 6.5]><iframe class="hackiframe2"></iframe><![endif]-->';
-}
-}
-document.getElementById("ClientList_Block_PC").innerHTML = htmlCode;
-}
-function setClientIP(_name, _ipaddr){
-document.form.clientlist_deviceName.value = _name;
-document.form.clientlist_ipAddr.value = _ipaddr;
-hideClients_Block();
-over_var = 0;
-}
-var over_var = 0;
-var isMenuopen = 0;
-function hideClients_Block(){
-document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
-document.getElementById('ClientList_Block_PC').style.display='none';
-isMenuopen = 0;
-}
-function pullLANIPList(obj){
-if(isMenuopen == 0){
-obj.src = "/images/arrow-top.gif"
-document.getElementById("ClientList_Block_PC").style.display = 'block';
-document.form.clientlist_deviceName.focus();
-isMenuopen = 1;
-}
-else
-hideClients_Block();
-}
-<!-- Martineau Hack 3 of 5 IPSET  processing ###################################################-->
-function pullIPSETLANIPList(obj){
-if(isMenuopen == 0){
-obj.src = "/images/arrow-top.gif"
-document.getElementById("ClientList_Block_PC").style.display = 'block';
-document.form.clientlist_IPSETName.focus();
-isMenuopen = 1;
-}
-else
-hideClients_Block();
-}
-<!-- Martineau Hack ############################################################################-->
-function getConnStatus() {
-$.ajax({
-url: 'ajax_vpn_status.asp',
-dataType: 'script',
-error: function(xhr){
-getConnStatus();
-},
-success: function(response){
-showConnStatus();
-}
-});
-}
-function showConnStatus() {
-switch (openvpn_unit) {
-case "1":
-client_state = vpnc_state_t1;
-client_errno = vpnc_errno_t1;
-localip = vpn_client1_ip;
-remoteip = vpn_client1_rip;
-break;
-case "2":
-client_state = vpnc_state_t2;
-client_errno = vpnc_errno_t2;
-localip = vpn_client2_ip;
-remoteip = vpn_client2_rip;
-break;
-case "3":
-client_state = vpnc_state_t3;
-client_errno = vpnc_errno_t3;
-localip = vpn_client3_ip;
-remoteip = vpn_client3_rip;
-break;
-case "4":
-client_state = vpnc_state_t4;
-client_errno = vpnc_errno_t4;
-localip = vpn_client4_ip;
-remoteip = vpn_client4_rip;
-break;
-case "5":
-client_state = vpnc_state_t5;
-client_errno = vpnc_errno_t5;
-localip = vpn_client5_ip;
-remoteip = vpn_client5_rip;
-break;
-}
-switch (client_state) {
-case "1": // Connecting
-code = "Connecting...";
-setTimeout("getConnStatus()",2000);
-break;
-case "2": // COnnected
-code = "Connected (Local: "+ localip + " - Public: " + remoteip + ") <a href='#' style='padding-left:12px;text-decoration:underline;' onclick='refreshVPNIP();'>Refresh</a>";
-break;
-case "-1":
-switch (client_errno) {
-case "1":
-code = "Error - IP conflict!";
-break;
-case "2":
-code = "Error - Routing conflict!";
-break;
-case "4":
-code = "Error - SSL/TLS issue!";
-break;
-case "5":
-code = "Error - DH issue!";
-break;
-case "6":
-code = "Error - Authentication failure!";
-break;
-default:
-code = "Error - check configuration!";
-break;
-}
-setTimeout("getConnStatus()",2000);
-break;
-default:
-code = "";
-break;
-}
-document.getElementById("vpn_state_msg").innerHTML = "<span>" + code + "</span>";
-}
-function defaultSettings() {
-if (confirm("WARNING: This will reset this OpenVPN client to factory default settings!\n\nKeys and certificates associated to this instance will also be DELETED!\n\nProceed?")) {
-document.form.action_script.value = "stop_vpnclient" + openvpn_unit + ";clearvpnclient" + openvpn_unit;
-document.form.action_wait.value = 15;
-showLoading();
-document.form.submit();
-} else {
-return false;
-}
-}
-function refreshVPNIP() {
-httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getConnStatus()", 2000);});
-}
-</script>
+    wan_nat_x = '<% nvram_get("wan_nat_x"); %>';
+    wan_proto = '<% nvram_get("wan_proto"); %>';
+    <% vpn_client_get_parameter(); %>
+
+    openvpn_unit = '<% nvram_get("vpn_client_unit"); %>';
+
+    switch (openvpn_unit) {
+      case "1":
+        client_state = (<% sysinfo("pid.vpnclient1"); %> > 0 ? 2 : 0);
+        break;
+      case "2":
+        client_state = (<% sysinfo("pid.vpnclient2"); %> > 0 ? 2 : 0);
+        break;
+      case "3":
+        client_state = (<% sysinfo("pid.vpnclient3"); %> > 0 ? 2 : 0);
+        break;
+      case "4":
+        client_state = (<% sysinfo("pid.vpnclient4"); %> > 0 ? 2 : 0);
+        break;
+      case "5":
+        client_state = (<% sysinfo("pid.vpnclient5"); %> > 0 ? 2 : 0);
+        break;
+      default:
+        client_state = 0;
+        break;
+    }
+
+
+    enforce_ori = "<% nvram_get("vpn_client_enforce"); %>";
+    policy_ori = "<% nvram_get("vpn_client_rgw"); %>";
+    dnsmode_ori = "<% nvram_get("vpn_client_adns"); %>";
+
+    ciphersarray = [
+      ["AES-128-CBC"],
+      ["AES-128-CFB"],
+      ["AES-128-OFB"],
+      ["AES-192-CBC"],
+      ["AES-192-CFB"],
+      ["AES-192-OFB"],
+      ["AES-256-CBC"],
+      ["AES-256-CFB"],
+      ["AES-256-OFB"],
+      ["AES-128-GCM"],
+      ["AES-192-GCM"],
+      ["AES-256-GCM"],
+      ["BF-CBC"],
+      ["BF-CFB"],
+      ["BF-OFB"],
+      ["CAST5-CBC"],
+      ["CAST5-CFB"],
+      ["CAST5-OFB"],
+      ["DES-CBC"],
+      ["DES-CFB"],
+      ["DES-EDE3-CBC"],
+      ["DES-EDE3-CFB"],
+      ["DES-EDE3-OFB"],
+      ["DES-EDE-CBC"],
+      ["DES-EDE-CFB"],
+      ["DES-EDE-OFB"],
+      ["DES-OFB"],
+      ["DESX-CBC"],
+      ["IDEA-CBC"],
+      ["IDEA-CFB"],
+      ["IDEA-OFB"]
+    ];
+
+    var digestsarray = [
+      ["DSA"],
+      ["DSA-SHA"],
+      ["DSA-SHA1"],
+      ["DSA-SHA1-old"],
+      ["ecdsa-with-SHA1"],
+      ["MD4"],
+      ["MD5"],
+      ["MDC2"],
+      ["RIPEMD160"],
+      ["RSA-MD4"],
+      ["RSA-MD5"],
+      ["RSA-MDC2"],
+      ["RSA-RIPEMD160"],
+      ["RSA-SHA"],
+      ["RSA-SHA1"],
+      ["RSA-SHA1-2"],
+      ["RSA-SHA224"],
+      ["RSA-SHA256"],
+      ["RSA-SHA384"],
+      ["RSA-SHA512"],
+      ["SHA"],
+      ["SHA1"],
+      ["SHA224"],
+      ["SHA256"],
+      ["SHA384"],
+      ["SHA512"],
+      ["whirlpool"]
+    ];
+
+
+    var clientlist_array = "<% nvram_get("vpn_client_clientlist"); %>";
+    if (isSupport("hnd")) {
+      clientlist_array += "<% nvram_get("vpn_client_clientlist1"); %>" +
+        "<% nvram_get("vpn_client_clientlist2"); %>" +
+        "<% nvram_get("vpn_client_clientlist3"); %>" +
+        "<% nvram_get("vpn_client_clientlist4"); %>" +
+        "<% nvram_get("vpn_client_clientlist5"); %>";
+    }
+
+    function initial() {
+      show_menu();
+
+      if (vpnc_support) {
+        var vpn_client_array = {
+          "OpenVPN": ["OpenVPN", "Advanced_OpenVPNClient_Content.asp"],
+          "PPTP": ["PPTP/L2TP", "Advanced_VPNClient_Content.asp"]
+        };
+        $('#divSwitchMenu').html(gen_switch_menu(vpn_client_array, "OpenVPN"));
+        document.getElementById("divSwitchMenu").style.display = "";
+      }
+
+      showclientlist();
+      showLANIPList();
+
+      // Martineau Hack 1 of 3 #####################################################################
+      document.form.clientlist_DIM1.value = "DST";
+      document.form.clientlist_DIM2.value = "";
+      document.form.clientlist_DIM3.value = "";
+      //-- Martineau Hack ############################################################################
+
+      // Client list
+      free_options(document.form.vpn_client_unit);
+      add_option(document.form.vpn_client_unit, "1: <% nvram_get("vpn_client1_desc"); %>", "1", (openvpn_unit == 1));
+      add_option(document.form.vpn_client_unit, "2: <% nvram_get("vpn_client2_desc"); %>", "2", (openvpn_unit == 2));
+      add_option(document.form.vpn_client_unit, "3: <% nvram_get("vpn_client3_desc"); %>", "3", (openvpn_unit == 3));
+      add_option(document.form.vpn_client_unit, "4: <% nvram_get("vpn_client4_desc"); %>", "4", (openvpn_unit == 4));
+      add_option(document.form.vpn_client_unit, "5: <% nvram_get("vpn_client5_desc"); %>", "5", (openvpn_unit == 5));
+
+      // Cipher list
+      free_options(document.form.vpn_client_cipher);
+      currentcipher = "<% nvram_get("vpn_client_cipher"); %>";
+      add_option(document.form.vpn_client_cipher, "Default", "default", (currentcipher.toLowerCase() == "default"));
+      add_option(document.form.vpn_client_cipher, "None", "none", (currentcipher.toLowerCase() == "none"));
+
+      // Digest list
+      free_options(document.form.vpn_client_digest);
+      currentdigest = "<% nvram_get("vpn_client_digest"); %>";
+      add_option(document.form.vpn_client_digest, "Default", "default", (currentdigest.toLowerCase() == "default"));
+      add_option(document.form.vpn_client_digest, "None", "none", (currentdigest.toLowerCase() == "none"));
+
+      // Extract the type out of the interface name
+      // (imported ovpn can result in this being tun3, for example)
+      currentiface = "<% nvram_get("vpn_client_if"); %>";
+      add_option(document.form.vpn_client_if_x, "TUN", "tun", (currentiface.indexOf("tun") != -1));
+      add_option(document.form.vpn_client_if_x, "TAP", "tap", (currentiface.indexOf("tap") != -1));
+
+      for (var i = 0; i < ciphersarray.length; i++) {
+        add_option(document.form.vpn_client_cipher,
+          ciphersarray[i][0], ciphersarray[i][0],
+          (currentcipher.toLowerCase() == ciphersarray[i][0].toLowerCase()));
+      }
+
+      for (var i = 0; i < digestsarray.length; i++) {
+        add_option(document.form.vpn_client_digest,
+          digestsarray[i][0], digestsarray[i][0],
+          (currentdigest.toLowerCase() == digestsarray[i][0].toLowerCase()));
+      }
+
+      // Set these based on a compound field
+      setRadioValue(document.form.vpn_client_x_eas, ((document.form.vpn_clientx_eas.value.indexOf('' + (openvpn_unit)) >= 0) ? "1" : "0"));
+
+      getTLS(openvpn_unit);
+      update_rgw_options();
+      document.form.vpn_client_rgw.value = policy_ori;
+      update_visibility();
+
+      var cust2 = document.form.vpn_client_cust2.value;
+      if (isSupport("hnd")) {
+        document.getElementById("vpn_client_custom_x").maxLength = 170 * 3; // 255 * 3 - base64 overhead
+        cust2 += document.form.vpn_client_cust21.value +
+          document.form.vpn_client_cust22.value;
+      }
+      document.getElementById("vpn_client_custom_x").value = Base64.decode(cust2);
+
+      setTimeout("getConnStatus()", 1000);
+    }
+
+    function getTLS(unit) {
+      $.ajax({
+        url: '/ajax_openvpn_server.asp',
+        dataType: 'script',
+        timeout: 1500,
+        error: function(xhr) {
+          setTimeout("getTLS(" + unit + ");", 1000);
+        },
+        success: function() {
+          setTLSTable(unit);
+        }
+      });
+    }
+
+    function setTLSTable(unit) {
+      switch (unit) {
+        case "1":
+          document.getElementById('edit_vpn_crt_client_ca').value = vpn_crt_client1_ca[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_crt').value = vpn_crt_client1_crt[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_key').value = vpn_crt_client1_key[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_static').value = vpn_crt_client1_static[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_crl').value = vpn_crt_client1_crl[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_extra').value = vpn_crt_client1_extra[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          break;
+        case "2":
+          document.getElementById('edit_vpn_crt_client_ca').value = vpn_crt_client2_ca[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_crt').value = vpn_crt_client2_crt[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_key').value = vpn_crt_client2_key[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_static').value = vpn_crt_client2_static[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_crl').value = vpn_crt_client2_crl[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_extra').value = vpn_crt_client2_extra[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          break;
+        case "3":
+          document.getElementById('edit_vpn_crt_client_ca').value = vpn_crt_client3_ca[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_crt').value = vpn_crt_client3_crt[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_key').value = vpn_crt_client3_key[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_static').value = vpn_crt_client3_static[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_crl').value = vpn_crt_client3_crl[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_extra').value = vpn_crt_client3_extra[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          break;
+        case "4":
+          document.getElementById('edit_vpn_crt_client_ca').value = vpn_crt_client4_ca[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_crt').value = vpn_crt_client4_crt[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_key').value = vpn_crt_client4_key[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_static').value = vpn_crt_client4_static[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_crl').value = vpn_crt_client4_crl[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_extra').value = vpn_crt_client4_extra[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          break;
+        case "5":
+          document.getElementById('edit_vpn_crt_client_ca').value = vpn_crt_client5_ca[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_crt').value = vpn_crt_client5_crt[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_key').value = vpn_crt_client5_key[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_static').value = vpn_crt_client5_static[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_crl').value = vpn_crt_client5_crl[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          document.getElementById('edit_vpn_crt_client_extra').value = vpn_crt_client5_extra[0].replace(/&#10/g, "\n").replace(/&#13/g, "\r");
+          break;
+      }
+    }
+
+    function update_visibility() {
+      auth = document.form.vpn_client_crypt.value;
+      iface = document.form.vpn_client_if_x.value;
+      bridge = getRadioValue(document.form.vpn_client_bridge);
+      nat = getRadioValue(document.form.vpn_client_nat);
+      hmac = document.form.vpn_client_hmac.value;
+      rgw = document.form.vpn_client_rgw.value;
+      tlsremote = getRadioValue(document.form.vpn_client_tlsremote);
+      userauth = (getRadioValue(document.form.vpn_client_userauth) == 1) && (auth == 'tls') ? 1 : 0;
+      useronly = userauth && getRadioValue(document.form.vpn_client_useronly);
+      ncp = document.form.vpn_client_ncp_enable.value;
+      showhide("client_userauth", (auth == "tls"));
+      showhide("client_hmac", (auth == "tls"));
+
+      showhide("client_username", userauth);
+      showhide("client_password", userauth);
+      showhide("client_useronly", userauth);
+
+      showhide("client_ca_warn_text", useronly);
+      showhide("client_bridge", (iface == "tap"));
+
+      showhide("client_bridge_warn_text", (bridge == 0));
+      showhide("client_nat", ((iface == "tun") || (bridge == 0)));
+      showhide("client_nat_warn_text", (((nat == 0) || (auth == "secret" && iface == "tun"))));
+
+      showhide("client_local_1", (iface == "tun" && auth == "secret"));
+      showhide("client_local_2", (iface == "tap" && (bridge == 0 && auth == "secret")));
+
+      showhide("client_adns", (auth == "tls"));
+      showhide("client_reneg", (auth == "tls"));
+      showhide("client_gateway_label", (iface == "tap" && rgw > 0));
+      showhide("vpn_client_gw", (iface == "tap" && rgw > 0));
+      showhide("client_tlsremote", (auth == "tls"));
+
+      showhide("vpn_client_cn", ((auth == "tls") && (tlsremote == 1)));
+      showhide("client_cn_label", ((auth == "tls") && (tlsremote == 1)));
+      showhide("clientlist_Block", (rgw >= 2));
+      showhide("selectiveTable", (rgw >= 2));
+      showhide("client_enforce", (rgw >= 2));
+
+      showhide("client_cipher", (ncp != 2));
+      showhide("ncp_enable", (auth == "tls"));
+      showhide("ncp_ciphers", ((ncp > 0) && (auth == "tls")));
+    }
+
+    function update_rgw_options() {
+      currentpolicy = document.form.vpn_client_rgw.value;
+      iface = document.form.vpn_client_if_x.value;
+
+      if ((iface == "tap") && (currentpolicy >= 2)) {
+        currentpolicy = 1;
+        document.form.vpn_client_rgw.value = 1;
+      }
+
+      free_options(document.form.vpn_client_rgw);
+      add_option(document.form.vpn_client_rgw, "No", "0", (currentpolicy == 0));
+      add_option(document.form.vpn_client_rgw, "All", "1", (currentpolicy == 1));
+      if (iface == "tun") {
+        add_option(document.form.vpn_client_rgw, "Policy Rules", "2", (currentpolicy == 2));
+        add_option(document.form.vpn_client_rgw, "Policy Rules (strict)", "3", (currentpolicy == 3));
+      }
+    }
+
+    function edit_Keys() {
+      cal_panel_block();
+      $("#tlsKey_panel").fadeIn(300);
+    }
+
+    function cancel_Keys() {
+      this.FromObject = "0";
+      $("#tlsKey_panel").fadeOut(300);
+      setTLSTable(openvpn_unit);
+    }
+
+    function save_Keys() {
+      switch (openvpn_unit) {
+        case "1":
+          document.form.vpn_crt_client1_ca.value = document.getElementById('edit_vpn_crt_client_ca').value;
+          document.form.vpn_crt_client1_crt.value = document.getElementById('edit_vpn_crt_client_crt').value;
+          document.form.vpn_crt_client1_key.value = document.getElementById('edit_vpn_crt_client_key').value;
+          document.form.vpn_crt_client1_static.value = document.getElementById('edit_vpn_crt_client_static').value;
+          document.form.vpn_crt_client1_crl.value = document.getElementById('edit_vpn_crt_client_crl').value;
+          document.form.vpn_crt_client1_extra.value = document.getElementById('edit_vpn_crt_client_extra').value;
+          document.form.vpn_crt_client1_ca.disabled = false;
+          document.form.vpn_crt_client1_crt.disabled = false;
+          document.form.vpn_crt_client1_key.disabled = false;
+          document.form.vpn_crt_client1_static.disabled = false;
+          document.form.vpn_crt_client1_crl.disabled = false;
+          document.form.vpn_crt_client1_extra.disabled = false;
+          break;
+        case "2":
+          document.form.vpn_crt_client2_ca.value = document.getElementById('edit_vpn_crt_client_ca').value;
+          document.form.vpn_crt_client2_crt.value = document.getElementById('edit_vpn_crt_client_crt').value;
+          document.form.vpn_crt_client2_key.value = document.getElementById('edit_vpn_crt_client_key').value;
+          document.form.vpn_crt_client2_static.value = document.getElementById('edit_vpn_crt_client_static').value;
+          document.form.vpn_crt_client2_crl.value = document.getElementById('edit_vpn_crt_client_crl').value;
+          document.form.vpn_crt_client2_extra.value = document.getElementById('edit_vpn_crt_client_extra').value;
+          document.form.vpn_crt_client2_ca.disabled = false;
+          document.form.vpn_crt_client2_crt.disabled = false;
+          document.form.vpn_crt_client2_key.disabled = false;
+          document.form.vpn_crt_client2_static.disabled = false;
+          document.form.vpn_crt_client2_crl.disabled = false;
+          document.form.vpn_crt_client2_extra.disabled = false;
+          break;
+        case "3":
+          document.form.vpn_crt_client3_ca.value = document.getElementById('edit_vpn_crt_client_ca').value;
+          document.form.vpn_crt_client3_crt.value = document.getElementById('edit_vpn_crt_client_crt').value;
+          document.form.vpn_crt_client3_key.value = document.getElementById('edit_vpn_crt_client_key').value;
+          document.form.vpn_crt_client3_static.value = document.getElementById('edit_vpn_crt_client_static').value;
+          document.form.vpn_crt_client3_crl.value = document.getElementById('edit_vpn_crt_client_crl').value;
+          document.form.vpn_crt_client3_extra.value = document.getElementById('edit_vpn_crt_client_extra').value;
+          document.form.vpn_crt_client3_ca.disabled = false;
+          document.form.vpn_crt_client3_crt.disabled = false;
+          document.form.vpn_crt_client3_key.disabled = false;
+          document.form.vpn_crt_client3_static.disabled = false;
+          document.form.vpn_crt_client3_crl.disabled = false;
+          document.form.vpn_crt_client3_extra.disabled = false;
+          break;
+        case "4":
+          document.form.vpn_crt_client4_ca.value = document.getElementById('edit_vpn_crt_client_ca').value;
+          document.form.vpn_crt_client4_crt.value = document.getElementById('edit_vpn_crt_client_crt').value;
+          document.form.vpn_crt_client4_key.value = document.getElementById('edit_vpn_crt_client_key').value;
+          document.form.vpn_crt_client4_static.value = document.getElementById('edit_vpn_crt_client_static').value;
+          document.form.vpn_crt_client4_crl.value = document.getElementById('edit_vpn_crt_client_crl').value;
+          document.form.vpn_crt_client4_extra.value = document.getElementById('edit_vpn_crt_client_extra').value;
+          document.form.vpn_crt_client4_ca.disabled = false;
+          document.form.vpn_crt_client4_crt.disabled = false;
+          document.form.vpn_crt_client4_key.disabled = false;
+          document.form.vpn_crt_client4_static.disabled = false;
+          document.form.vpn_crt_client4_crl.disabled = false;
+          document.form.vpn_crt_client4_extra.disabled = false;
+          break;
+        case "5":
+          document.form.vpn_crt_client5_ca.value = document.getElementById('edit_vpn_crt_client_ca').value;
+          document.form.vpn_crt_client5_crt.value = document.getElementById('edit_vpn_crt_client_crt').value;
+          document.form.vpn_crt_client5_key.value = document.getElementById('edit_vpn_crt_client_key').value;
+          document.form.vpn_crt_client5_static.value = document.getElementById('edit_vpn_crt_client_static').value;
+          document.form.vpn_crt_client5_crl.value = document.getElementById('edit_vpn_crt_client_crl').value;
+          document.form.vpn_crt_client5_extra.value = document.getElementById('edit_vpn_crt_client_extra').value;
+          document.form.vpn_crt_client5_ca.disabled = false;
+          document.form.vpn_crt_client5_crt.disabled = false;
+          document.form.vpn_crt_client5_key.disabled = false;
+          document.form.vpn_crt_client5_static.disabled = false;
+          document.form.vpn_crt_client5_crl.disabled = false;
+          document.form.vpn_crt_client5_extra.disabled = false;
+          break;
+      }
+      this.FromObject = "0";
+      $("#tlsKey_panel").fadeOut(300);
+    }
+
+    function cal_panel_block() {
+      var blockmarginLeft;
+      if (window.innerWidth)
+        winWidth = window.innerWidth;
+      else if ((document.body) && (document.body.clientWidth))
+        winWidth = document.body.clientWidth;
+      if (document.documentElement && document.documentElement.clientHeight && document.documentElement.clientWidth) {
+        winWidth = document.documentElement.clientWidth;
+      }
+      if (winWidth > 1050) {
+        winPadding = (winWidth - 1050) / 2;
+        winWidth = 1105;
+        blockmarginLeft = (winWidth * 0.15) + winPadding;
+      } else if (winWidth <= 1050) {
+        blockmarginLeft = (winWidth) * 0.15 + document.body.scrollLeft;
+      }
+      document.getElementById("tlsKey_panel").style.marginLeft = blockmarginLeft + "px";
+    }
+
+    function validForm() {
+      var addrobj = document.form.vpn_client_addr;
+      var alert_str = validator.domainName(addrobj);
+      if ((addrobj.value != "") && (alert_str != "") && (!validator.ipv4_addr(addrobj.value))) {
+        alert("Invalid remote server address!");
+        addrobj.focus();
+        return false;
+      }
+      if (!validator.safeName(document.form.vpn_client_desc) ||
+        !validator.numberRange(document.form.vpn_client_verb, 0, 6) ||
+        !validator.numberRange(document.form.vpn_client_reneg, -1, 2147483647) ||
+        !validator.numberRange(document.form.vpn_client_connretry, -1, 999) ||
+        !validator.numberRange(document.form.vpn_client_port, 1, 65535))
+        return false;
+      return true;
+    }
+
+    function applyRule(manual_switch) {
+      if (!validForm()) {
+        return false;
+      }
+      if (manual_switch == 0) {
+        showLoading();
+        if (client_state != 0) {
+          document.form.action_wait.value = 15;
+          document.form.action_script.value = "restart_vpnclient" + openvpn_unit;
+        }
+      }
+      tmp_value = "";
+      for (var i = 1; i < 6; i++) {
+        if (i == openvpn_unit) {
+          if (getRadioValue(document.form.vpn_client_x_eas) == 1)
+            tmp_value += "" + i + ",";
+        } else {
+          if (document.form.vpn_clientx_eas.value.indexOf('' + (i)) >= 0)
+            tmp_value += "" + i + ","
+        }
+      }
+      document.form.vpn_clientx_eas.value = tmp_value;
+      document.form.vpn_client_if.value = document.form.vpn_client_if_x.value;
+      var rule_num = document.getElementById('clientlist_table').rows.length;
+      var item_num = document.getElementById('clientlist_table').rows[0].cells.length;
+      var tmp_value = "";
+      for (i = 0; i < rule_num; i++) {
+        tmp_value += "<";
+        for (j = 0; j < item_num - 1; j++) {
+          tmp_value += document.getElementById('clientlist_table').rows[i].cells[j].innerHTML;
+          if (j != item_num - 2)
+            tmp_value += ">";
+        }
+      }
+      if (tmp_value == "<" + "<#IPConnection_VSList_Norule#>" || tmp_value == "<")
+        tmp_value = "";
+      if (isSupport("hnd")) {
+        split_clientlist(tmp_value);
+        split_custom2(Base64.encode(document.getElementById("vpn_client_custom_x").value));
+      } else {
+        document.form.vpn_client_clientlist.value = tmp_value;
+        document.form.vpn_client_custom2.value = Base64.encode(document.getElementById("vpn_client_custom_x").value);
+      }
+
+      if (((enforce_ori != getRadioValue(document.form.vpn_client_enforce)) ||
+          (policy_ori != document.form.vpn_client_rgw.value)) &&
+        (client_state == 0) && (manual_switch == 0))
+        document.form.action_script.value += "start_vpnrouting" + openvpn_unit;
+      if ((dnsmode_ori != document.form.vpn_client_adns.value) && (client_state != 0))
+        document.form.action_script.value += ";restart_dnsmasq"
+      document.form.submit();
+    }
+
+    function split_clientlist(clientlist) {
+      var counter = 0;
+      document.form.vpn_client_clientlist.value = clientlist.substring(counter, (counter += 255));
+      document.form.vpn_client_clientlist1.value = clientlist.substring(counter, (counter += 255));
+      document.form.vpn_client_clientlist2.value = clientlist.substring(counter, (counter += 255));
+      document.form.vpn_client_clientlist3.value = clientlist.substring(counter, (counter += 255));
+      document.form.vpn_client_clientlist4.value = clientlist.substring(counter, (counter += 255));
+      document.form.vpn_client_clientlist5.value = clientlist.substring(counter, (counter += 255));
+    }
+
+    function split_custom2(cust2) {
+      var counter = 0;
+      document.form.vpn_client_cust2.value = cust2.substring(counter, (counter += 255));
+      document.form.vpn_client_cust21.value = cust2.substring(counter, (counter += 255));
+      document.form.vpn_client_cust22.value = cust2.substring(counter, (counter += 255));
+    }
+
+    function change_vpn_unit(val) {
+      document.form.action_mode.value = "change_vpn_client_unit";
+      document.form.action = "apply.cgi";
+      document.form.target = "";
+      document.form.submit();
+    }
+    /* password item show or not */
+    function pass_checked(obj) {
+      switchType(obj, document.form.show_pass_1.checked, true);
+    }
+
+    function ImportOvpn() {
+      if (document.getElementById('ovpnfile').value == "") return false;
+      document.getElementById('importOvpnFile').style.display = "none";
+      document.getElementById('loadingicon').style.display = "";
+      document.form.action = "vpnupload.cgi";
+      document.form.enctype = "multipart/form-data";
+      document.form.encoding = "multipart/form-data";
+      document.form.vpn_upload_unit.value = openvpn_unit;
+      document.form.submit();
+      setTimeout("ovpnFileChecker();", 2000);
+    }
+    var vpn_upload_state = "init";
+
+    function ovpnFileChecker() {
+      var missing;
+      document.getElementById("importOvpnFile").innerHTML = "<#Main_alert_proceeding_desc3#>";
+      $.ajax({
+        url: '/ajax_openvpn_server.asp',
+        dataType: 'script',
+        timeout: 1500,
+        error: function(xhr) {
+          setTimeout("ovpnFileChecker();", 1000);
+        },
+        success: function() {
+          document.getElementById('importOvpnFile').style.display = "";
+          document.getElementById('loadingicon').style.display = "none";
+          if (vpn_upload_state == "init") {
+            setTimeout("ovpnFileChecker();", 1000);
+          } else if (vpn_upload_state > 0) {
+            document.getElementById("importOvpnFile").innerHTML = "Warning!";
+            missing = upload_build_report(vpn_upload_state);
+            alert("Warning (" + vpn_upload_state + ") while importing file - you will need to manually provide the " + missing.replace(/,\s*$/, "") + " content, on the keys/certificates page.");
+            setTimeout("location.href='Advanced_OpenVPNClient_Content.asp';", 3000);
+          } else {
+            setTimeout("location.href='Advanced_OpenVPNClient_Content.asp';", 3000);
+          }
+        }
+      });
+    }
+
+    function upload_build_report(ret) {
+      var missing = "";
+      if (ret & 1)
+        missing += "CA, ";
+      if (ret & 2)
+        missing += "Certificate, ";
+      if (ret & 4)
+        missing += "Key, ";
+      if (ret & 8)
+        missing += "Static Key, ";
+      if (ret & 16)
+        missing += "CRL, ";
+      if (ret & 32)
+        missing += "Extra certificate, "
+      return missing;
+    }
+
+    function update_local_ip(object) {
+      if (object.name == "vpn_client_local_1")
+        document.form.vpn_client_local_2.value = object.value;
+      else if (object.name == "vpn_client_local_2")
+        document.form.vpn_client_local_1.value = object.value;
+      document.form.vpn_client_local.value = object.value;
+    }
+
+    function showclientlist() {
+      var clientlist_row = clientlist_array.split('&#60');
+      var code = "";
+      var width = ["24%", "29%", "25%", "10%", "12%"];
+      code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="clientlist_table">';
+      if (clientlist_row.length == 1)
+        code += '<tr><td style="color:#FFCC00;" colspan="6"><#IPConnection_VSList_Norule#></td></tr>';
+      else {
+        for (var i = 1; i < clientlist_row.length; i++) {
+          code += '<tr id="row' + i + '">';
+          var clientlist_col = clientlist_row[i].split('&#62');
+          for (var j = 0; j < clientlist_col.length; j++) {
+            code += '<td width="' + width[j] + '">' + clientlist_col[j] + '</td>';
+          }
+          if (j < 4) {
+            code += '<td width="' + width[j++] + '">VPN</td>';
+          }
+          code += '<td width="' + width[j] + '">';
+          code += '<input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';
+        }
+      }
+      code += '</table>';
+      document.getElementById("clientlist_Block").innerHTML = code;
+    }
+
+    function addRow(obj, head) {
+      if (head == 1)
+        clientlist_array += "&#60" /*&#60*/
+      else
+        clientlist_array += "&#62" /*&#62*/
+      clientlist_array += obj.value;
+      obj.value = "";
+    }
+
+    function addRow_Group(upper) {
+      var rule_num = document.getElementById('clientlist_table').rows.length;
+      var item_num = document.getElementById('clientlist_table').rows[0].cells.length;
+      if (rule_num >= upper) {
+        alert("<#JS_itemlimit1#> " + upper + " <#JS_itemlimit2#>");
+        return false;
+      }
+      if (!validator.safeName(document.form.clientlist_deviceName))
+        return false;
+      if (document.form.clientlist_ipAddr.value == "")
+        document.form.clientlist_ipAddr.value = "0.0.0.0";
+      if (document.form.clientlist_dstipAddr.value == "")
+        document.form.clientlist_dstipAddr.value = "0.0.0.0";
+      if (!validator.ipv4cidr(document.form.clientlist_ipAddr)) {
+        document.form.clientlist_ipAddr.focus();
+        document.form.clientlist_ipAddr.select();
+        return false;
+      }
+      if (!validator.ipv4cidr(document.form.clientlist_dstipAddr)) {
+        document.form.clientlist_dstipAddr.focus();
+        document.form.clientlist_dstipAddr.select();
+        return false;
+      }
+      if (item_num >= 2) {
+        for (i = 0; i < rule_num; i++) {
+          if (document.form.clientlist_ipAddr.value.toLowerCase() == document.getElementById('clientlist_table').rows[i].cells[1].innerHTML.toLowerCase() &&
+            document.form.clientlist_dstipAddr.value.toLowerCase() == document.getElementById('clientlist_table').rows[i].cells[2].innerHTML.toLowerCase()) {
+            //  alert("<#JS_duplicate#>");
+            // Martineau Hack 2 of 5
+            alert("<#290#> " + "<#861#> " + "<#636#>");
+            document.form.clientlist_ipAddr.focus();
+            document.form.clientlist_ipAddr.select();
+            return false;
+          }
+        }
+      }
+      addRow(document.form.clientlist_deviceName, 1);
+      addRow(document.form.clientlist_ipAddr, 0);
+      addRow(document.form.clientlist_dstipAddr, 0);
+      addRow(document.form.clientlist_iface, 0);
+      document.form.clientlist_iface.value = "VPN";
+      showclientlist();
+    }
+    // Martineau Hack 3 of 5 IPSET processing
+      var rule_num = document.getEl    function addRow_Group2(upper) {ementById('clientlist_table').rows.length;
+      var item_num = document.getElementById('clientlist_table').rows[0].cells.length;
+      var dimx = ""
+      if (rule_num >= upper) {
+        alert("<#1784#> " + upper + " <#1785#>");
+        return false;
+      }
+      if (document.form.clientlist_IPSETName.value == "")
+        return false;
+      if (!validator.safeName(document.form.clientlist_IPSETName))
+        return false;
+      if (!validator.ipv4cidr(document.form.clientlist_IPSETipAddr)) {
+        document.form.clientlist_IPSETipAddr.focus();
+        document.form.clientlist_IPSETipAddr.select();
+        return false;
+      }
+      if (document.form.clientlist_DIM1.value == "")
+        document.form.clientlist_DIM1.value = "DST";
+      if (document.form.clientlist_DIM1.value == "DST")
+        dimx = "D";
+      if (document.form.clientlist_DIM1.value == "SRC")
+        dimx = "S";
+      if (document.form.clientlist_DIM2.value != "") {
+        if (document.form.clientlist_DIM2.value == "DST")
+          dimx += "D";
+        if (document.form.clientlist_DIM2.value == "SRC")
+          dimx += "S";
+      }
+      if (document.form.clientlist_DIM3.value != "") {
+        if (document.form.clientlist_DIM3.value == "DST")
+          dimx += "D";
+        if (document.form.clientlist_DIM3.value == "SRC")
+          dimx += "S";
+      }
+      if (dimx == "D")
+        dimx = "DST";
+      if (dimx == "S")
+        dimx = "SRC";
+      addRow(document.form.clientlist_IPSETName, 1);
+      if (document.form.clientlist_IPSETipAddr.value == "")
+        document.form.clientlist_IPSETipAddr.value = "0.0.0.0";
+      addRow(document.form.clientlist_IPSETipAddr, 0);
+      document.form.clientlist_dstipAddr.value = "0.0.0.0"
+      addRow(document.form.clientlist_dstipAddr, 0);
+      document.form.clientlist_IPSETName.value = dimx; // So use the IPSET name field to save the dimension e.g.DDS
+      addRow(document.form.clientlist_IPSETName, 0); // Fortunately addRow() wipes the GUI object for us ;-)
+      document.form.clientlist_DIM1.value = "DST";
+      document.form.clientlist_DIM2.value = "";
+      document.form.clientlist_DIM3.value = "";
+      document.form.clientlist_IPSETName.focus();
+      document.form.clientlist_IPSETName.select();
+      showclientlist();
+    }
+    //-- Martineau Hack ############################################################################
+    function del_Row(r) {
+      var i = r.parentNode.parentNode.rowIndex;
+      document.getElementById('clientlist_table').deleteRow(i);
+      var clientlist_value = "";
+      for (k = 0; k < document.getElementById('clientlist_table').rows.length; k++) {
+        clientlist_value += "&#60";
+        clientlist_value += document.getElementById('clientlist_table').rows[k].cells[0].innerHTML;
+        clientlist_value += "&#62";
+        clientlist_value += document.getElementById('clientlist_table').rows[k].cells[1].innerHTML;
+        clientlist_value += "&#62";
+        clientlist_value += document.getElementById('clientlist_table').rows[k].cells[2].innerHTML;
+        clientlist_value += "&#62";
+        clientlist_value += document.getElementById('clientlist_table').rows[k].cells[3].innerHTML;
+      }
+      clientlist_array = clientlist_value;
+      if (clientlist_array == "")
+        showclientlist();
+    }
+
+    function showLANIPList() {
+      if (clientList.length == 0) {
+        setTimeout(function() {
+          genClientList();
+          showLANIPList();
+        }, 500);
+        return false;
+      }
+
+      var htmlCode = "";
+      for (var i = 0; i < clientList.length; i++) {
+        var clientObj = clientList[clientList[i]];
+        if (clientObj.ip != "offline") {
+          if (clientObj.name.length > 20) clientObj.name = clientObj.name.substring(0, 16) + "..";
+          htmlCode += '<a><div onmouseover="over_var=1;" onmouseout="over_var=0;" onclick="setClientIP(\'';
+          htmlCode += clientObj.name;
+          htmlCode += '\', \'';
+          htmlCode += clientObj.ip;
+          htmlCode += '\');"><strong>';
+          htmlCode += clientObj.name;
+          htmlCode += '</strong> (' + clientObj.ip + ')</div></a><!--[if lte IE 6.5]><iframe class="hackiframe2"></iframe><![endif]-->';
+        }
+      }
+      document.getElementById("ClientList_Block_PC").innerHTML = htmlCode;
+    }
+
+    function setClientIP(_name, _ipaddr) {
+      document.form.clientlist_deviceName.value = _name;
+      document.form.clientlist_ipAddr.value = _ipaddr;
+      hideClients_Block();
+      over_var = 0;
+    }
+    var over_var = 0;
+    var isMenuopen = 0;
+
+    function hideClients_Block() {
+      document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+      document.getElementById('ClientList_Block_PC').style.display = 'none';
+      isMenuopen = 0;
+    }
+
+    function pullLANIPList(obj) {
+      if (isMenuopen == 0) {
+        obj.src = "/images/arrow-top.gif"
+        document.getElementById("ClientList_Block_PC").style.display = 'block';
+        document.form.clientlist_deviceName.focus();
+        isMenuopen = 1;
+      } else
+        hideClients_Block();
+    }
+
+    //-- Martineau Hack 3 of 5 IPSET  processing ###################################################
+    function pullIPSETLANIPList(obj) {
+      if (isMenuopen == 0) {
+        obj.src = "/images/arrow-top.gif"
+        document.getElementById("ClientList_Block_PC").style.display = 'block';
+        document.form.clientlist_IPSETName.focus();
+        isMenuopen = 1;
+      } else
+        hideClients_Block();
+    }
+    <!--===================================Beginning of tls Content===========================================-->
+
+    <!-- Martineau Hack ############################################################################ >
+
+    function getConnStatus() {
+      $.ajax({
+        url: 'ajax_vpn_status.asp',
+        dataType: 'script',
+        error: function(xhr) {
+          getConnStatus();
+        },
+        success: function(response) {
+          showConnStatus();
+        }
+      });
+    }
+
+    function showConnStatus() {
+      switch (openvpn_unit) {
+        case "1":
+          client_state = vpnc_state_t1;
+          client_errno = vpnc_errno_t1;
+          localip = vpn_client1_ip;
+          remoteip = vpn_client1_rip;
+          break;
+        case "2":
+          client_state = vpnc_state_t2;
+          client_errno = vpnc_errno_t2;
+          localip = vpn_client2_ip;
+          remoteip = vpn_client2_rip;
+          break;
+        case "3":
+          client_state = vpnc_state_t3;
+          client_errno = vpnc_errno_t3;
+          localip = vpn_client3_ip;
+          remoteip = vpn_client3_rip;
+          break;
+        case "4":
+          client_state = vpnc_state_t4;
+          client_errno = vpnc_errno_t4;
+          localip = vpn_client4_ip;
+          remoteip = vpn_client4_rip;
+          break;
+        case "5":
+          client_state = vpnc_state_t5;
+          client_errno = vpnc_errno_t5;
+          localip = vpn_client5_ip;
+          remoteip = vpn_client5_rip;
+          break;
+      }
+      switch (client_state) {
+        case "1": // Connecting
+          code = "Connecting...";
+          setTimeout("getConnStatus()", 2000);
+          break;
+        case "2": // Connected
+          code = "Connected (Local: " + localip + " - Public: " + remoteip + ") <a href='#' style='padding-left:12px;text-decoration:underline;' onclick='refreshVPNIP();'>Refresh</a>";
+          break;
+        case "-1":
+          switch (client_errno) {
+            case "1":
+              code = "Error - IP conflict!";
+              break;
+            case "2":
+              code = "Error - Routing conflict!";
+              break;
+            case "4":
+              code = "Error - SSL/TLS issue!";
+              break;
+            case "5":
+              code = "Error - DH issue!";
+              break;
+            case "6":
+              code = "Error - Authentication failure!";
+              break;
+            default:
+              code = "Error - check configuration!";
+              break;
+          }
+          setTimeout("getConnStatus()", 2000);
+          break;
+        default:
+          code = "";
+          break;
+      }
+      document.getElementById("vpn_state_msg").innerHTML = "<span>" + code + "</span>";
+    }
+
+    function defaultSettings() {
+      if (confirm("WARNING: This will reset this OpenVPN client to factory default settings!\n\nKeys and certificates associated to this instance will also be DELETED!\n\nProceed?")) {
+        document.form.action_script.value = "stop_vpnclient" + openvpn_unit + ";clearvpnclient" + openvpn_unit;
+        document.form.action_wait.value = 15;
+        showLoading();
+        document.form.submit();
+      } else {
+        return false;
+      }
+    }
+
+    function refreshVPNIP() {
+      httpApi.nvramSet({
+        "action_mode": "refresh_vpn_ip"
+      }, function() {
+        setTimeout("getConnStatus()", 2000);
+      });
+    }
+  </script>
 </head>
 
 <body onload="initial();" onunLoad="return unload_body();">
@@ -966,13 +1042,13 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
       </tr>
       <tr>
         <div style="margin-left:30px; margin-top:10px;">
-          <p>
-            <#2701#> <span style="color:#FFCC00;">----- BEGIN xxx ----- </span>/<span style="color:#FFCC00;"> ----- END xxx -----</span>
-              <#2702#>
-                <p>Limit: 7999 characters per field
+          <p><#vpn_openvpn_KC_Edit#> <span style="color:#FFCC00;">----- BEGIN xxx ----- </span>/<span style="color:#FFCC00;"> ----- END xxx -----</span>
+          <p>Limit: 7999 characters per field
         </div>
         <div style="margin:5px;*margin-left:-5px;"><img style="width: 730px; height: 2px;" src="/images/New_ui/export/line_export.png"></div>
       </tr>
+      <!--===================================Beginning of tls Content===========================================-->
+
       <tr>
         <td valign="top">
           <table width="700px" border="0" cellpadding="4" cellspacing="0">
@@ -1022,17 +1098,23 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
             </tbody>
           </table>
           <div style="margin-top:5px;width:100%;text-align:center;">
-            <input class="button_gen" type="button" onclick="cancel_Keys();" value="<#134#>">
-            <input class="button_gen" type="button" onclick="save_Keys();" value="<#1211#>">
+            <input class="button_gen" type="button" onclick="cancel_Keys();" value="<#CTL_Cancel#>">
+            <input class="button_gen" type="button" onclick="save_Keys();" value="<#CTL_onlysave#>">
           </div>
         </td>
       </tr>
+  <!--===================================Ending of tls Content===========================================-->
+
     </table>
   </div>
+
   <div id="TopBanner"></div>
+
   <div id="Loading" class="popup_bg"></div>
+
   <iframe name="hidden_frame" id="hidden_frame" src="" width="0" height="0" frameborder="0"></iframe>
-  <form method="post" name="form" id="ruleForm" action="/start_apply.htm" target="hidden_frame">
+
+    <form method="post" name="form" id="ruleForm" action="/start_apply.htm" target="hidden_frame">
     <input type="hidden" name="current_page" value="Advanced_OpenVPNClient_Content.asp">
     <input type="hidden" name="next_page" value="Advanced_OpenVPNClient_Content.asp">
     <input type="hidden" name="modified" value="0">
@@ -1096,6 +1178,8 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
         </td>
         <td valign="top">
           <div id="tabMenu" class="submenuBlock"></div>
+
+ <!--===================================Beginning of Main Content===========================================-->
           <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
             <tr>
               <td valign="top">
@@ -1156,9 +1240,9 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                             <th>Automatic start at boot time</th>
                             <td>
                               <input type="radio" name="vpn_client_x_eas" class="input" value="1">
-                              <#124#>
+                              <#checkbox_Yes#>
                                 <input type="radio" name="vpn_client_x_eas" class="input" value="0">
-                                <#123#>
+                                <#checkbox_No#>
                             </td>
                           </tr>
                           <tr>
@@ -1169,14 +1253,14 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                           </tr>
                           <tr>
                             <th>
-                              <#2719#>
+                              <#vpn_openvpnc_importovpn#>
                             </th>
                             <td>
                               <input id="ovpnfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
-                              <input id="" class="button_gen" onclick="ImportOvpn();" type="button" value="<#1220#>" />
+                              <input id="" class="button_gen" onclick="ImportOvpn();" type="button" value="<#CTL_upload#>" />
                               <img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
                               <span id="importOvpnFile" style="display:none;">
-                                <#241#>
+                                <#Main_alert_proceeding_desc3#>
                               </span>
                             </td>
                           </tr>
@@ -1189,7 +1273,7 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                           </thead>
                           <tr>
                             <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,4);">
-                                <#2698#>
+                                <#vpn_openvpn_interface#>
                               </a></th>
                             <td>
                               <select name="vpn_client_if_x" onclick="update_rgw_options();update_visibility();" class="input_option">
@@ -1198,12 +1282,12 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                           </tr>
                           <tr>
                             <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,5);">
-                                <#1731#>
+                                <#IPConnection_VServerProto_itemname#>
                               </a></th>
                             <td>
                               <select name="vpn_client_proto" class="input_option">
-                                <option value="tcp-client" <% nvram_match("vpn_client_proto","tcp-client","selected"); %> >TCP</option>
-                                <option value="udp" <% nvram_match("vpn_client_proto","udp","selected"); %> >UDP</option>
+                                <option value="tcp-client" <% nvram_match("vpn_client_proto","tcp-client","selected"); %>>TCP</option>
+                                <option value="udp" <% nvram_match("vpn_client_proto","udp","selected"); %>>UDP</option>
                               </select>
                             </td>
                           </tr>
@@ -1211,34 +1295,38 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                             <th>Server Address and Port</th>
                             <td>
                               <label>Address:</label><input type="text" maxlength="128" class="input_25_table" name="vpn_client_addr" value="<% nvram_get(" vpn_client_addr"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
-                              <label style="margin-left: 4em;">Port:</label><input type="text" maxlength="5" class="input_6_table" name="vpn_client_port" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get(" vpn_client_port"); %>"
-                              >
+                              <label style="margin-left: 4em;">Port:</label><input type="text" maxlength="5" class="input_6_table" name="vpn_client_port" onKeyPress="return validator.isNumber(this,event);"
+                                value="<% nvram_get(" vpn_client_port"); %>">
                             </td>
                           </tr>
                           <tr id="client_adns">
                             <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,24);">Accept DNS Configuration</a></th>
                             <td>
                               <select name="vpn_client_adns" class="input_option">
-                                <option value="0" <% nvram_match("vpn_client_adns","0","selected"); %> >Disabled</option>
-                                <option value="1" <% nvram_match("vpn_client_adns","1","selected"); %> >Relaxed</option>
-                                <option value="2" <% nvram_match("vpn_client_adns","2","selected"); %> >Strict</option>
-                                <option value="3" <% nvram_match("vpn_client_adns","3","selected"); %> >Exclusive</option>
+                                <option value="0" <% nvram_match("vpn_client_adns","0","selected"); %>>Disabled</option>
+                                <option value="1" <% nvram_match("vpn_client_adns","1","selected"); %>>Relaxed</option>
+                                <option value="2" <% nvram_match("vpn_client_adns","2","selected"); %>>Strict</option>
+                                <option value="3" <% nvram_match("vpn_client_adns","3","selected"); %>>Exclusive</option>
                               </select>
                             </td>
                           </tr>
                           <tr id="client_bridge">
                             <th>Server is on the same subnet</th>
                             <td>
-                              <input type="radio" name="vpn_client_bridge" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_bridge" , "1" , "checked" ); %>><#124#>
-                                <input type="radio" name="vpn_client_bridge" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_bridge" , "0" , "checked" ); %>><#123#>
+                              <input type="radio" name="vpn_client_bridge" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_bridge" , "1" , "checked" ); %>>
+                              <#checkbox_Yes#>
+                                <input type="radio" name="vpn_client_bridge" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_bridge" , "0" , "checked" ); %>>
+                                <#checkbox_No#>
                                   <span id="client_bridge_warn_text">Warning: Cannot bridge distinct subnets. Will default to routed mode.</span>
                             </td>
                           </tr>
                           <tr id="client_nat">
                             <th>Create NAT on tunnel</th>
                             <td>
-                              <input type="radio" name="vpn_client_nat" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat" , "1" , "checked" ); %>><#124#>
-                                <input type="radio" name="vpn_client_nat" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat" , "0" , "checked" ); %>><#123#>
+                              <input type="radio" name="vpn_client_nat" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat" , "1" , "checked" ); %>>
+                              <#checkbox_Yes#>
+                                <input type="radio" name="vpn_client_nat" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat" , "0" , "checked" ); %>>
+                                <#checkbox_No#>
                                   <span id="client_nat_warn_text">Routes must be configured manually.</span>
                             </td>
                           </tr>
@@ -1265,20 +1353,22 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                           </thead>
                           <tr>
                             <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,7);">
-                                <#2675#>
+                                <#vpn_openvpn_Auth#>
                               </a></th>
                             <td>
                               <select name="vpn_client_crypt" class="input_option" onclick="update_visibility();">
-                                <option value="tls" <% nvram_match("vpn_client_crypt","tls","selected"); %> >TLS</option>
-                                <option value="secret" <% nvram_match("vpn_client_crypt","secret","selected"); %> >Static Key</option>
+                                <option value="tls" <% nvram_match("vpn_client_crypt","tls","selected"); %>>TLS</option>
+                                <option value="secret" <% nvram_match("vpn_client_crypt","secret","selected"); %>>Static Key</option>
                               </select>
                             </td>
                           </tr>
                           <tr id="client_userauth">
                             <th>Username/Password Authentication</th>
                             <td>
-                              <input type="radio" name="vpn_client_userauth" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_userauth" , "1" , "checked" ); %>><#124#>
-                                <input type="radio" name="vpn_client_userauth" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_userauth" , "0" , "checked" ); %>><#123#>
+                              <input type="radio" name="vpn_client_userauth" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_userauth" , "1" , "checked" ); %>>
+                              <#checkbox_Yes#>
+                                <input type="radio" name="vpn_client_userauth" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_userauth" , "0" , "checked" ); %>>
+                                <#checkbox_No#>
                             </td>
                           </tr>
                           <tr id="client_username">
@@ -1292,16 +1382,18 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                             <td>
                               <input type="password" autocomplete="new-password" maxlength="255" class="input_25_table" name="vpn_client_password" value="<% nvram_clean_get(" vpn_client_password"); %>">
                               <input type="checkbox" name="show_pass_1" onclick="pass_checked(document.form.vpn_client_password)">
-                              <#453#>
+                              <#QIS_show_pass#>
                             </td>
                           </tr>
                           <tr id="client_useronly">
                             <th>
-                              <#2676#>
+                              <#vpn_openvpn_AuthOnly#>
                             </th>
                             <td>
-                              <input type="radio" name="vpn_client_useronly" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_useronly" , "1" , "checked" ); %>><#124#>
-                                <input type="radio" name="vpn_client_useronly" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_useronly" , "0" , "checked" ); %>><#123#>
+                              <input type="radio" name="vpn_client_useronly" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_useronly" , "1" , "checked" ); %>>
+                              <#checkbox_Yes#>
+                                <input type="radio" name="vpn_client_useronly" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_useronly" , "0" , "checked" ); %>>
+                                <#checkbox_No#>
                                   <span id="client_ca_warn_text">Warning: You must define a Certificate Authority.</span>
                             </td>
                           </tr>
@@ -1322,9 +1414,9 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                       <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,16);">Cipher Negotiation</a></th>
                       <td>
                         <select name="vpn_client_ncp_enable" onclick="update_visibility();" class="input_option">
-                          <option value="0" <% nvram_match("vpn_client_ncp_enable","0","selected"); %> >Disabled</option>
-                          <option value="1" <% nvram_match("vpn_client_ncp_enable","1","selected"); %> >Enable (with fallback)</option>
-                          <option value="2" <% nvram_match("vpn_client_ncp_enable","2","selected"); %> >Enable</option>
+                          <option value="0" <% nvram_match("vpn_client_ncp_enable","0","selected"); %>>Disabled</option>
+                          <option value="1" <% nvram_match("vpn_client_ncp_enable","1","selected"); %>>Enable (with fallback)</option>
+                          <option value="2" <% nvram_match("vpn_client_ncp_enable","2","selected"); %>>Enable</option>
                         </select>
                       </td>
                     </tr>
@@ -1348,11 +1440,11 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                       <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,10);">TLS control channel security<br><i>(tls-auth / tls-crypt)</i></a></th>
                       <td>
                         <select name="vpn_client_hmac" class="input_option">
-                          <option value="-1" <% nvram_match("vpn_client_hmac","-1","selected"); %> >Disabled</option>
-                          <option value="2" <% nvram_match("vpn_client_hmac","2","selected"); %> >Bi-directional Auth</option>
-                          <option value="0" <% nvram_match("vpn_client_hmac","0","selected"); %> >Incoming Auth (0)</option>
-                          <option value="1" <% nvram_match("vpn_client_hmac","1","selected"); %> >Outgoing Auth (1)</option>
-                          <option value="3" <% nvram_match("vpn_client_hmac","3","selected"); %> >Encrypt Channel</option>
+                          <option value="-1" <% nvram_match("vpn_client_hmac","-1","selected"); %>>Disabled</option>
+                          <option value="2" <% nvram_match("vpn_client_hmac","2","selected"); %>>Bi-directional Auth</option>
+                          <option value="0" <% nvram_match("vpn_client_hmac","0","selected"); %>>Incoming Auth (0)</option>
+                          <option value="1" <% nvram_match("vpn_client_hmac","1","selected"); %>>Outgoing Auth (1)</option>
+                          <option value="3" <% nvram_match("vpn_client_hmac","3","selected"); %>>Encrypt Channel</option>
                         </select>
                       </td>
                     </tr>
@@ -1381,15 +1473,15 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                   </tr>
                   <tr>
                     <th>
-                      <#2681#>
+                      <#vpn_openvpn_Compression#>
                     </th>
                     <td>
                       <select name="vpn_client_comp" class="input_option">
-                        <option value="-1" <% nvram_match("vpn_client_comp","-1","selected"); %> >Disabled</option>
-                        <option value="no" <% nvram_match("vpn_client_comp","no","selected"); %> >None</option>
-                        <option value="yes" <% nvram_match("vpn_client_comp","yes","selected"); %> >LZO</option>
-                        <option value="adaptive" <% nvram_match("vpn_client_comp","adaptive","selected"); %> > LZO Adaptive</option>
-                        <option value="lz4" <% nvram_match("vpn_client_comp","lz4","selected"); %> >LZ4</option>
+                        <option value="-1" <% nvram_match("vpn_client_comp","-1","selected"); %>>Disabled</option>
+                        <option value="no" <% nvram_match("vpn_client_comp","no","selected"); %>>None</option>
+                        <option value="yes" <% nvram_match("vpn_client_comp","yes","selected"); %>>LZO</option>
+                        <option value="adaptive" <% nvram_match("vpn_client_comp","adaptive","selected"); %>> LZO Adaptive</option>
+                        <option value="lz4" <% nvram_match("vpn_client_comp","lz4","selected"); %>>LZ4</option>
                       </select>
                     </td>
                   </tr>
@@ -1408,8 +1500,10 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                   <tr id="client_tlsremote">
                     <th>Verify Server Certificate</th>
                     <td>
-                      <input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="1" <% nvram_match_x("", "vpn_client_tlsremote" , "1" , "checked" ); %>><#124#>
-                        <input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="0" <% nvram_match_x("", "vpn_client_tlsremote" , "0" , "checked" ); %>><#123#>
+                      <input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="1" <% nvram_match_x("", "vpn_client_tlsremote" , "1" , "checked" ); %>>
+                      <#checkbox_Yes#>
+                        <input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="0" <% nvram_match_x("", "vpn_client_tlsremote" , "0" , "checked" ); %>>
+                        <#checkbox_No#>
                           <label style="padding-left:3em;" id="client_cn_label">Common name:</label><input type="text" maxlength="64" class="input_25_table" id="vpn_client_cn" name="vpn_client_cn" value="<% nvram_get(" vpn_client_cn"); %>">
                     </td>
                   </tr>
@@ -1425,8 +1519,10 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                   <tr id="client_enforce">
                     <th>Block routed clients if tunnel goes down</th>
                     <td>
-                      <input type="radio" name="vpn_client_enforce" class="input" value="1" <% nvram_match_x("", "vpn_client_enforce" , "1" , "checked" ); %>><#124#>
-                        <input type="radio" name="vpn_client_enforce" class="input" value="0" <% nvram_match_x("", "vpn_client_enforce" , "0" , "checked" ); %>><#123#>
+                      <input type="radio" name="vpn_client_enforce" class="input" value="1" <% nvram_match_x("", "vpn_client_enforce" , "1" , "checked" ); %>>
+                      <#checkbox_Yes#>
+                        <input type="radio" name="vpn_client_enforce" class="input" value="0" <% nvram_match_x("", "vpn_client_enforce" , "0" , "checked" ); %>>
+                        <#checkbox_No#>
                     </td>
                   </tr>
                 </table>
@@ -1442,13 +1538,13 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                   </thead>
                   <tr>
                     <th>
-                      <#1707#>
+                      <#IPConnection_autofwDesc_itemname#>
                     </th>
                     <th>Source IP</th>
                     <th>Destination IP</th>
                     <th>Iface</th>
                     <th>
-                      <#1893#>
+                      <#list_add_delete#>
                     </th>
                   </tr>
                   <tr>
@@ -1457,7 +1553,7 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                     </td>
                     <td width="29%">
                       <input type="text" class="input_18_table" maxlength="18" name="clientlist_ipAddr">
-                      <img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#2286#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
+                      <img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_device_name#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
                       <div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
                     </td>
                     <td width="25%">
@@ -1477,7 +1573,9 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                   </tr>
                 </table>
                 <div id="clientlist_Block"></div>
+
                 <table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
+
                   </thead>
                   <!-- Martineau Hack 5 of 5 #####################################################################-->
                   <tr>
@@ -1496,7 +1594,8 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                     </td>
                     <td width="29%">
                       <input type="text" class="input_18_table" maxlength="18" name="clientlist_IPSETipAddr">
-                      <img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullIPSETLANIPList(this);" title="<#2286#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
+                      <img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullIPSETLANIPList(this);" title="<#2286#>" onmouseover="over_var=1;"
+                        onmouseout="over_var=0;">
                       <div id="ClientList_IPSETBlock_PC" class="ClientList_IPSETBlock_PC"></div>
                     </td>
                     <td width="12%">
@@ -1532,7 +1631,7 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                         <tr>
                           <!-- Martineau Hack ############################################################################-->
                           <td>
-                            <#2683#>
+                            <#vpn_openvpn_CustomConf#>
                           </td>
                         </tr>
                       </thead>
@@ -1543,8 +1642,8 @@ httpApi.nvramSet({"action_mode": "refresh_vpn_ip"}, function(){setTimeout("getCo
                     </tr>
                 </table>
                 <div class="apply_gen">
-                  <input type="button" id="restoreButton" class="button_gen" value="<#2305#>" onclick="defaultSettings();">
-                  <input name="button" type="button" class="button_gen" onclick="applyRule(0);" value="<#132#>" />
+                  <input type="button" id="restoreButton" class="button_gen" value="<#Setting_factorydefault_value#>" onclick="defaultSettings();">
+                  <input name="button" type="button" class="button_gen" onclick="applyRule(0);" value="<#CTL_apply#>" />
                 </div>
               </td>
             </tr>

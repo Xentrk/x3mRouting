@@ -1,0 +1,5 @@
+# Ensure all SH/MD/TXT files use LF.
+*.yml	eol=lf
+*.sh	eol=lf
+*.md	eol=lf
+*.txt	eol=lf

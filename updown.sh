@@ -1,4 +1,5 @@
 #!/bin/sh
+# VERSION=1.0.0
 filedir=/etc/openvpn/dns
 filebase="$(echo "$filedir"/"$dev" | sed 's/\(tun\|tap\)1/client/;s/\(tun\|tap\)2/server/')"
 conffile="$filebase"\.conf

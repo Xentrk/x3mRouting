@@ -1,7 +1,7 @@
 #!/bin/sh
 ####################################################################################################
 # Script: load_MANUAL_ipset_iface.sh
-# Version 1.0
+# VERSION=1.0.0
 # Author: Xentrk
 # Date: 6-April-2019
 #

@@ -1,7 +1,7 @@
 #!/bin/sh
 ####################################################################################################
 # Script: load_DNSMASQ_ipset.sh
-# Version 1.0
+# VERSION=1.0.0
 # Author: Martineau, Xentrk
 # Date: 15-March-2019
 #

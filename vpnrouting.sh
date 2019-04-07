@@ -1,5 +1,5 @@
 #!/bin/sh
-
+# VERSION=1.0.0
 PARAM=$*
 if [ "$PARAM" = "" ]; then
   # Add paramaters equivalent to those passed for up command

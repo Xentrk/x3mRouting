@@ -1,7 +1,7 @@
 #!/bin/sh
 ####################################################################################################
 # Script: load_ASN_ipsets_iface.sh
-# Version 1.0
+# VERSION=1.0.0
 # Author: Xentrk
 # Date: 15-March-2019
 #

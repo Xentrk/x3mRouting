@@ -16,28 +16,22 @@ my_logger(){
 
 
 create_client_list(){
-  logger "At create_client_list. Value of VPN_UNIT is: $VPN_UNIT" 
-############################################################################### Xentrk hack
-#  comment out calling the function below for now!!!!!!!!!! <<<================================3
 	OLDIFS=$IFS
 	IFS="<"
 
 	for ENTRY in $VPN_IP_LIST
 	do
-   logger "Value of ENTRY is: $ENTRY" 
-		if [ "$ENTRY" = "" ]
+   	if [ "$ENTRY" = "" ]
 		then
 			continue
 		fi
 		TARGET_ROUTE=$(echo $ENTRY | cut -d ">" -f 4)
-######################################################## Xentrk Hack 
-    logger "Value of TARGET_ROUTE is: $TARGET_ROUTE"
+################################ Bypass DummyVPN Entry
    	DESC=$(echo $ENTRY | cut -d ">" -f 1)
-    logger "Value of DESC is: $DESC"
     if [ "$(echo "$DESC" | cut -c1-8)" = "DummyVPN" ]; then
         continue
     fi		
-###########################################################    
+################################ End of hack   
 		if [ "$TARGET_ROUTE" = "WAN" ]
 		then
 			TARGET_LOOKUP="main"
@@ -51,9 +45,6 @@ create_client_list(){
 			TARGET_NAME="VPN client "$VPN_UNIT
 		fi
 		VPN_IP=$(echo $ENTRY | cut -d ">" -f 2)
-################### debug
-    logger "Value of VPN_IP is: $VPN_IP" 
-################### end debug		
 		if [ "$VPN_IP" != "0.0.0.0" ]
 		then
 			SRCC="from"
@@ -62,10 +53,7 @@ create_client_list(){
 			SRCC=""
 			SRCA=""
 		fi
-		DST_IP=$(echo $ENTRY | cut -d ">" -f 3)
-################### debug		
-     logger "Value of DST_IP is: $DST_IP" 
-################### end debug		
+		DST_IP=$(echo $ENTRY | cut -d ">" -f 3)	
 		if [ "$DST_IP" != "0.0.0.0" ]
 		then
 			DSTC="to"
@@ -74,35 +62,29 @@ create_client_list(){
 			DSTC=""
 			DSTA=""
 		fi
-################### debug
-    logger "Value of SRCC is $SRCC"  
-    logger "Value of DSTC is $DSTC"
-################### end debug	
 		if [ "$SRCC" != "" -o "$DSTC" != "" ]
 		then
-################### debug   
-    logger "Do I get here?"
-################### end debug
 #################################################################
 ## prevent creating ip rule for ipset lists here
 ## Example Value of ENTRY is: CBS>192.168.4.1>0.0.0.0>DD
 #################################################################
         if [ "$TARGET_ROUTE" = "VPN" ] ||  "$TARGET_ROUTE" = "WAN" ]; then
-            logger "hit a valid IPSET list condition"
 ####################################################################
 			      ip rule add $SRCC $SRCA $DSTC $DSTA table $TARGET_LOOKUP priority $RULE_PRIO
-            logger "ip rule add $SRCC $SRCA $DSTC $DSTA table $TARGET_LOOKUP priority $RULE_PRIO"
+            logger -st "($(basename $0))" $$ "ip rule add $SRCC $SRCA $DSTC $DSTA table $TARGET_LOOKUP priority $RULE_PRIO"
 			      my_logger "Adding route for $VPN_IP to $DST_IP through $TARGET_NAME"
+
         fi 
+############################################        
 		fi
    
-   ########################################################################
+
+################################## Martineau Hack process IPSET Lists
 if [ ! -z "$(echo $TARGET_ROUTE | grep -oE "SRC|DST|^D|^S")" ]; then
 
  IPSET_NAME=$DESC
 
  # Allow for 2-dimension and 3-dimension IPSETs.....
- logger "The value of VAR is $TARGET_ROUTE"
  case "$TARGET_ROUTE" in         # TBA review static 'case' with a regexp? ;-)
     SRC|DST) DIM=$(echo $TARGET_ROUTE | tr 'A-Z' 'a-z');;
     *) case $TARGET_ROUTE in
@@ -117,7 +99,8 @@ if [ ! -z "$(echo $TARGET_ROUTE | grep -oE "SRC|DST|^D|^S")" ]; then
        esac
  esac
 
-###########################################################################################
+############################################### End of Hack
+######################### Xentrk Hack to validate SRC IP  Address for IPSET List
  # If the Source IP is a real LAN IP then include it in the IPSET fwmark rule
 
 LAN_IP=$(nvram get lan_ipaddr)
@@ -149,33 +132,29 @@ if [ ! -z $(echo $DEST_IP | grep -Eo '(([0-9]{1,3})\.){3}([0-9]{1,3}){1}' | grep
 
 fi
 
- # Validate that $IPSET_NAME does physically exist etc.
+ ## Xentrk Hack to Validate that $IPSET_NAME does physically exist etc.
     if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$IPSET_NAME" ]; then
-        logger "IPSET list name $IPSET_NAME does not exist. $IPSET_NAME routing not created."
+        logger -st "($(basename $0))" $$ "IPSET list name $IPSET_NAME does not exist. $IPSET_NAME routing iptable rule not created."
     else
         iptables -t mangle -D PREROUTING $SRC -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
         iptables -t mangle -A PREROUTING $SRC -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
     fi
  
 fi
-#########################################################################################################################################
+######################################################################## End of IPSET Mods
 
 	done
 	IFS=$OLDIFS
 ########################################################################################## Modified Martineau Hack 1 of 5
 # Xentrk: modified prior and updated to use fwmark/bitmask format
-logger -st "($(basename $0))" $$  "x3mRouting Checking Custom fwmark/bitmask"
+logger -st "($(basename $0))" $$ "x3mRouting Checking Custom fwmark/bitmask"
 
  if [ "$(ip rule | grep -c "from all fwmark 0x8000/0x8000 lookup main")" -eq "0" ]; then
   ip rule add from 0/0 fwmark 0x8000/0x8000 table 254 prio 9990
   logger -st "($(basename $0))" $$  "x3mRouting Adding WAN0 RPDB fwmark rule 0x8000/0x8000 prio 9990"
  fi
- 
- #10000,10100,10300,10500,10700 and 10900
-# if [ $(ip rule | grep -c "from all fwmark 0x${VPN_UNIT}000") -eq 0 ]; then
-#  ip rule add from 0/0 fwmark "0x${VPN_UNIT}000/0x${VPN_UNIT}000" table "11${VPN_UNIT}" prio "10${((VPN_UNIT*2-1))}00"
-#  logger -st "($(basename $0))" $$  "x3mRouting Adding VPN${VPN_UNIT} RPDB fwmark rule 0x${VPN_UNIT}000/0x${VPN_UNIT}000 prio 10${((VPN_UNIT*2-1))}00"
-# fi
+
+############################# Create ip rule fwmark/bitmask for OpenVPN Client Table 
   case "${VPN_UNIT}" in
             1)  FWMARK=0x1000/0x1000; PRIO=9995 ;;
             2)  FWMARK=0x2000/0x2000; PRIO=9994 ;;
@@ -189,36 +168,26 @@ logger -st "($(basename $0))" $$  "x3mRouting Checking Custom fwmark/bitmask"
   logger -st "($(basename $0))" $$  "x3mRouting Adding OVPNC${VPN_UNIT} RPDB fwmark rule $FWMARK prio $PRIO"
  fi
 ################################################################################################################
-#create_destination_routes
 }
 
 purge_client_list(){
-logger "At purge_client_list function"
 	IP_LIST=$(ip rule show | cut -d ":" -f 1)
 	for PRIO in $IP_LIST
 	do
- 	    logger "prio value is ==> $PRIO"
- 		  logger "start_prio value is ==> $START_PRIO"
-    	logger "end_prio value is ==> $END_PRIO"
 		if [ $PRIO -ge $START_PRIO -a $PRIO -le $END_PRIO ]
 		then
-       logger "passed check for PRIOR"
-       logger "value of parms are: $PRIO $START_PRIO $END_PRIO"
 ########################################################################################## Martineau Hack 2 of 5
       if [ "$PRIO" -eq "9990" ]; then
-        logger "Xentrk skipping deletion of rule $PRIO unoffically reserved for WAN fwmark 0x8000/0x8000"
-#      elif [ "$PRIO" -le "9000" -a "$PRIO" -lt "9990" ]; then
-#        logger "Xentrk skipping deletion of rule $PRIO to route website to WAN interface"
+        logger -t "($(basename "$0"))" $$ "Skipping deletion of rule $PRIO unoffically reserved for WAN fwmark 0x8000/0x8000"
       else
 #################################################################################################################
-#==> WAN getting deleted here??
-			ip rule del prio $PRIO
-			logger "Removing rule $PRIO from routing policy"
+			  ip rule del prio $PRIO
+			  logger -t "($(basename "$0"))" $$ "Removing rule $PRIO from routing policy"
 		  fi
-     fi
-############### Xentrk Hack     
+     fi  
 	done
- 
+
+####################### Xentrk Hack remove iptable rules for IPSET lists 
   case "$VPN_UNIT" in
             1)  FWMARK=0x1000 ;; # table 111
             2)  FWMARK=0x2000 ;; # table 112
@@ -227,15 +196,16 @@ logger "At purge_client_list function"
             5)  FWMARK=0x3000 ;; # table 115
         esac
 
-        IPSET_NAME=$DESC
-
-  iptables -nvL PREROUTING -t mangle --line | grep "$FWMARK" | cut -f 1 -d " " |  sort -r | while read -r CHAIN_NUM 
+   iptables -nvL PREROUTING -t mangle --line | grep "match-set" | grep "$FWMARK" | awk '{print $1}' | sort -r | while read -r CHAIN_NUM 
       do
-          logger "Deleting PREROUTING CHAIN=> $CHAIN_NUM for IPSET List $IPSET_NAME" 
+          IPSET_NAME=$(iptables -nvL PREROUTING -t mangle --line | grep "match-set" | awk -v numb="$CHAIN_NUM" '$1 == numb {print $12}')
+          logger -t "($(basename "$0"))" $$ "Deleting PREROUTING CHAIN $CHAIN_NUM for IPSET List $IPSET_NAME"
           iptables -t mangle -D PREROUTING "$CHAIN_NUM"
       done 
-      
+
+###################### Xentrk Hack remove fwmark/bitmask for OpenVPN Client 
   ip rule del fwmark "$FWMARK/$FWMARK" 2> /dev/null
+############################################# Xentrk Hack 
 }
 
 run_custom_script(){
@@ -272,21 +242,19 @@ init_table(){
 }
 
 # Begin
-logger "..at Begin of custom /jffs/scripts/vpnrouting.sh"
-
 if [ "$dev" == "tun11" ]
 then
 	VPN_IP_LIST=$(nvram get vpn_client1_clientlist)$(nvram get vpn_client1_clientlist1)$(nvram get vpn_client1_clientlist2)$(nvram get vpn_client1_clientlist3)$(nvram get vpn_client1_clientlist4)$(nvram get vpn_client1_clientlist5)
- 	VPN_IP_LISTO=$(nvram get vpn_client1_clientlist)$(nvram get vpn_client1_clientlist1)$(nvram get vpn_client1_clientlist2)$(nvram get vpn_client1_clientlist3)$(nvram get vpn_client1_clientlist4)$(nvram get vpn_client1_clientlist5)
 	VPN_REDIR=$(nvram get vpn_client1_rgw)
 	VPN_FORCE=$(nvram get vpn_client1_enforce)
 	VPN_UNIT=1
 	VPN_LOGGING=$(nvram get vpn_client1_verb)
- ## Xentrk: update vpnrouting.sh to use /jffs/configs/ovpnc1.nvram 
+ #### Xentrk: update vpnrouting.sh to use /jffs/configs/ovpnc1.nvram 
   if [ -s "/jffs/configs/ovpnc${VPN_UNIT}.nvram" ]; then
    VPN_IP_LIST=${VPN_IP_LIST}$(cat "/jffs/configs/ovpnc${VPN_UNIT}.nvram")
-   logger -st "($(basename $0))" $$  "x3mRouting adding /jffs/configs/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
+   logger -st "($(basename $0))" $$  "x3mRouting /jffs/configs/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
   fi
+ #######################################################################
 elif [ "$dev" == "tun12" ]
 then
 	VPN_IP_LIST=$(nvram get vpn_client2_clientlist)$(nvram get vpn_client2_clientlist1)$(nvram get vpn_client2_clientlist2)$(nvram get vpn_client2_clientlist3)$(nvram get vpn_client2_clientlist4)$(nvram get vpn_client2_clientlist5)
@@ -294,12 +262,13 @@ then
 	VPN_FORCE=$(nvram get vpn_client2_enforce)
 	VPN_UNIT=2
 	VPN_LOGGING=$(nvram get vpn_client2_verb)
- ## Xentrk: update vpnrouting.sh to use /jffs/configs/ovpnc2.nvram 
+ #### Xentrk: update vpnrouting.sh to use /jffs/configs/ovpnc2.nvram 
  # route OVPNC3 clients
   if [ -s "/jffs/configs/ovpnc${VPN_UNIT}.nvram" ]; then
     VPN_IP_LIST=${VPN_IP_LIST}$(cat "/jffs/configs/ovpnc${VPN_UNIT}.nvram")
     logger -st "($(basename $0))" $$  "x3mRouting adding /jffs/configs/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
   fi
+ ######################################################################## 
 elif [ "$dev" == "tun13" ]
 then
 	VPN_IP_LIST=$(nvram get vpn_client3_clientlist)$(nvram get vpn_client3_clientlist1)$(nvram get vpn_client3_clientlist2)$(nvram get vpn_client3_clientlist3)$(nvram get vpn_client3_clientlist4)$(nvram get vpn_client3_clientlist5)
@@ -307,11 +276,12 @@ then
 	VPN_FORCE=$(nvram get vpn_client3_enforce)
 	VPN_UNIT=3
 	VPN_LOGGING=$(nvram get vpn_client3_verb)
- ## Xentrk: update vpnrouting.sh to use /jffs/configs/ovpnc3.nvram
+ #### Xentrk: update vpnrouting.sh to use /jffs/configs/ovpnc3.nvram
   if [ -s "/jffs/configs/ovpnc${VPN_UNIT}.nvram" ]; then
    VPN_IP_LIST=${VPN_IP_LIST}$(cat "/jffs/configs/ovpnc${VPN_UNIT}.nvram")
    logger -st "($(basename $0))" $$  "x3mRouting adding /jffs/configs/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
   fi
+ ########################################################################
 elif [ "$dev" == "tun14" ]
 then
 	VPN_IP_LIST=$(nvram get vpn_client4_clientlist)$(nvram get vpn_client4_clientlist1)$(nvram get vpn_client4_clientlist2)$(nvram get vpn_client4_clientlist3)$(nvram get vpn_client4_clientlist4)$(nvram get vpn_client4_clientlist5)
@@ -319,11 +289,12 @@ then
 	VPN_FORCE=$(nvram get vpn_client4_enforce)
 	VPN_UNIT=4
 	VPN_LOGGING=$(nvram get vpn_client4_verb)
- ## Xentrk: update vpnrouting.sh to use /jffs/configs/ovpnc4.nvram 
+ #### Xentrk: update vpnrouting.sh to use /jffs/configs/ovpnc4.nvram 
   if [ -s "/jffs/configs/ovpnc${VPN_UNIT}.nvram" ]; then
    VPN_IP_LIST=${VPN_IP_LIST}$(cat "/jffs/configs/ovpnc${VPN_UNIT}.nvram")
    logger -st "($(basename $0))" $$  "x3mRouting adding /jffs/configs/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
   fi
+ ######################################################################## 
 elif [ "$dev" == "tun15" ]
 then
 	VPN_IP_LIST=$(nvram get vpn_client5_clientlist)$(nvram get vpn_client5_clientlist1)$(nvram get vpn_client5_clientlist2)$(nvram get vpn_client5_clientlist3)$(nvram get vpn_client5_clientlist4)$(nvram get vpn_client5_clientlist5)
@@ -331,11 +302,12 @@ then
 	VPN_FORCE=$(nvram get vpn_client5_enforce)
 	VPN_UNIT=5
 	VPN_LOGGING=$(nvram get vpn_client5_verb)
- ## Xentrk: update vpnrouting.sh to use /jffs/configs/ovpnc5.nvram 
+ #### Xentrk: update vpnrouting.sh to use /jffs/configs/ovpnc5.nvram 
   if [ -s "/jffs/configs/ovpnc${VPN_UNIT}.nvram" ]; then
    VPN_IP_LIST=${VPN_IP_LIST}$(cat "/jffs/configs/ovpnc${VPN_UNIT}.nvram")
    logger -st "($(basename $0))" $$  "x3mRouting adding /jffs/configs/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
   fi
+ ########################################################################
 else
 	run_custom_script
 	exit 0
@@ -356,14 +328,12 @@ then
 logger "..script_type==> rmupdate"
 	my_logger "Refreshing policy rules for client $VPN_UNIT"
 	purge_client_list
-  logger "Value of VPNFORCE is $VPNFORCE. Value of VPN_REDIR is $VPN_REDIR"
+
 	if [ $VPN_FORCE == "1" -a $VPN_REDIR -ge "2" ]
 	then
 		init_table
 		my_logger "Tunnel down - VPN client access blocked"
-   #####3
-   logger "I'm at location A"
-		ip route del default table $VPN_TBL
+ 		ip route del default table $VPN_TBL
 		ip route add prohibit default table $VPN_TBL
 		create_client_list
 	else
@@ -376,8 +346,6 @@ fi
 
 if [ $script_type == "route-up" -a $VPN_REDIR -lt "2" ]
 then
-#xentrk
-logger "..script_type==> route-up"
 	my_logger "Skipping, client $VPN_UNIT not in routing policy mode"
 	run_custom_script
 	exit 0
@@ -387,22 +355,16 @@ fi
 
 if [ $script_type == "route-pre-down" ]
 then
-#xentrk
-  logger "..script_type==> route-pre-down"
 	purge_client_list
-  logger "At route-pre-down logic==>value of VPN_FORCE is $VPN_FORCE. Value of VPN_REDIR is $VPN_REDIR"
-  logger "Value of VPN_UNIT at route-pre-down is $VPN_UNIT"
-	if [ $VPN_FORCE == "1" -a $VPN_REDIR -ge "2" ]
+ 
+ 	if [ $VPN_FORCE == "1" -a $VPN_REDIR -ge "2" ]
 	then
 		/usr/bin/logger -t "openvpn-routing" "Tunnel down - VPN client access blocked"
-################################   
-   logger "I'm at location B"
 		ip route change prohibit default table $VPN_TBL
 		create_client_list
 	else
 		ip route flush table $VPN_TBL
-   logger "At ip route flush table $VPN_TBL"
-		my_logger "Flushing client routing table"
+ 		my_logger "Flushing client routing table"
 	fi
 fi	# End route down
 
@@ -410,9 +372,6 @@ fi	# End route down
 
 if [ $script_type == "route-up" ]
 then
-#xentrk
-logger "..script_type==> route-up"
-
 	init_table
 
 # Delete existing VPN routes that were pushed by server on table main

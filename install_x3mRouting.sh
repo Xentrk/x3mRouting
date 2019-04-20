@@ -3,6 +3,7 @@
 # Script: install_x3mRouting.sh
 # Author: Xentrk
 # Last Updated Date: 7-April-2019
+# Version 0.0.1
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -11,12 +12,15 @@
 #  This project would never have been made possible if not for @Martineau on snbfourms.com
 #  providing his Selective Routing knowledge and expertise. I am extemely GRATEFUL!
 #
+# Code for update code functions inspired by https://github.com/Adamm00 - credit to @Adamm
+# and https://github.com/jackyaz/spdMerlin - credit to Jack Yaz
 ####################################################################################################
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
 logger -t "($(basename "$0"))" "$$ Starting Script Execution ($(if [ -n "$1" ]; then echo "$1"; else echo "menu"; fi))"
 VERSION="1.0.0"
 GIT_REPO="x3mRouting"
 GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/master"
+LOCAL_REPO="/jffs/scripts/x3mRouting"
 
 # Uncomment the line below for debugging
 #set -x
@@ -139,7 +143,7 @@ confirm_update() {
     printf 'since you last installed the repository.  Updating is highly recommended to get the most recent.\n'
     printf 'files. Chosing this option will not update missing files. Select the install option from the\n'
     printf 'menu to reinstall missing files\n\n'
-    printf 'Would you like to download and update any new version now?\n'
+    printf 'Would you like to check and download any files that have been updated?\n'
     echo "[1]  --> Yes"
     echo "[2]  --> No"
     echo
@@ -170,13 +174,15 @@ confirm_update() {
 ### Code for update code functions inspired by https://github.com/Adamm00 - credit to @Adamm
 ### and https://github.com/jackyaz/spdMerlin - credit to Jack Yaz
 Update_Version(){
-  DIR="/jffs/scripts/x3mRouting"
+  DIR="$LOCAL_REPO"
   if [ -d "$DIR" ]; then
     for FILE in x3mRouting_client_nvram.sh \
                 x3mRouting_config.sh \
                 vpnrouting.sh \
                 updown.sh \
                 Advanced_OpenVPNClient_Content.asp \
+                mount_files_lan.sh \
+                mount_files_gui.sh \
                 load_MANUAL_ipset.sh \
                 load_ASN_ipset.sh \
                 load_DNSMASQ_ipset.sh \
@@ -193,17 +199,17 @@ if [ -s "$DIR/$FILE" ]; then
 		serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE 'v[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
 		if [ "$localver" != "$serverver" ]; then
       printf 'New version of $FILE available - updating to $serverver\n'
-			downloaded_file "$DIR" "$FILE"
+			download_file "$DIR" "$FILE"
       chmod 0755 "$DIR/$FILE"
 		else
       localmd5="$(md5sum "$DIR/$FILE" | awk '{print $1}')"
       remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
       if [ "$localmd5" != "$remotemd5" ]; then
-        "MD5 hash of $FILE does not match - downloading updated $serverver"
-				downloaded_file "$DIR" "$FILE"
+        printf 'MD5 hash of $FILE does not match - downloading updated $serverver\n'
+				download_file "$DIR" "$FILE"
         chmod 0755 "$DIR/$FILE"
       else
-        printf 'No new version - latest is $localver\n'
+        printf 'No new version to update - latest is $localver\n'
 			fi
 		fi
 	fi
@@ -226,8 +232,9 @@ fi
 }
 ############################################################################
 
+### Remove this function when testing is completed!
 update_current_installation() {
-  DIR="/jffs/scripts/x3mRouting"
+  DIR="$LOCAL_REPO"
   if [ -d "$DIR" ]; then
     for FILE in x3mRouting_client_nvram.sh \
                 x3mRouting_config.sh \
@@ -265,7 +272,7 @@ remove_existing_installation() {
 
   # Remove entries from /jffs/scripts/init-start
   if [ -s "/jffs/scripts/init-start" ]; then # file exists
-    for PARM in "sh /jffs/scripts/x3mRouting/mount_files_lan.sh" "sh /jffs/scripts/x3mRouting/mount_files_gui.sh"; do
+    for PARM in "sh $LOCAL_REPO/mount_files_lan.sh" "sh $LOCAL_REPO/mount_files_gui.sh"; do
       if grep -q "$PARM" "/jffs/scripts/init-start"; then # see if line exists
         sed -i "\\~$PARM~d" "/jffs/scripts/init-start"
         echo "$PARM entry removed from /jffs/scripts/init-start"
@@ -276,7 +283,7 @@ remove_existing_installation() {
   # TBD - ckeck if only the she-bang exists and del file it it does
 
   # Purge /jffs/scripts/x3mRouting directory
-  for DIR in "/jffs/scripts/x3mRouting"; do
+  for DIR in "$LOCAL_REPO"; do
     if [ -d "$DIR" ]; then
       if ! rm "$DIR"/* >/dev/null 2>&1; then
         printf '\nNo files found to remove in %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
@@ -336,7 +343,7 @@ Chk_Entware() {
 }
 
 create_project_directory() {
-  for DIR in "/jffs/scripts/x3mRouting"; do
+  for DIR in "$LOCAL_REPO"; do
     if [ ! -d "$DIR" ]; then
       if mkdir -p "$DIR" >/dev/null 2>&1; then
         printf "Created project directory %b%s%b\\n" "${COLOR_GREEN}" "${DIR}" "${COLOR_WHITE}"
@@ -379,9 +386,9 @@ exit_message() {
 init_start_update() {
   PARM=$1
   # checking for condition that user previously installed LAN clients. if so, remove mount_files_lan.sh entry
-  if [ -s "/jffs/scripts/init-start" ] && [ "$PARM" = "sh /jffs/scripts/x3mRouting/mount_files_gui.sh" ]; then
-    if grep -q "sh /jffs/scripts/x3mRouting/mount_files_lan.sh" "/jffs/scripts/init-start"; then
-      sed -i "\\~/jffs/scripts/x3mRouting/mount_files_lan.sh~d" "/jffs/scripts/init-start"
+  if [ -s "/jffs/scripts/init-start" ] && [ "$PARM" = "sh $LOCAL_REPO/mount_files_gui.sh" ]; then
+    if grep -q "sh $LOCAL_REPO/mount_files_lan.sh" "/jffs/scripts/init-start"; then
+      sed -i "\\~$LOCAL_REPO/mount_files_lan.sh~d" "/jffs/scripts/init-start"
     fi
   fi
 
@@ -403,12 +410,12 @@ init_start_update() {
 
 install_x3mRouting_LAN_clients() {
   create_project_directory
-  download_file /jffs/scripts/x3mRouting x3mRouting_client_nvram.sh
-  download_file /jffs/scripts/x3mRouting x3mRouting_config.sh
-  download_file /jffs/scripts/x3mRouting vpnrouting.sh
-  download_file /jffs/scripts/x3mRouting updown.sh
-  download_file /jffs/scripts/x3mRouting mount_files_lan.sh
-  init_start_update "sh /jffs/scripts/x3mRouting/mount_files_lan.sh"
+  download_file "$LOCAL_REPO" x3mRouting_client_nvram.sh
+  download_file "$LOCAL_REPO" x3mRouting_config.sh
+  download_file "$LOCAL_REPO" vpnrouting.sh
+  download_file "$LOCAL_REPO" updown.sh
+  download_file "$LOCAL_REPO" mount_files_lan.sh
+  init_start_update "sh $LOCAL_REPO/mount_files_lan.sh"
   sh /jffs/scripts/init-start
   echo "Installation of x3mRouting for LAN Clients completed"
 }
@@ -439,15 +446,15 @@ fi
 install_x3mRouting_GUI() {
   Check_Requirements
   create_project_directory
-  download_file /jffs/scripts/x3mRouting vpnrouting.sh
-  download_file /jffs/scripts/x3mRouting updown.sh
-  download_file /jffs/scripts/x3mRouting Advanced_OpenVPNClient_Content.asp
-  download_file /jffs/scripts/x3mRouting load_MANUAL_ipset.sh
-  download_file /jffs/scripts/x3mRouting load_ASN_ipset.sh
-  download_file /jffs/scripts/x3mRouting load_DNSMASQ_ipset.sh
-  download_file /jffs/scripts/x3mRouting load_AMAZON_ipset.sh
-  download_file /jffs/scripts/x3mRouting mount_files_gui.sh
-  init_start_update "sh /jffs/scripts/x3mRouting/mount_files_gui.sh"
+  download_file "$LOCAL_REPO" vpnrouting.sh
+  download_file "$LOCAL_REPO" updown.sh
+  download_file "$LOCAL_REPO" Advanced_OpenVPNClient_Content.asp
+  download_file "$LOCAL_REPO" load_MANUAL_ipset.sh
+  download_file "$LOCAL_REPO" load_ASN_ipset.sh
+  download_file "$LOCAL_REPO" load_DNSMASQ_ipset.sh
+  download_file "$LOCAL_REPO" load_AMAZON_ipset.sh
+  download_file "$LOCAL_REPO" mount_files_gui.sh
+  init_start_update "sh $LOCAL_REPO/mount_files_gui.sh"
   sh /jffs/scripts/init-start
   echo "Installation of x3mRouting for IPSET lists completed"
 }
@@ -455,10 +462,10 @@ install_x3mRouting_GUI() {
 install_x3mRouting_shell_scripts() {
   Check_Requirements
   create_project_directory
-  download_file /jffs/scripts/x3mRouting load_MANUAL_ipset_iface.sh
-  download_file /jffs/scripts/x3mRouting load_ASN_ipset_iface.sh
-  download_file /jffs/scripts/x3mRouting load_DNSMASQ_ipset_iface.sh
-  download_file /jffs/scripts/x3mRouting load_AMAZON_ipset_iface.sh
+  download_file "$LOCAL_REPO" load_MANUAL_ipset_iface.sh
+  download_file "$LOCAL_REPO" load_ASN_ipset_iface.sh
+  download_file "$LOCAL_REPO" load_DNSMASQ_ipset_iface.sh
+  download_file "$LOCAL_REPO" load_AMAZON_ipset_iface.sh
   echo "Installation of x3mRouting for IPSET Shell Scripts completed"
 }
 

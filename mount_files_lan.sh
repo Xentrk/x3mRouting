@@ -17,8 +17,8 @@
 #
 #####################################################################################################
 if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 0 ]; then
-  mount -o bind /jffs/scripts/vpnrouting.sh /usr/sbin/vpnrouting.sh
+  mount -o bind /jffs/scripts/x3mRouting/vpnrouting.sh /usr/sbin/vpnrouting.sh
 fi
 if [ "$(df | grep -c "/usr/sbin/updown.sh")" -eq 0 ]; then
-  mount -o bind /jffs/scripts/updown.sh /usr/sbin/updown.sh
+  mount -o bind /jffs/scripts/x3mRouting/updown.sh /usr/sbin/updown.sh
 fi

@@ -17,11 +17,11 @@
 #
 #####################################################################################################
 if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 0 ]; then
-  mount -o bind /jffs/scripts/vpnrouting.sh /usr/sbin/vpnrouting.sh
+  mount -o bind /jffs/scripts/x3mRouting/vpnrouting.sh /usr/sbin/vpnrouting.sh
 fi
 if [ "$(df | grep -c "/usr/sbin/updown.sh")" -eq 0 ]; then
-  mount -o bind /jffs/scripts/updown.sh /usr/sbin/updown.sh
+  mount -o bind /jffs/scripts/x3mRouting/updown.sh /usr/sbin/updown.sh
 fi
 if [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 0 ]; then
-  mount -o bind /jffs/scripts/Advanced_OpenVPNClient_Content.asp /www/Advanced_OpenVPNClient_Content.asp
+  mount -o bind /jffs/scripts/x3mRouting/Advanced_OpenVPNClient_Content.asp /www/Advanced_OpenVPNClient_Content.asp
 fi

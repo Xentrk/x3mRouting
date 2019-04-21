@@ -18,6 +18,7 @@ logger -t "($(basename "$0"))" $$ Starting Script Execution
 
 create_lan_client_routes() {
 
+  CONFIG_FILE="/jffs/configs/x3mRouting_client_rules"
   OLDIFS="$IFS"
   IFS=" "
   DEST="0.0.0.0"
@@ -37,7 +38,7 @@ create_lan_client_routes() {
         esac
       fi
     fi
-  done </jffs/configs/x3mRouting_lan_client_rules
+  done <"$CONFIG_FILE"
   IFS=$OLDIFS
 
   # OVPNC1 clients

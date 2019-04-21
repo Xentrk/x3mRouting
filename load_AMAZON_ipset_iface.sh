@@ -67,44 +67,6 @@ Check_Lock() {
   lock_load_AMAZON_ipset_iface="true"
 }
 
-### Define interface/bitmask to route traffic to below
-set_fwmark_parms() {
-  FWMARK_WAN="0x8000/0x8000"
-  FWMARK_OVPNC1="0x1000/0x1000"
-  FWMARK_OVPNC2="0x2000/0x2000"
-  FWMARK_OVPNC3="0x4000/0x4000"
-  FWMARK_OVPNC4="0x7000/0x7000"
-  FWMARK_OVPNC5="0x3000/0x3000"
-}
-
-create_fwmarks() {
-  # WAN
-  ip rule del fwmark "$FWMARK_WAN" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_WAN" table 254 prio 9990
-
-  #VPN Client 1
-  ip rule del fwmark "$FWMARK_OVPNC1" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC1" table 111 prio 9995
-
-  #VPN Client 2
-  ip rule del fwmark "$FWMARK_OVPNC2" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC2" table 112 prio 9994
-
-  #VPN Client 3
-  ip rule del fwmark "$FWMARK_OVPNC3" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC3" table 113 prio 9993
-
-  #VPN Client 4
-  ip rule del fwmark "$FWMARK_OVPNC4" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC4" table 114 prio 9992
-
-  #VPN Client 5
-  ip rule del fwmark "$FWMARK_OVPNC5" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC5" table 115 prio 9991
-
-  ip route flush cache
-}
-
 # Chk_Entware function provided by @Martineau at snbforums.com
 Chk_Entware() {
 
@@ -156,36 +118,29 @@ Chk_Entware() {
 
 # Download Amazon AWS json file
 download_AMAZON() {
-  wget https://ip-ranges.amazonaws.com/ip-ranges.json -O "$FILE_DIR/ip-ranges.json"
+  wget https://ip-ranges.amazonaws.com/ip-ranges.json -O "$DIR/ip-ranges.json"
   if [ "$?" = "1" ]; then # file download failed
     logger -t "($(basename "$0"))" $$ Script execution failed because https://ip-ranges.amazonaws.com/ip-ranges.json file could not be downloaded
     exit 1
   fi
-  true >"$FILE_DIR/AMAZON"
+  true >"$DIR/AMAZON"
   for REGION in us-east-1 us-east-2 us-west-1 us-west-2; do
-    jq '.prefixes[] | select(.region=='\"$REGION\"') | .ip_prefix' <"$FILE_DIR/ip-ranges.json" | sed 's/"//g' | sort -u >>"$FILE_DIR/AMAZON"
+    jq '.prefixes[] | select(.region=='\"$REGION\"') | .ip_prefix' <"$DIR/ip-ranges.json" | sed 's/"//g' | sort -u >>"$DIR/AMAZON"
   done
 }
 
 # if ipset AMAZON does not exist, create it
 
 check_ipset_list_exist_AMAZON() {
-  #    if [ "$(ipset list -n AMAZON 2>/dev/null)" != "AMAZON" ]; then
-  #      ipset create AMAZON hash:net family inet hashsize 1024 maxelem 65536
-  #    fi
+  IPSET_NAME="$1"
   if [ "$2" != "del" ]; then
-    if [ "$(ipset list -n AMAZON 2>/dev/null)" != "AMAZON" ]; then #does ipset list exist?
-      if [ -s "$FILE_DIR/AMAZON" ]; then # does AMAZON ipset restore file exist?
-        ipset restore -! <"$FILE_DIR/AMAZON" # Restore AMAZON ipset list if restore file exists at $FILE_DIR/$1
-        logger -st "($(basename "$0"))" $$ IPSET restored: $1 from "'$FILE_DIR/AMAZON'"
-      else
-        ipset create $1 hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
-        logger -st "($(basename "$0"))" $$ IPSET created: $1 hash:net family inet hashsize 1024 maxelem 65536
-      fi
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
+      ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
+      logger -st "($(basename "$0"))" $$ IPSET created: $1 hash:net family inet hashsize 1024 maxelem 65536
     fi
   else
-    if [ "$(ipset list -n AMAZON 2>/dev/null)" = "AMAZON" ]; then
-      ipset destroy AMAZON && logger -st "($(basename "$0"))" $$ IPSET AMAZON deleted! || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
+    if [ "$(ipset list -n AMAZON 2>/dev/null)" = "AMAZON" ]; then # del condition is true
+      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
     fi
   fi
 }
@@ -193,13 +148,14 @@ check_ipset_list_exist_AMAZON() {
 # if ipset list AMAZON is empty or source file is older than 7 days, download source file; load ipset list
 
 check_ipset_list_values_AMAZON() {
-  if [ "$(ipset -L AMAZON 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
-    if [ ! -s "$FILE_DIR/AMAZON" ] || [ "$(find "$FILE_DIR" -name AMAZON -mtime +7 -print)" = "$FILE_DIR/AMAZON" ]; then
+  IPSET_NAME="$1"
+  if [ "$(ipset -L $IPSET_NAME 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
+    if [ ! -s "$DIR/$IPSET_NAME" ] || [ "$(find "$DIR" -name $IPSET_NAME -mtime +7 -print)" = "$DIR/$IPSET_NAME" ]; then
       download_AMAZON
     fi
-    awk '{print "add AMAZON " $1}' "$FILE_DIR/AMAZON" | ipset restore -!
+    awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   else
-    if [ ! -s "$FILE_DIR/AMAZON" ]; then
+    if [ ! -s "$DIR/$IPSET_NAME" ]; then
       download_AMAZON
     fi
   fi
@@ -216,25 +172,77 @@ create_routing_rules() {
   fi
 }
 
+set_fwmark_parms() {
+  FWMARK_WAN="0x8000/0x8000"
+  FWMARK_OVPNC1="0x1000/0x1000"
+  FWMARK_OVPNC2="0x2000/0x2000"
+  FWMARK_OVPNC3="0x4000/0x4000"
+  FWMARK_OVPNC4="0x7000/0x7000"
+  FWMARK_OVPNC5="0x3000/0x3000"
+}
+
+set_ip_rule() {
+  case "$VPNID" in
+  0)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 254 prio 9990
+    ip route flush cache
+    ;;
+  1)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
+    ip route flush cache
+    ;;
+
+  2)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
+    ip route flush cache
+    ;;
+
+  3)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "TAG_MARK" table 113 prio 9993
+    ip route flush cache
+    ;;
+
+  4)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 114 prio 9992
+    ip route flush cache
+    ;;
+
+  5)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 115 prio 9991
+    ip route flush cache
+    ;;
+  *)
+    logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"
+    exit 99
+    ;;
+  esac
+}
+
 # Call functions below this line
 Check_Lock "$@"
 
-set_fwmark_parms
-create_fwmarks
-
 #======================================================================================Martineau Hack
-VPNID=0
-FILE_DIR="/opt/tmp"
 
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
   DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
+else
+  DIR="/opt/tmp"
 fi
 
+VPNID=0
 if [ -n "$1" ]; then
   VPNID=$1
 else
   logger -st "($(basename "$0"))" $$ Warning missing arg1 "'destination_target' 0-WAN or 1-5=VPN," WAN assumed!
 fi
+
+set_fwmark_parms
 
 case "$VPNID" in
 0)
@@ -250,31 +258,18 @@ case "$VPNID" in
   exit 99
   ;;
 esac
-#============================================================================= End of Martineau Hacks
 
-case $VPNID in
-0)
-  TAG_MARK=$FWMARK_WAN # Which Target WAN or VPN? Martineau Hack
-  TARGET_DESC="WAN"
-  ;;
-1 | 2 | 3 | 4 | 5)
-  eval "TAG_MARK=\$FWMARK_OVPNC"${VPNID}
-  TARGET_DESC="VPN Client "$VPNID
-  ;;
-*)
-  logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"
-  exit 99
-  ;;
-esac
+#============================================================================= End of Martineau Hacks
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   create_routing_rules "del"
-  check_ipset_list_exist_AMAZON "del"
+  check_ipset_list_exist_AMAZON "AMAZON" "del"
 else
   Chk_Entware 30 jq
-  check_ipset_list_exist_AMAZON
-  check_ipset_list_values_AMAZON
+  set_ip_rule
+  check_ipset_list_exist_AMAZON "AMAZON"
+  check_ipset_list_values_AMAZON "AMAZON"
   create_routing_rules
 fi
 #==================================================================================================

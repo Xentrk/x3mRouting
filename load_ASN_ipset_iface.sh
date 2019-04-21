@@ -33,7 +33,7 @@
 ####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
-# set -x
+set -x
 
 Kill_Lock() {
   if [ -f "/tmp/load_ASN_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_ASN_ipset.lock)" ]; then
@@ -59,44 +59,6 @@ Check_Lock() {
   echo "$$" >>/tmp/load_ASN_ipset.lock
   date +%s >>/tmp/load_ASN_ipset.lock
   lock_load_ASN_ipset="true"
-}
-
-### Define interface/bitmask to route traffic to below
-set_fwmark_parms() {
-  FWMARK_WAN="0x8000/0x8000"
-  FWMARK_OVPNC1="0x1000/0x1000"
-  FWMARK_OVPNC2="0x2000/0x2000"
-  FWMARK_OVPNC3="0x4000/0x4000"
-  FWMARK_OVPNC4="0x7000/0x7000"
-  FWMARK_OVPNC5="0x3000/0x3000"
-}
-
-create_fwmarks() {
-  # WAN
-  ip rule del fwmark "$FWMARK_WAN" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_WAN" table 254 prio 9990
-
-  #VPN Client 1
-  ip rule del fwmark "$FWMARK_OVPNC1" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC1" table 111 prio 9995
-
-  #VPN Client 2
-  ip rule del fwmark "$FWMARK_OVPNC2" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC2" table 112 prio 9994
-
-  #VPN Client 3
-  ip rule del fwmark "$FWMARK_OVPNC3" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC3" table 113 prio 9993
-
-  #VPN Client 4
-  ip rule del fwmark "$FWMARK_OVPNC4" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC4" table 114 prio 9992
-
-  #VPN Client 5
-  ip rule del fwmark "$FWMARK_OVPNC5" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC5" table 115 prio 9991
-
-  ip route flush cache
 }
 
 # Chk_Entware function provided by @Martineau at snbforums.com
@@ -149,13 +111,67 @@ Chk_Entware() {
   return $READY
 }
 
+### Define interface/bitmask to route traffic to below
+set_fwmark_parms() {
+  FWMARK_WAN="0x8000/0x8000"
+  FWMARK_OVPNC1="0x1000/0x1000"
+  FWMARK_OVPNC2="0x2000/0x2000"
+  FWMARK_OVPNC3="0x4000/0x4000"
+  FWMARK_OVPNC4="0x7000/0x7000"
+  FWMARK_OVPNC5="0x3000/0x3000"
+}
+
+set_ip_rule() {
+  case "$VPNID" in
+  0)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 254 prio 9990
+    ip route flush cache
+    ;;
+  1)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
+    ip route flush cache
+    ;;
+
+  2)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
+    ip route flush cache
+    ;;
+
+  3)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "TAG_MARK" table 113 prio 9993
+    ip route flush cache
+    ;;
+
+  4)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 114 prio 9992
+    ip route flush cache
+    ;;
+
+  5)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 115 prio 9991
+    ip route flush cache
+    ;;
+  *)
+    logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"
+    exit 99
+    ;;
+  esac
+}
+
 #Download ASN ipset list
 
 download_ASN_ipset_list() {
 
-  ASN=$1
-  NUMBER=$2
-  DIR=$3
+  IPSET_NAME=$1
+  ASN=$2
+  NUMBER=$3
+  DIR=$4
 
   curl https://ipinfo.io/"$ASN" 2>/dev/null | grep -E "a href.*$NUMBER\/" | grep -v ":" | sed 's|^.*<a href="/'"$ASN"'/||' | sed 's|" >||' >"$DIR/$IPSET_NAME"
 
@@ -169,25 +185,15 @@ download_ASN_ipset_list() {
 # if ipset list does not exist, create it
 check_ASN_ipset_list_exist() {
 
-  IPSET_NAME=$1
-  DIR=$2
-
-  #  if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$IPSET_NAME" ]; then
-  #    ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
-  #  fi
-  if [ "$3" != "del" ]; then
-    if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
-      if [ -s "$DIR/$IPSET_NAME" ]; then # does $IPSET_NAME ipset restore file exist?
-        ipset restore -! <"$DIR/$IPSET_NAME" # Restore $IPSET_NAME ipset list if restore file exists at $FILE_DIR/$1
-        logger -st "($(basename "$0"))" $$ IPSET restored: $1 from "$DIR/$IPSET_NAME"
-      else
-        ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create $IPSET_NAME ipset list from scratch
-        logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
-      fi
+  IPSET_NAME="$1"
+  if [ "$2" != "del" ]; then
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
+      ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
+      logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
     fi
   else
-    if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" = "$IPSET_NAME" ]; then
-      ipset destroy $IPSET_NAME && logger -st "($(basename "$0"))" $$ IPSET "$IPSET_NAME" deleted! || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
+      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
     fi
   fi
 }
@@ -215,14 +221,13 @@ check_ASN_ipset_list_values() {
 
 # Route IPSET to target WAN or VPN
 create_routing_rules() {
-  IPSET_NAME=$1
-
-  iptables -t mangle -D PREROUTING -i br0 -m set --match-set $IPSET_NAME dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
+  IPSET_NAME="$1"
+  iptables -t mangle -D PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
   if [ "$2" != "del" ]; then
-    iptables -t mangle -A PREROUTING -i br0 -m set --match-set $IPSET_NAME dst -j MARK --set-mark "$TAG_MARK"
-    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created "("TAG fwmark $TAG_MARK")"
+    iptables -t mangle -A PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created for $IPSET_NAME "("TAG fwmark $TAG_MARK")"
   else
-    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted "("TAG fwmark $TAG_MARK")"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted for $IPSET_NAME "("TAG fwmark $TAG_MARK")"
   fi
 }
 
@@ -230,14 +235,16 @@ create_routing_rules() {
 
 Check_Lock "$@"
 set_fwmark_parms
-create_fwmarks
-DIR="/opt/tmp"
 
 #======================================================================================Martineau Hack
+
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
   DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
+else
+  DIR="/opt/tmp"
 fi
 
+VPNID=0
 if [ -n "$1" ]; then
   VPNID=$1
 else
@@ -257,14 +264,7 @@ else
   exit 97
 fi
 
-if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
-  DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
-fi
-
-if [ -z "$IPSET_NAME" ] || [ -z "$DOMAINS_LIST" ]; then
-  logger -st "($(basename "$0"))" $$ ERROR missing args "'target destination' 'ipset_name' 'domain_list'"
-  exit 98
-fi
+set_fwmark_parms
 
 case $VPNID in
 0)
@@ -285,10 +285,10 @@ esac
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Chk_Entware 30
   create_routing_rules "$IPSET_NAME" "del"
-  check_ipset_list_exist "$IPSET_NAME" "$DIR" "del"
+  check_ASN_ipset_list_exist "$IPSET_NAME" "del"
 else
   Chk_Entware 30
-  check_ASN_ipset_list_exist "$IPSET_NAME" "$DIR"
+  check_ASN_ipset_list_exist "$IPSET_NAME"
   check_ASN_ipset_list_values "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
   create_routing_rules "$IPSET_NAME" # Martineau Hack
 fi

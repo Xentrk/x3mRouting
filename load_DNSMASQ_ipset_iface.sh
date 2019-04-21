@@ -67,44 +67,6 @@ Check_Lock() {
   lock_load_DNSMASQ_ipset_iface="true"
 }
 
-### Define interface/bitmask to route traffic to below
-set_fwmark_parms() {
-  FWMARK_WAN="0x8000/0x8000"
-  FWMARK_OVPNC1="0x1000/0x1000"
-  FWMARK_OVPNC2="0x2000/0x2000"
-  FWMARK_OVPNC3="0x4000/0x4000"
-  FWMARK_OVPNC4="0x7000/0x7000"
-  FWMARK_OVPNC5="0x3000/0x3000"
-}
-
-create_fwmarks() {
-  # WAN
-  ip rule del fwmark "$FWMARK_WAN" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_WAN" table 254 prio 9990
-
-  #VPN Client 1
-  ip rule del fwmark "$FWMARK_OVPNC1" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC1" table 111 prio 9995
-
-  #VPN Client 2
-  ip rule del fwmark "$FWMARK_OVPNC2" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC2" table 112 prio 9994
-
-  #VPN Client 3
-  ip rule del fwmark "$FWMARK_OVPNC3" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC3" table 113 prio 9993
-
-  #VPN Client 4
-  ip rule del fwmark "$FWMARK_OVPNC4" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC4" table 114 prio 9992
-
-  #VPN Client 5
-  ip rule del fwmark "$FWMARK_OVPNC5" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$FWMARK_OVPNC5" table 115 prio 9991
-
-  ip route flush cache
-}
-
 Chk_Entware() {
 
   # ARGS [wait attempts] [specific_entware_utility]
@@ -156,6 +118,59 @@ Chk_Entware() {
   done
 
   return $READY
+}
+
+### Define interface/bitmask to route traffic to below
+set_fwmark_parms() {
+  FWMARK_WAN="0x8000/0x8000"
+  FWMARK_OVPNC1="0x1000/0x1000"
+  FWMARK_OVPNC2="0x2000/0x2000"
+  FWMARK_OVPNC3="0x4000/0x4000"
+  FWMARK_OVPNC4="0x7000/0x7000"
+  FWMARK_OVPNC5="0x3000/0x3000"
+}
+
+set_ip_rule() {
+  case "$VPNID" in
+  0)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 254 prio 9990
+    ip route flush cache
+    ;;
+  1)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
+    ip route flush cache
+    ;;
+
+  2)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
+    ip route flush cache
+    ;;
+
+  3)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "TAG_MARK" table 113 prio 9993
+    ip route flush cache
+    ;;
+
+  4)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 114 prio 9992
+    ip route flush cache
+    ;;
+
+  5)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 115 prio 9991
+    ip route flush cache
+    ;;
+  *)
+    logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"
+    exit 99
+    ;;
+  esac
 }
 
 # check if /jffs/configs/dnsmasq.conf.add contains 'ipset=' entry for the domains
@@ -241,13 +256,11 @@ create_routing_rules() {
 
 #==================== end of functions
 Check_Lock "$@"
-set_fwmark_parms
-create_fwmarks
+
 #======================================================================================Martineau Hack
 VPNID=0
 IPSET_NAME=
 DOMAINS_LIST=
-DIR="/opt/tmp"
 
 AUTOSCAN=
 if [ "$(echo "$@" | grep -c 'autoscan')" -gt 0 ]; then
@@ -263,6 +276,8 @@ fi
 
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
   DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
+else
+  DIR="/opt/tmp"
 fi
 
 if [ -n "$1" ]; then
@@ -277,7 +292,7 @@ else
   exit 97
 fi
 if [ -n "$3" ] && [ -z "$AUTOSCAN" ]; then # v1.3
-  DOMAINS_LIST="$2"
+  DOMAINS_LIST="$3"
 else
   if [ -z "$AUTOSCAN" ]; then
     logger -st "($(basename "$0"))" $$ ERROR missing arg3 "'domain_list'"
@@ -287,6 +302,10 @@ else
     # So having extracted the matching domains
     # Extract only the two-part TL domain i.e. disregard the sub-domains
     DOMAINS_LIST=$(grep $DOMAIN $AUTOSCAN | grep reply | awk '{print $(NF-2)}' | awk -F\. '{print $(NF-1) FS $NF}' | sort | uniq | tr '\n' ',')
+    if [ -z "$DOMAINS_LIST" ]; then
+      logger -st "($(basename "$0"))" $$ "No domain names were harvested from /opt/var/log/dnsmasq.log"
+      exit 98
+    fi
   fi
 fi
 
@@ -301,6 +320,8 @@ fi
 
 DOMAINS_LIST=$(echo "$DOMAINS_LIST" | sed 's/,$//' | tr ',' '/') # v1.3
 DNSMASQ_ENTRY="/$DOMAINS_LIST/$IPSET_NAME"
+
+set_fwmark_parms
 
 case "$VPNID" in
 0)

@@ -36,6 +36,7 @@ logger -t "($(basename "$0"))" $$ Starting Script Execution
 set -x
 
 Kill_Lock() {
+
   if [ -f "/tmp/load_MANUAL_ipset_iface.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_MANUAL_ipset_iface.lock)" ]; then
     logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_MANUAL_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_MANUAL_ipset_iface.lock))"
     logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_MANUAL_ipset_iface.lock)" '$1 == pid')"
@@ -46,6 +47,7 @@ Kill_Lock() {
 }
 
 Check_Lock() {
+
   if [ -f "/tmp/load_MANUAL_ipset_iface.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_MANUAL_ipset_iface.lock)" ] && [ "$(sed -n '2p' /tmp/load_MANUAL_ipset_iface.lock)" != "$$" ]; then
     if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_MANUAL_ipset_iface.lock)))" -gt "1800" ]; then
       Kill_Lock
@@ -113,6 +115,7 @@ Chk_Entware() {
 
 ### Define interface/bitmask to route traffic to below
 set_fwmark_parms() {
+
   FWMARK_WAN="0x8000/0x8000"
   FWMARK_OVPNC1="0x1000/0x1000"
   FWMARK_OVPNC2="0x2000/0x2000"
@@ -122,6 +125,7 @@ set_fwmark_parms() {
 }
 
 set_ip_rule() {
+
   case "$VPNID" in
   0)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
@@ -164,17 +168,19 @@ set_ip_rule() {
   esac
 }
 
+# Create IPSET lists
 # if ipset list does not exist, create it
 check_MANUAL_ipset_list_exist() {
 
   IPSET_NAME=$1
+
   if [ "$2" != "del" ]; then
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
       ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
       logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
     fi
   else
-    if [ "$(ipset list -n "$IPSET_NAME"2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
       ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
     fi
   fi
@@ -185,6 +191,7 @@ check_MANUAL_ipset_list_values() {
 
   IPSET_NAME=$1
   DIR=$2
+
   if [ "$(ipset -L "$IPSET_NAME" 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
     awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   fi
@@ -192,10 +199,10 @@ check_MANUAL_ipset_list_values() {
 
 # Route IPSET to target WAN or VPN
 create_routing_rules() {
-  IPSET_NAME=$1
-  iptables -t mangle -D PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
+
+  iptables -t mangle -D PREROUTING -i br0 -m set --match-set $1 dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
   if [ "$2" != "del" ]; then
-    iptables -t mangle -A PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
+    iptables -t mangle -A PREROUTING -i br0 -m set --match-set $1 dst -j MARK --set-mark "$TAG_MARK"
     logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created "("TAG fwmark $TAG_MARK")"
   else
     logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted "("TAG fwmark $TAG_MARK")"
@@ -210,7 +217,7 @@ Check_Lock "$@"
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
   DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
 else
-  DIR="/opt/tmp" # default location
+  DIR="/opt/tmp"
 fi
 
 if [ -n "$1" ]; then
@@ -249,6 +256,7 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   check_MANUAL_ipset_list_exist "$IPSET_NAME" "del"
 else
   Chk_Entware 30
+  set_ip_rule
   check_MANUAL_ipset_list_exist "$IPSET_NAME"
   check_MANUAL_ipset_list_values "$IPSET_NAME" "$DIR"
   create_routing_rules "$IPSET_NAME"

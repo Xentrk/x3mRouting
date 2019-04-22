@@ -134,12 +134,12 @@ download_AMAZON() {
 check_ipset_list_exist_AMAZON() {
   IPSET_NAME="$1"
   if [ "$2" != "del" ]; then
-    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
-      ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
-      logger -st "($(basename "$0"))" $$ IPSET created: $1 hash:net family inet hashsize 1024 maxelem 65536
-    fi
+      if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
+        ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
+        logger -st "($(basename "$0"))" $$ IPSET created: $1 hash:net family inet hashsize 1024 maxelem 65536
+      fi
   else
-    if [ "$(ipset list -n AMAZON 2>/dev/null)" = "AMAZON" ]; then # del condition is true
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
       ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
     fi
   fi
@@ -182,60 +182,59 @@ set_fwmark_parms() {
 }
 
 set_ip_rule() {
-  case "$VPNID" in
-  0)
-    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
-    ip rule add from 0/0 fwmark "$TAG_MARK" table 254 prio 9990
-    ip route flush cache
-    ;;
-  1)
-    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
-    ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
-    ip route flush cache
-    ;;
+case "$VPNID" in
+0)
+  ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+  ip rule add from 0/0 fwmark "$TAG_MARK" table 254 prio 9990
+  ip route flush cache
+  ;;
+1)
+  ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+  ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
+  ip route flush cache
+  ;;
 
-  2)
-    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
-    ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
-    ip route flush cache
-    ;;
+2)  
+  ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+  ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
+  ip route flush cache
+  ;;
 
-  3)
-    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
-    ip rule add from 0/0 fwmark "TAG_MARK" table 113 prio 9993
-    ip route flush cache
-    ;;
+3)
+  ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+  ip rule add from 0/0 fwmark "TAG_MARK" table 113 prio 9993
+  ip route flush cache
+  ;;
 
-  4)
-    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
-    ip rule add from 0/0 fwmark "$TAG_MARK" table 114 prio 9992
-    ip route flush cache
-    ;;
+4)
+  ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+  ip rule add from 0/0 fwmark "$TAG_MARK" table 114 prio 9992
+  ip route flush cache
+  ;;
 
-  5)
-    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
-    ip rule add from 0/0 fwmark "$TAG_MARK" table 115 prio 9991
-    ip route flush cache
-    ;;
-  *)
-    logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"
-    exit 99
-    ;;
-  esac
+5)
+  ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+  ip rule add from 0/0 fwmark "$TAG_MARK" table 115 prio 9991
+  ip route flush cache
+  ;;
+*)
+  logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"
+  exit 99
+  ;;
+esac
 }
 
 # Call functions below this line
 Check_Lock "$@"
 
 #======================================================================================Martineau Hack
+VPNID=0
+DIR="/opt/tmp"
 
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
   DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
-else
-  DIR="/opt/tmp"
 fi
 
-VPNID=0
 if [ -n "$1" ]; then
   VPNID=$1
 else
@@ -243,7 +242,7 @@ else
 fi
 
 set_fwmark_parms
-
+  
 case "$VPNID" in
 0)
   TAG_MARK="$FWMARK_WAN" # Which Target WAN or VPN? Martineau Hack

@@ -234,7 +234,6 @@ create_routing_rules() {
 #================================ end of functions
 
 Check_Lock "$@"
-set_fwmark_parms
 
 #======================================================================================Martineau Hack
 
@@ -284,6 +283,7 @@ esac
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Chk_Entware 30
+  set_ip_rule
   create_routing_rules "$IPSET_NAME" "del"
   check_ASN_ipset_list_exist "$IPSET_NAME" "del"
 else

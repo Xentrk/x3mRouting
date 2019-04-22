@@ -245,12 +245,13 @@ check_cron_job() {
 
 # Route IPSET to target WAN or VPN
 create_routing_rules() {
-  iptables -t mangle -D PREROUTING -i br0 -m set --match-set $1 dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
+  IPSET_NAME="$1"
+  iptables -t mangle -D PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
   if [ "$2" != "del" ]; then
-    iptables -t mangle -A PREROUTING -i br0 -m set --match-set $1 dst -j MARK --set-mark "$TAG_MARK"
-    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created "("TAG fwmark $TAG_MARK")"
+    iptables -t mangle -A PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created for $IPSET_NAME "("TAG fwmark $TAG_MARK")"
   else
-    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted "("TAG fwmark $TAG_MARK")"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted for $IPSET_NAME "("TAG fwmark $TAG_MARK")"
   fi
 }
 
@@ -348,6 +349,7 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
 else
   #==================================================================================================
   Chk_Entware 30
+  set_ip_rule
   check_dnsmasq "$DNSMASQ_ENTRY"              # Martineau Hack
   check_ipset_list "$IPSET_NAME"              # Martineau Hack
   check_restore_file_age "$IPSET_NAME" "$DIR" # Martineau Hack

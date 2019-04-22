@@ -259,9 +259,6 @@ create_routing_rules() {
 Check_Lock "$@"
 
 #======================================================================================Martineau Hack
-VPNID=0
-IPSET_NAME=
-DOMAINS_LIST=
 
 AUTOSCAN=
 if [ "$(echo "$@" | grep -c 'autoscan')" -gt 0 ]; then
@@ -287,7 +284,7 @@ else
   logger -st "($(basename "$0"))" $$ Warning missing arg1 "'destination_target' 0-WAN or 1-5=VPN," WAN assumed!
 fi
 if [ -n "$2" ]; then
-  IPSET_NAME=$2
+  IPSET_NAME="$2"
 else
   logger -st "($(basename "$0"))" $$ ERROR missing arg2 "'ipset_name'"
   exit 97
@@ -299,24 +296,15 @@ else
     logger -st "($(basename "$0"))" $$ ERROR missing arg3 "'domain_list'"
     exit 98
   else
-    DOMAIN=$3
+    DOMAIN="$3"
     # So having extracted the matching domains
     # Extract only the two-part TL domain i.e. disregard the sub-domains
-    DOMAINS_LIST=$(grep $DOMAIN $AUTOSCAN | grep reply | awk '{print $(NF-2)}' | awk -F\. '{print $(NF-1) FS $NF}' | sort | uniq | tr '\n' ',')
+    DOMAINS_LIST=$(grep "$DOMAIN" "$AUTOSCAN" | grep reply | awk '{print $(NF-2)}' | awk -F\. '{print $(NF-1) FS $NF}' | sort | uniq | tr '\n' ',')
     if [ -z "$DOMAINS_LIST" ]; then
       logger -st "($(basename "$0"))" $$ "No domain names were harvested from /opt/var/log/dnsmasq.log"
       exit 98
     fi
   fi
-fi
-
-if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
-  DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
-fi
-
-if [ -z "$IPSET_NAME" ] || [ -z "$DOMAINS_LIST" ]; then
-  logger -st "($(basename "$0"))" $$ ERROR missing args "'target destination' 'ipset_name' 'domain_list'"
-  exit 98
 fi
 
 DOMAINS_LIST=$(echo "$DOMAINS_LIST" | sed 's/,$//' | tr ',' '/') # v1.3
@@ -330,8 +318,8 @@ case "$VPNID" in
   TARGET_DESC="WAN"
   ;;
 1 | 2 | 3 | 4 | 5)
-  eval "TAG_MARK=\$FWMARK_OVPNC"${VPNID}
-  TARGET_DESC="VPN Client "$VPNID
+  eval "TAG_MARK=\$FWMARK_OVPNC${VPNID}"
+  TARGET_DESC="VPN Client $VPNID"
   ;;
 *)
   logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"

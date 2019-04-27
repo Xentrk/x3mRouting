@@ -3,7 +3,7 @@
 # Script: load_MANUAL_ipset.sh
 # VERSION=1.0.0
 # Author: Xentrk
-# Date: 15-March-2019
+# Date: 27-April-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise
@@ -13,42 +13,54 @@
 # Script Description:
 #
 # This script will create an IPSET list from a file containing IPv4 addresses stored in the
-# /opt/tmp directory on entware.  For example, I mined the domain names from dnsmasq for BBC
+# /opt/tmp directory on entware.  For example, I mined the domain names from MANUAL for BBC
 # and converted the domain names to their respective IPv4 addresses.  You must pass the script
 # the IPSET list name.  The IPSET list name must match the name of the file containing the IPv4
 # addresses stored in /opt/tmp.
 #
 # Usage example:
 #
-#    sh /jffs/scripts/Asuswrt-Merlin-Selective-Routing/load_MANUAL_ipset.sh BBC
+# Usage:     load_MANUAL_ipset.sh   ipset_name [del]  [dir='directory']
+#
+# Usage:     load_MANUAL_ipset.sh   BBC
+#               Create IPSET BBC via VPN Client 2
+# Usage:     load_MANUAL_ipset.sh   BBC  del
+#               Delete IPSET BBC and remove from VPN Client 2
+# Usage:     load_MANUAL_ipset.sh   BBC   dir=/mnt/sda1/Backups
+#               As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore
+# Usage:     load_MANUAL_ipset.sh   BBC   del dir=/mnt/sda1/Backups
+#               As per example two, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore location
 ####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
 set -x
 
-Kill_Lock () {
-        if [ -f "/tmp/load_MANUAL_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)" ]; then
-            logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_MANUAL_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_MANUAL_ipset.lock))"
-            logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)" '$1 == pid')"
-            kill "$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)"
-            rm -rf /tmp/load_MANUAL_ipset.lock
-            echo
-        fi
+Kill_Lock() {
+
+  if [ -f "/tmp/load_MANUAL_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)" ]; then
+    logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_MANUAL_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_MANUAL_ipset.lock))"
+    logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)" '$1 == pid')"
+    kill "$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)"
+    rm -rf /tmp/load_MANUAL_ipset.lock
+    echo
+  fi
 }
 
-Check_Lock () {
-        if [ -f "/tmp/load_MANUAL_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)" ] && [ "$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)" != "$$" ]; then
-            if [ "$(($(date +%s)-$(sed -n '3p' /tmp/load_MANUAL_ipset.lock)))" -gt "1800" ]; then
-                Kill_Lock
-            else
-                logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_MANUAL_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)) - Exiting (cpid=$$)"
-                echo; exit 1
-            fi
-        fi
-        echo "$@" > /tmp/load_MANUAL_ipset.lock
-        echo "$$" >> /tmp/load_MANUAL_ipset.lock
-        date +%s >> /tmp/load_MANUAL_ipset.lock
-        lock_load_MANUAL_ipset="true"
+Check_Lock() {
+
+  if [ -f "/tmp/load_MANUAL_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)" ] && [ "$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)" != "$$" ]; then
+    if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_MANUAL_ipset.lock)))" -gt "1800" ]; then
+      Kill_Lock
+    else
+      logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_MANUAL_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_MANUAL_ipset.lock)) - Exiting (cpid=$$)"
+      echo
+      exit 1
+    fi
+  fi
+  echo "$@" >/tmp/load_MANUAL_ipset.lock
+  echo "$$" >>/tmp/load_MANUAL_ipset.lock
+  date +%s >>/tmp/load_MANUAL_ipset.lock
+  lock_load_MANUAL_ipset="true"
 }
 
 # Chk_Entware function provided by @Martineau at snbforums.com
@@ -101,37 +113,90 @@ Chk_Entware() {
   return $READY
 }
 
-# Create IPSET lists
-# if ipset list does not exist, create it
+# Create IPSET lists if it doesn not exist
+
 check_MANUAL_ipset_list_exist() {
 
   IPSET_NAME=$1
 
-  if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$IPSET_NAME" ]; then
-    ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
+  if [ "$2" != "del" ]; then
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
+      ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
+      logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
+    fi
+  else
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
+      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
+    fi
   fi
 }
 
-# if ipset list x3mRouting_HULU is empty or source file is older than 24 hours, download source file; load ipset list
-
+# if ipset list is empty or source file is older than 24 hours, download source file; load ipset list
 check_MANUAL_ipset_list_values() {
 
   IPSET_NAME=$1
+  DIR=$2
 
   if [ "$(ipset -L "$IPSET_NAME" 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
-    awk '{print "add '"$IPSET_NAME"' " $1}' "$FILE_DIR/$IPSET_NAME" | ipset restore -!
+    awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   fi
 }
-Check_Lock  "$@"
 
-IPSET_NAME="$1"
-FILE_DIR="/opt/tmp"
+# Route IPSET to target WAN or VPN
+create_routing_rules() {
 
-Chk_Entware 30
+  iptables -t mangle -D PREROUTING -i br0 -m set --match-set $1 dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
+  if [ "$2" != "del" ]; then
+    iptables -t mangle -A PREROUTING -i br0 -m set --match-set $1 dst -j MARK --set-mark "$TAG_MARK"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created "("TAG fwmark $TAG_MARK")"
+  else
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted "("TAG fwmark $TAG_MARK")"
+  fi
+}
 
-check_MANUAL_ipset_list_exist $IPSET_NAME
-check_MANUAL_ipset_list_values $IPSET_NAME
+unlock_script() {
+  if [ "$lock_load_MANUAL_ipset" = "true" ]; then 
+    rm -rf "/tmp/load_MANUAL_ipset.lock"; 
+  fi
+}
 
-if [ "$lock_load_MANUAL_ipset" = "true" ]; then rm -rf "/tmp/load_MANUAL_ipset.lock"; fi
+error_exit() {
+    error_str="$@"
+    logger -t "($(basename "$0"))" $$ "$error_str"
+    unlock_script
+    exit 1
+}
+
+#======================== end of functions
+
+Check_Lock "$@"
+
+#======================================================================================Martineau Hack
+if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
+  DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
+else
+  DIR="/opt/tmp"
+fi
+
+if [ -n "$1" ]; then
+  IPSET_NAME=$1
+else
+  error_exit "ERROR missing arg1 'ipset_name'"
+fi
+
+# Delete mode?
+if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
+  Chk_Entware 30
+#  create_routing_rules "$IPSET_NAME" "del"
+  check_MANUAL_ipset_list_exist "$IPSET_NAME" "del"
+else
+  Chk_Entware 30
+#  set_ip_rule
+  check_MANUAL_ipset_list_exist "$IPSET_NAME"
+  check_MANUAL_ipset_list_values "$IPSET_NAME" "$DIR"
+#  create_routing_rules "$IPSET_NAME"
+fi
+
+unlock_script
 
 logger -t "($(basename "$0"))" $$ Ending Script Execution

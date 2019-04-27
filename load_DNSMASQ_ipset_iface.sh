@@ -167,8 +167,7 @@ set_ip_rule() {
     ip route flush cache
     ;;
   *)
-    logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"
-    exit 99
+    error_exit "ERROR $VPNID should be 0-WAN or 1-5=VPN"
     ;;
   esac
 }
@@ -265,6 +264,20 @@ create_routing_rules() {
   fi
 }
 
+unlock_script() {
+  if [ "$lock_load_DNSMASQ_ipset_iface" = "true" ]; then 
+    rm -rf "/tmp/load_DNSMASQ_ipset_iface.lock"
+  fi
+}
+
+error_exit() {
+    error_str="$@"
+    logger -t "($(basename "$0"))" $$ "$error_str"
+    unlock_script
+    exit 1
+}
+
+
 #==================== end of functions
 Check_Lock "$@"
 
@@ -276,8 +289,7 @@ if [ "$(echo "$@" | grep -c 'autoscan')" -gt 0 ]; then
   [ -z "$AUTOSCAN" ] && AUTOSCAN="/opt/var/log/dnsmasq.log"
   if [ -n "$AUTOSCAN" ]; then
     if [ ! -f "$AUTOSCAN" ]; then
-      logger -st "($(basename "$0"))" $$ "ERROR 'autoscan=$AUTOSCAN' file NOT found!"
-      exit 99
+      error_exit "ERROR 'autoscan=$AUTOSCAN' file NOT found!"
     fi
   fi
 fi
@@ -291,28 +303,26 @@ fi
 if [ -n "$1" ]; then
   VPNID=$1
 else
+  VPNID=0
   logger -st "($(basename "$0"))" $$ Warning missing arg1 "'destination_target' 0-WAN or 1-5=VPN," WAN assumed!
 fi
 if [ -n "$2" ]; then
   IPSET_NAME=$2
 else
-  logger -st "($(basename "$0"))" $$ ERROR missing arg2 "'ipset_name'"
-  exit 97
+  error_exit "ERROR missing arg2 'ipset_name'"
 fi
 if [ -n "$3" ] && [ -z "$AUTOSCAN" ]; then # v1.3
   DOMAINS_LIST="$3"
 else
   if [ -z "$AUTOSCAN" ]; then
-    logger -st "($(basename "$0"))" $$ ERROR missing arg3 "'domain_list'"
-    exit 98
+    error_exit "ERROR missing arg3 'domain_list'"
   else
     DOMAIN=$3
     # So having extracted the matching domains
     # Extract only the two-part TL domain i.e. disregard the sub-domains
     DOMAINS_LIST=$(grep $DOMAIN $AUTOSCAN | grep reply | awk '{print $(NF-2)}' | awk -F\. '{print $(NF-1) FS $NF}' | sort | uniq | tr '\n' ',')
     if [ -z "$DOMAINS_LIST" ]; then
-      logger -st "($(basename "$0"))" $$ "No domain names were harvested from /opt/var/log/dnsmasq.log"
-      exit 98
+      error_exit "No domain names were harvested from /opt/var/log/dnsmasq.log"
     fi
   fi
 fi
@@ -322,8 +332,7 @@ if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
 fi
 
 if [ -z "$IPSET_NAME" ] || [ -z "$DOMAINS_LIST" ]; then
-  logger -st "($(basename "$0"))" $$ ERROR missing args "'target destination' 'ipset_name' 'domain_list'"
-  exit 98
+  error_exit "ERROR missing args 'ipset_name' 'domain_list'"
 fi
 
 DOMAINS_LIST=$(echo "$DOMAINS_LIST" | sed 's/,$//' | tr ',' '/') # v1.3
@@ -341,8 +350,7 @@ case "$VPNID" in
   TARGET_DESC="VPN Client $VPNID"
   ;;
 *)
-  logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"
-  exit 99
+  error_exit "ERROR $VPNID should be 0-WAN or 1-5=VPN"
   ;;
 esac
 
@@ -364,5 +372,6 @@ else
   create_routing_rules "$IPSET_NAME"
 fi
 
-if [ "$lock_load_DNSMASQ_ipset_iface" = "true" ]; then rm -rf "/tmp/load_DNSMASQ_ipset_iface.lock"; fi
+unlock_script
+
 logger -st "($(basename "$0"))" $$ Completed Script Execution

@@ -158,8 +158,7 @@ set_ip_rule() {
     ip route flush cache
     ;;
   *)
-    logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"
-    exit 99
+    error_exit "ERROR $VPNID" should be "0-WAN or 1-5=VPN"
     ;;
   esac
 }
@@ -193,7 +192,7 @@ check_ASN_ipset_list_exist() {
     fi
   else
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
-      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
+      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || $$ "IPSET $IPSET_NAME deleted!" || error_exit "Error attempting to delete IPSET $IPSET_NAME!"
     fi
   fi
 }
@@ -231,6 +230,19 @@ create_routing_rules() {
   fi
 }
 
+unlock_script() {
+  if [ "$lock_load_ASN_ipset" = "true" ]; then 
+    rm -rf "/tmp/load_ASN_ipset.lock"
+  fi
+}
+
+error_exit() {
+    error_str="$@"
+    logger -t "($(basename "$0"))" $$ "$error_str"
+    unlock_script
+    exit 1
+}
+
 #================================ end of functions
 
 Check_Lock "$@"
@@ -247,20 +259,19 @@ VPNID=0
 if [ -n "$1" ]; then
   VPNID=$1
 else
-  logger -st "($(basename "$0"))" $$ Warning missing arg1 "'destination_target' 0-WAN or 1-5=VPN," WAN assumed!
+  VPNID=0
+  logger -t "($(basename "$0"))" "WARNING missing arg1 'destination_target' 0-WAN or 1-5=VPN, WAN assumed!"
 fi
 if [ -n "$2" ]; then
   IPSET_NAME=$2
 else
-  logger -st "($(basename "$0"))" $$ ERROR missing arg2 "'ipset_name'"
-  exit 97
+   error_exit "ERROR missing arg2 'ipset_name'"
 fi
 if [ -n "$3" ]; then
   ASN="$3"
   NUMBER="$(echo $ASN | sed 's/^AS//')"
 else
-  logger -st "($(basename "$0"))" $$ ERROR missing arg3 "ASN"
-  exit 97
+  error_exit "ERROR missing arg3 'ASN'"
 fi
 
 set_fwmark_parms
@@ -275,8 +286,7 @@ case $VPNID in
   TARGET_DESC="VPN Client "$VPNID
   ;;
 *)
-  logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"
-  exit 99
+  error_exit "ERROR $VPNID" should be "0-WAN or 1-5=VPN"
   ;;
 esac
 
@@ -293,6 +303,6 @@ else
   create_routing_rules "$IPSET_NAME" # Martineau Hack
 fi
 
-if [ "$lock_load_ASN_ipset" = "true" ]; then rm -rf "/tmp/load_ASN_ipset.lock"; fi
+unlock_script
 
 logger -t "($(basename "$0"))" $$ Ending Script Execution

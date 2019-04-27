@@ -24,43 +24,50 @@
 #
 # Usage example:
 #
-#    sh /jffs/scripts/Asuswrt-Merlin-Selective-Routing/load_AMAZON_ipset.sh
+# Usage:     load_AMAZON_ipset.sh   {[0|1|2|3|4|5]} [del] [dir='directory']
+#
+# Usage:     load_AMAZON_ipset.sh   2
+#               Create and populate IPSET AMAZON and route via VPN Client 2
+#
+# Usage:     load_AMAZON_ipset.sh   2 dir=/mnt/sda1/Backups
+#               As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore
+#
+# Usage:     load_AMAZON_ipset.sh   2 del
+#               Delete IPSET AMAZON, associated backup file and remove route via VPN Client 2
+#
 #####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
 set -x
 
-Kill_Lock () {
-        if [ -f "/tmp/load_AMAZON_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" ]; then
-            logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_AMAZON_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset.lock))"
-            logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" '$1 == pid')"
-            kill "$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)"
-            rm -rf /tmp/load_AMAZON_ipset.lock
-            echo
-        fi
+Kill_Lock() {
+  if [ -f "/tmp/load_AMAZON_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" ]; then
+    logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_AMAZON_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset.lock))"
+    logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" '$1 == pid')"
+    kill "$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)"
+    rm -rf /tmp/load_AMAZON_ipset.lock
+    echo
+  fi
 }
 
-Check_Lock () {
-        if [ -f "/tmp/load_AMAZON_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" ] && [ "$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" != "$$" ]; then
-            if [ "$(($(date +%s)-$(sed -n '3p' /tmp/load_AMAZON_ipset.lock)))" -gt "1800" ]; then
-                Kill_Lock
-            else
-                logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_AMAZON_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)) - Exiting (cpid=$$)"
-                echo; exit 1
-            fi
-        fi
-        echo "$@" > /tmp/load_AMAZON_ipset.lock
-        echo "$$" >> /tmp/load_AMAZON_ipset.lock
-        date +%s >> /tmp/load_AMAZON_ipset.lock
-        lock_load_AMAZON_ipset="true"
+Check_Lock() {
+  if [ -f "/tmp/load_AMAZON_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" ] && [ "$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" != "$$" ]; then
+    if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_AMAZON_ipset.lock)))" -gt "1800" ]; then
+      Kill_Lock
+    else
+      logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_AMAZON_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)) - Exiting (cpid=$$)"
+      echo
+      exit 1
+    fi
+  fi
+  echo "$@" >/tmp/load_AMAZON_ipset.lock
+  echo "$$" >>/tmp/load_AMAZON_ipset.lock
+  date +%s >>/tmp/load_AMAZON_ipset.lock
+  lock_load_AMAZON_ipset="true"
 }
-
-
-FILE_DIR="/opt/tmp"
 
 # Chk_Entware function provided by @Martineau at snbforums.com
-
 Chk_Entware() {
 
   # ARGS [wait attempts] [specific_entware_utility]
@@ -111,48 +118,85 @@ Chk_Entware() {
 
 # Download Amazon AWS json file
 download_AMAZON() {
-  wget https://ip-ranges.amazonaws.com/ip-ranges.json -O "$FILE_DIR/ip-ranges.json"
+  wget https://ip-ranges.amazonaws.com/ip-ranges.json -O "$DIR/ip-ranges.json"
   if [ "$?" = "1" ]; then # file download failed
     logger -t "($(basename "$0"))" $$ Script execution failed because https://ip-ranges.amazonaws.com/ip-ranges.json file could not be downloaded
     exit 1
   fi
-  true >"$FILE_DIR/AMAZON"
+  true >"$DIR/AMAZON"
   for REGION in us-east-1 us-east-2 us-west-1 us-west-2; do
-    jq '.prefixes[] | select(.region=='\"$REGION\"') | .ip_prefix' <"$FILE_DIR/ip-ranges.json" | sed 's/"//g' | sort -u >>"$FILE_DIR/AMAZON"
+    jq '.prefixes[] | select(.region=='\"$REGION\"') | .ip_prefix' <"$DIR/ip-ranges.json" | sed 's/"//g' | sort -u >>"$DIR/AMAZON"
   done
 }
 
 # if ipset AMAZON does not exist, create it
 
 check_ipset_list_exist_AMAZON() {
-  if [ "$(ipset list -n AMAZON 2>/dev/null)" != "AMAZON" ]; then
-    ipset create AMAZON hash:net family inet hashsize 1024 maxelem 65536
+  
+  IPSET_NAME="$1"
+  
+  if [ "$2" != "del" ]; then
+      if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
+        ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
+        logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
+      fi
+  else
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
+      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
+    fi
   fi
 }
 
 # if ipset list AMAZON is empty or source file is older than 7 days, download source file; load ipset list
 
 check_ipset_list_values_AMAZON() {
-  if [ "$(ipset -L AMAZON 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
-    if [ ! -s "$FILE_DIR/AMAZON" ] || [ "$(find "$FILE_DIR" -name AMAZON -mtime +7 -print)" = "$FILE_DIR/AMAZON" ]; then
+  IPSET_NAME="$1"
+  if [ "$(ipset -L $IPSET_NAME 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
+    if [ ! -s "$DIR/$IPSET_NAME" ] || [ "$(find "$DIR" -name $IPSET_NAME -mtime +7 -print)" = "$DIR/$IPSET_NAME" ]; then
       download_AMAZON
     fi
-    awk '{print "add AMAZON " $1}' "$FILE_DIR/AMAZON" | ipset restore -!
+    awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   else
-    if [ ! -s "$FILE_DIR/AMAZON" ]; then
+    if [ ! -s "$DIR/$IPSET_NAME" ]; then
       download_AMAZON
     fi
   fi
 }
 
+unlock_script() {
+ if [ "$lock_load_AMAZON_ipset" = "true" ]; then rm -rf "/tmp/load_AMAZON_ipset.lock"; fi
+}
+
+error_exit() {
+    error_str="$@"
+    logger -t "($(basename "$0"))" $$ "$error_str"
+    unlock_script
+    exit 1
+}
+
 # Call functions below this line
-Check_Lock  "$@"
+Check_Lock "$@"
 
-Chk_Entware 30 jq
+#======================================================================================Martineau Hack
 
-check_ipset_list_exist_AMAZON
-check_ipset_list_values_AMAZON
+if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
+  DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
+else
+  DIR="/opt/tmp"
+fi
 
-if [ "$lock_load_AMAZON_ipset" = "true" ]; then rm -rf "/tmp/load_AMAZON_ipset.lock"; fi
+#============================================================================= End of Martineau Hacks
+
+# Delete mode?
+if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
+  check_ipset_list_exist_AMAZON "AMAZON" "del"
+else
+  Chk_Entware 30 jq
+  check_ipset_list_exist_AMAZON "AMAZON"
+  check_ipset_list_values_AMAZON "AMAZON"
+fi
+#==================================================================================================
+
+unlock_script
 
 logger -t "($(basename "$0"))" $$ Completed Script Execution

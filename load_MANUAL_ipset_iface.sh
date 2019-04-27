@@ -162,8 +162,7 @@ set_ip_rule() {
     ip route flush cache
     ;;
   *)
-    logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"
-    exit 99
+    error_exit "ERROR $VPNID should be 0-WAN or 1-5=VPN"
     ;;
   esac
 }
@@ -209,6 +208,19 @@ create_routing_rules() {
   fi
 }
 
+unlock_script() {
+  if [ "$lock_load_MANUAL_ipset" = "true" ]; then 
+    rm -rf "/tmp/load_MANUAL_ipset.lock"; 
+  fi
+}
+
+error_exit() {
+    error_str="$@"
+    logger -t "($(basename "$0"))" $$ "$error_str"
+    unlock_script
+    exit 1
+}
+
 #======================== end of functions
 
 Check_Lock "$@"
@@ -222,14 +234,14 @@ fi
 
 if [ -n "$1" ]; then
   VPNID=$1
-else
-  logger -st "($(basename "$0"))" $$ Warning missing arg1 "'destination_target' 0-WAN or 1-5=VPN," WAN assumed!
+else  
+  VPNID=0
+  logger -t "($(basename "$0"))" $$ "Warning missing arg1 'destination_target' 0-WAN or 1-5=VPN, WAN assumed!"
 fi
 if [ -n "$2" ]; then
   IPSET_NAME=$2
 else
-  logger -st "($(basename "$0"))" $$ ERROR missing arg2 "'ipset_name'"
-  exit 97
+  error_exit "ERROR missing arg2 'ipset_name'"
 fi
 
 set_fwmark_parms
@@ -244,8 +256,7 @@ case $VPNID in
   TARGET_DESC="VPN Client "$VPNID
   ;;
 *)
-  logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"
-  exit 99
+  error_exit "ERROR $VPNID should be 0-WAN or 1-5=VPN"
   ;;
 esac
 
@@ -262,6 +273,6 @@ else
   create_routing_rules "$IPSET_NAME"
 fi
 
-if [ "$lock_load_MANUAL_ipset_iface" = "true" ]; then rm -rf "/tmp/load_MANUAL_ipset_iface.lock"; fi
+unlock_script
 
 logger -t "($(basename "$0"))" $$ Ending Script Execution

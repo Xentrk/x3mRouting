@@ -3,7 +3,7 @@
 # Script: load_DNSMASQ_ipset.sh
 # VERSION=1.0.0
 # Author: Martineau, Xentrk
-# Date: 15-March-2019
+# Date: 6-April-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise
@@ -20,7 +20,21 @@
 #
 # Usage example:
 #
-#    sh load_DNSMASQ_ipset.sh BBC_WEB bbc.com,bbci.co.uk,bbc.co.uk
+# Usage:     load_DNSMASQ_ipset.sh   ipset_name  domains[,...]} ['autoscan'] [del]  [dir='directory']
+#
+# Usage:     load_DNSMASQ_ipset.sh   BBC   bbc.co.uk
+#               Create IPSET BBC via VPN Client 2 and autopopulate IPs for domain 'bbc.co.uk'
+# Usage:     load_DNSMASQ_ipset.sh   BBC   bbc.co.uk   del
+#               Delete IPSET BBC and remove from VPN Client 2
+# Usage:     load_DNSMASQ_ipset.sh   BBC   bbc.co.uk   dir=/mnt/sda1/Backups
+#               As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore
+# Usage:     load_DNSMASQ_ipset.sh   NETFLIX   amazonaws.com,netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
+#               Create IPSET NETFLIX via WAN and autopopulate IPs for multiple Netflix domains
+# Usage:     load_DNSMASQ_ipset.sh   SKY sky.com autoscan
+#               Create IPSET SKY and extract all matching Top-Level domains containing 'sky.com' from
+#               '/opt/var/log/dnsmasq.log'
+#               e.g. ipset=/akadns.net/edgekey.net/edgesuite.net/epgsky.com/sky.com/SKY
+#               from 'a674.hsar.cdn.sky.com.edgesuite.net/adm.sky.com/assets.sky.com/assets.sky.com-secure.edgekey.net/awk.epgsky.com' etc...
 ####################################################################################################
 logger -st "($(basename "$0"))" $$ Starting Script Execution
 
@@ -109,39 +123,44 @@ Chk_Entware() {
 # check if /jffs/configs/dnsmasq.conf.add contains 'ipset=' entry for the domains
 check_dnsmasq() {
 
+  DNSMASQ_ENTRY=$1
+
   if [ -s /jffs/configs/dnsmasq.conf.add ]; then # dnsmasq.conf.add file exists
-    if [ "$(grep -c "$1" "/jffs/configs/dnsmasq.conf.add")" -eq "1" ]; then # see if line exists for $IPSET_NAME
+    if [ "$(grep -c "$DNSMASQ_ENTRY" "/jffs/configs/dnsmasq.conf.add")" -ge "1" ]; then # if true, then one or more lines exist in dnsmasq.conf.add
       if [ "$2" = "del" ]; then
         sed -i "/^ipset.*${IPSET_NAME}$/d" /jffs/configs/dnsmasq.conf.add
-        logger -st "($(basename "$0"))" $$ "'"ipset=$1"'" deleted from "'/jffs/configs/dnsmasq.conf.add'"
+        logger -st "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" deleted from "'/jffs/configs/dnsmasq.conf.add'"
       fi
     else
-      printf "ipset=$1\n" >>/jffs/configs/dnsmasq.conf.add # add 'ipset=' domains entry to dnsmasq.conf.add
+      printf "ipset=$DNSMASQ_ENTRY\n" >>/jffs/configs/dnsmasq.conf.add # add 'ipset=' domains entry to dnsmasq.conf.add
     fi
     service restart_dnsmasq >/dev/null 2>&1
-  else
-    if [ "$2" != "del" ]; then
-      printf "ipset=$1\n" >/jffs/configs/dnsmasq.conf.add # dnsmasq.conf.add does not exist, create dnsmasq.conf.add
-      logger -st "($(basename "$0"))" $$ "'"ipset=$1"'" added to "'/jffs/configs/dnsmasq.conf.add'"
-      service restart_dnsmasq >/dev/null 2>&1
-    fi
+#  else
+#    if [ "$2" != "del" ]; then
+#      printf "ipset=$DNSMASQ_ENTRY\n" >/jffs/configs/dnsmasq.conf.add # dnsmasq.conf.add does not exist, create dnsmasq.conf.add
+#      logger -st "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" added to "'/jffs/configs/dnsmasq.conf.add'"
+#      service restart_dnsmasq >/dev/null 2>&1
+#    fi
   fi
 }
 
 check_ipset_list() {
+
+  IPSET_NAME=$1
+
   if [ "$2" != "del" ]; then
-    if [ "$(ipset list -n $1 2>/dev/null)" != "$1" ]; then #does ipset list exist?
-      if [ -s "$DIR/$1" ]; then # does $1 ipset restore file exist?
-        ipset restore -! <"$DIR/$1" # Restore ipset list if restore file exists at $DIR/$1
-        logger -st "($(basename "$0"))" $$ IPSET restored: $1 from "'$DIR/$1'"
+    if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$1" ]; then #does ipset list exist?
+      if [ -s "$DIR/$IPSET_NAME" ]; then # does $1 ipset restore file exist?
+        ipset restore -! <"$DIR/$IPSET_NAME" # Restore ipset list if restore file exists at $DIR/$1
+        logger -st "($(basename "$0"))" $$ IPSET restored: "$IPSET_NAME" from "$DIR/$IPSET_NAME"
       else
-        ipset create $1 hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create $1 ipset list from scratch
-        logger -st "($(basename "$0"))" $$ IPSET created: $1 hash:net family inet hashsize 1024 maxelem 65536
+        ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create $1 ipset list from scratch
+        logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
       fi
     fi
   else
-    if [ "$(ipset list -n $1 2>/dev/null)" = "$1" ]; then
-      ipset destroy $1
+    if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" = "$IPSET_NAME" ]; then
+      ipset destroy "$IPSET_NAME"
       logger -st "($(basename "$0"))" $$ IPSET $1 deleted!
     fi
   fi
@@ -149,70 +168,89 @@ check_ipset_list() {
 
 # if IPSET is older than 24 hours, save the current IPSET list to disk
 check_restore_file_age() {
+
+  IPSET_NAME=$1
+  DIR=$2
+
   if [ -s "$DIR" ]; then
-    if [ "$(find $DIR -name $1 -mtime +1 -print 2>/dev/null)" = "$DIR/$1" ]; then
-      ipset save $1 >"$DIR/$1"
+    if [ "$(find $DIR -name $IPSET_NAME -mtime +1 -print 2>/dev/null)" = "$DIR/$IPSET_NAME" ]; then
+      ipset save "$IPSET_NAME" >"$DIR/$IPSET_NAME"
     fi
   fi
 }
 
 # If cronjob to back up the DOMAINS ipset list every 24 hours @ 2:00 AM does not exist, then create it
 check_cron_job() {
-  #cru l | grep $1_ipset_list
+
+  IPSET_NAME=$1
+  
   cru l | grep $1 2>/dev/null # Martineau Fix
   if [ "$?" = "1" ]; then # no cronjob entry found, create it
     if [ "$2" != "del" ]; then
-      cru a $1 "0 2 * * * ipset save $1 > $DIR/$1"
-      logger -st "($(basename "$0"))" $$ CRON schedule created: "#$1#" "'0 2 * * * ipset save $1'"
+      cru a $IPSET_NAME "0 2 * * * ipset save $IPSET_NAME > $DIR/$IPSET_NAME"
+      logger -st "($(basename "$0"))" $$ CRON schedule created: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
     fi
   else
     if [ "$2" = "del" ]; then
-      cru d $1 "0 2 * * * ipset save $1"
-      logger -st "($(basename "$0"))" $$ CRON schedule deleted: "#$1#" "'0 2 * * * ipset save $1'"
+      cru d $IPSET_NAME "0 2 * * * ipset save $IPSET_NAME"
+      logger -st "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
     fi
   fi
 }
 
-Check_Lock "$@"
-#======================================================================================Martineau Hack
-IPSET_NAME=
-DOMAINS_LIST=
-DIR="/opt/tmp"
+unlock_script() {
+  if [ "$lock_load_DNSMASQ_ipset" = "true" ]; then 
+    rm -rf "/tmp/load_DNSMASQ_ipset.lock"
+  fi
+}
 
-AUTOSCAN= # v1.3
+error_exit() {
+    error_str="$@"
+    logger -t "($(basename "$0"))" $$ "$error_str"
+    unlock_script
+    exit 1
+}
+
+#==================== end of functions
+Check_Lock "$@"
+
+#======================================================================================Martineau Hack
+
+AUTOSCAN=
 if [ "$(echo "$@" | grep -c 'autoscan')" -gt 0 ]; then
   AUTOSCAN=$(echo "$@" | sed -n "s/^.*autoscan=//p" | awk '{print $1}')
   [ -z "$AUTOSCAN" ] && AUTOSCAN="/opt/var/log/dnsmasq.log"
   if [ -n "$AUTOSCAN" ]; then
     if [ ! -f "$AUTOSCAN" ]; then
-      logger -st "($(basename "$0"))" $$ "ERROR 'autoscan=$AUTOSCAN' file NOT found!"
-      exit 99
+      error_exit "ERROR 'autoscan=$AUTOSCAN' file NOT found!"
     fi
   fi
 fi
 
-#if [ ! -z "$1" ];then
-#	VPNID=$1
-#else
-#	logger -st "($(basename "$0"))" $$ Warning missing arg1 "'destination_target' 0-WAN or 1-5=VPN," WAN assumed!
-#fi
+if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
+  DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
+else
+  DIR="/opt/tmp"
+fi
+
 if [ -n "$1" ]; then
   IPSET_NAME=$1
 else
-  logger -st "($(basename "$0"))" $$ ERROR missing arg2 "'ipset_name'"
-  exit 97
+    error_exit "ERROR missing arg1 'ipset_name'"
 fi
 if [ -n "$2" ] && [ -z "$AUTOSCAN" ]; then # v1.3
   DOMAINS_LIST="$2"
 else
-  if [ -z "$AUTOSCAN" ]; then # v1.3
-    logger -st "($(basename "$0"))" $$ ERROR missing arg3 "'domain_list'"
-    exit 98
+  if [ -z "$AUTOSCAN" ]; then
+    error_exit "ERROR missing arg2 'domain_list'"
   else
     DOMAIN=$2
-    # So having extracted the matching domains						# v1.3
+    # So having extracted the matching domains
     # Extract only the two-part TL domain i.e. disregard the sub-domains
     DOMAINS_LIST=$(grep $DOMAIN $AUTOSCAN | grep reply | awk '{print $(NF-2)}' | awk -F\. '{print $(NF-1) FS $NF}' | sort | uniq | tr '\n' ',')
+    if [ -z "$DOMAINS_LIST" ]; then
+      error_exit "No domain names were harvested from /opt/var/log/dnsmasq.log"
+    fi
   fi
 fi
 
@@ -221,8 +259,7 @@ if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
 fi
 
 if [ -z "$IPSET_NAME" ] || [ -z "$DOMAINS_LIST" ]; then
-  logger -st "($(basename "$0"))" $$ ERROR missing args "'target destination' 'ipset_name' 'domain_list'"
-  exit 98
+  error_exit "ERROR missing args 'ipset_name' 'domain_list'"
 fi
 
 DOMAINS_LIST=$(echo "$DOMAINS_LIST" | sed 's/,$//' | tr ',' '/') # v1.3
@@ -230,18 +267,19 @@ DNSMASQ_ENTRY="/$DOMAINS_LIST/$IPSET_NAME"
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
+  Chk_Entware 30
   check_dnsmasq "$DNSMASQ_ENTRY" "del"
   check_cron_job "$IPSET_NAME" "del"
   check_ipset_list "$IPSET_NAME" "del"
 else
   #==================================================================================================
-  Chk_Entware
-  check_dnsmasq "$DNSMASQ_ENTRY"       # Martineau Hack
-  check_ipset_list "$IPSET_NAME"       # Martineau Hack
-  check_restore_file_age "$IPSET_NAME" # Martineau Hack
-  check_cron_job "$IPSET_NAME"         # Martineau Hack
-
+  Chk_Entware 30
+  check_dnsmasq "$DNSMASQ_ENTRY"             
+  check_ipset_list "$IPSET_NAME"              
+  check_restore_file_age "$IPSET_NAME" "$DIR" 
+  check_cron_job "$IPSET_NAME"                
 fi
 
-if [ "$lock_load_DNSMASQ_ipset" = "true" ]; then rm -rf "/tmp/load_DNSMASQ_ipset.lock"; fi
+unlock_script
+
 logger -st "($(basename "$0"))" $$ Completed Script Execution

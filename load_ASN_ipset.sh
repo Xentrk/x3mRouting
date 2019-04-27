@@ -1,6 +1,6 @@
 #!/bin/sh
 ####################################################################################################
-# Script: load_ASN_ipsets.sh
+# Script: load_ASN_ipsets_iface.sh
 # VERSION=1.0.0
 # Author: Xentrk
 # Date: 15-March-2019
@@ -19,41 +19,47 @@
 #
 # Usage example:
 #
-#    sh /jffs/scripts/Asuswrt-Merlin-Selective-Routing/load_ASN_ipset.sh NETFLIX AS2906
+# Usage: load_ASN_ipset_iface.sh {[0|1|2|3|4|5]} ipset_name ASN [del] [dir='directory']
+#
+# Usage: load_ASN_ipset_iface.sh 2  NETFLIX  AS2906
+#          Create IPSET NETFLIX from AS2906 via VPN Client 2
+#
+# Usage: load_ASN_ipset_iface.sh 2  NETFLIX  AS2906  dir=/mnt/sda1/Backups
+#          As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore
+#
+# Usage: load_ASN_ipset_iface.sh 2  NETFLIX  del
+#          Delete IPSET NETFLIX and remove routing via VPN Client 2
+#
 ####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
-# set -x
+set -x
 
-Kill_Lock () {
-        if [ -f "/tmp/load_ASN_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_ASN_ipset.lock)" ]; then
-            logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_ASN_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_ASN_ipset.lock))"
-            logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_ASN_ipset.lock)" '$1 == pid')"
-            kill "$(sed -n '2p' /tmp/load_ASN_ipset.lock)"
-            rm -rf /tmp/load_ASN_ipset.lock
-            echo
-        fi
+Kill_Lock() {
+  if [ -f "/tmp/load_ASN_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_ASN_ipset.lock)" ]; then
+    logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_ASN_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_ASN_ipset.lock))"
+    logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_ASN_ipset.lock)" '$1 == pid')"
+    kill "$(sed -n '2p' /tmp/load_ASN_ipset.lock)"
+    rm -rf /tmp/load_ASN_ipset.lock
+    echo
+  fi
 }
 
-Check_Lock () {
-        if [ -f "/tmp/load_ASN_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_ASN_ipset.lock)" ] && [ "$(sed -n '2p' /tmp/load_ASN_ipset.lock)" != "$$" ]; then
-            if [ "$(($(date +%s)-$(sed -n '3p' /tmp/load_ASN_ipset.lock)))" -gt "1800" ]; then
-                Kill_Lock
-            else
-                logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_ASN_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_ASN_ipset.lock)) - Exiting (cpid=$$)"
-                echo; exit 1
-            fi
-        fi
-        echo "$@" > /tmp/load_ASN_ipset.lock
-        echo "$$" >> /tmp/load_ASN_ipset.lock
-        date +%s >> /tmp/load_ASN_ipset.lock
-        lock_load_ASN_ipset="true"
+Check_Lock() {
+  if [ -f "/tmp/load_ASN_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_ASN_ipset.lock)" ] && [ "$(sed -n '2p' /tmp/load_ASN_ipset.lock)" != "$$" ]; then
+    if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_ASN_ipset.lock)))" -gt "1800" ]; then
+      Kill_Lock
+    else
+      logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_ASN_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_ASN_ipset.lock)) - Exiting (cpid=$$)"
+      echo
+      exit 1
+    fi
+  fi
+  echo "$@" >/tmp/load_ASN_ipset.lock
+  echo "$$" >>/tmp/load_ASN_ipset.lock
+  date +%s >>/tmp/load_ASN_ipset.lock
+  lock_load_ASN_ipset="true"
 }
-
-IPSET_NAME="$1"
-ASN="$2"
-NUMBER="$(echo $ASN | sed 's/^AS//')"
-FILE_DIR="/opt/tmp"
 
 # Chk_Entware function provided by @Martineau at snbforums.com
 
@@ -109,10 +115,12 @@ Chk_Entware() {
 
 download_ASN_ipset_list() {
 
-  ASN=$1
-  NUMBER=$2
+  IPSET_NAME=$1
+  ASN=$2
+  NUMBER=$3
+  DIR=$4
 
-  curl https://ipinfo.io/"$ASN" 2>/dev/null | grep -E "a href.*$NUMBER\/" | grep -v ":" | sed 's|^.*<a href="/'"$ASN"'/||' | sed 's|" >||' >"$FILE_DIR/$IPSET_NAME"
+  curl https://ipinfo.io/"$ASN" 2>/dev/null | grep -E "a href.*$NUMBER\/" | grep -v ":" | sed 's|^.*<a href="/'"$ASN"'/||' | sed 's|" >||' >"$DIR/$IPSET_NAME"
 
   if [ "$?" = "1" ]; then # file download failed
     logger -t "($(basename "$0"))" $$ Script execution failed because $ASN file could not be downloaded
@@ -124,10 +132,16 @@ download_ASN_ipset_list() {
 # if ipset list does not exist, create it
 check_ASN_ipset_list_exist() {
 
-  IPSET_NAME=$1
-
-  if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$IPSET_NAME" ]; then
-    ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
+  IPSET_NAME="$1"
+  if [ "$2" != "del" ]; then
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
+      ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
+      logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
+    fi
+  else
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
+      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || error_exit "Error attempting to delete IPSET $IPSET_NAME!"
+    fi
   fi
 }
 
@@ -138,25 +152,78 @@ check_ASN_ipset_list_values() {
   IPSET_NAME=$1
   ASN=$2
   NUMBER=$3
+  DIR=$4
 
   if [ "$(ipset -L "$IPSET_NAME" 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
-    if [ ! -s "$FILE_DIR/$IPSET_NAME" ] || [ "$(find "$FILE_DIR" -name $IPSET_NAME -mtime +1 -print)" = "$FILE_DIR/$IPSET_NAME" ]; then
-      download_ASN_ipset_list $ASN $NUMBER
+    if [ ! -s "$DIR/$IPSET_NAME" ] || [ "$(find "$DIR" -name $IPSET_NAME -mtime +1 -print)" = "$DIR/$IPSET_NAME" ]; then
+      download_ASN_ipset_list $IPSET_NAME $ASN $NUMBER $DIR
     fi
-    awk '{print "add '"$IPSET_NAME"' " $1}' "$FILE_DIR/$IPSET_NAME" | ipset restore -!
+    awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   else
-    if [ ! -s "$FILE_DIR/$IPSET_NAME" ]; then
-      download_ASN_ipset_list $ASN $NUMBER
+    if [ ! -s "$DIR/$IPSET_NAME" ]; then
+      download_ASN_ipset_list $IPSET_NAME $ASN $NUMBER $DIR
     fi
   fi
 }
 
-Check_Lock  "$@"
+# Route IPSET to target WAN or VPN
+create_routing_rules() {
+  IPSET_NAME="$1"
+  iptables -t mangle -D PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
+  if [ "$2" != "del" ]; then
+    iptables -t mangle -A PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created for $IPSET_NAME "("TAG fwmark $TAG_MARK")"
+  else
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted for $IPSET_NAME "("TAG fwmark $TAG_MARK")"
+  fi
+}
 
-Chk_Entware 30
+unlock_script() {
+  if [ "$lock_load_ASN_ipset" = "true" ]; then 
+    rm -rf "/tmp/load_ASN_ipset.lock"
+  fi
+}
 
-check_ASN_ipset_list_exist $IPSET_NAME
-check_ASN_ipset_list_values $IPSET_NAME $ASN $NUMBER
+error_exit() {
+    error_str="$@"
+    logger -t "($(basename "$0"))" $$ "$error_str"
+    unlock_script
+    exit 1
+}
+
+#================================ end of functions
+
+Check_Lock "$@"
+
+#======================================================================================Martineau Hack
+
+if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
+  DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
+else
+  DIR="/opt/tmp"
+fi
+
+if [ -n "$1" ]; then
+  IPSET_NAME=$1
+else
+  error_exit "ERROR missing arg1 'ipset_name'"
+fi
+if [ -n "$3" ]; then
+  ASN="$3"
+  NUMBER="$(echo $ASN | sed 's/^AS//')"
+else
+  error_exit "ERROR missing arg2 'ASN'"
+fi
+
+# Delete mode?
+if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
+  Chk_Entware 30
+  check_ASN_ipset_list_exist "$IPSET_NAME" "del"
+else
+  Chk_Entware 30
+  check_ASN_ipset_list_exist "$IPSET_NAME"
+  check_ASN_ipset_list_values "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
+fi
 
 if [ "$lock_load_ASN_ipset" = "true" ]; then rm -rf "/tmp/load_ASN_ipset.lock"; fi
 

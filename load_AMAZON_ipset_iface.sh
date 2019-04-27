@@ -142,7 +142,7 @@ check_ipset_list_exist_AMAZON() {
       fi
   else
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
-      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
+      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || error_exit "Error attempting to delete IPSET $IPSET_NAME!"
     fi
   fi
 }
@@ -220,27 +220,40 @@ case "$VPNID" in
   ip route flush cache
   ;;
 *)
-  logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"
-  exit 99
+  error_exit "ERROR $1 should be 0-WAN or 1-5=VPN"
   ;;
 esac
+}
+
+unlock_script() {
+  if [ "$lock_load_AMAZON_ipset_iface" = "true" ]; then 
+    rm -rf "/tmp/load_AMAZON_ipset_iface.lock"
+  fi
+}
+
+error_exit() {
+    error_str="$@"
+    logger -t "($(basename "$0"))" $$ "$error_str"
+    unlock_script
+    exit 1
 }
 
 # Call functions below this line
 Check_Lock "$@"
 
 #======================================================================================Martineau Hack
-VPNID=0
-DIR="/opt/tmp"
 
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
   DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
+else
+  DIR="/opt/tmp"
 fi
 
 if [ -n "$1" ]; then
   VPNID=$1
 else
-  logger -st "($(basename "$0"))" $$ Warning missing arg1 "'destination_target' 0-WAN or 1-5=VPN," WAN assumed!
+  VPNID=0
+  logger -t "($(basename "$0"))" $$ "Warning missing arg1 'destination_target' 0-WAN or 1-5=VPN, WAN assumed!"
 fi
 
 set_fwmark_parms
@@ -255,8 +268,7 @@ case "$VPNID" in
   TARGET_DESC="VPN Client "$VPNID
   ;;
 *)
-  logger -st "($(basename "$0"))" $$ ERROR "$1" should be "0-WAN or 1-5=VPN"
-  exit 99
+  error_exit "ERROR $1 should be 0-WAN or 1-5=VPN"
   ;;
 esac
 
@@ -274,6 +286,7 @@ else
   create_routing_rules
 fi
 #==================================================================================================
-if [ "$lock_load_AMAZON_ipset_iface" = "true" ]; then rm -rf "/tmp/load_AMAZON_ipset_iface.lock"; fi
+
+unlock_script
 
 logger -t "($(basename "$0"))" $$ Completed Script Execution

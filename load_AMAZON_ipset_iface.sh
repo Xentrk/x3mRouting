@@ -132,11 +132,13 @@ download_AMAZON() {
 # if ipset AMAZON does not exist, create it
 
 check_ipset_list_exist_AMAZON() {
+  
   IPSET_NAME="$1"
+  
   if [ "$2" != "del" ]; then
       if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
         ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
-        logger -st "($(basename "$0"))" $$ IPSET created: $1 hash:net family inet hashsize 1024 maxelem 65536
+        logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
       fi
   else
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
@@ -202,7 +204,7 @@ case "$VPNID" in
 
 3)
   ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "TAG_MARK" table 113 prio 9993
+  ip rule add from 0/0 fwmark "$TAG_MARK" table 113 prio 9993
   ip route flush cache
   ;;
 

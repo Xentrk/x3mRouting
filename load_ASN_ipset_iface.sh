@@ -142,7 +142,7 @@ set_ip_rule() {
 
   3)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
-    ip rule add from 0/0 fwmark "TAG_MARK" table 113 prio 9993
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 113 prio 9993
     ip route flush cache
     ;;
 

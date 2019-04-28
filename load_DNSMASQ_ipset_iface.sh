@@ -3,12 +3,16 @@
 # Script: load_DNSMASQ_ipset_iface.sh
 # VERSION=1.0.0
 # Author: Martineau, Xentrk
-# Date: 6-April-2019
+# Date: 28-April-2019
 #
 # Grateful:
-#   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise
-#   and on-going support!
+#   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
+#   on-going support and collaboration on this project!
 #
+#   Chk_Entware function and code to process the passing of parms written by Martineau
+#
+#   Kill_Lock, Check_Lock and Unlock_Script functions provided by Adamm https://github.com/Adamm00
+# 
 ####################################################################################################
 # Script Description:
 #
@@ -39,31 +43,33 @@
 logger -st "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
-set -x
+#set -x
 
 Kill_Lock() {
-  if [ -f "/tmp/load_DNSMASQ_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)" ]; then
-    logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_DNSMASQ_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock))"
-    logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)" '$1 == pid')"
-    kill "$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)"
-    rm -rf /tmp/load_DNSMASQ_ipset.lock
+
+  if [ -f "/tmp/load_DNSMASQ_ipset_iface.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_DNSMASQ_ipset_iface.lock)" ]; then
+    logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_DNSMASQ_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_DNSMASQ_ipset_iface.lock))"
+    logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_DNSMASQ_ipset_iface.lock)" '$1 == pid')"
+    kill "$(sed -n '2p' /tmp/load_DNSMASQ_ipset_iface.lock)"
+    rm -rf /tmp/load_DNSMASQ_ipset_iface.lock
     echo
   fi
 }
 
 Check_Lock() {
-  if [ -f "/tmp/load_DNSMASQ_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)" ] && [ "$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)" != "$$" ]; then
-    if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_DNSMASQ_ipset.lock)))" -gt "1800" ]; then
+
+  if [ -f "/tmp/load_DNSMASQ_ipset_iface.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_DNSMASQ_ipset_iface.lock)" ] && [ "$(sed -n '2p' /tmp/load_DNSMASQ_ipset_iface.lock)" != "$$" ]; then
+    if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_DNSMASQ_ipset_iface.lock)))" -gt "1800" ]; then
       Kill_Lock
     else
-      logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_DNSMASQ_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_DNSMASQ_ipset_iface.lock)) - Exiting (cpid=$$)"
+      logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_DNSMASQ_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_DNSMASQ_ipset_iface.lock)) - Exiting (cpid=$$)"
       echo
       exit 1
     fi
   fi
-  echo "$@" >/tmp/load_DNSMASQ_ipset.lock
-  echo "$$" >>/tmp/load_DNSMASQ_ipset.lock
-  date +%s >>/tmp/load_DNSMASQ_ipset.lock
+  echo "$@" >/tmp/load_DNSMASQ_ipset_iface.lock
+  echo "$$" >>/tmp/load_DNSMASQ_ipset_iface.lock
+  date +%s >>/tmp/load_DNSMASQ_ipset_iface.lock
   lock_load_DNSMASQ_ipset_iface="true"
 }
 
@@ -121,7 +127,8 @@ Chk_Entware() {
 }
 
 ### Define interface/bitmask to route traffic to below
-set_fwmark_parms() {
+Set_Fwmark_Parms() {
+
   FWMARK_WAN="0x8000/0x8000"
   FWMARK_OVPNC1="0x1000/0x1000"
   FWMARK_OVPNC2="0x2000/0x2000"
@@ -130,7 +137,8 @@ set_fwmark_parms() {
   FWMARK_OVPNC5="0x3000/0x3000"
 }
 
-set_ip_rule() {
+Set_IP_Rule() {
+
   case "$VPNID" in
   0)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
@@ -142,38 +150,34 @@ set_ip_rule() {
     ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
     ip route flush cache
     ;;
-
-  2)
+  2)  
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
     ip route flush cache
     ;;
-
   3)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 113 prio 9993
     ip route flush cache
     ;;
-
   4)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 114 prio 9992
     ip route flush cache
     ;;
-
   5)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 115 prio 9991
     ip route flush cache
     ;;
   *)
-    error_exit "ERROR $VPNID should be 0-WAN or 1-5=VPN"
+    Error_Exit "ERROR $1 should be 0-WAN or 1-5=VPN"
     ;;
   esac
 }
 
 # check if /jffs/configs/dnsmasq.conf.add contains 'ipset=' entry for the domains
-check_dnsmasq() {
+Check_Dnsmasq() {
 
   DNSMASQ_ENTRY=$1
 
@@ -196,7 +200,7 @@ check_dnsmasq() {
   fi
 }
 
-check_ipset_list() {
+Check_Ipset_List() {
 
   IPSET_NAME=$1
 
@@ -219,7 +223,7 @@ check_ipset_list() {
 }
 
 # if IPSET is older than 24 hours, save the current IPSET list to disk
-check_restore_file_age() {
+Check_Restore_File_Age() {
 
   IPSET_NAME=$1
   DIR=$2
@@ -232,7 +236,7 @@ check_restore_file_age() {
 }
 
 # If cronjob to back up the DOMAINS ipset list every 24 hours @ 2:00 AM does not exist, then create it
-check_cron_job() {
+Check_Cron_Job() {
 
   IPSET_NAME=$1
   
@@ -251,7 +255,7 @@ check_cron_job() {
 }
 
 # Route IPSET to target WAN or VPN
-create_routing_rules() {
+Create_Routing_Rules() {
 
   IPSET_NAME=$1
 
@@ -264,16 +268,18 @@ create_routing_rules() {
   fi
 }
 
-unlock_script() {
+Unlock_Script() {
+
   if [ "$lock_load_DNSMASQ_ipset_iface" = "true" ]; then 
     rm -rf "/tmp/load_DNSMASQ_ipset_iface.lock"
   fi
 }
 
-error_exit() {
+Error_Exit() {
+
     error_str="$@"
     logger -t "($(basename "$0"))" $$ "$error_str"
-    unlock_script
+    Unlock_Script
     exit 1
 }
 
@@ -289,7 +295,7 @@ if [ "$(echo "$@" | grep -c 'autoscan')" -gt 0 ]; then
   [ -z "$AUTOSCAN" ] && AUTOSCAN="/opt/var/log/dnsmasq.log"
   if [ -n "$AUTOSCAN" ]; then
     if [ ! -f "$AUTOSCAN" ]; then
-      error_exit "ERROR 'autoscan=$AUTOSCAN' file NOT found!"
+      Error_Exit "ERROR 'autoscan=$AUTOSCAN' file NOT found!"
     fi
   fi
 fi
@@ -309,20 +315,20 @@ fi
 if [ -n "$2" ]; then
   IPSET_NAME=$2
 else
-  error_exit "ERROR missing arg2 'ipset_name'"
+  Error_Exit "ERROR missing arg2 'ipset_name'"
 fi
 if [ -n "$3" ] && [ -z "$AUTOSCAN" ]; then # v1.3
   DOMAINS_LIST="$3"
 else
   if [ -z "$AUTOSCAN" ]; then
-    error_exit "ERROR missing arg3 'domain_list'"
+    Error_Exit "ERROR missing arg3 'domain_list'"
   else
     DOMAIN=$3
     # So having extracted the matching domains
     # Extract only the two-part TL domain i.e. disregard the sub-domains
     DOMAINS_LIST=$(grep $DOMAIN $AUTOSCAN | grep reply | awk '{print $(NF-2)}' | awk -F\. '{print $(NF-1) FS $NF}' | sort | uniq | tr '\n' ',')
     if [ -z "$DOMAINS_LIST" ]; then
-      error_exit "No domain names were harvested from /opt/var/log/dnsmasq.log"
+      Error_Exit "No domain names were harvested from /opt/var/log/dnsmasq.log"
     fi
   fi
 fi
@@ -332,13 +338,13 @@ if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
 fi
 
 if [ -z "$IPSET_NAME" ] || [ -z "$DOMAINS_LIST" ]; then
-  error_exit "ERROR missing args 'ipset_name' 'domain_list'"
+  Error_Exit "ERROR missing args 'ipset_name' 'domain_list'"
 fi
 
 DOMAINS_LIST=$(echo "$DOMAINS_LIST" | sed 's/,$//' | tr ',' '/') # v1.3
 DNSMASQ_ENTRY="/$DOMAINS_LIST/$IPSET_NAME"
 
-set_fwmark_parms
+Set_Fwmark_Parms
 
 case "$VPNID" in
 0)
@@ -350,28 +356,28 @@ case "$VPNID" in
   TARGET_DESC="VPN Client $VPNID"
   ;;
 *)
-  error_exit "ERROR $VPNID should be 0-WAN or 1-5=VPN"
+  Error_Exit "ERROR $VPNID should be 0-WAN or 1-5=VPN"
   ;;
 esac
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Chk_Entware 30
-  check_dnsmasq "$DNSMASQ_ENTRY" "del"
-  check_cron_job "$IPSET_NAME" "del"
-  create_routing_rules "$IPSET_NAME" "del"
-  check_ipset_list "$IPSET_NAME" "del"
+  Check_Dnsmasq "$DNSMASQ_ENTRY" "del"
+  Check_Cron_Job "$IPSET_NAME" "del"
+  Create_Routing_Rules "$IPSET_NAME" "del"
+  Check_Ipset_List "$IPSET_NAME" "del"
 else
   #==================================================================================================
   Chk_Entware 30
-  set_ip_rule
-  check_dnsmasq "$DNSMASQ_ENTRY"             
-  check_ipset_list "$IPSET_NAME"              
-  check_restore_file_age "$IPSET_NAME" "$DIR" 
-  check_cron_job "$IPSET_NAME"                
-  create_routing_rules "$IPSET_NAME"
+  Set_IP_Rule
+  Check_Dnsmasq "$DNSMASQ_ENTRY"             
+  Check_Ipset_List "$IPSET_NAME"              
+  Check_Restore_File_Age "$IPSET_NAME" "$DIR" 
+  Check_Cron_Job "$IPSET_NAME"                
+  Create_Routing_Rules "$IPSET_NAME"
 fi
 
-unlock_script
+Unlock_Script
 
 logger -st "($(basename "$0"))" $$ Completed Script Execution

@@ -2,38 +2,41 @@
 ####################################################################################################
 # Script: load_MANUAL_ipset.sh
 # VERSION=1.0.0
-# Author: Xentrk
-# Date: 27-April-2019
+# Author: Xentrk, Martineau
+# Date: 28-April-2019
 #
 # Grateful:
-#   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise
-#   and on-going support!
+#   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
+#   on-going support and collaboration on this project!
+#
+#   Chk_Entware function and code to process the passing of parms written by Martineau
+#
+#   Kill_Lock, Check_Lock and Unlock_Script functions provided by Adamm https://github.com/Adamm00
 #
 ####################################################################################################
 # Script Description:
 #
 # This script will create an IPSET list from a file containing IPv4 addresses stored in the
-# /opt/tmp directory on entware.  For example, I mined the domain names from MANUAL for BBC
-# and converted the domain names to their respective IPv4 addresses.  You must pass the script
-# the IPSET list name.  The IPSET list name must match the name of the file containing the IPv4
-# addresses stored in /opt/tmp.
+# /opt/tmp directory on entware.  For example, I mined the domain names fom dnsmasq for BBC
+# and converted the domain names to their respective IPv4 addresses and saved to a file.  
+# The IPSET list name must match the name of the file containing the IPv4 addresses stored in /opt/tmp.
 #
 # Usage example:
 #
 # Usage:     load_MANUAL_ipset.sh   ipset_name [del]  [dir='directory']
 #
 # Usage:     load_MANUAL_ipset.sh   BBC
-#               Create IPSET BBC via VPN Client 2
+#               Create IPSET BBC
 # Usage:     load_MANUAL_ipset.sh   BBC  del
-#               Delete IPSET BBC and remove from VPN Client 2
+#               Delete IPSET BBC
 # Usage:     load_MANUAL_ipset.sh   BBC   dir=/mnt/sda1/Backups
-#               As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore
+#               As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore location
 # Usage:     load_MANUAL_ipset.sh   BBC   del dir=/mnt/sda1/Backups
 #               As per example two, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore location
 ####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
-set -x
+#set -x
 
 Kill_Lock() {
 
@@ -115,7 +118,7 @@ Chk_Entware() {
 
 # Create IPSET lists if it doesn not exist
 
-check_MANUAL_ipset_list_exist() {
+Check_MANUAL_Ipset_List_Exist() {
 
   IPSET_NAME=$1
 
@@ -154,16 +157,18 @@ create_routing_rules() {
   fi
 }
 
-unlock_script() {
+Unlock_Script() {
+
   if [ "$lock_load_MANUAL_ipset" = "true" ]; then 
     rm -rf "/tmp/load_MANUAL_ipset.lock"; 
   fi
 }
 
-error_exit() {
+Error_Exit() {
+
     error_str="$@"
     logger -t "($(basename "$0"))" $$ "$error_str"
-    unlock_script
+    Unlock_Script
     exit 1
 }
 
@@ -181,22 +186,20 @@ fi
 if [ -n "$1" ]; then
   IPSET_NAME=$1
 else
-  error_exit "ERROR missing arg1 'ipset_name'"
+  Error_Exit "ERROR missing arg1 'ipset_name'"
 fi
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Chk_Entware 30
-#  create_routing_rules "$IPSET_NAME" "del"
-  check_MANUAL_ipset_list_exist "$IPSET_NAME" "del"
+  Check_MANUAL_Ipset_List_Exist "$IPSET_NAME" "del"
 else
   Chk_Entware 30
 #  set_ip_rule
-  check_MANUAL_ipset_list_exist "$IPSET_NAME"
-  check_MANUAL_ipset_list_values "$IPSET_NAME" "$DIR"
-#  create_routing_rules "$IPSET_NAME"
+  Check_MANUAL_Ipset_List_Exist "$IPSET_NAME"
+  Check_MANUAL_Ipset_List_Values "$IPSET_NAME" "$DIR"
 fi
 
-unlock_script
+Unlock_Script
 
 logger -t "($(basename "$0"))" $$ Ending Script Execution

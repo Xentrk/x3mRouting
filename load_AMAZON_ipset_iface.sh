@@ -2,20 +2,21 @@
 ####################################################################################################
 # Script: load_AMAZON_ipset_iface.sh
 # VERSION=1.0.0
-# Author: Xentrk
+# Authors: Xentrk, Martineau
 # Date: 15-March-2019
 #
 # Grateful:
+#   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
+#   on-going support and collaboration on this project!
 #
-# Thank you to @Martineau on snbforums.com for educating myself and others on Selective
-# Routing techniques using Asuswrt-Merlin firmware.
+#   Chk_Entware function and code to process the passing of parms written by Martineau
+#
+#   Kill_Lock, Check_Lock and Unlock_Script functions provided by Adamm https://github.com/Adamm00
 #
 #####################################################################################################
 # Script Description:
 #  This script will create an IPSET list called AMAZON containing all IPv4 address for the Amazon
-#  AWS US region.  The IPSET list is required to route Amazon Prime traffic.  The script must also
-#  be used in combination with the NETFLIX IPSET list to selectively route Netflix traffic since
-#  Netflix hosts on Amazon AWS servers.
+#  AWS US region.  The IPSET list is required to route Amazon Prime traffic.  
 #
 # Requirements:
 #  This script requires the entware package 'jq'. To install, enter the command:
@@ -39,9 +40,10 @@
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
-set -x
+#set -x
 
 Kill_Lock() {
+
   if [ -f "/tmp/load_AMAZON_ipset_iface.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock)" ]; then
     logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_AMAZON_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock))"
     logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock)" '$1 == pid')"
@@ -52,6 +54,7 @@ Kill_Lock() {
 }
 
 Check_Lock() {
+
   if [ -f "/tmp/load_AMAZON_ipset_iface.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock)" ] && [ "$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock)" != "$$" ]; then
     if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_AMAZON_ipset_iface.lock)))" -gt "1800" ]; then
       Kill_Lock
@@ -112,12 +115,17 @@ Chk_Entware() {
     logger -st "($(basename "$0"))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
     TRIES=$((TRIES + 1))
   done
-
+  # Attempt  to install missing package if not found
+    if [ "$READY" -eq 1 ]; then
+      opkg install "$ENTWARE_UTILITY" && READY=0 && logger -st "($(basename "$0"))" $$ "Entware $ENTWARE_UTILITY successfully installed"
+    fi
+  
   return $READY
-}
+} 
 
 # Download Amazon AWS json file
-download_AMAZON() {
+Download_AMAZON() {
+
   wget https://ip-ranges.amazonaws.com/ip-ranges.json -O "$DIR/ip-ranges.json"
   if [ "$?" = "1" ]; then # file download failed
     logger -t "($(basename "$0"))" $$ Script execution failed because https://ip-ranges.amazonaws.com/ip-ranges.json file could not be downloaded
@@ -131,7 +139,7 @@ download_AMAZON() {
 
 # if ipset AMAZON does not exist, create it
 
-check_ipset_list_exist_AMAZON() {
+Check_Ipset_List_Exist_AMAZON() {
   
   IPSET_NAME="$1"
   
@@ -142,29 +150,32 @@ check_ipset_list_exist_AMAZON() {
       fi
   else
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
-      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || error_exit "Error attempting to delete IPSET $IPSET_NAME!"
+      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || Error_Exit "Error attempting to delete IPSET $IPSET_NAME!"
     fi
   fi
 }
 
 # if ipset list AMAZON is empty or source file is older than 7 days, download source file; load ipset list
 
-check_ipset_list_values_AMAZON() {
+Check_Ipset_List_Values_AMAZON() {
+
   IPSET_NAME="$1"
+
   if [ "$(ipset -L $IPSET_NAME 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
     if [ ! -s "$DIR/$IPSET_NAME" ] || [ "$(find "$DIR" -name $IPSET_NAME -mtime +7 -print)" = "$DIR/$IPSET_NAME" ]; then
-      download_AMAZON
+      Download_AMAZON
     fi
     awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   else
     if [ ! -s "$DIR/$IPSET_NAME" ]; then
-      download_AMAZON
+      Download_AMAZON
     fi
   fi
 }
 
 # Route IPSET to target WAN or VPN
-create_routing_rules() {
+Create_Routing_Rules() {
+
   iptables -t mangle -D PREROUTING -i br0 -m set --match-set AMAZON dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
   if [ "$1" != "del" ]; then
     iptables -t mangle -A PREROUTING -i br0 -m set --match-set AMAZON dst -j MARK --set-mark "$TAG_MARK"
@@ -174,7 +185,8 @@ create_routing_rules() {
   fi
 }
 
-set_fwmark_parms() {
+Set_Fwmark_Parms() {
+
   FWMARK_WAN="0x8000/0x8000"
   FWMARK_OVPNC1="0x1000/0x1000"
   FWMARK_OVPNC2="0x2000/0x2000"
@@ -183,58 +195,57 @@ set_fwmark_parms() {
   FWMARK_OVPNC5="0x3000/0x3000"
 }
 
-set_ip_rule() {
-case "$VPNID" in
-0)
-  ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$TAG_MARK" table 254 prio 9990
-  ip route flush cache
-  ;;
-1)
-  ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
-  ip route flush cache
-  ;;
+Set_IP_Rule() {
 
-2)  
-  ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
-  ip route flush cache
-  ;;
-
-3)
-  ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$TAG_MARK" table 113 prio 9993
-  ip route flush cache
-  ;;
-
-4)
-  ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$TAG_MARK" table 114 prio 9992
-  ip route flush cache
-  ;;
-
-5)
-  ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
-  ip rule add from 0/0 fwmark "$TAG_MARK" table 115 prio 9991
-  ip route flush cache
-  ;;
-*)
-  error_exit "ERROR $1 should be 0-WAN or 1-5=VPN"
-  ;;
-esac
+  case "$VPNID" in
+  0)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 254 prio 9990
+    ip route flush cache
+    ;;
+  1)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
+    ip route flush cache
+    ;;
+  2)  
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
+    ip route flush cache
+    ;;
+  3)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 113 prio 9993
+    ip route flush cache
+    ;;
+  4)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 114 prio 9992
+    ip route flush cache
+    ;;
+  5)
+    ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
+    ip rule add from 0/0 fwmark "$TAG_MARK" table 115 prio 9991
+    ip route flush cache
+    ;;
+  *)
+    Error_Exit "ERROR $1 should be 0-WAN or 1-5=VPN"
+    ;;
+  esac
 }
 
-unlock_script() {
+Unlock_Script() {
+  
   if [ "$lock_load_AMAZON_ipset_iface" = "true" ]; then 
     rm -rf "/tmp/load_AMAZON_ipset_iface.lock"
   fi
 }
 
-error_exit() {
+Error_Exit() {
+  
     error_str="$@"
     logger -t "($(basename "$0"))" $$ "$error_str"
-    unlock_script
+    Unlock_Script
     exit 1
 }
 
@@ -256,7 +267,7 @@ else
   logger -t "($(basename "$0"))" $$ "Warning missing arg1 'destination_target' 0-WAN or 1-5=VPN, WAN assumed!"
 fi
 
-set_fwmark_parms
+Set_Fwmark_Parms
   
 case "$VPNID" in
 0)
@@ -268,7 +279,7 @@ case "$VPNID" in
   TARGET_DESC="VPN Client "$VPNID
   ;;
 *)
-  error_exit "ERROR $1 should be 0-WAN or 1-5=VPN"
+  Error_Exit "ERROR $1 should be 0-WAN or 1-5=VPN"
   ;;
 esac
 
@@ -276,17 +287,18 @@ esac
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
-  create_routing_rules "del"
-  check_ipset_list_exist_AMAZON "AMAZON" "del"
+  Create_Routing_Rules "del"
+  Check_Ipset_List_Exist_AMAZON "AMAZON" "del"
 else
-  Chk_Entware 30 jq
-  set_ip_rule
-  check_ipset_list_exist_AMAZON "AMAZON"
-  check_ipset_list_values_AMAZON "AMAZON"
-  create_routing_rules
+  hk_Entware jq 30
+  if [ "$READY" -eq 1 ]; then Error_Exit "Required entware package 'jq' not installed"; fi
+  Set_IP_Rule
+  Check_Ipset_List_Exist_AMAZON "AMAZON"
+  Check_Ipset_List_Values_AMAZON "AMAZON"
+  Create_Routing_Rules
 fi
 #==================================================================================================
 
-unlock_script
+Unlock_Script
 
 logger -t "($(basename "$0"))" $$ Completed Script Execution

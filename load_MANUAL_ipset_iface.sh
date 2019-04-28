@@ -2,21 +2,24 @@
 ####################################################################################################
 # Script: load_MANUAL_ipset_iface.sh
 # VERSION=1.0.0
-# Author: Xentrk
-# Date: 6-April-2019
+# Author: Xentrk, Martineau
+# Date: 28-April-2019
 #
 # Grateful:
-#   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise
-#   and on-going support!
+#   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
+#   on-going support and collaboration on this project!
+#
+#   Chk_Entware function and code to process the passing of parms written by Martineau
+#
+#   Kill_Lock, Check_Lock and Unlock_Script functions provided by Adamm https://github.com/Adamm00
 #
 ####################################################################################################
 # Script Description:
 #
 # This script will create an IPSET list from a file containing IPv4 addresses stored in the
-# /opt/tmp directory on entware.  For example, I mined the domain names from MANUAL for BBC
-# and converted the domain names to their respective IPv4 addresses.  You must pass the script
-# the IPSET list name.  The IPSET list name must match the name of the file containing the IPv4
-# addresses stored in /opt/tmp.
+# /opt/tmp directory on entware.  For example, I mined the domain names fom dnsmasq for BBC
+# and converted the domain names to their respective IPv4 addresses and saved to a file.  
+# The IPSET list name must match the name of the file containing the IPv4 addresses stored in /opt/tmp.
 #
 # Usage example:
 #
@@ -27,13 +30,13 @@
 # Usage:     load_MANUAL_ipset_iface.sh   2   BBC  del
 #               Delete IPSET BBC and remove from VPN Client 2
 # Usage:     load_MANUAL_ipset_iface.sh   2   BBC   dir=/mnt/sda1/Backups
-#               As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore
+#               As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore location
 # Usage:     load_MANUAL_ipset_iface.sh   2  BBC   del dir=/mnt/sda1/Backups
 #               As per example two, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore location
 ####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
-set -x
+#set -x
 
 Kill_Lock() {
 
@@ -114,7 +117,7 @@ Chk_Entware() {
 }
 
 ### Define interface/bitmask to route traffic to below
-set_fwmark_parms() {
+Set_Fwmark_Parms() {
 
   FWMARK_WAN="0x8000/0x8000"
   FWMARK_OVPNC1="0x1000/0x1000"
@@ -124,7 +127,7 @@ set_fwmark_parms() {
   FWMARK_OVPNC5="0x3000/0x3000"
 }
 
-set_ip_rule() {
+Set_IP_Rule() {
 
   case "$VPNID" in
   0)
@@ -162,14 +165,13 @@ set_ip_rule() {
     ip route flush cache
     ;;
   *)
-    error_exit "ERROR $VPNID should be 0-WAN or 1-5=VPN"
+    Error_Exit "ERROR $VPNID" should be "0-WAN or 1-5=VPN"
     ;;
   esac
 }
-
 # Create IPSET lists
 # if ipset list does not exist, create it
-check_MANUAL_ipset_list_exist() {
+Check_MANUAL_Ipset_List_Exist() {
 
   IPSET_NAME=$1
 
@@ -186,7 +188,7 @@ check_MANUAL_ipset_list_exist() {
 }
 
 # if ipset list is empty or source file is older than 24 hours, download source file; load ipset list
-check_MANUAL_ipset_list_values() {
+Check_MANUAL_Ipset_List_Values() {
 
   IPSET_NAME=$1
   DIR=$2
@@ -197,7 +199,7 @@ check_MANUAL_ipset_list_values() {
 }
 
 # Route IPSET to target WAN or VPN
-create_routing_rules() {
+Create_Routing_Rules() {
 
   iptables -t mangle -D PREROUTING -i br0 -m set --match-set $1 dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
   if [ "$2" != "del" ]; then
@@ -208,16 +210,18 @@ create_routing_rules() {
   fi
 }
 
-unlock_script() {
+Unlock_Script() {
+
   if [ "$lock_load_MANUAL_ipset" = "true" ]; then 
     rm -rf "/tmp/load_MANUAL_ipset.lock"; 
   fi
 }
 
-error_exit() {
+Error_Exit() {
+
     error_str="$@"
     logger -t "($(basename "$0"))" $$ "$error_str"
-    unlock_script
+    Unlock_Script
     exit 1
 }
 
@@ -238,13 +242,14 @@ else
   VPNID=0
   logger -t "($(basename "$0"))" $$ "Warning missing arg1 'destination_target' 0-WAN or 1-5=VPN, WAN assumed!"
 fi
+
 if [ -n "$2" ]; then
   IPSET_NAME=$2
 else
-  error_exit "ERROR missing arg2 'ipset_name'"
+  Error_Exit "ERROR missing arg2 'ipset_name'"
 fi
 
-set_fwmark_parms
+Set_Fwmark_Parms
 
 case $VPNID in
 0)
@@ -256,23 +261,23 @@ case $VPNID in
   TARGET_DESC="VPN Client "$VPNID
   ;;
 *)
-  error_exit "ERROR $VPNID should be 0-WAN or 1-5=VPN"
+  Error_Exit "ERROR $VPNID should be 0-WAN or 1-5=VPN"
   ;;
 esac
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Chk_Entware 30
-  create_routing_rules "$IPSET_NAME" "del"
-  check_MANUAL_ipset_list_exist "$IPSET_NAME" "del"
+  Create_Routing_Rules "$IPSET_NAME" "del"
+  Check_MANUAL_Ipset_List_Exist "$IPSET_NAME" "del"
 else
   Chk_Entware 30
-  set_ip_rule
-  check_MANUAL_ipset_list_exist "$IPSET_NAME"
-  check_MANUAL_ipset_list_values "$IPSET_NAME" "$DIR"
-  create_routing_rules "$IPSET_NAME"
+  Set_IP_Rule
+  Check_MANUAL_Ipset_List_Exist "$IPSET_NAME"
+  Check_MANUAL_Ipset_List_Values "$IPSET_NAME" "$DIR"
+  Create_Routing_Rules "$IPSET_NAME"
 fi
 
-unlock_script
+Unlock_Script
 
 logger -t "($(basename "$0"))" $$ Ending Script Execution

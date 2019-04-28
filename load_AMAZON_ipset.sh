@@ -2,20 +2,21 @@
 ####################################################################################################
 # Script: load_AMAZON_ipset.sh
 # VERSION=1.0.0
-# Author: Xentrk
-# Date: 15-March-2019
+# Authors: Xentrk, Martineau
+# Date: 28-April-2019
 #
 # Grateful:
+#   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
+#   on-going support and collaboration on this project!
 #
-# Thank you to @Martineau on snbforums.com for educating myself and others on Selective
-# Routing techniques using Asuswrt-Merlin firmware.
+#   Chk_Entware function and code to process the passing of parms written by Martineau
 #
-#####################################################################################################
+#   Kill_Lock, Check_Lock and Unlock_Script functions provided by Adamm https://github.com/Adamm00
+# 
+####################################################################################################
 # Script Description:
 #  This script will create an IPSET list called AMAZON containing all IPv4 address for the Amazon
-#  AWS US region.  The IPSET list is required to route Amazon Prime traffic.  The script must also
-#  be used in combination with the NETFLIX IPSET list to selectively route Netflix traffic since
-#  Netflix hosts on Amazon AWS servers.
+#  AWS US region.  The IPSET list is required to route Amazon Prime traffic.  
 #
 # Requirements:
 #  This script requires the entware package 'jq'. To install, enter the command:
@@ -24,16 +25,16 @@
 #
 # Usage example:
 #
-# Usage:     load_AMAZON_ipset.sh   {[0|1|2|3|4|5]} [del] [dir='directory']
+# Usage:     load_AMAZON_ipset.sh   [del] [dir='directory']
 #
-# Usage:     load_AMAZON_ipset.sh   2
-#               Create and populate IPSET AMAZON and route via VPN Client 2
+# Usage:     load_AMAZON_ipset.sh   
+#               Create and populate IPSET AMAZON
 #
-# Usage:     load_AMAZON_ipset.sh   2 dir=/mnt/sda1/Backups
-#               As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore
+# Usage:     load_AMAZON_ipset.sh   dir=/mnt/sda1/Backups
+#               As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore directory
 #
-# Usage:     load_AMAZON_ipset.sh   2 del
-#               Delete IPSET AMAZON, associated backup file and remove route via VPN Client 2
+# Usage:     load_AMAZON_ipset.sh   del
+#               Delete IPSET AMAZON
 #
 #####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
@@ -42,6 +43,7 @@ logger -t "($(basename "$0"))" $$ Starting Script Execution
 set -x
 
 Kill_Lock() {
+
   if [ -f "/tmp/load_AMAZON_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" ]; then
     logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_AMAZON_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset.lock))"
     logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" '$1 == pid')"
@@ -52,6 +54,7 @@ Kill_Lock() {
 }
 
 Check_Lock() {
+
   if [ -f "/tmp/load_AMAZON_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" ] && [ "$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" != "$$" ]; then
     if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_AMAZON_ipset.lock)))" -gt "1800" ]; then
       Kill_Lock
@@ -112,12 +115,18 @@ Chk_Entware() {
     logger -st "($(basename "$0"))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
     TRIES=$((TRIES + 1))
   done
-
+  # Attempt  to install missing package if not found
+    if [ "$READY" -eq 1 ]; then
+      opkg install "$ENTWARE_UTILITY" && READY=0 && echo "entware package $ENTWARE_UTILITY installed"
+    fi
+  
   return $READY
 }
 
+
 # Download Amazon AWS json file
-download_AMAZON() {
+Download_AMAZON() {
+
   wget https://ip-ranges.amazonaws.com/ip-ranges.json -O "$DIR/ip-ranges.json"
   if [ "$?" = "1" ]; then # file download failed
     logger -t "($(basename "$0"))" $$ Script execution failed because https://ip-ranges.amazonaws.com/ip-ranges.json file could not be downloaded
@@ -131,12 +140,12 @@ download_AMAZON() {
 
 # if ipset AMAZON does not exist, create it
 
-check_ipset_list_exist_AMAZON() {
+Check_Ipset_List_Exist_AMAZON() {
   
   IPSET_NAME="$1"
   
   if [ "$2" != "del" ]; then
-      if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
+      if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
         ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
         logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
       fi
@@ -149,28 +158,30 @@ check_ipset_list_exist_AMAZON() {
 
 # if ipset list AMAZON is empty or source file is older than 7 days, download source file; load ipset list
 
-check_ipset_list_values_AMAZON() {
+Check_Ipset_List_Values_AMAZON() {
   IPSET_NAME="$1"
   if [ "$(ipset -L $IPSET_NAME 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
     if [ ! -s "$DIR/$IPSET_NAME" ] || [ "$(find "$DIR" -name $IPSET_NAME -mtime +7 -print)" = "$DIR/$IPSET_NAME" ]; then
-      download_AMAZON
+      Download_AMAZON
     fi
     awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   else
     if [ ! -s "$DIR/$IPSET_NAME" ]; then
-      download_AMAZON
+      Download_AMAZON
     fi
   fi
 }
 
-unlock_script() {
- if [ "$lock_load_AMAZON_ipset" = "true" ]; then rm -rf "/tmp/load_AMAZON_ipset.lock"; fi
+Unlock_Script() {
+  if [ "$lock_load_AMAZON_ipset" = "true" ]; then 
+    rm -rf "/tmp/load_AMAZON_ipset.lock"
+  fi
 }
 
-error_exit() {
+Error_Exit() {
     error_str="$@"
     logger -t "($(basename "$0"))" $$ "$error_str"
-    unlock_script
+    Unlock_Script
     exit 1
 }
 
@@ -189,14 +200,15 @@ fi
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
-  check_ipset_list_exist_AMAZON "AMAZON" "del"
+  Check_Ipset_List_Exist_AMAZON "AMAZON" "del"
 else
-  Chk_Entware 30 jq
-  check_ipset_list_exist_AMAZON "AMAZON"
-  check_ipset_list_values_AMAZON "AMAZON"
+  Chk_Entware jq 30
+  if [ "$READY" -eq 1 ]; then Error_Exit "Required entware package 'jq' not installed"; fi
+  Check_Ipset_List_Exist_AMAZON "AMAZON"
+  Check_Ipset_List_Values_AMAZON "AMAZON"
 fi
 #==================================================================================================
 
-unlock_script
+Unlock_Script
 
 logger -t "($(basename "$0"))" $$ Completed Script Execution

@@ -2,16 +2,17 @@
 ####################################################################################################
 # Script: load_ASN_ipsets_iface.sh
 # VERSION=1.0.0
-# Author: Xentrk
-# Date: 15-March-2019
-#
-# Description:
-#   Selective Routing Script for Hulu
+# Authors: Xentrk, Martineau
+# Date: 28-April-2019
 #
 # Grateful:
-#   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise
-#   and on-going support!
+#   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
+#   on-going support and collaboration on this project!
 #
+#   Chk_Entware function and code to process the passing of parms written by Martineau
+#
+#   Kill_Lock, Check_Lock and Unlock_Script functions provided by Adamm https://github.com/Adamm00
+# 
 ####################################################################################################
 # This script will create an IPSET list using the AS Number.  The IPv4 addresses are downloaded
 # from https://ipinfo.io/. https://ipinfo.io/ may require whitelisting if you use an ad-blocker
@@ -19,21 +20,21 @@
 #
 # Usage example:
 #
-# Usage: load_ASN_ipset_iface.sh {[0|1|2|3|4|5]} ipset_name ASN [del] [dir='directory']
+# Usage: load_ASN_ipset_iface.sh ipset_name ASN [del] [dir='directory']
 #
-# Usage: load_ASN_ipset_iface.sh 2  NETFLIX  AS2906
-#          Create IPSET NETFLIX from AS2906 via VPN Client 2
+# Usage: load_ASN_ipset_iface.sh NETFLIX  AS2906
+#          Create IPSET NETFLIX from AS2906
 #
-# Usage: load_ASN_ipset_iface.sh 2  NETFLIX  AS2906  dir=/mnt/sda1/Backups
-#          As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore
+# Usage: load_ASN_ipset_iface.sh NETFLIX  AS2906  dir=/mnt/sda1/Backups
+#          As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore directory
 #
-# Usage: load_ASN_ipset_iface.sh 2  NETFLIX  del
-#          Delete IPSET NETFLIX and remove routing via VPN Client 2
+# Usage: load_ASN_ipset_iface.sh NETFLIX  del
+#          Delete IPSET NETFLIX
 #
 ####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
-set -x
+#set -x
 
 Kill_Lock() {
   if [ -f "/tmp/load_ASN_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_ASN_ipset.lock)" ]; then
@@ -113,7 +114,7 @@ Chk_Entware() {
 
 #Download ASN ipset list
 
-download_ASN_ipset_list() {
+Downlad_ASN_Ipset_List() {
 
   IPSET_NAME=$1
   ASN=$2
@@ -123,8 +124,7 @@ download_ASN_ipset_list() {
   curl https://ipinfo.io/"$ASN" 2>/dev/null | grep -E "a href.*$NUMBER\/" | grep -v ":" | sed 's|^.*<a href="/'"$ASN"'/||' | sed 's|" >||' >"$DIR/$IPSET_NAME"
 
   if [ "$?" = "1" ]; then # file download failed
-    logger -t "($(basename "$0"))" $$ Script execution failed because $ASN file could not be downloaded
-    exit 1
+    Error_Exit "Script execution failed because $ASN file could not be downloaded"
   fi
 }
 
@@ -133,6 +133,7 @@ download_ASN_ipset_list() {
 check_ASN_ipset_list_exist() {
 
   IPSET_NAME="$1"
+  
   if [ "$2" != "del" ]; then
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
       ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
@@ -140,14 +141,14 @@ check_ASN_ipset_list_exist() {
     fi
   else
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
-      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || error_exit "Error attempting to delete IPSET $IPSET_NAME!"
+      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || Error_Exit "Error attempting to delete IPSET $IPSET_NAME!"
     fi
   fi
 }
 
 # if ipset list x3mRouting_HULU is empty or source file is older than 24 hours, download source file; load ipset list
 
-check_ASN_ipset_list_values() {
+Check_ASN_Ipset_List_Values() {
 
   IPSET_NAME=$1
   ASN=$2
@@ -156,12 +157,12 @@ check_ASN_ipset_list_values() {
 
   if [ "$(ipset -L "$IPSET_NAME" 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
     if [ ! -s "$DIR/$IPSET_NAME" ] || [ "$(find "$DIR" -name $IPSET_NAME -mtime +1 -print)" = "$DIR/$IPSET_NAME" ]; then
-      download_ASN_ipset_list $IPSET_NAME $ASN $NUMBER $DIR
+      Downlad_ASN_Ipset_List $IPSET_NAME $ASN $NUMBER $DIR
     fi
     awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   else
     if [ ! -s "$DIR/$IPSET_NAME" ]; then
-      download_ASN_ipset_list $IPSET_NAME $ASN $NUMBER $DIR
+      Downlad_ASN_Ipset_List $IPSET_NAME $ASN $NUMBER $DIR
     fi
   fi
 }
@@ -178,16 +179,18 @@ create_routing_rules() {
   fi
 }
 
-unlock_script() {
+Unlock_Script() {
+
   if [ "$lock_load_ASN_ipset" = "true" ]; then 
     rm -rf "/tmp/load_ASN_ipset.lock"
   fi
 }
 
-error_exit() {
+Error_Exit() {
+
     error_str="$@"
     logger -t "($(basename "$0"))" $$ "$error_str"
-    unlock_script
+    Unlock_Script
     exit 1
 }
 
@@ -206,13 +209,14 @@ fi
 if [ -n "$1" ]; then
   IPSET_NAME=$1
 else
-  error_exit "ERROR missing arg1 'ipset_name'"
+  Error_Exit "ERROR missing arg1 'ipset_name'"
 fi
-if [ -n "$3" ]; then
-  ASN="$3"
+
+if [ -n "$2" ]; then
+  ASN="$2"
   NUMBER="$(echo $ASN | sed 's/^AS//')"
 else
-  error_exit "ERROR missing arg2 'ASN'"
+  Error_Exit "ERROR missing arg2 'ASN'"
 fi
 
 # Delete mode?
@@ -222,9 +226,9 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
 else
   Chk_Entware 30
   check_ASN_ipset_list_exist "$IPSET_NAME"
-  check_ASN_ipset_list_values "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
+  Check_ASN_Ipset_List_Values "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
 fi
 
-if [ "$lock_load_ASN_ipset" = "true" ]; then rm -rf "/tmp/load_ASN_ipset.lock"; fi
+Unlock_Script
 
 logger -t "($(basename "$0"))" $$ Ending Script Execution

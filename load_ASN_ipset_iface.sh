@@ -2,16 +2,17 @@
 ####################################################################################################
 # Script: load_ASN_ipsets_iface.sh
 # VERSION=1.0.0
-# Author: Xentrk
-# Date: 15-March-2019
-#
-# Description:
-#   Selective Routing Script for Hulu
+# Authors: Xentrk, Martineau
+# Date: 28-April-2019
 #
 # Grateful:
-#   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise
-#   and on-going support!
+#   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
+#   on-going support and collaboration on this project!
 #
+#   Chk_Entware function and code to process the passing of parms written by Martineau
+#
+#   Kill_Lock, Check_Lock and Unlock_Script functions provided by Adamm https://github.com/Adamm00
+# 
 ####################################################################################################
 # This script will create an IPSET list using the AS Number.  The IPv4 addresses are downloaded
 # from https://ipinfo.io/. https://ipinfo.io/ may require whitelisting if you use an ad-blocker
@@ -33,31 +34,33 @@
 ####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
-set -x
+#set -x
 
 Kill_Lock() {
-  if [ -f "/tmp/load_ASN_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_ASN_ipset.lock)" ]; then
-    logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_ASN_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_ASN_ipset.lock))"
-    logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_ASN_ipset.lock)" '$1 == pid')"
-    kill "$(sed -n '2p' /tmp/load_ASN_ipset.lock)"
-    rm -rf /tmp/load_ASN_ipset.lock
+
+  if [ -f "/tmp/load_ASN_ipset_iface.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_ASN_ipset_iface.lock)" ]; then
+    logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_ASN_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_ASN_ipset_iface.lock))"
+    logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_ASN_ipset_iface.lock)" '$1 == pid')"
+    kill "$(sed -n '2p' /tmp/load_ASN_ipset_iface.lock)"
+    rm -rf /tmp/load_ASN_ipset_iface.lock
     echo
   fi
 }
 
 Check_Lock() {
-  if [ -f "/tmp/load_ASN_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_ASN_ipset.lock)" ] && [ "$(sed -n '2p' /tmp/load_ASN_ipset.lock)" != "$$" ]; then
-    if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_ASN_ipset.lock)))" -gt "1800" ]; then
+
+  if [ -f "/tmp/load_ASN_ipset_iface.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_ASN_ipset_iface.lock)" ] && [ "$(sed -n '2p' /tmp/load_ASN_ipset_iface.lock)" != "$$" ]; then
+    if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_ASN_ipset_iface.lock)))" -gt "1800" ]; then
       Kill_Lock
     else
-      logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_ASN_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_ASN_ipset.lock)) - Exiting (cpid=$$)"
+      logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_ASN_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_ASN_ipset_iface.lock)) - Exiting (cpid=$$)"
       echo
       exit 1
     fi
   fi
-  echo "$@" >/tmp/load_ASN_ipset.lock
-  echo "$$" >>/tmp/load_ASN_ipset.lock
-  date +%s >>/tmp/load_ASN_ipset.lock
+  echo "$@" >/tmp/load_ASN_ipset_iface.lock
+  echo "$$" >>/tmp/load_ASN_ipset_iface.lock
+  date +%s >>/tmp/load_ASN_ipset_iface.lock
   lock_load_ASN_ipset="true"
 }
 
@@ -112,7 +115,8 @@ Chk_Entware() {
 }
 
 ### Define interface/bitmask to route traffic to below
-set_fwmark_parms() {
+Set_Fwmark_Parms() {
+
   FWMARK_WAN="0x8000/0x8000"
   FWMARK_OVPNC1="0x1000/0x1000"
   FWMARK_OVPNC2="0x2000/0x2000"
@@ -121,7 +125,8 @@ set_fwmark_parms() {
   FWMARK_OVPNC5="0x3000/0x3000"
 }
 
-set_ip_rule() {
+Set_IP_Rule() {
+
   case "$VPNID" in
   0)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
@@ -133,32 +138,28 @@ set_ip_rule() {
     ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
     ip route flush cache
     ;;
-
   2)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
     ip route flush cache
     ;;
-
   3)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 113 prio 9993
     ip route flush cache
     ;;
-
   4)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 114 prio 9992
     ip route flush cache
     ;;
-
   5)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 115 prio 9991
     ip route flush cache
     ;;
   *)
-    error_exit "ERROR $VPNID" should be "0-WAN or 1-5=VPN"
+    Error_Exit "ERROR $VPNID" should be "0-WAN or 1-5=VPN"
     ;;
   esac
 }
@@ -175,16 +176,16 @@ download_ASN_ipset_list() {
   curl https://ipinfo.io/"$ASN" 2>/dev/null | grep -E "a href.*$NUMBER\/" | grep -v ":" | sed 's|^.*<a href="/'"$ASN"'/||' | sed 's|" >||' >"$DIR/$IPSET_NAME"
 
   if [ "$?" = "1" ]; then # file download failed
-    logger -t "($(basename "$0"))" $$ Script execution failed because $ASN file could not be downloaded
-    exit 1
+    Error_Exit "Script execution failed because $ASN file could not be downloaded"
   fi
 }
 
 # Create IPSET lists
 # if ipset list does not exist, create it
-check_ASN_ipset_list_exist() {
+Check_ASN_Ipset_List_Exist() {
 
   IPSET_NAME="$1"
+  
   if [ "$2" != "del" ]; then
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
       ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
@@ -192,14 +193,14 @@ check_ASN_ipset_list_exist() {
     fi
   else
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
-      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || $$ "IPSET $IPSET_NAME deleted!" || error_exit "Error attempting to delete IPSET $IPSET_NAME!"
+      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || $$ "IPSET $IPSET_NAME deleted!" || Error_Exit "Error attempting to delete IPSET $IPSET_NAME!"
     fi
   fi
 }
 
 # if ipset list x3mRouting_HULU is empty or source file is older than 24 hours, download source file; load ipset list
 
-check_ASN_ipset_list_values() {
+Check_ASN_Ipset_List_Values() {
 
   IPSET_NAME=$1
   ASN=$2
@@ -219,7 +220,8 @@ check_ASN_ipset_list_values() {
 }
 
 # Route IPSET to target WAN or VPN
-create_routing_rules() {
+Create_Routing_Rules() {
+
   IPSET_NAME="$1"
   iptables -t mangle -D PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
   if [ "$2" != "del" ]; then
@@ -230,16 +232,18 @@ create_routing_rules() {
   fi
 }
 
-unlock_script() {
+Unlock_Script() {
+
   if [ "$lock_load_ASN_ipset" = "true" ]; then 
-    rm -rf "/tmp/load_ASN_ipset.lock"
+    rm -rf "/tmp/load_ASN_ipset_iface.lock"
   fi
 }
 
-error_exit() {
+Error_Exit() {
+
     error_str="$@"
     logger -t "($(basename "$0"))" $$ "$error_str"
-    unlock_script
+    Unlock_Script
     exit 1
 }
 
@@ -262,19 +266,21 @@ else
   VPNID=0
   logger -t "($(basename "$0"))" "WARNING missing arg1 'destination_target' 0-WAN or 1-5=VPN, WAN assumed!"
 fi
+
 if [ -n "$2" ]; then
   IPSET_NAME=$2
 else
-   error_exit "ERROR missing arg2 'ipset_name'"
+   Error_Exit "ERROR missing arg2 'ipset_name'"
 fi
+
 if [ -n "$3" ]; then
   ASN="$3"
   NUMBER="$(echo $ASN | sed 's/^AS//')"
 else
-  error_exit "ERROR missing arg3 'ASN'"
+  Error_Exit "ERROR missing arg3 'ASN'"
 fi
 
-set_fwmark_parms
+Set_Fwmark_Parms
 
 case $VPNID in
 0)
@@ -286,23 +292,23 @@ case $VPNID in
   TARGET_DESC="VPN Client "$VPNID
   ;;
 *)
-  error_exit "ERROR $VPNID" should be "0-WAN or 1-5=VPN"
+  Error_Exit "ERROR $VPNID" should be "0-WAN or 1-5=VPN"
   ;;
 esac
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Chk_Entware 30
-  set_ip_rule
-  create_routing_rules "$IPSET_NAME" "del"
-  check_ASN_ipset_list_exist "$IPSET_NAME" "del"
+  Set_IP_Rule
+  Create_Routing_Rules "$IPSET_NAME" "del"
+  Check_ASN_Ipset_List_Exist "$IPSET_NAME" "del"
 else
   Chk_Entware 30
-  check_ASN_ipset_list_exist "$IPSET_NAME"
-  check_ASN_ipset_list_values "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
-  create_routing_rules "$IPSET_NAME" # Martineau Hack
+  Check_ASN_Ipset_List_Exist "$IPSET_NAME"
+  Check_ASN_Ipset_List_Values "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
+  Create_Routing_Rules "$IPSET_NAME" # Martineau Hack
 fi
 
-unlock_script
+Unlock_Script
 
 logger -t "($(basename "$0"))" $$ Ending Script Execution

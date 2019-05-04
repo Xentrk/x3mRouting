@@ -16,7 +16,7 @@
 #####################################################################################################
 # Script Description:
 #  This script will create an IPSET list called AMAZON containing all IPv4 address for the Amazon
-#  AWS US region.  The IPSET list is required to route Amazon Prime traffic.  
+#  AWS US region.  The IPSET list is required to route Amazon Prime traffic.
 #
 # Requirements:
 #  This script requires the entware package 'jq'. To install, enter the command:
@@ -119,9 +119,9 @@ Chk_Entware() {
     if [ "$READY" -eq 1 ]; then
       opkg install "$ENTWARE_UTILITY" && READY=0 && logger -st "($(basename "$0"))" $$ "Entware $ENTWARE_UTILITY successfully installed"
     fi
-  
+
   return $READY
-} 
+}
 
 # Download Amazon AWS json file
 Download_AMAZON() {
@@ -140,9 +140,9 @@ Download_AMAZON() {
 # if ipset AMAZON does not exist, create it
 
 Check_Ipset_List_Exist_AMAZON() {
-  
+
   IPSET_NAME="$1"
-  
+
   if [ "$2" != "del" ]; then
       if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
         ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
@@ -208,7 +208,7 @@ Set_IP_Rule() {
     ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
     ip route flush cache
     ;;
-  2)  
+  2)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
     ip route flush cache
@@ -235,14 +235,14 @@ Set_IP_Rule() {
 }
 
 Unlock_Script() {
-  
-  if [ "$lock_load_AMAZON_ipset_iface" = "true" ]; then 
+
+  if [ "$lock_load_AMAZON_ipset_iface" = "true" ]; then
     rm -rf "/tmp/load_AMAZON_ipset_iface.lock"
   fi
 }
 
 Error_Exit() {
-  
+
     error_str="$@"
     logger -t "($(basename "$0"))" $$ "$error_str"
     Unlock_Script
@@ -268,7 +268,7 @@ else
 fi
 
 Set_Fwmark_Parms
-  
+
 case "$VPNID" in
 0)
   TAG_MARK="$FWMARK_WAN" # Which Target WAN or VPN? Martineau Hack
@@ -290,7 +290,7 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Create_Routing_Rules "del"
   Check_Ipset_List_Exist_AMAZON "AMAZON" "del"
 else
-  hk_Entware jq 30
+  Chk_Entware jq 30
   if [ "$READY" -eq 1 ]; then Error_Exit "Required entware package 'jq' not installed"; fi
   Set_IP_Rule
   Check_Ipset_List_Exist_AMAZON "AMAZON"

@@ -221,10 +221,10 @@ fi
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
-  Chk_Entware 30
   check_ASN_ipset_list_exist "$IPSET_NAME" "del"
 else
   Chk_Entware 30
+  if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
   check_ASN_ipset_list_exist "$IPSET_NAME"
   Check_ASN_Ipset_List_Values "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
 fi

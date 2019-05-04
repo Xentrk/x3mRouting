@@ -135,7 +135,7 @@ Check_MANUAL_Ipset_List_Exist() {
 }
 
 # if ipset list is empty or source file is older than 24 hours, download source file; load ipset list
-check_MANUAL_ipset_list_values() {
+Check_MANUAL_Ipset_List_Values() {
 
   IPSET_NAME=$1
   DIR=$2
@@ -195,7 +195,7 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Check_MANUAL_Ipset_List_Exist "$IPSET_NAME" "del"
 else
   Chk_Entware 30
-#  set_ip_rule
+  if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
   Check_MANUAL_Ipset_List_Exist "$IPSET_NAME"
   Check_MANUAL_Ipset_List_Values "$IPSET_NAME" "$DIR"
 fi

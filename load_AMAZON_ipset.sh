@@ -40,7 +40,7 @@
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
-set -x
+#set -x
 
 Kill_Lock() {
 
@@ -59,9 +59,7 @@ Check_Lock() {
     if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_AMAZON_ipset.lock)))" -gt "1800" ]; then
       Kill_Lock
     else
-      logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_AMAZON_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)) - Exiting (cpid=$$)"
-      echo
-      exit 1
+      Error_Exit "[*] Lock File Detected ($(sed -n '1p' /tmp/load_AMAZON_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)) - Exiting (cpid=$$)"
     fi
   fi
   echo "$@" >/tmp/load_AMAZON_ipset.lock
@@ -129,8 +127,7 @@ Download_AMAZON() {
 
   wget https://ip-ranges.amazonaws.com/ip-ranges.json -O "$DIR/ip-ranges.json"
   if [ "$?" = "1" ]; then # file download failed
-    logger -t "($(basename "$0"))" $$ Script execution failed because https://ip-ranges.amazonaws.com/ip-ranges.json file could not be downloaded
-    exit 1
+    Error_Exit "Script execution failed because https://ip-ranges.amazonaws.com/ip-ranges.json file could not be downloaded"
   fi
   true >"$DIR/AMAZON"
   for REGION in us-east-1 us-east-2 us-west-1 us-west-2; do

@@ -276,13 +276,13 @@ DNSMASQ_ENTRY="/$DOMAINS_LIST/$IPSET_NAME"
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
-  Chk_Entware 30
   Check_Dnsmasq "$DNSMASQ_ENTRY" "del"
   Check_Cron_Job "$IPSET_NAME" "del"
   Check_Ipset_List "$IPSET_NAME" "del"
 else
   #==================================================================================================
   Chk_Entware 30
+  if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
   Check_Dnsmasq "$DNSMASQ_ENTRY"             
   Check_Ipset_List "$IPSET_NAME"              
   Check_Restore_File_Age "$IPSET_NAME" "$DIR" 

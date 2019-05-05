@@ -328,8 +328,11 @@ I want to acknowledge the following [snbforums](https://www.snbforums.com) membe
  As part of the ongoing collaboration, Martineau had modified a selective routing script I wrote for routing Netflix traffic and enhanced it by enabling the passing of parameters. The enhancements were applied to the other IPSET scripts used in the project and make the scripts more user friendly by eliminating the need for users to edit scripts to meet their use case requirements.
 
  Martineau also contributed the modified **OpenVPN Client screen** and **Chk_Entware** function used in the project.
-* [Adamm](https://github.com/Adamm00) contributed the Lock File function that prevents the scripts from running concurrently. His method is much cleaner when compared to the previous method I had been using. The code for the update function was also inspired by Adamm.
+
+* [Adamm](https://github.com/Adamm00) contributed the Lock File function that prevents the scripts from running concurrently. His method is much cleaner when compared to the previous method I had been using. The code for restoring the IPSET lists using the awk method and the update function was also inspired by Adamm.
 
 * For the installation script, [Jack Yaz](https://github.com/jackyaz/spdMerlin) gave me permission to clone the code he used for the update code function, also inspired by Adamm, used on the [SpdMerlin](https://github.com/jackyaz/spdMerlin) project on GitHub.
 
-* I also want to thank [thelonelycoder](https://www.snbforums.com/members/thelonelycoder.25480/), also known as the [Decoderman](https://github.com/decoderman) on GitHub, for his inspiration and ongoing support in my coding journey.
+* Gratitude to the [thelonelycoder](https://www.snbforums.com/members/thelonelycoder.25480/), also known as the [Decoderman](https://github.com/decoderman) on GitHub, for his inspiration and ongoing support in my coding journey.
+
+* Thank you to [RMerlin](https://www.snbforums.com/members/rmerlin.10954/) for the [Asuswrt-Merlin](https://github.com/RMerl/asuswrt-merlin.ng) firmware and helpful support on the [snbforums.com](https://www.snbforums.com/forums/asuswrt-merlin.42/) website. To learn more about Asuswrt-Merlin firmware for Asus routers, visit the project website at [https://asuswrt.lostrealm.ca/source](https://asuswrt.lostrealm.ca/source).

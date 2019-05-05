@@ -40,7 +40,7 @@
 #               e.g. ipset=/akadns.net/edgekey.net/edgesuite.net/epgsky.com/sky.com/SKY
 #               from 'a674.hsar.cdn.sky.com.edgesuite.net/adm.sky.com/assets.sky.com/assets.sky.com-secure.edgekey.net/awk.epgsky.com' etc...
 ####################################################################################################
-logger -st "($(basename "$0"))" $$ Starting Script Execution
+logger -t "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
 #set -x
@@ -243,12 +243,12 @@ Check_Cron_Job() {
   cru l | grep $1 2>/dev/null # Martineau Fix
   if [ "$?" = "1" ]; then # no cronjob entry found, create it
     if [ "$2" != "del" ]; then
-      cru a $IPSET_NAME "0 2 * * * ipset save $IPSET_NAME > $DIR/$IPSET_NAME"
+      cru a $IPSET_NAME "0 2 * * * ipset save $IPSET_NAME > $DIR/$IPSET_NAME" >/dev/null 2>&1
       logger -st "($(basename "$0"))" $$ CRON schedule created: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
     fi
   else
     if [ "$2" = "del" ]; then
-      cru d $IPSET_NAME "0 2 * * * ipset save $IPSET_NAME"
+      cru d $IPSET_NAME "0 2 * * * ipset save $IPSET_NAME" >/dev/null 2>&1
       logger -st "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
     fi
   fi
@@ -362,7 +362,6 @@ esac
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
-  Chk_Entware 30
   Check_Dnsmasq "$DNSMASQ_ENTRY" "del"
   Check_Cron_Job "$IPSET_NAME" "del"
   Create_Routing_Rules "$IPSET_NAME" "del"
@@ -370,6 +369,7 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
 else
   #==================================================================================================
   Chk_Entware 30
+  if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
   Set_IP_Rule
   Check_Dnsmasq "$DNSMASQ_ENTRY"             
   Check_Ipset_List "$IPSET_NAME"              
@@ -380,4 +380,4 @@ fi
 
 Unlock_Script
 
-logger -st "($(basename "$0"))" $$ Completed Script Execution
+logger -t "($(basename "$0"))" $$ Completed Script Execution

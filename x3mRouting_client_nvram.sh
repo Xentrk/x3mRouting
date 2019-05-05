@@ -16,7 +16,7 @@ logger -t "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
 # set -x
 
-create_lan_client_routes() {
+Create_LAN_Client_Routes() {
 
   CONFIG_FILE="/jffs/configs/x3mRouting_client_rules"
   OLDIFS="$IFS"
@@ -50,28 +50,28 @@ create_lan_client_routes() {
   # OVPNC2 clients
   if [ -s "/tmp/ovpnc2.$$" ]; then
     awk '{ print }' ORS='' <"/tmp/ovpnc2.$$" >/jffs/configs/ovpnc2.nvram
-    rm /tmp/ovpnc2.$$
+    rm -rf /tmp/ovpnc2.$$
   fi
 
   # OVPNC3 clients
   if [ -s "/tmp/ovpnc3.$$" ]; then
     awk '{ print }' ORS='' <"/tmp/ovpnc3.$$" >/jffs/configs/ovpnc3.nvram
-    rm /tmp/ovpnc3.$$
+    rm -rf /tmp/ovpnc3.$$
   fi
 
   # OVPNC4 clients
   if [ -s "/tmp/ovpnc4.$$" ]; then
     awk '{ print }' ORS='' <"/tmp/ovpnc4.$$" >/jffs/configs/ovpnc4.nvram
-    rm /tmp/ovpnc4.$$
+    rm -rf /tmp/ovpnc4.$$
   fi
 
   # OVPNC5 clients
   if [ -s "/tmp/ovpnc5.$$" ]; then
     awk '{ print }' ORS='' <"/tmp/ovpnc5.$$" >/jffs/configs/ovpnc5.nvram
-    rm /tmp/ovpnc5.$$
+    rm -rf /tmp/ovpnc5.$$
   fi
 }
 
-create_lan_client_routes
+Create_LAN_Client_Routes
 
 logger -t "($(basename "$0"))" $$ Ending Script Execution

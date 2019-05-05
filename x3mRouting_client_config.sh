@@ -22,7 +22,7 @@ logger -t "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
 #set -x
 
-VERSION="1.0"
+VERSION="1.0.0"
 GITHUB_URL="https://github.com/Xentrk/x3mRouting"
 CONFIG_FILE="/jffs/configs/x3mRouting_client_rules"
 COLOR_WHITE='\033[0m'
@@ -32,7 +32,7 @@ printf '\n'
 printf '_______________________________________________________________\n'
 printf '|                                                             |\n'
 printf '|  Welcome to the %bx3mRouting%b LAN Client Configuration Script  |\n' "$COLOR_GREEN" "$COLOR_WHITE"
-printf '|  Version %b%s%b by Xentrk                                      |\n' "$COLOR_GREEN" "$VERSION" "$COLOR_WHITE"
+printf '|  Version %b%s%b by Xentrk                                    |\n' "$COLOR_GREEN" "$VERSION" "$COLOR_WHITE"
 printf '|                                                             |\n'
 printf '|           Configuration instuctions available at            |\n'
 printf '|            %b%s%b             |\n' "$COLOR_GREEN" "$GITHUB_URL" "$COLOR_WHITE"
@@ -84,7 +84,7 @@ done
 
 sort "$CONFIG_FILE" -o "$CONFIG_FILE"
 
-rm /tmp/my-scripts.$$
+rm -rf /tmp/my-scripts.$$
 
 # Default all lan clients to OVPNC1 interface
 sed -i -e 's/^/1 /' "$CONFIG_FILE"

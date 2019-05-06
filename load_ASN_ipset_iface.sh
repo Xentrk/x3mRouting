@@ -3,7 +3,7 @@
 # Script: load_ASN_ipsets_iface.sh
 # VERSION=1.0.0
 # Authors: Xentrk, Martineau
-# Date: 28-April-2019
+# Date: 6-May-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -20,7 +20,7 @@
 #
 # Usage example:
 #
-# Usage: load_ASN_ipset_iface.sh {[0|1|2|3|4|5]} ipset_name ASN [del] [dir='directory']
+# Usage: load_ASN_ipset_iface.sh {[0|1|2|3|4|5] ipset_name ASN} [del] [dir='directory']
 #
 # Usage: load_ASN_ipset_iface.sh 2  NETFLIX  AS2906
 #          Create IPSET NETFLIX from AS2906 via VPN Client 2
@@ -127,6 +127,8 @@ Set_Fwmark_Parms() {
 
 Set_IP_Rule() {
 
+  VPNID=$1
+
   case "$VPNID" in
   0)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
@@ -166,7 +168,7 @@ Set_IP_Rule() {
 
 #Download ASN ipset list
 
-download_ASN_ipset_list() {
+Download_ASN_Ipset_List() {
 
   IPSET_NAME=$1
   ASN=$2
@@ -209,12 +211,12 @@ Check_ASN_Ipset_List_Values() {
 
   if [ "$(ipset -L "$IPSET_NAME" 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
     if [ ! -s "$DIR/$IPSET_NAME" ] || [ "$(find "$DIR" -name $IPSET_NAME -mtime +1 -print)" = "$DIR/$IPSET_NAME" ]; then
-      download_ASN_ipset_list $IPSET_NAME $ASN $NUMBER $DIR
+      Download_ASN_Ipset_List $IPSET_NAME $ASN $NUMBER $DIR
     fi
     awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   else
     if [ ! -s "$DIR/$IPSET_NAME" ]; then
-      download_ASN_ipset_list $IPSET_NAME $ASN $NUMBER $DIR
+      Download_ASN_Ipset_List $IPSET_NAME $ASN $NUMBER $DIR
     fi
   fi
 }
@@ -247,11 +249,9 @@ Error_Exit() {
     exit 1
 }
 
-#================================ end of functions
+#================================ End of Functions
 
 Check_Lock "$@"
-
-#======================================================================================Martineau Hack
 
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
   DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
@@ -298,12 +298,12 @@ esac
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
-  Chk_Entware 30
-  Set_IP_Rule
   Create_Routing_Rules "$IPSET_NAME" "del"
   Check_ASN_Ipset_List_Exist "$IPSET_NAME" "del"
 else
   Chk_Entware 30
+  if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
+  Set_IP_Rule "$VPN_ID"
   Check_ASN_Ipset_List_Exist "$IPSET_NAME"
   Check_ASN_Ipset_List_Values "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
   Create_Routing_Rules "$IPSET_NAME" # Martineau Hack

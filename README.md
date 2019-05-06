@@ -2,7 +2,7 @@
 ## Introduction
 The features of **x3mRouting** include an alternative method to selectively route LAN Clients in the Asuswrt-Merlin firmware and two alternative methods for selectively routing traffic using IPSET lists.
 
-I currently use the project to selectively route Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media traffic.
+I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media traffic in devoloping the project.
 ## x3mRouting Methods
 
 ### x3mRouting LAN Client Method
@@ -68,30 +68,42 @@ By default, all of the scripts will store backup copies of the IPSET lists in th
 #### IPSET Shell Script Usage Examples for use with the modified OpenVPN Client Screen
 
 ##### load_AMAZON_ipset.sh
-This script will create an IPSET list called AMAZON containing all IPv4 address for the Amazon AWS US region. The source file used by the script is provided by Amazon at https://ip-ranges.amazonaws.com/ip-ranges.json. The AMAZON IPSET list is required to route Amazon Prime traffic.  The script must also be used in combination with the NETFLIX IPSET list to selectively route Netflix traffic as Netflix hosts on Amazon AWS servers.  
+This script will create an IPSET list called containing all IPv4 address for the Amazon AWS region specified. The source file used by the script is provided by Amazon at https://ip-ranges.amazonaws.com/ip-ranges.json. The AMAZON US region is required to route Amazon Prime traffic.
 
-Usage:
+**Usage:**
 
-    load_AMAZON_ipset.sh [dir='directory'] [del]
+You must specify one of the regions below when creating the IPSET list:
 
-Create the AMAZON IPSET list and use the **/opt/tmp** directory for the IPSET save/restore file location:
+* AP - Asia Pacific
+* CA - Canada
+* CN - China
+* EU - European Union
+* SA - South America
+* US - USA
+* GV - USA Government
+* GLOBAL - Global
 
-    load_AMAZON_ipset.sh
 
-Create the AMAZON IPSET list and use the **/mnt/sda1/Backups** directory rather than Entware's **/opt/tmp** directory for the IPSET save/restore file location:
+    load_AMAZON_ipset.sh {ipset_name region} [dir='directory'] [del]
 
-    load_AMAZON_ipset.sh dir=/mnt/sda1/Backups
+Create the IPSET list AMAZON-US for the US region use the **/opt/tmp** directory for the IPSET save/restore file location:
 
-Delete IPSET AMAZON:
+    load_AMAZON_ipset.sh AMAZON-US US
 
-    load_AMAZON_ipset.sh del
+Create the IPSET list AMAZON-US for the US region and use the **/mnt/sda1/Backups** directory rather than Entware's **/opt/tmp** directory for the IPSET save/restore file location:
+
+    load_AMAZON_ipset.sh AMAZON-US US dir=/mnt/sda1/Backups
+
+Delete IPSET AMAZON-US (the region parameter is not required when using the delete function):
+
+    load_AMAZON_ipset.sh AMAZON-US del
 
 ##### load_MANUAL_ipset.sh
 This script will create an IPSET list from a file containing IPv4 addresses. For example, I mined the domain names for BBC from dnsmasq and converted the domain names to their respective IPv4 addresses. You must pass the script the IPSET list name. The IPSET list name must match the name of the file containing the IPv4 addresses.
 
 Usage:
 
-    load_MANUAL_ipset.sh ipset_name [del] [dir='directory']
+    load_MANUAL_ipset.sh {ipset_name} [del] [dir='directory']
 
 Create IPSET BBC and use the default **/opt/tmp** directory as the IPSET save/restore location:
 
@@ -110,7 +122,7 @@ This script will create an IPSET list using the [AS Number](https://www.apnic.ne
 
 Usage example:
 
-    load_ASN_ipset.sh ipset_name ASN [del] [dir='directory']
+    load_ASN_ipset.sh {ipset_name ASN} [del] [dir='directory']
 
 Create IPSET NETFLIX and use the default **/opt/tmp** directory as the IPSET save/restore location:
 
@@ -120,7 +132,7 @@ Create IPSET NETFLIX and use the **/mnt/sda1/Backups** directory rather than the
 
     load_ASN_ipset.sh NETFLIX AS2906 dir=/mnt/sda1/Backups
 
-Delete IPSET NETFLIX:
+Delete IPSET NETFLIX (the AS Number parameter is not required when using the delete function):
 
     load_ASN_ipset.sh NETFLIX del
 
@@ -129,7 +141,7 @@ This script will create an IPSET list using the IPSET feature inside of dnsmasq 
 
 Usage example:
 
-    load_DNSMASQ_ipset.sh ipset_name domains[,...]} ['autoscan'] [del]  [dir='directory']
+    load_DNSMASQ_ipset.sh {ipset_name domains[,...]} ['autoscan'] [del]  [dir='directory']
 
 Create IPSET BBC and auto populate IPs for domain 'bbc.co.uk'
 
@@ -161,7 +173,7 @@ In order to have the IPSET lists restored at boot, execute the scripts from **/j
 Following is an exammple of how to configure /**jffs/scripts/nat-start** to create the IPSET lists for streaming media traffic at system boot.
 
     #!/bin/sh
-    sh /jffs/scripts/x3mRouting/load_AMAZON_ipset.sh
+    sh /jffs/scripts/x3mRouting/load_AMAZON_ipset.sh AMAZON-US US
 
     sh /jffs/scripts/x3mRouting/load_MANUAL_ipset.sh BBC
     sh /jffs/scripts/x3mRouting/load_MANUAL_ipset.sh BBC_IPLAYER
@@ -189,30 +201,43 @@ By default, the scripts will store backup copies in the **/opt/tmp** directory o
 By default, all of the scripts will store backup copies of the IPSET lists in the **/opt/tmp** entware directory. This will allow the IPSET lists to be restored on system boot. If you prefer, you can specify another directory location by passing a directory parameter to the script. Usage examples are provided below.
 
 ##### load_AMAZON_ipset_iface.sh
-This script will create an IPSET list called AMAZON containing all IPv4 address for the Amazon AWS US region. The source file used by the script is provided by Amazon at https://ip-ranges.amazonaws.com/ip-ranges.json. The AMAZON IPSET list is required to route Amazon Prime traffic. The script must also be used in combination with the NETFLIX IPSET list to selectively route Netflix traffic as Netflix hosts on Amazon AWS servers.  
+This script will create an IPSET list called containing all IPv4 address for the Amazon AWS region specified. The source file used by the script is provided by Amazon at https://ip-ranges.amazonaws.com/ip-ranges.json. The AMAZON US region is required to route Amazon Prime traffic.
+
+**Usage:**
+
+You must specify one of the regions below when creating the IPSET list:
+
+* AP - Asia Pacific
+* CA - Canada
+* CN - China
+* EU - European Union
+* SA - South America
+* US - USA
+* GV - USA Government
+* GLOBAL - Global
 
 Usage:
 
-    load_AMAZON_ipset_iface.sh {[0|1|2|3|4|5]} [del] [dir='directory']
+    load_AMAZON_ipset_iface.sh {[0|1|2|3|4|5] ipset_name region} [del] [dir='directory']
 
-Create the AMAZON IPSET list via VPN Client 2 and use the **/opt/tmp** directory for the IPSET save/restore file location:
+Create the IPSET list AMAZON-US from the US region via VPN Client 2 and use the **/opt/tmp** directory for the IPSET save/restore file location:
 
-    load_AMAZON_ipset_iface.sh 2
+    load_AMAZON_ipset_iface.sh 2 AMAZON-US US
 
-Create the AMAZON IPSET list via VPN Client 2 and use the **/mnt/sda1/Backups** directory rather than the **/opt/tmp** directory for the IPSET save/restore location:
+Create the IPSET list AMAZON-US from the US region via VPN Client 2 and use the **/mnt/sda1/Backups** directory rather than the **/opt/tmp** directory for the IPSET save/restore location:
 
-    load_AMAZON_ipset_iface.sh 2 dir=/mnt/sda1/Backups
+    load_AMAZON_ipset_iface.sh 2 AMAZON-US US dir=/mnt/sda1/Backups
 
-Delete IPSET list AMAZON and remove from VPN Client 2:
+Delete the IPSET list AMAZON-US and remove from VPN Client 2 (the region parameter is not required when using the delete function):
 
-    load_AMAZON_ipset_iface.sh 2 del
+    load_AMAZON_ipset_iface.sh 2 AMAZON-US del
 
 ##### load_MANUAL_ipset_iface.sh
 This script will create an IPSET list from a file containing IPv4 addresses stored in the **/opt/tmp** directory on entware. For example, I mined the domain names from dnsmasq for BBC and converted the domain names to their respective IPv4 addresses. You must pass the script the IPSET list name. The IPSET list name must match the name of the file containing the IPv4 addresses stored in **/opt/tmp**.
 
 Usage:
 
-    load_MANUAL_ipset.sh {[0|1|2|3|4|5]} ipset_name [del] [dir='directory']
+    load_MANUAL_ipset.sh {[0|1|2|3|4|5] ipset_name} [del] [dir='directory']
 
 Create IPSET BBC via VPN Client 3 and use the default **/opt/tmp** directory as the IPSET save/restore location:
 
@@ -231,7 +256,7 @@ This script will create an IPSET list using the [AS Number](https://www.apnic.ne
 
 Usage example:
 
-    load_ASN_ipset_iface.sh {[0|1|2|3|4|5]} ipset_name ASN [del] [dir='directory']
+    load_ASN_ipset_iface.sh {[0|1|2|3|4|5] ipset_name ASN} [del] [dir='directory']
 
 Create IPSET NETFLIX from AS2906 via VPN Client 2:
 
@@ -241,7 +266,7 @@ Create IPSET NETFLIX from AS2906 via VPN Client 2, but use the **/mnt/sda1/Backu
 
     load_ASN_ipset_iface.sh 2 NETFLIX AS2906 dir=/mnt/sda1/Backups
 
-Delete IPSET NETFLIX and remove routing via VPN Client 2 (the AS Number is not required when using the delete function):
+Delete IPSET NETFLIX and remove routing via VPN Client 2 (the AS Number parameter is not required when using the delete function):
 
     load_ASN_ipset_iface.sh 2 NETFLIX del
 
@@ -261,6 +286,7 @@ Create IPSET BBC via VPN Client 3 and auto populate IPs for domain **bbc.co.uk**
     load_DNSMASQ_ipset_iface.sh 3 BBC bbc.co.uk dir=/mnt/sda1/Backups
 
 Delete IPSET BBC and remove from VPN Client 3:
+
     load_DNSMASQ_ipset_iface.sh 3 BBC bbc.co.uk del
 
 Create IPSET NETFLIX via WAN and auto populate IPs for multiple Netflix domains
@@ -290,7 +316,7 @@ In order to have the IPSET lists and routing rules restored at boot, execute the
 Following is an example of how to configure /**jffs/scripts/nat-start** to create the IPSET lists and define the routing rules for streaming media traffic at system boot.
 
     #!/bin/sh
-    sh /jffs/scripts/x3mRouting/load_AMAZON_ipset_iface.sh 1
+    sh /jffs/scripts/x3mRouting/load_AMAZON_ipset_iface.sh 1 AMAZON-US US
 
     sh /jffs/scripts/x3mRouting/load_ASN_ipset_iface.sh 1 HULU AS23286
     sh /jffs/scripts/x3mRouting/load_ASN_ipset_iface.sh 1 NETFLIX AS2906
@@ -322,6 +348,87 @@ The installation script **install_x3mRouting.sh** will display a menu with the o
 |load_ASN_ipset_iface.sh            |   |   | X |
 |load_DNSMASQ_ipset_iface_ipset.sh  |   |   | X |
 |load_MANUAL_ipset_iface_ipset.sh   |   |   | X |
+
+### Validation and Troubleshooting
+#### IPSET lists
+The install script will add a function to **/jffs/configs/profile.add** called **liststats** that will list the name of all IPSET lists and the number of IP address entries. To use the function, type **liststats** from the SSH command line (Note: For first time users, you must open up a new SSH session after running the installation script):
+
+    AMAZON - 326
+    BBC_WEB - 128
+    CBS - 57
+    CBS_WEB - 82
+    HULU_WEB - 8
+    MOVETV - 95
+    NETFLIX - 150
+    Skynet-Blacklist - 138055
+    Skynet-BlockedRanges - 1562
+    Skynet-IOT - 0
+    Skynet-Master - 2
+    Skynet-Whitelist - 3456
+
+Display information about an IPSET list, type the command **ipset -L ipset_name**. For example, to display the information about the IPSET list NETFLIX, type: **ipset -L NETFLIX**
+
+    Name: NETFLIX
+    Type: hash:net
+    Revision: 6
+    Header: family inet hashsize 1024 maxelem 65536
+    Size in memory: 8044
+    References: 1
+    Number of entries: 150
+    Members:
+    198.38.100.0/24
+    45.57.32.0/24
+    45.57.7.0/24
+    45.57.65.0/24
+    198.45.56.0/24
+    <snip>
+
+#### OpenVPN and LAN Client Routing and Priorities Rules
+Type the command
+
+    ip rule
+
+to display the routing and priority rules for the OpenVPN and LAN Clients:
+
+    0:      from all lookup local
+    9990:   from all fwmark 0x8000/0x8000 lookup main
+    9991:   from all fwmark 0x3000/0x3000 lookup ovpnc5
+    9992:   from all fwmark 0x7000/0x7000 lookup ovpnc4
+    9993:   from all fwmark 0x4000/0x4000 lookup ovpnc3
+    9994:   from all fwmark 0x2000/0x2000 lookup ovpnc2
+    9995:   from all fwmark 0x1000/0x1000 lookup ovpnc1
+    10104:  from 192.168.1.150 lookup ovpnc1
+    10105:  from 192.168.1.151 lookup ovpnc1
+    10106:  from 192.168.1.153 lookup ovpnc1
+    10107:  from 192.168.1.154 lookup ovpnc1
+    10301:  from 192.168.1.165 lookup ovpnc2
+    10302:  from 192.168.1.149 lookup ovpnc2
+    10303:  from 192.168.1.152 lookup ovpnc2
+    32766:  from all lookup main
+    32767:  from all lookup default
+
+#### IPTABLES Chains
+
+Enter the following command to display the IPTABLES Chains for the PREROUTING table:
+
+    iptables -nvL PREROUTING -t mangle --line
+
+The output will also display the number of packets and bytes traversing the iptables rule which can be used as confirmation that traffic is being routed according to the rule:
+
+    Chain PREROUTING (policy ACCEPT 5808K packets, 6404M bytes)
+    num   pkts bytes target     prot opt in     out     source               destination
+    1        1    60 MARK       all  --  tun13  *       0.0.0.0/0            0.0.0.0/0            MARK xset 0x1/0x7
+    2     661K  863M MARK       all  --  tun15  *       0.0.0.0/0            0.0.0.0/0            MARK xset 0x1/0x7
+    3        1    60 MARK       all  --  tun14  *       0.0.0.0/0            0.0.0.0/0            MARK xset 0x1/0x7
+    4    76880   70M MARK       all  --  tun12  *       0.0.0.0/0            0.0.0.0/0            MARK xset 0x1/0x7
+    5    2030K 2737M MARK       all  --  tun11  *       0.0.0.0/0            0.0.0.0/0            MARK xset 0x1/0x7
+    6        0     0 MARK       all  --  tun21  *       0.0.0.0/0            0.0.0.0/0            MARK xset 0x1/0x7
+    7        0     0 MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set NETFLIX dst MARK set 0x1000
+    8    1067K   60M MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set HULU_WEB dst MARK set 0x1000
+    9    33488 6945K MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set AMAZON dst MARK set 0x1000
+    10    129K 9898K MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set MOVETV dst MARK set 0x3000
+    11   27284 5635K MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set CBS_WEB dst MARK set 0x3000
+    12       0     0 MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set BBC_WEB dst MARK set 0x4000
 
 ### Acknowledgements
 I want to acknowledge the following [snbforums](https://www.snbforums.com) members who helped make this project possible.

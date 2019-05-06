@@ -3,7 +3,7 @@
 # Script: load_ASN_ipsets_iface.sh
 # VERSION=1.0.0
 # Authors: Xentrk, Martineau
-# Date: 28-April-2019
+# Date: 6-May-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -20,7 +20,7 @@
 #
 # Usage example:
 #
-# Usage: load_ASN_ipset_iface.sh ipset_name ASN [del] [dir='directory']
+# Usage: load_ASN_ipset_iface.sh {ipset_name ASN} [del] [dir='directory']
 #
 # Usage: load_ASN_ipset_iface.sh NETFLIX  AS2906
 #          Create IPSET NETFLIX from AS2906
@@ -130,7 +130,7 @@ Downlad_ASN_Ipset_List() {
 
 # Create IPSET lists
 # if ipset list does not exist, create it
-check_ASN_ipset_list_exist() {
+Check_ASN_Ipset_List_Exist() {
 
   IPSET_NAME="$1"
   
@@ -194,11 +194,9 @@ Error_Exit() {
     exit 1
 }
 
-#================================ end of functions
+#================================ End of Functions
 
 Check_Lock "$@"
-
-#======================================================================================Martineau Hack
 
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
   DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
@@ -221,11 +219,11 @@ fi
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
-  check_ASN_ipset_list_exist "$IPSET_NAME" "del"
+  Check_ASN_Ipset_List_Exist "$IPSET_NAME" "del"
 else
   Chk_Entware 30
   if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
-  check_ASN_ipset_list_exist "$IPSET_NAME"
+  Check_ASN_Ipset_List_Exist "$IPSET_NAME"
   Check_ASN_Ipset_List_Values "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
 fi
 

@@ -3,7 +3,7 @@
 # Script: load_MANUAL_ipset_iface.sh
 # VERSION=1.0.0
 # Author: Xentrk, Martineau
-# Date: 28-April-2019
+# Date: 6-May-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -23,7 +23,7 @@
 #
 # Usage example:
 #
-# Usage:     load_MANUAL_ipset_iface.sh   {[0|1|2|3|4|5]}  ipset_name [del]  [dir='directory']
+# Usage:     load_MANUAL_ipset_iface.sh   {[0|1|2|3|4|5]  ipset_name} [del]  [dir='directory']
 #
 # Usage:     load_MANUAL_ipset_iface.sh   2   BBC
 #               Create IPSET BBC via VPN Client 2
@@ -129,6 +129,8 @@ Set_Fwmark_Parms() {
 
 Set_IP_Rule() {
 
+  VPNID=$1
+
   case "$VPNID" in
   0)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
@@ -140,25 +142,21 @@ Set_IP_Rule() {
     ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
     ip route flush cache
     ;;
-
   2)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
     ip route flush cache
     ;;
-
   3)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 113 prio 9993
     ip route flush cache
     ;;
-
   4)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 114 prio 9992
     ip route flush cache
     ;;
-
   5)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 115 prio 9991
@@ -225,11 +223,10 @@ Error_Exit() {
     exit 1
 }
 
-#======================== end of functions
+#======================== End of Functions
 
 Check_Lock "$@"
 
-#======================================================================================Martineau Hack
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
   DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
 else
@@ -272,7 +269,8 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Check_MANUAL_Ipset_List_Exist "$IPSET_NAME" "del"
 else
   Chk_Entware 30
-  Set_IP_Rule
+  if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
+  Set_IP_Rule "$VPNID"
   Check_MANUAL_Ipset_List_Exist "$IPSET_NAME"
   Check_MANUAL_Ipset_List_Values "$IPSET_NAME" "$DIR"
   Create_Routing_Rules "$IPSET_NAME"

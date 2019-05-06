@@ -51,7 +51,7 @@
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
-#set -x
+set -x
 
 Kill_Lock() {
 
@@ -190,12 +190,15 @@ Check_Ipset_List_Values_AMAZON() {
 # Route IPSET to target WAN or VPN
 Create_Routing_Rules() {
 
-  iptables -t mangle -D PREROUTING -i br0 -m set --match-set AMAZON dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
-  if [ "$1" != "del" ]; then
-    iptables -t mangle -A PREROUTING -i br0 -m set --match-set AMAZON dst -j MARK --set-mark "$TAG_MARK"
-    logger -t "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created for AMAZON "("TAG fwmark $TAG_MARK")"
+  IPSET_NAME="$1"
+  DEL_FLAG="$2"
+
+  iptables -t mangle -D PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
+  if [ "$DEL_FLAG" != "del" ]; then
+    iptables -t mangle -A PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
+    logger -t "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created for "$IPSET_NAME" "("TAG fwmark $TAG_MARK")"
   else
-    logger -t "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted for AMAZON "("TAG fwmark $TAG_MARK")"
+    logger -t "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted for "$IPSET_NAME" "("TAG fwmark $TAG_MARK")"
   fi
 }
 
@@ -281,6 +284,12 @@ else
   logger -t "($(basename "$0"))" $$ "Warning missing arg1 'destination_target' 0-WAN or 1-5=VPN, WAN assumed!"
 fi
 
+if [ -n "$2" ]; then
+  IPSET_NAME=$2
+else
+  Error_Exit "ERROR missing arg2 'ipset_name'"
+fi
+
 Set_Fwmark_Parms
   
 case "$VPNID" in
@@ -299,7 +308,7 @@ esac
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
-  Create_Routing_Rules "del"
+  Create_Routing_Rules "$IPSET_NAME" "del"
   Check_Ipset_List_Exist_AMAZON "$IPSET_NAME" "del"
 else
   Chk_Entware jq 30
@@ -307,7 +316,7 @@ else
   Set_IP_Rule "$VPNID"
   Check_Ipset_List_Exist_AMAZON "$IPSET_NAME"
   Check_Ipset_List_Values_AMAZON "$IPSET_NAME" "$REGION"
-  Create_Routing_Rules
+  Create_Routing_Rules "$IPSET_NAME"
 fi
 #==================================================================================================
 

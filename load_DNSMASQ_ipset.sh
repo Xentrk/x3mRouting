@@ -3,7 +3,7 @@
 # Script: load_DNSMASQ_ipset.sh
 # VERSION=1.0.0
 # Author: Martineau, Xentrk
-# Date: 28-April-2019
+# Date: 6-May-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -24,7 +24,7 @@
 #
 # Usage example:
 #
-# Usage:     load_DNSMASQ_ipset.sh   ipset_name  domains[,...]} ['autoscan'] [del]  [dir='directory']
+# Usage:     load_DNSMASQ_ipset.sh   {ipset_name  domains[,...]} ['autoscan'] [del]  [dir='directory']
 #
 # Usage:     load_DNSMASQ_ipset.sh   BBC   bbc.co.uk
 #               Create IPSET BBC via VPN Client 2 and autopopulate IPs for domain 'bbc.co.uk'
@@ -219,10 +219,8 @@ Error_Exit() {
     exit 1
 }
 
-#==================== end of functions
+#==================== End of Functions
 Check_Lock "$@"
-
-#======================================================================================Martineau Hack
 
 AUTOSCAN=
 if [ "$(echo "$@" | grep -c 'autoscan')" -gt 0 ]; then
@@ -280,7 +278,6 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Check_Cron_Job "$IPSET_NAME" "del"
   Check_Ipset_List "$IPSET_NAME" "del"
 else
-  #==================================================================================================
   Chk_Entware 30
   if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
   Check_Dnsmasq "$DNSMASQ_ENTRY"             

@@ -3,6 +3,13 @@
 The features of **x3mRouting** include an alternative method to selectively route LAN Clients in the Asuswrt-Merlin firmware and two alternative methods for selectively routing traffic using IPSET lists.
 
 I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media traffic in devoloping the project.
+
+## Routing Policy Databse (RPDB)
+
+The selective routing of IPSET lists use **"fwmark"** rules to manage the RPDB by assigning them to currently unused priority slots within the reserved RPDB rule range. This modification does not undermine the stability nor integrity of the Asuswrt-Merlin firmware.
+
+However, the Asuswrt-Merlin firmware author [RMerlin](https://www.snbforums.com/members/rmerlin.10954/) does not condone the use of fwmarks. He has rejected their use because of the additional work effort should the upstream code change if Asus suddenly decides to use his current RPDB rule 10000-20000 range, and also decide to use the routing tables 111-115.
+
 ## x3mRouting Methods
 
 ### x3mRouting LAN Client Method
@@ -388,7 +395,7 @@ Type the command
 
     ip rule
 
-to display the routing and priority rules for the OpenVPN and LAN Clients:
+to display the RPDB routing priority database rules for the OpenVPN and LAN Clients:
 
     0:      from all lookup local
     9990:   from all fwmark 0x8000/0x8000 lookup main

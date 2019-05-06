@@ -32,7 +32,7 @@ Welcome_Message() {
   clear
   printf '\n_______________________________________________________________________\n'
   printf '|                                                                     |\n'
-  printf '|  Welcome to the %bx3mRouting%b installation script |\n' "$COLOR_GREEN" "$COLOR_WHITE"
+  printf '|  Welcome to the %bx3mRouting%b installation script                      |\n' "$COLOR_GREEN" "$COLOR_WHITE"
   printf '|  Version %s by Xentrk                                            |\n' "$VERSION"
   printf '|         ____        _         _                                     |\n'
   printf '|        |__  |      | |       | |                                    |\n'
@@ -45,7 +45,7 @@ Welcome_Message() {
   printf '| Requirements: jffs partition and USB drive with entware installed   |\n'
   printf '|                                                                     |\n'
   printf '| See the project repository at                                       |\n'
-  printf '| %bhttps://github.com/Xentrk/x3mRouting%b                         |\n' "$COLOR_GREEN" "$COLOR_WHITE"
+  printf '| %bhttps://github.com/Xentrk/x3mRouting%b                                |\n' "$COLOR_GREEN" "$COLOR_WHITE"
   printf '| for helpful tips.                                                   |\n'
   printf '|_____________________________________________________________________|\n\n'
   Main_Menu
@@ -61,7 +61,7 @@ Main_Menu() {
   localmd5="$(md5sum "$0" | awk '{print $1}')"
   remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/install_x3mRouting.sh" | md5sum | awk '{print $1}')"
   if [ "$localmd5" != "$remotemd5" ]; then
-    printf '\n%b[7]%b = Update install_x3mRouting.sh\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[7]%b = Update install_x3mRouting.sh\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   fi
   printf '\n%b[e]%b = Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '\n%bOption ==>%b ' "${COLOR_GREEN}" "${COLOR_WHITE}"

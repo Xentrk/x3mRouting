@@ -156,8 +156,9 @@ Download_AMAZON() {
 Check_Ipset_List_Exist_AMAZON() {
 
   IPSET_NAME="$1"
+  DEL_FLAG="$2"
   
-  if [ "$2" != "del" ]; then
+  if [ "$DEL_FLAG" != "del" ]; then
       if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
         ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
         logger -t "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536

@@ -135,23 +135,28 @@ Chk_Entware() {
 # Download Amazon AWS json file
 Download_AMAZON() {
 
+  IPSET_NAME="$1"
+  REGION="$2"
+
   wget https://ip-ranges.amazonaws.com/ip-ranges.json -O "$DIR/ip-ranges.json"
   if [ "$?" = "1" ]; then # file download failed
     Error_Exit "Script execution failed because https://ip-ranges.amazonaws.com/ip-ranges.json file could not be downloaded"
   fi
-  true >"$DIR/AMAZON"
-  for REGION in us-east-1 us-east-2 us-west-1 us-west-2; do
-    jq '.prefixes[] | select(.region=='\"$REGION\"') | .ip_prefix' <"$DIR/ip-ranges.json" | sed 's/"//g' | sort -u >>"$DIR/AMAZON"
+  true >"$DIR/$IPSET_NAME"
+#  for REGION in us-east-1 us-east-2 us-west-1 us-west-2; do
+# don't quote the parameter so it is treated like an array!
+   for REGION in $REGION; do
+    jq '.prefixes[] | select(.region=='\"$REGION\"') | .ip_prefix' <"$DIR/ip-ranges.json" | sed 's/"//g' | sort -u >>"$DIR/$IPSET_NAME"
   done
 }
-
 # if ipset AMAZON does not exist, create it
 
 Check_Ipset_List_Exist_AMAZON() {
   
   IPSET_NAME="$1"
+  DEL_FLAG="$2"
   
-  if [ "$2" != "del" ]; then
+  if [ "$DEL_FLAG"  != "del" ]; then
       if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
         ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
         logger -t "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
@@ -166,17 +171,18 @@ Check_Ipset_List_Exist_AMAZON() {
 # if ipset list AMAZON is empty or source file is older than 7 days, download source file; load ipset list
 
 Check_Ipset_List_Values_AMAZON() {
-
+  
   IPSET_NAME="$1"
-
+  REGION="$2"
+  
   if [ "$(ipset -L $IPSET_NAME 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
     if [ ! -s "$DIR/$IPSET_NAME" ] || [ "$(find "$DIR" -name $IPSET_NAME -mtime +7 -print)" = "$DIR/$IPSET_NAME" ]; then
-      Download_AMAZON
+      Download_AMAZON "$IPSET_NAME" "$REGION"
     fi
     awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   else
     if [ ! -s "$DIR/$IPSET_NAME" ]; then
-      Download_AMAZON
+      Download_AMAZON "$IPSET_NAME" "$REGION"
     fi
   fi
 }
@@ -294,13 +300,13 @@ esac
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Create_Routing_Rules "del"
-  Check_Ipset_List_Exist_AMAZON "AMAZON" "del"
+  Check_Ipset_List_Exist_AMAZON "$IPSET_NAME" "del"
 else
   Chk_Entware jq 30
   if [ "$READY" -eq 1 ]; then Error_Exit "Required entware package 'jq' not installed"; fi
   Set_IP_Rule "$VPNID"
-  Check_Ipset_List_Exist_AMAZON "AMAZON"
-  Check_Ipset_List_Values_AMAZON "AMAZON"
+  Check_Ipset_List_Exist_AMAZON "$IPSET_NAME"
+  Check_Ipset_List_Values_AMAZON "$IPSET_NAME" "$REGION"
   Create_Routing_Rules
 fi
 #==================================================================================================

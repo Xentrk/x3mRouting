@@ -210,7 +210,7 @@ By default, all of the scripts will store backup copies of the IPSET lists in th
 ##### load_AMAZON_ipset_iface.sh
 This script will create an IPSET list called containing all IPv4 address for the Amazon AWS region specified. The source file used by the script is provided by Amazon at https://ip-ranges.amazonaws.com/ip-ranges.json. The AMAZON US region is required to route Amazon Prime traffic.
 
-**Usage:**
+Usage:
 
 You must specify one of the regions below when creating the IPSET list:
 

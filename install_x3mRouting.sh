@@ -421,6 +421,8 @@ Install_x3mRouting_LAN_Clients() {
   Init_Start_Update "mount_files_lan.sh"
   sh /jffs/scripts/init-start
   echo "Installation of x3mRouting for LAN Clients completed"
+  echo "Press enter to continue"
+  read -r "enter"
   Welcome_Message
 }
 
@@ -451,6 +453,9 @@ Check_Requirements() {
 
 Update_Profile_Add() {
 
+  CONFIG_DIR="$1"
+  PROFILE_FILE="$2"
+
   echo "liststats () {" >>"$CONFIG_DIR/$PROFILE_FILE"
   echo "  GREEN='\033[0;32m'" >>"$CONFIG_DIR/$PROFILE_FILE"
   echo "  RED='\033[0;31m'" >>"$CONFIG_DIR/$PROFILE_FILE"
@@ -466,19 +471,23 @@ Update_Profile_Add() {
 
 Check_Profile_Add() {
 
+  CONFIG_DIR="/jffs/configs"
+  PROFILE_FILE="profile.add"
+  PARM="liststats"
+
   if [ -d "$CONFIG_DIR" ]; then
     if [ -s "$CONFIG_DIR/$PROFILE_FILE" ]; then
-      if [ "$(grep -c "$PARM" "$CONFIG_DIR/$PROFILE_FILE")" -gt 0 ]; then # see if line exists
-        exit 0
+      if [ "$(grep -cw "$PARM" "$CONFIG_DIR/$PROFILE_FILE")" -gt 0 ]; then # see if line exists
+        return
       fi
     else
       true >"$CONFIG_DIR/$PROFILE_FILE"
-      Update_Profile_Add
+      Update_Profile_Add "$CONFIG_DIR" "$PROFILE_FILE"
     fi
   else
     mkdir "$CONFIG_DIR"
     true >"$CONFIG_DIR/$PROFILE_FILE"
-    Update_Profile_Add
+    Update_Profile_Add "$CONFIG_DIR" "$PROFILE_FILE"
   fi
 }
 
@@ -497,6 +506,8 @@ Install_x3mRouting_GUI() {
   sh /jffs/scripts/init-start
   Check_Profile_Add
   echo "Installation of x3mRouting for IPSET lists completed"
+  echo "Press enter to continue"
+  read -r "enter"
   Welcome_Message
 }
 
@@ -509,6 +520,8 @@ Install_x3mRouting_Shell_Scripts() {
   Download_File "$LOCAL_REPO" "load_AMAZON_ipset_iface.sh"
   Check_Profile_Add
   echo "Installation of x3mRouting for IPSET Shell Scripts completed"
+  echo "Press enter to continue"
+  read -r "enter"
   Welcome_Message
 }
 

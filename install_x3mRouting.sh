@@ -216,14 +216,12 @@ Update_Version() {
           if [ "$localver" != "$serverver" ]; then
             printf 'New version of $FILE available - updating to $serverver\n'
             Download_File "$DIR" "$FILE"
-            chmod 0755 "$DIR/$FILE"
           else
             localmd5="$(md5sum "$DIR/$FILE" | awk '{print $1}')"
             remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
             if [ "$localmd5" != "$remotemd5" ]; then
               printf 'MD5 hash of $FILE does not match - downloading updated $serverver\n'
               Download_File "$DIR" "$FILE"
-              chmod 0755 "$DIR/$FILE"
             else
               printf 'No new version to update - latest is $localver\n'
             fi
@@ -255,12 +253,14 @@ Remove_Existing_Installation() {
   echo "Starting removal of x3mRouting Repository"
 
   # Remove the jq package
-  Chk_Entware jq
+  Chk_Entware jq 1
   if [ "$READY" -eq "0" ]; then
     echo "Existing jq package found. Removing jq"
-    if opkg remove jq; then echo "jq successfully removed"; else echo "Error occurred when removing jq"; fi
-  else
-    echo "Unable to remove the jq package. Entware is not mounted"
+      if opkg remove jq; then
+        echo "jq successfully removed"
+      else
+        echo "Error occurred when removing jq"
+      fi
   fi
 
   # Remove entries from /jffs/scripts/init-start
@@ -274,6 +274,16 @@ Remove_Existing_Installation() {
     done
   fi
   # TBD - ckeck if only the she-bang exists and del file it it does
+
+  if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ]; then
+    umount /usr/sbin/vpnrouting.sh
+  fi
+  if [ "$(df | grep -c "/usr/sbin/updown.sh")" -eq 1 ]; then
+    umount /usr/sbin/updown.sh
+  fi
+  if [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ]; then
+    umount /www/Advanced_OpenVPNClient_Content.asp
+  fi
 
   # Purge /jffs/scripts/x3mRouting directory
   for DIR in $LOCAL_REPO; do
@@ -360,7 +370,7 @@ Download_File() {
   STATUS="$(curl --retry 3 -sL -w '%{http_code}' "$GITHUB_DIR/$FILE" -o "$DIR/$FILE")"
   if [ "$STATUS" -eq "200" ]; then
     printf '%b%s%b downloaded successfully\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE"
-    if [ "$(echo "$FILE" | grep -cw '.sh')" -gt 0 ]; then
+    if [ "$(echo "$FILE" | grep -c '.sh')" -gt 0 ]; then
       chmod 755 "$DIR/$FILE"
     fi
   else
@@ -413,11 +423,11 @@ Init_Start_Update() {
 Install_x3mRouting_LAN_Clients() {
 
   Create_Project_Directory
-  Download_File "$LOCAL_REPO" x3mRouting_client_nvram.sh
-  Download_File "$LOCAL_REPO" x3mRouting_client_config.sh
-  Download_File "$LOCAL_REPO" vpnrouting.sh
-  Download_File "$LOCAL_REPO" updown.sh
-  Download_File "$LOCAL_REPO" mount_files_lan.sh
+  Download_File "$LOCAL_REPO" "x3mRouting_client_nvram.sh"
+  Download_File "$LOCAL_REPO" "x3mRouting_client_config.sh"
+  Download_File "$LOCAL_REPO" "vpnrouting.sh"
+  Download_File "$LOCAL_REPO" "updown.sh"
+  Download_File "$LOCAL_REPO" "mount_files_lan.sh"
   Init_Start_Update "mount_files_lan.sh"
   sh /jffs/scripts/init-start
   echo "Installation of x3mRouting for LAN Clients completed"

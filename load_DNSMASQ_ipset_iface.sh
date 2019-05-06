@@ -3,7 +3,7 @@
 # Script: load_DNSMASQ_ipset_iface.sh
 # VERSION=1.0.0
 # Author: Martineau, Xentrk
-# Date: 28-April-2019
+# Date: 6-May-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -287,8 +287,6 @@ Error_Exit() {
 #==================== end of functions
 Check_Lock "$@"
 
-#======================================================================================Martineau Hack
-
 AUTOSCAN=
 if [ "$(echo "$@" | grep -c 'autoscan')" -gt 0 ]; then
   AUTOSCAN=$(echo "$@" | sed -n "s/^.*autoscan=//p" | awk '{print $1}')
@@ -367,7 +365,6 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Create_Routing_Rules "$IPSET_NAME" "del"
   Check_Ipset_List "$IPSET_NAME" "del"
 else
-  #==================================================================================================
   Chk_Entware 30
   if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
   Set_IP_Rule

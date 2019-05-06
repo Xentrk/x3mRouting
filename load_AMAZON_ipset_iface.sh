@@ -290,6 +290,52 @@ else
   Error_Exit "ERROR missing arg2 'ipset_name'"
 fi
 
+if [ -n "$3" ]; then
+  if [ "$(echo "$@" | grep -cw 'del')" -eq 0 ]; then
+    REGION="$3"
+    case "$REGION" in
+    AP)
+      REGION="ap-east-1 ap-northeast-1 ap-northeast-2 ap-northeast-3 ap-south-1 ap-southeast-1 ap-southeast-2"
+      break
+      ;;
+    CA)
+      REGION="ca-central-1"
+      break
+      ;;
+    CN)
+      REGION="cn-north-1 cn-northwest-1"
+      break
+      ;;
+    EU)
+      REGION="eu-central-1 eu-north-1 eu-west-1 eu-west-2 eu-west-3"
+      break
+      ;;
+    SA)
+      REGION="sa-east-1"
+      break
+      ;;
+    US)
+      REGION="us-east-1 us-east-2 us-west-1 us-west-2"
+      break
+      ;;
+    GV)
+      REGION="us-gov-east-1 us-gov-west-1"
+      break
+      ;;
+    GLOBAL)
+      REGION="GLOBAL"
+      break
+      ;;
+    *)
+      Error_Exit "Invalid AMAZON region specified: $REGION. Valid values are: AP CA CN EU SA US GV GLOBAL"
+      ;;
+    esac
+  fi
+else
+  Error_Exit "ERROR missing arg2 'Region'"
+fi
+
+
 Set_Fwmark_Parms
 
 case "$VPNID" in

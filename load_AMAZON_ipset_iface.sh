@@ -151,7 +151,7 @@ Download_AMAZON() {
 }
 # if ipset AMAZON does not exist, create it
 
-Check_Ipset_List_Exist_AMAZON() {
+Check_Ipset_List_Exist() {
   
   IPSET_NAME="$1"
   DEL_FLAG="$2"
@@ -170,7 +170,7 @@ Check_Ipset_List_Exist_AMAZON() {
 
 # if ipset list AMAZON is empty or source file is older than 7 days, download source file; load ipset list
 
-Check_Ipset_List_Values_AMAZON() {
+Check_Ipset_List_Values() {
   
   IPSET_NAME="$1"
   REGION="$2"
@@ -309,13 +309,13 @@ esac
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Create_Routing_Rules "$IPSET_NAME" "del"
-  Check_Ipset_List_Exist_AMAZON "$IPSET_NAME" "del"
+  Check_Ipset_List_Exist "$IPSET_NAME" "del"
 else
   Chk_Entware jq 30
   if [ "$READY" -eq 1 ]; then Error_Exit "Required entware package 'jq' not installed"; fi
   Set_IP_Rule "$VPNID"
-  Check_Ipset_List_Exist_AMAZON "$IPSET_NAME"
-  Check_Ipset_List_Values_AMAZON "$IPSET_NAME" "$REGION"
+  Check_Ipset_List_Exist "$IPSET_NAME"
+  Check_Ipset_List_Values "$IPSET_NAME" "$REGION"
   Create_Routing_Rules "$IPSET_NAME"
 fi
 #==================================================================================================

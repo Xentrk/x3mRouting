@@ -193,7 +193,7 @@ Update_Version() {
 
   if [ -d "$DIR" ]; then
     for FILE in x3mRouting_client_nvram.sh \
-      x3mRouting_config.sh \
+      x3mRouting_client_config.sh \
       vpnrouting.sh \
       updown.sh \
       Advanced_OpenVPNClient_Content.asp \
@@ -414,7 +414,7 @@ Install_x3mRouting_LAN_Clients() {
 
   Create_Project_Directory
   Download_File "$LOCAL_REPO" x3mRouting_client_nvram.sh
-  Download_File "$LOCAL_REPO" x3mRouting_config.sh
+  Download_File "$LOCAL_REPO" x3mRouting_client_config.sh
   Download_File "$LOCAL_REPO" vpnrouting.sh
   Download_File "$LOCAL_REPO" updown.sh
   Download_File "$LOCAL_REPO" mount_files_lan.sh

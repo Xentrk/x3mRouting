@@ -72,13 +72,10 @@ A video tutorial on how to allow the use of IPSET lists via the Selective routin
 #### DummyVPN
 In the screen picture above, you will notice an entry for **DummyVPN1**.  For the Selective routing of Ports/MACs and IPSETs, [@Martineau](https://www.snbforums.com/members/martineau.13215/) recommends creating a “dummy” VPN Client entry if you require the ability to exploit the **Accept DNS Configuration=Exclusive** option that only creates the appropriate DNSVPN iptable chains if the table isn't empty.  Use a valid IPv4 address for the DummyVPN entry that differs from your LAN IPv4 address range. I recommend using a [bogon IP addres](https://ipinfo.io/bogon) for this purpose.    
 
-#### Creating IPSET lists
-The following scripts will assist users in creating IPSET lists. Different scripts exists depending on the source of the IPSET list.
-
 #### IPSET Save/Restore File Location
 By default, all of the scripts will store backup copies of the IPSET lists in the **/opt/tmp** entware directory. This will allow the IPSET lists to be restored on system boot. If you prefer, you can specify another directory location by passing a directory parameter to the script. Usage examples are provided below.
 
-#### IPSET Shell Script Usage Examples for use with the modified OpenVPN Client Screen
+#### Shell Script Usage Examples for use with the modified OpenVPN Client Screen
 
 ##### load_AMAZON_ipset.sh
 This script will create an IPSET list called containing all IPv4 address for the Amazon AWS region specified. The source file used by the script is provided by Amazon at https://ip-ranges.amazonaws.com/ip-ranges.json. The AMAZON US region is required to route Amazon Prime traffic. You must specify one of the regions below when creating the IPSET list:
@@ -93,7 +90,7 @@ This script will create an IPSET list called containing all IPv4 address for the
 * GLOBAL - Global
 
 **Usage:**
-    
+
     load_AMAZON_ipset.sh {ipset_name region} [dir='directory'] [del]
 
 Create the IPSET list AMAZON-US for the US region use the **/opt/tmp** directory for the IPSET save/restore file location:
@@ -197,18 +194,13 @@ Following is an exammple of how to configure /**jffs/scripts/nat-start** to crea
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh BBC_WEB bbc.co.uk,bbc.com,bbc.gscontxt.net,bbci.co.uk,bbctvapps.co.uk,ssl-bbcsmarttv.2cnt.net,llnwd.net
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh MOVETV movetv.com
 
+#### IPSET Save/Restore File Location
+By default, all of the scripts will store backup copies of the IPSET lists in the **/opt/tmp** entware directory. This will allow the IPSET lists to be restored on system boot. If you prefer, you can specify another directory location by passing a directory parameter to the script. Usage examples are provided below.
+
 ### x3mRouting using the IPSET Shell Script Method
 This method is intended for users who want the ability to create and route traffic using IPSET lists, but prefer to use Asuswrt-Merlin firmware without the firmware modifications utilized by the method listed above.
 
 The difference with the scripts above is the ability to pass the interface parameter to the script to specify either the WAN or one of the five OpenVPN Client interfaces.
-
-#### Creating IPSET lists
-The following scripts will assist users in creating IPSET lists. Different scripts exists depending on the source of the IPSET list. In order to have the IPSET lists restored at boot, execute the scripts from **/jffs/scripts/nat-start**. Refer to the [Wiki](https://github.com/RMerl/asuswrt-merlin/wiki/User-scripts#creating-scripts ) for instructions on how to configure nat-start.
-
-By default, the scripts will store backup copies in the **/opt/tmp** directory on entware. This will allow the IPSET lists to be restored on system boot.
-
-#### IPSET Save/Restore File Location
-By default, all of the scripts will store backup copies of the IPSET lists in the **/opt/tmp** entware directory. This will allow the IPSET lists to be restored on system boot. If you prefer, you can specify another directory location by passing a directory parameter to the script. Usage examples are provided below.
 
 ##### load_AMAZON_ipset_iface.sh
 This script will create an IPSET list called containing all IPv4 address for the Amazon AWS region specified. The source file used by the script is provided by Amazon at https://ip-ranges.amazonaws.com/ip-ranges.json. The AMAZON US region is required to route Amazon Prime traffic. You must specify one of the regions below when creating the IPSET list:
@@ -247,11 +239,11 @@ Usage:
 
 Create IPSET BBC via VPN Client 3 and use the default **/opt/tmp** directory as the IPSET save/restore location:
 
-    load_MANUAL_ipset_iface.sh BBC 3
+    load_MANUAL_ipset_iface.sh 3 BBC
 
 Create IPSET BBC via VPN Client 3 and use the **/mnt/sda1/Backups** directory rather than the default **/opt/tmp** directory for IPSET save/restore location:
 
-    load_MANUAL_ipset_iface.sh BBC 3 dir=/mnt/sda1/Backups
+    load_MANUAL_ipset_iface.sh 3 BBC dir=/mnt/sda1/Backups
 
 Create IPSET BBC via VPN Client 3 and use the **/mnt/sda1/Backups** directory rather than the default **/opt/tmp** directory for IPSET save/restore location:
 

@@ -3,7 +3,7 @@
 # Script: load_MANUAL_ipset.sh
 # VERSION=1.0.0
 # Author: Xentrk, Martineau
-# Date: 28-April-2019
+# Date: 6-May-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -23,7 +23,7 @@
 #
 # Usage example:
 #
-# Usage:     load_MANUAL_ipset.sh   ipset_name [del]  [dir='directory']
+# Usage:     load_MANUAL_ipset.sh   {ipset_name} [del]  [dir='directory']
 #
 # Usage:     load_MANUAL_ipset.sh   BBC
 #               Create IPSET BBC
@@ -172,11 +172,10 @@ Error_Exit() {
     exit 1
 }
 
-#======================== end of functions
+#======================== End of Functions
 
 Check_Lock "$@"
 
-#======================================================================================Martineau Hack
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
   DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
 else

@@ -43,7 +43,7 @@
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
-#set -x
+set -x
 
 Kill_Lock() {
 

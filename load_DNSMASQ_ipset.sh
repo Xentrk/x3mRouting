@@ -43,13 +43,13 @@
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
-#set -x
+set -x
 
 Kill_Lock() {
 
   if [ -f "/tmp/load_DNSMASQ_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)" ]; then
-    logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_DNSMASQ_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock))"
-    logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)" '$1 == pid')"
+    logger -t "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_DNSMASQ_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock))"
+    logger -t "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)" '$1 == pid')"
     kill "$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)"
     rm -rf /tmp/load_DNSMASQ_ipset.lock
     echo
@@ -62,7 +62,7 @@ Check_Lock() {
     if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_DNSMASQ_ipset.lock)))" -gt "1800" ]; then
       Kill_Lock
     else
-      logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_DNSMASQ_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)) - Exiting (cpid=$$)"
+      logger -t "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_DNSMASQ_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)) - Exiting (cpid=$$)"
       echo
       exit 1
     fi
@@ -119,7 +119,7 @@ Chk_Entware() {
       break
     fi
     sleep 1
-    logger -st "($(basename $0))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
+    logger -t "($(basename $0))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
     TRIES=$((TRIES + 1))
   done
 
@@ -129,13 +129,13 @@ Chk_Entware() {
 # check if /jffs/configs/dnsmasq.conf.add contains 'ipset=' entry for the domains
 Check_Dnsmasq() {
 
-  DNSMASQ_ENTRY=$1
+  DNSMASQ_ENTRY="$1"
 
   if [ -s /jffs/configs/dnsmasq.conf.add ]; then # dnsmasq.conf.add file exists
     if [ "$(grep -c "$DNSMASQ_ENTRY" "/jffs/configs/dnsmasq.conf.add")" -ge "1" ]; then # if true, then one or more lines exist in dnsmasq.conf.add
       if [ "$2" = "del" ]; then
         sed -i "/^ipset.*${IPSET_NAME}$/d" /jffs/configs/dnsmasq.conf.add
-        logger -st "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" deleted from "'/jffs/configs/dnsmasq.conf.add'"
+        logger -t "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" deleted from "'/jffs/configs/dnsmasq.conf.add'"
       fi
     else
       printf "ipset=$DNSMASQ_ENTRY\n" >>/jffs/configs/dnsmasq.conf.add # add 'ipset=' domains entry to dnsmasq.conf.add
@@ -144,7 +144,7 @@ Check_Dnsmasq() {
 #  else
 #    if [ "$2" != "del" ]; then
 #      printf "ipset=$DNSMASQ_ENTRY\n" >/jffs/configs/dnsmasq.conf.add # dnsmasq.conf.add does not exist, create dnsmasq.conf.add
-#      logger -st "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" added to "'/jffs/configs/dnsmasq.conf.add'"
+#      logger -t "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" added to "'/jffs/configs/dnsmasq.conf.add'"
 #      service restart_dnsmasq >/dev/null 2>&1
 #    fi
   fi
@@ -152,22 +152,22 @@ Check_Dnsmasq() {
 
 Check_Ipset_List() {
 
-  IPSET_NAME=$1
+  IPSET_NAME="$1"
 
   if [ "$2" != "del" ]; then
     if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$1" ]; then #does ipset list exist?
       if [ -s "$DIR/$IPSET_NAME" ]; then # does $1 ipset restore file exist?
         ipset restore -! <"$DIR/$IPSET_NAME" # Restore ipset list if restore file exists at $DIR/$1
-        logger -st "($(basename "$0"))" $$ IPSET restored: "$IPSET_NAME" from "$DIR/$IPSET_NAME"
+        logger -t "($(basename "$0"))" $$ IPSET restored: "$IPSET_NAME" from "$DIR/$IPSET_NAME"
       else
         ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create $1 ipset list from scratch
-        logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
+        logger -t "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
       fi
     fi
   else
     if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" = "$IPSET_NAME" ]; then
       ipset destroy "$IPSET_NAME"
-      logger -st "($(basename "$0"))" $$ IPSET $1 deleted!
+      logger -t "($(basename "$0"))" $$ IPSET $1 deleted!
     fi
   fi
 }
@@ -175,8 +175,8 @@ Check_Ipset_List() {
 # if IPSET is older than 24 hours, save the current IPSET list to disk
 Check_Restore_File_Age() {
 
-  IPSET_NAME=$1
-  DIR=$2
+  IPSET_NAME="$1"
+  DIR="$2"
 
   if [ -s "$DIR" ]; then
     if [ "$(find $DIR -name $IPSET_NAME -mtime +1 -print 2>/dev/null)" = "$DIR/$IPSET_NAME" ]; then
@@ -188,18 +188,18 @@ Check_Restore_File_Age() {
 # If cronjob to back up the DOMAINS ipset list every 24 hours @ 2:00 AM does not exist, then create it
 Check_Cron_Job() {
 
-  IPSET_NAME=$1
+  IPSET_NAME="$1"
   
   cru l | grep $1 >/dev/null 2>&1 # Martineau Fix
   if [ "$?" = "1" ]; then # no cronjob entry found, create it
     if [ "$2" != "del" ]; then
       cru a $IPSET_NAME "0 2 * * * ipset save $IPSET_NAME > $DIR/$IPSET_NAME" >/dev/null 2>&1
-      logger -st "($(basename "$0"))" $$ CRON schedule created: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
+      logger -t "($(basename "$0"))" $$ CRON schedule created: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
     fi
   else
     if [ "$2" = "del" ]; then
       cru d $IPSET_NAME "0 2 * * * ipset save $IPSET_NAME" >/dev/null 2>&1
-      logger -st "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
+      logger -t "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
     fi
   fi
 }

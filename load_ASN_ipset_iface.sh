@@ -34,7 +34,7 @@
 ####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
-#set -x
+set -x
 
 Kill_Lock() {
 
@@ -225,8 +225,10 @@ Check_ASN_Ipset_List_Values() {
 Create_Routing_Rules() {
 
   IPSET_NAME="$1"
+  DEL_FLAG="$2"
+  
   iptables -t mangle -D PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
-  if [ "$2" != "del" ]; then
+  if [ "$DEL_FLAG" != "del" ]; then
     iptables -t mangle -A PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
     logger -t "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created for $IPSET_NAME "("TAG fwmark $TAG_MARK")"
   else
@@ -259,9 +261,8 @@ else
   DIR="/opt/tmp"
 fi
 
-VPNID=0
 if [ -n "$1" ]; then
-  VPNID=$1
+  VPNID="$1"
 else
   VPNID=0
   logger -t "($(basename "$0"))" "WARNING missing arg1 'destination_target' 0-WAN or 1-5=VPN, WAN assumed!"
@@ -303,7 +304,7 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
 else
   Chk_Entware 30
   if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
-  Set_IP_Rule "$VPN_ID"
+  Set_IP_Rule "$VPNID"
   Check_ASN_Ipset_List_Exist "$IPSET_NAME"
   Check_ASN_Ipset_List_Values "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
   Create_Routing_Rules "$IPSET_NAME" # Martineau Hack

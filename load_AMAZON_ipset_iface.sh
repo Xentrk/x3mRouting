@@ -56,8 +56,8 @@ logger -t "($(basename "$0"))" $$ Starting Script Execution
 Kill_Lock() {
 
   if [ -f "/tmp/load_AMAZON_ipset_iface.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock)" ]; then
-    logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_AMAZON_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock))"
-    logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock)" '$1 == pid')"
+    logger -t "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_AMAZON_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock))"
+    logger -t "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock)" '$1 == pid')"
     kill "$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock)"
     rm -rf /tmp/load_AMAZON_ipset_iface.lock
     echo
@@ -121,12 +121,12 @@ Chk_Entware() {
       break
     fi
     sleep 1
-    logger -st "($(basename "$0"))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
+    logger -t "($(basename "$0"))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
     TRIES=$((TRIES + 1))
   done
   # Attempt  to install missing package if not found
     if [ "$READY" -eq 1 ]; then
-      opkg install "$ENTWARE_UTILITY" && READY=0 && logger -st "($(basename "$0"))" $$ "Entware $ENTWARE_UTILITY successfully installed"
+      opkg install "$ENTWARE_UTILITY" && READY=0 && logger -t "($(basename "$0"))" $$ "Entware $ENTWARE_UTILITY successfully installed"
     fi
   
   return $READY
@@ -154,11 +154,11 @@ Check_Ipset_List_Exist_AMAZON() {
   if [ "$2" != "del" ]; then
       if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
         ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
-        logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
+        logger -t "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
       fi
   else
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
-      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || Error_Exit "Error attempting to delete IPSET $IPSET_NAME!"
+      ipset destroy "$IPSET_NAME" && logger -t "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || Error_Exit "Error attempting to delete IPSET $IPSET_NAME!"
     fi
   fi
 }
@@ -187,9 +187,9 @@ Create_Routing_Rules() {
   iptables -t mangle -D PREROUTING -i br0 -m set --match-set AMAZON dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
   if [ "$1" != "del" ]; then
     iptables -t mangle -A PREROUTING -i br0 -m set --match-set AMAZON dst -j MARK --set-mark "$TAG_MARK"
-    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created for AMAZON "("TAG fwmark $TAG_MARK")"
+    logger -t "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created for AMAZON "("TAG fwmark $TAG_MARK")"
   else
-    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted for AMAZON "("TAG fwmark $TAG_MARK")"
+    logger -t "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted for AMAZON "("TAG fwmark $TAG_MARK")"
   fi
 }
 

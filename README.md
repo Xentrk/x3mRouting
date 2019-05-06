@@ -63,7 +63,7 @@ As part of this project, you can also choose to download and install a modified 
 
 [@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. I greatly appreciate his generosity in providing the modified code and allowing me to include it in the project.
 
-![OpenVPN Client Screen](https://github.com/Xentrk/x3mRouting/blob/master/OpenVPN_Client_GUI.PNG "OpenVPN Client Screen")
+![OpenVPN Client Screen](https://github.com/Xentrk/x3mRouting/blob/master/OpenVPN_Client_GUI.png "OpenVPN Client Screen")
 
 #### Video Tutorial
 
@@ -81,11 +81,7 @@ By default, all of the scripts will store backup copies of the IPSET lists in th
 #### IPSET Shell Script Usage Examples for use with the modified OpenVPN Client Screen
 
 ##### load_AMAZON_ipset.sh
-This script will create an IPSET list called containing all IPv4 address for the Amazon AWS region specified. The source file used by the script is provided by Amazon at https://ip-ranges.amazonaws.com/ip-ranges.json. The AMAZON US region is required to route Amazon Prime traffic.
-
-**Usage:**
-
-You must specify one of the regions below when creating the IPSET list:
+This script will create an IPSET list called containing all IPv4 address for the Amazon AWS region specified. The source file used by the script is provided by Amazon at https://ip-ranges.amazonaws.com/ip-ranges.json. The AMAZON US region is required to route Amazon Prime traffic. You must specify one of the regions below when creating the IPSET list:
 
 * AP - Asia Pacific
 * CA - Canada
@@ -96,7 +92,8 @@ You must specify one of the regions below when creating the IPSET list:
 * GV - USA Government
 * GLOBAL - Global
 
-
+**Usage:**
+    
     load_AMAZON_ipset.sh {ipset_name region} [dir='directory'] [del]
 
 Create the IPSET list AMAZON-US for the US region use the **/opt/tmp** directory for the IPSET save/restore file location:
@@ -214,11 +211,7 @@ By default, the scripts will store backup copies in the **/opt/tmp** directory o
 By default, all of the scripts will store backup copies of the IPSET lists in the **/opt/tmp** entware directory. This will allow the IPSET lists to be restored on system boot. If you prefer, you can specify another directory location by passing a directory parameter to the script. Usage examples are provided below.
 
 ##### load_AMAZON_ipset_iface.sh
-This script will create an IPSET list called containing all IPv4 address for the Amazon AWS region specified. The source file used by the script is provided by Amazon at https://ip-ranges.amazonaws.com/ip-ranges.json. The AMAZON US region is required to route Amazon Prime traffic.
-
-Usage:
-
-You must specify one of the regions below when creating the IPSET list:
+This script will create an IPSET list called containing all IPv4 address for the Amazon AWS region specified. The source file used by the script is provided by Amazon at https://ip-ranges.amazonaws.com/ip-ranges.json. The AMAZON US region is required to route Amazon Prime traffic. You must specify one of the regions below when creating the IPSET list:
 
 * AP - Asia Pacific
 * CA - Canada

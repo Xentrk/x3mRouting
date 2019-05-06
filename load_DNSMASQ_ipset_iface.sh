@@ -12,7 +12,7 @@
 #   Chk_Entware function and code to process the passing of parms written by Martineau
 #
 #   Kill_Lock, Check_Lock and Unlock_Script functions provided by Adamm https://github.com/Adamm00
-# 
+#
 ####################################################################################################
 # Script Description:
 #
@@ -40,7 +40,7 @@
 #               e.g. ipset=/akadns.net/edgekey.net/edgesuite.net/epgsky.com/sky.com/SKY
 #               from 'a674.hsar.cdn.sky.com.edgesuite.net/adm.sky.com/assets.sky.com/assets.sky.com-secure.edgekey.net/awk.epgsky.com' etc...
 ####################################################################################################
-logger -t "($(basename "$0"))" $$ Starting Script Execution
+logger -st "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
 #set -x
@@ -150,7 +150,7 @@ Set_IP_Rule() {
     ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
     ip route flush cache
     ;;
-  2)  
+  2)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
     ip route flush cache
@@ -239,7 +239,7 @@ Check_Restore_File_Age() {
 Check_Cron_Job() {
 
   IPSET_NAME=$1
-  
+
   cru l | grep $1 2>/dev/null # Martineau Fix
   if [ "$?" = "1" ]; then # no cronjob entry found, create it
     if [ "$2" != "del" ]; then
@@ -270,7 +270,7 @@ Create_Routing_Rules() {
 
 Unlock_Script() {
 
-  if [ "$lock_load_DNSMASQ_ipset_iface" = "true" ]; then 
+  if [ "$lock_load_DNSMASQ_ipset_iface" = "true" ]; then
     rm -rf "/tmp/load_DNSMASQ_ipset_iface.lock"
   fi
 }
@@ -278,7 +278,7 @@ Unlock_Script() {
 Error_Exit() {
 
     error_str="$@"
-    logger -t "($(basename "$0"))" $$ "$error_str"
+    logger -st "($(basename "$0"))" $$ "$error_str"
     Unlock_Script
     exit 1
 }
@@ -368,13 +368,13 @@ else
   Chk_Entware 30
   if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
   Set_IP_Rule
-  Check_Dnsmasq "$DNSMASQ_ENTRY"             
-  Check_Ipset_List "$IPSET_NAME"              
-  Check_Restore_File_Age "$IPSET_NAME" "$DIR" 
-  Check_Cron_Job "$IPSET_NAME"                
+  Check_Dnsmasq "$DNSMASQ_ENTRY"
+  Check_Ipset_List "$IPSET_NAME"
+  Check_Restore_File_Age "$IPSET_NAME" "$DIR"
+  Check_Cron_Job "$IPSET_NAME"
   Create_Routing_Rules "$IPSET_NAME"
 fi
 
 Unlock_Script
 
-logger -t "($(basename "$0"))" $$ Completed Script Execution
+logger -st "($(basename "$0"))" $$ Completed Script Execution

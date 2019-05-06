@@ -17,7 +17,7 @@
 # made by appending the timestamp to the existing /jffs/configs/x3mRouting_rules file.
 #
 #####################################################################################################
-logger -t "($(basename "$0"))" $$ Starting Script Execution
+logger -st "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
 #set -x
@@ -105,4 +105,4 @@ printf '\nYou must now edit %b%s%b and\n' "$COLOR_GREEN" "$CONFIG_FILE" "$COLOR_
 printf 'assign the interface for each LAN client.\n'
 printf '\n'
 
-logger -t "($(basename "$0"))" $$ Ending Script Execution
+logger -st "($(basename "$0"))" $$ Ending Script Execution

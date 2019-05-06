@@ -12,7 +12,7 @@
 #   Chk_Entware function and code to process the passing of parms written by Martineau
 #
 #   Kill_Lock, Check_Lock and Unlock_Script functions provided by Adamm https://github.com/Adamm00
-# 
+#
 ####################################################################################################
 # Script Description:
 #
@@ -40,7 +40,7 @@
 #               e.g. ipset=/akadns.net/edgekey.net/edgesuite.net/epgsky.com/sky.com/SKY
 #               from 'a674.hsar.cdn.sky.com.edgesuite.net/adm.sky.com/assets.sky.com/assets.sky.com-secure.edgekey.net/awk.epgsky.com' etc...
 ####################################################################################################
-logger -t "($(basename "$0"))" $$ Starting Script Execution
+logger -st "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
 #set -x
@@ -48,8 +48,8 @@ logger -t "($(basename "$0"))" $$ Starting Script Execution
 Kill_Lock() {
 
   if [ -f "/tmp/load_DNSMASQ_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)" ]; then
-    logger -t "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_DNSMASQ_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock))"
-    logger -t "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)" '$1 == pid')"
+    logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_DNSMASQ_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock))"
+    logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)" '$1 == pid')"
     kill "$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)"
     rm -rf /tmp/load_DNSMASQ_ipset.lock
     echo
@@ -62,7 +62,7 @@ Check_Lock() {
     if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_DNSMASQ_ipset.lock)))" -gt "1800" ]; then
       Kill_Lock
     else
-      logger -t "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_DNSMASQ_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)) - Exiting (cpid=$$)"
+      logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_DNSMASQ_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_DNSMASQ_ipset.lock)) - Exiting (cpid=$$)"
       echo
       exit 1
     fi
@@ -119,7 +119,7 @@ Chk_Entware() {
       break
     fi
     sleep 1
-    logger -t "($(basename $0))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
+    logger -st "($(basename $0))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
     TRIES=$((TRIES + 1))
   done
 
@@ -135,7 +135,7 @@ Check_Dnsmasq() {
     if [ "$(grep -c "$DNSMASQ_ENTRY" "/jffs/configs/dnsmasq.conf.add")" -ge "1" ]; then # if true, then one or more lines exist in dnsmasq.conf.add
       if [ "$2" = "del" ]; then
         sed -i "/^ipset.*${IPSET_NAME}$/d" /jffs/configs/dnsmasq.conf.add
-        logger -t "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" deleted from "'/jffs/configs/dnsmasq.conf.add'"
+        logger -st "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" deleted from "'/jffs/configs/dnsmasq.conf.add'"
       fi
     else
       printf "ipset=$DNSMASQ_ENTRY\n" >>/jffs/configs/dnsmasq.conf.add # add 'ipset=' domains entry to dnsmasq.conf.add
@@ -144,7 +144,7 @@ Check_Dnsmasq() {
 #  else
 #    if [ "$2" != "del" ]; then
 #      printf "ipset=$DNSMASQ_ENTRY\n" >/jffs/configs/dnsmasq.conf.add # dnsmasq.conf.add does not exist, create dnsmasq.conf.add
-#      logger -t "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" added to "'/jffs/configs/dnsmasq.conf.add'"
+#      logger -st "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" added to "'/jffs/configs/dnsmasq.conf.add'"
 #      service restart_dnsmasq >/dev/null 2>&1
 #    fi
   fi
@@ -158,16 +158,16 @@ Check_Ipset_List() {
     if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$1" ]; then #does ipset list exist?
       if [ -s "$DIR/$IPSET_NAME" ]; then # does $1 ipset restore file exist?
         ipset restore -! <"$DIR/$IPSET_NAME" # Restore ipset list if restore file exists at $DIR/$1
-        logger -t "($(basename "$0"))" $$ IPSET restored: "$IPSET_NAME" from "$DIR/$IPSET_NAME"
+        logger -st "($(basename "$0"))" $$ IPSET restored: "$IPSET_NAME" from "$DIR/$IPSET_NAME"
       else
         ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create $1 ipset list from scratch
-        logger -t "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
+        logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
       fi
     fi
   else
     if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" = "$IPSET_NAME" ]; then
       ipset destroy "$IPSET_NAME"
-      logger -t "($(basename "$0"))" $$ IPSET $1 deleted!
+      logger -st "($(basename "$0"))" $$ IPSET $1 deleted!
     fi
   fi
 }
@@ -189,24 +189,24 @@ Check_Restore_File_Age() {
 Check_Cron_Job() {
 
   IPSET_NAME="$1"
-  
+
   cru l | grep $1 >/dev/null 2>&1 # Martineau Fix
   if [ "$?" = "1" ]; then # no cronjob entry found, create it
     if [ "$2" != "del" ]; then
       cru a $IPSET_NAME "0 2 * * * ipset save $IPSET_NAME > $DIR/$IPSET_NAME" >/dev/null 2>&1
-      logger -t "($(basename "$0"))" $$ CRON schedule created: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
+      logger -st "($(basename "$0"))" $$ CRON schedule created: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
     fi
   else
     if [ "$2" = "del" ]; then
       cru d $IPSET_NAME "0 2 * * * ipset save $IPSET_NAME" >/dev/null 2>&1
-      logger -t "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
+      logger -st "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
     fi
   fi
 }
 
 Unlock_Script() {
 
-  if [ "$lock_load_DNSMASQ_ipset" = "true" ]; then 
+  if [ "$lock_load_DNSMASQ_ipset" = "true" ]; then
     rm -rf "/tmp/load_DNSMASQ_ipset.lock"
   fi
 }
@@ -214,7 +214,7 @@ Unlock_Script() {
 Error_Exit() {
 
     error_str="$@"
-    logger -t "($(basename "$0"))" $$ "$error_str"
+    logger -st "($(basename "$0"))" $$ "$error_str"
     Unlock_Script
     exit 1
 }
@@ -280,12 +280,12 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
 else
   Chk_Entware 30
   if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
-  Check_Dnsmasq "$DNSMASQ_ENTRY"             
-  Check_Ipset_List "$IPSET_NAME"              
-  Check_Restore_File_Age "$IPSET_NAME" "$DIR" 
-  Check_Cron_Job "$IPSET_NAME"                
+  Check_Dnsmasq "$DNSMASQ_ENTRY"
+  Check_Ipset_List "$IPSET_NAME"
+  Check_Restore_File_Age "$IPSET_NAME" "$DIR"
+  Check_Cron_Job "$IPSET_NAME"
 fi
 
 Unlock_Script
 
-logger -t "($(basename "$0"))" $$ Completed Script Execution
+logger -st "($(basename "$0"))" $$ Completed Script Execution

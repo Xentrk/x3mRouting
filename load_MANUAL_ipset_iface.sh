@@ -18,7 +18,7 @@
 #
 # This script will create an IPSET list from a file containing IPv4 addresses stored in the
 # /opt/tmp directory on entware.  For example, I mined the domain names fom dnsmasq for BBC
-# and converted the domain names to their respective IPv4 addresses and saved to a file.  
+# and converted the domain names to their respective IPv4 addresses and saved to a file.
 # The IPSET list name must match the name of the file containing the IPv4 addresses stored in /opt/tmp.
 #
 # Usage example:
@@ -34,15 +34,15 @@
 # Usage:     load_MANUAL_ipset_iface.sh   2  BBC   del dir=/mnt/sda1/Backups
 #               As per example two, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore location
 ####################################################################################################
-logger -t "($(basename "$0"))" $$ Starting Script Execution
+logger -st "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
 #set -x
 
 Kill_Lock() {
 
   if [ -f "/tmp/load_MANUAL_ipset_iface.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_MANUAL_ipset_iface.lock)" ]; then
-    logger -t "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_MANUAL_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_MANUAL_ipset_iface.lock))"
-    logger -t "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_MANUAL_ipset_iface.lock)" '$1 == pid')"
+    logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_MANUAL_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_MANUAL_ipset_iface.lock))"
+    logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_MANUAL_ipset_iface.lock)" '$1 == pid')"
     kill "$(sed -n '2p' /tmp/load_MANUAL_ipset_iface.lock)"
     rm -rf /tmp/load_MANUAL_ipset_iface.lock
     echo
@@ -55,7 +55,7 @@ Check_Lock() {
     if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_MANUAL_ipset_iface.lock)))" -gt "1800" ]; then
       Kill_Lock
     else
-      logger -t "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_MANUAL_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_MANUAL_ipset_iface.lock)) - Exiting (cpid=$$)"
+      logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_MANUAL_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_MANUAL_ipset_iface.lock)) - Exiting (cpid=$$)"
       echo
       exit 1
     fi
@@ -109,7 +109,7 @@ Chk_Entware() {
       break
     fi
     sleep 1
-    logger -t "($(basename "$0"))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
+    logger -st "($(basename "$0"))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
     TRIES=$((TRIES + 1))
   done
 
@@ -176,11 +176,11 @@ Check_MANUAL_Ipset_List_Exist() {
   if [ "$2" != "del" ]; then
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
       ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
-      logger -t "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
+      logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
     fi
   else
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
-      ipset destroy "$IPSET_NAME" && logger -t "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -t "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
+      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
     fi
   fi
 }
@@ -202,23 +202,23 @@ Create_Routing_Rules() {
   iptables -t mangle -D PREROUTING -i br0 -m set --match-set $1 dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
   if [ "$2" != "del" ]; then
     iptables -t mangle -A PREROUTING -i br0 -m set --match-set $1 dst -j MARK --set-mark "$TAG_MARK"
-    logger -t "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created "("TAG fwmark $TAG_MARK")"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created "("TAG fwmark $TAG_MARK")"
   else
-    logger -t "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted "("TAG fwmark $TAG_MARK")"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted "("TAG fwmark $TAG_MARK")"
   fi
 }
 
 Unlock_Script() {
 
-  if [ "$lock_load_MANUAL_ipset" = "true" ]; then 
-    rm -rf "/tmp/load_MANUAL_ipset.lock"; 
+  if [ "$lock_load_MANUAL_ipset" = "true" ]; then
+    rm -rf "/tmp/load_MANUAL_ipset.lock";
   fi
 }
 
 Error_Exit() {
 
     error_str="$@"
-    logger -t "($(basename "$0"))" $$ "$error_str"
+    logger -st "($(basename "$0"))" $$ "$error_str"
     Unlock_Script
     exit 1
 }
@@ -235,9 +235,9 @@ fi
 
 if [ -n "$1" ]; then
   VPNID=$1
-else  
+else
   VPNID=0
-  logger -t "($(basename "$0"))" $$ "Warning missing arg1 'destination_target' 0-WAN or 1-5=VPN, WAN assumed!"
+  logger -st "($(basename "$0"))" $$ "Warning missing arg1 'destination_target' 0-WAN or 1-5=VPN, WAN assumed!"
 fi
 
 if [ -n "$2" ]; then
@@ -278,4 +278,4 @@ fi
 
 Unlock_Script
 
-logger -t "($(basename "$0"))" $$ Ending Script Execution
+logger -st "($(basename "$0"))" $$ Ending Script Execution

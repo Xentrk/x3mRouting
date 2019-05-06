@@ -18,7 +18,7 @@
 #
 # This script will create an IPSET list from a file containing IPv4 addresses stored in the
 # /opt/tmp directory on entware.  For example, I mined the domain names fom dnsmasq for BBC
-# and converted the domain names to their respective IPv4 addresses and saved to a file.  
+# and converted the domain names to their respective IPv4 addresses and saved to a file.
 # The IPSET list name must match the name of the file containing the IPv4 addresses stored in /opt/tmp.
 #
 # Usage example:
@@ -34,7 +34,7 @@
 # Usage:     load_MANUAL_ipset.sh   BBC   del dir=/mnt/sda1/Backups
 #               As per example two, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore location
 ####################################################################################################
-logger -t "($(basename "$0"))" $$ Starting Script Execution
+logger -st "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
 #set -x
 
@@ -159,15 +159,15 @@ create_routing_rules() {
 
 Unlock_Script() {
 
-  if [ "$lock_load_MANUAL_ipset" = "true" ]; then 
-    rm -rf "/tmp/load_MANUAL_ipset.lock"; 
+  if [ "$lock_load_MANUAL_ipset" = "true" ]; then
+    rm -rf "/tmp/load_MANUAL_ipset.lock";
   fi
 }
 
 Error_Exit() {
 
     error_str="$@"
-    logger -t "($(basename "$0"))" $$ "$error_str"
+    logger -st "($(basename "$0"))" $$ "$error_str"
     Unlock_Script
     exit 1
 }
@@ -201,4 +201,4 @@ fi
 
 Unlock_Script
 
-logger -t "($(basename "$0"))" $$ Ending Script Execution
+logger -st "($(basename "$0"))" $$ Ending Script Execution

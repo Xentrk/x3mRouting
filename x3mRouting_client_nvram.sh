@@ -11,7 +11,7 @@
 #   /jffs/configs/x3mRouting_lan_client_rules
 #
 #####################################################################################################
-logger -t "($(basename "$0"))" $$ Starting Script Execution
+logger -st "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
 # set -x
@@ -74,4 +74,4 @@ Create_LAN_Client_Routes() {
 
 Create_LAN_Client_Routes
 
-logger -t "($(basename "$0"))" $$ Ending Script Execution
+logger -st "($(basename "$0"))" $$ Ending Script Execution

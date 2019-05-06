@@ -16,7 +16,7 @@
 #####################################################################################################
 # Script Description:
 #  This script will create an IPSET list called AMAZON containing all IPv4 address for the Amazon
-#  AWS US region.  The IPSET list is required to route Amazon Prime traffic.  
+#  AWS US region.  The IPSET list is required to route Amazon Prime traffic.
 #
 # Requirements:
 #  This script requires the entware package 'jq'. To install, enter the command:
@@ -48,7 +48,7 @@
 #               Delete IPSET AMAZON-US and remove route via VPN Client 2
 #
 #####################################################################################################
-logger -t "($(basename "$0"))" $$ Starting Script Execution
+logger -st "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
 #set -x
@@ -56,8 +56,8 @@ logger -t "($(basename "$0"))" $$ Starting Script Execution
 Kill_Lock() {
 
   if [ -f "/tmp/load_AMAZON_ipset_iface.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock)" ]; then
-    logger -t "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_AMAZON_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock))"
-    logger -t "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock)" '$1 == pid')"
+    logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_AMAZON_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock))"
+    logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock)" '$1 == pid')"
     kill "$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock)"
     rm -rf /tmp/load_AMAZON_ipset_iface.lock
     echo
@@ -121,16 +121,16 @@ Chk_Entware() {
       break
     fi
     sleep 1
-    logger -t "($(basename "$0"))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
+    logger -st "($(basename "$0"))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
     TRIES=$((TRIES + 1))
   done
   # Attempt  to install missing package if not found
     if [ "$READY" -eq 1 ]; then
-      opkg install "$ENTWARE_UTILITY" && READY=0 && logger -t "($(basename "$0"))" $$ "Entware $ENTWARE_UTILITY successfully installed"
+      opkg install "$ENTWARE_UTILITY" && READY=0 && logger -st "($(basename "$0"))" $$ "Entware $ENTWARE_UTILITY successfully installed"
     fi
-  
+
   return $READY
-} 
+}
 
 # Download Amazon AWS json file
 Download_AMAZON() {
@@ -152,18 +152,18 @@ Download_AMAZON() {
 # if ipset AMAZON does not exist, create it
 
 Check_Ipset_List_Exist() {
-  
+
   IPSET_NAME="$1"
   DEL_FLAG="$2"
-  
+
   if [ "$DEL_FLAG"  != "del" ]; then
       if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
         ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
-        logger -t "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
+        logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
       fi
   else
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
-      ipset destroy "$IPSET_NAME" && logger -t "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || Error_Exit "Error attempting to delete IPSET $IPSET_NAME!"
+      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || Error_Exit "Error attempting to delete IPSET $IPSET_NAME!"
     fi
   fi
 }
@@ -171,10 +171,10 @@ Check_Ipset_List_Exist() {
 # if ipset list AMAZON is empty or source file is older than 7 days, download source file; load ipset list
 
 Check_Ipset_List_Values() {
-  
+
   IPSET_NAME="$1"
   REGION="$2"
-  
+
   if [ "$(ipset -L $IPSET_NAME 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
     if [ ! -s "$DIR/$IPSET_NAME" ] || [ "$(find "$DIR" -name $IPSET_NAME -mtime +7 -print)" = "$DIR/$IPSET_NAME" ]; then
       Download_AMAZON "$IPSET_NAME" "$REGION"
@@ -196,9 +196,9 @@ Create_Routing_Rules() {
   iptables -t mangle -D PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
   if [ "$DEL_FLAG" != "del" ]; then
     iptables -t mangle -A PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
-    logger -t "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created for "$IPSET_NAME" "("TAG fwmark $TAG_MARK")"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created for "$IPSET_NAME" "("TAG fwmark $TAG_MARK")"
   else
-    logger -t "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted for "$IPSET_NAME" "("TAG fwmark $TAG_MARK")"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted for "$IPSET_NAME" "("TAG fwmark $TAG_MARK")"
   fi
 }
 
@@ -213,9 +213,9 @@ Set_Fwmark_Parms() {
 }
 
 Set_IP_Rule() {
-  
+
   VPNID=$1
-  
+
   case "$VPNID" in
   0)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
@@ -227,7 +227,7 @@ Set_IP_Rule() {
     ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
     ip route flush cache
     ;;
-  2)  
+  2)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
     ip route flush cache
@@ -254,16 +254,16 @@ Set_IP_Rule() {
 }
 
 Unlock_Script() {
-  
-  if [ "$lock_load_AMAZON_ipset_iface" = "true" ]; then 
+
+  if [ "$lock_load_AMAZON_ipset_iface" = "true" ]; then
     rm -rf "/tmp/load_AMAZON_ipset_iface.lock"
   fi
 }
 
 Error_Exit() {
-  
+
     error_str="$@"
-    logger -t "($(basename "$0"))" $$ "$error_str"
+    logger -st "($(basename "$0"))" $$ "$error_str"
     Unlock_Script
     exit 1
 }
@@ -281,7 +281,7 @@ if [ -n "$1" ]; then
   VPNID=$1
 else
   VPNID=0
-  logger -t "($(basename "$0"))" $$ "Warning missing arg1 'destination_target' 0-WAN or 1-5=VPN, WAN assumed!"
+  logger -st "($(basename "$0"))" $$ "Warning missing arg1 'destination_target' 0-WAN or 1-5=VPN, WAN assumed!"
 fi
 
 if [ -n "$2" ]; then
@@ -291,7 +291,7 @@ else
 fi
 
 Set_Fwmark_Parms
-  
+
 case "$VPNID" in
 0)
   TAG_MARK="$FWMARK_WAN" # Which Target WAN or VPN? Martineau Hack
@@ -322,4 +322,4 @@ fi
 
 Unlock_Script
 
-logger -t "($(basename "$0"))" $$ Completed Script Execution
+logger -st "($(basename "$0"))" $$ Completed Script Execution

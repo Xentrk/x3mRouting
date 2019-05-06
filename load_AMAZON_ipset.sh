@@ -12,11 +12,11 @@
 #   Chk_Entware function and code to process the passing of parms written by Martineau
 #
 #   Kill_Lock, Check_Lock and Unlock_Script functions provided by Adamm https://github.com/Adamm00
-# 
+#
 ####################################################################################################
 # Script Description:
 #  This script will create an IPSET list called AMAZON containing all IPv4 address for the Amazon
-#  AWS US region.  The IPSET list is required to route Amazon Prime traffic.  
+#  AWS US region.  The IPSET list is required to route Amazon Prime traffic.
 #
 # Requirements:
 #  This script requires the entware package 'jq'. To install, enter the command:
@@ -48,7 +48,7 @@
 #               Delete IPSET AMAZON-US
 #
 #####################################################################################################
-logger -t "($(basename "$0"))" $$ Starting Script Execution
+logger -st "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
 #set -x
@@ -56,8 +56,8 @@ logger -t "($(basename "$0"))" $$ Starting Script Execution
 Kill_Lock() {
 
   if [ -f "/tmp/load_AMAZON_ipset.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" ]; then
-    logger -t "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_AMAZON_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset.lock))"
-    logger -t "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" '$1 == pid')"
+    logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/load_AMAZON_ipset.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset.lock))"
+    logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)" '$1 == pid')"
     kill "$(sed -n '2p' /tmp/load_AMAZON_ipset.lock)"
     rm -rf /tmp/load_AMAZON_ipset.lock
     echo
@@ -121,14 +121,14 @@ Chk_Entware() {
       break
     fi
     sleep 1
-    logger -t "($(basename "$0"))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
+    logger -st "($(basename "$0"))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
     TRIES=$((TRIES + 1))
   done
   # Attempt  to install missing package if not found
     if [ "$READY" -eq 1 ]; then
       opkg install "$ENTWARE_UTILITY" && READY=0 && echo "entware package $ENTWARE_UTILITY installed"
     fi
-  
+
   return $READY
 }
 
@@ -157,15 +157,15 @@ Check_Ipset_List_Exist() {
 
   IPSET_NAME="$1"
   DEL_FLAG="$2"
-  
+
   if [ "$DEL_FLAG" != "del" ]; then
       if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
         ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
-        logger -t "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
+        logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
       fi
   else
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
-      ipset destroy "$IPSET_NAME" && logger -t "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -t "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
+      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
     fi
   fi
 }
@@ -173,10 +173,10 @@ Check_Ipset_List_Exist() {
 # if ipset list AMAZON is empty or source file is older than 7 days, download source file; load ipset list
 
 Check_Ipset_List_Values() {
-  
+
   IPSET_NAME="$1"
   REGION="$2"
-  
+
   if [ "$(ipset -L $IPSET_NAME 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
     if [ ! -s "$DIR/$IPSET_NAME" ] || [ "$(find "$DIR" -name $IPSET_NAME -mtime +7 -print)" = "$DIR/$IPSET_NAME" ]; then
       Download_AMAZON "$IPSET_NAME" "$REGION"
@@ -190,14 +190,14 @@ Check_Ipset_List_Values() {
 }
 
 Unlock_Script() {
-  if [ "$lock_load_AMAZON_ipset" = "true" ]; then 
+  if [ "$lock_load_AMAZON_ipset" = "true" ]; then
     rm -rf "/tmp/load_AMAZON_ipset.lock"
   fi
 }
 
 Error_Exit() {
     error_str="$@"
-    logger -t "($(basename "$0"))" $$ "$error_str"
+    logger -st "($(basename "$0"))" $$ "$error_str"
     Unlock_Script
     exit 1
 }
@@ -222,7 +222,7 @@ if [ -n "$2" ]; then
     REGION="$2"
     case "$REGION" in
     AP)
-      REGION="ap-east-1 ap-northeast-1 ap-northeast-2 ap-northeast-3 ap-south-1 ap-southeast-1 ap-southeast-2" 
+      REGION="ap-east-1 ap-northeast-1 ap-northeast-2 ap-northeast-3 ap-south-1 ap-southeast-1 ap-southeast-2"
       break
       ;;
     CA)
@@ -230,11 +230,11 @@ if [ -n "$2" ]; then
       break
       ;;
     CN)
-      REGION="cn-north-1 cn-northwest-1" 
+      REGION="cn-north-1 cn-northwest-1"
       break
       ;;
     EU)
-      REGION="eu-central-1 eu-north-1 eu-west-1 eu-west-2 eu-west-3" 
+      REGION="eu-central-1 eu-north-1 eu-west-1 eu-west-2 eu-west-3"
       break
       ;;
     SA)
@@ -274,4 +274,4 @@ fi
 
 Unlock_Script
 
-logger -t "($(basename "$0"))" $$ Completed Script Execution
+logger -st "($(basename "$0"))" $$ Completed Script Execution

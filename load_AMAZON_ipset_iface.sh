@@ -3,7 +3,7 @@
 # Script: load_AMAZON_ipset_iface.sh
 # VERSION=1.0.0
 # Authors: Xentrk, Martineau
-# Date: 15-March-2019
+# Date: 6-May-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -16,25 +16,36 @@
 #####################################################################################################
 # Script Description:
 #  This script will create an IPSET list called AMAZON containing all IPv4 address for the Amazon
-#  AWS US region.  The IPSET list is required to route Amazon Prime traffic.
+#  AWS US region.  The IPSET list is required to route Amazon Prime traffic.  
 #
 # Requirements:
 #  This script requires the entware package 'jq'. To install, enter the command:
 #    opkg install jq
 #  from an SSH session.
 #
+# You must specify one of the regions below when creating the IPSET list:
+#
+# AP - Asia Pacific
+# CA - Canada
+# CN - China
+# EU - European Union
+# SA - South America
+# US - USA
+# GV - USA Government
+# GLOBAL - Global
+#
 # Usage example:
 #
-# Usage:     load_AMAZON_ipset_iface.sh   {[0|1|2|3|4|5]} [del] [dir='directory']
+# Usage:     load_AMAZON_ipset_iface.sh   {[0|1|2|3|4|5]} ipset_name [US|CA|CN|EU|SA|US|GV|GLOBAL]} [del] [dir='directory']
 #
-# Usage:     load_AMAZON_ipset_iface.sh   2
-#               Create and populate IPSET AMAZON and route via VPN Client 2
+# Usage:     load_AMAZON_ipset_iface.sh   2 AMAZON-US US
+#               Create and populate IPSET AMAZON-US from US region and route via VPN Client 2
 #
-# Usage:     load_AMAZON_ipset_iface.sh   2 dir=/mnt/sda1/Backups
+# Usage:     load_AMAZON_ipset_iface.sh   2 AMAZON-US US dir=/mnt/sda1/Backups
 #               As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore
 #
-# Usage:     load_AMAZON_ipset_iface.sh   2 del
-#               Delete IPSET AMAZON, associated backup file and remove route via VPN Client 2
+# Usage:     load_AMAZON_ipset_iface.sh   2 AMAZON-US del
+#               Delete IPSET AMAZON-US and remove route via VPN Client 2
 #
 #####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
@@ -59,9 +70,7 @@ Check_Lock() {
     if [ "$(($(date +%s) - $(sed -n '3p' /tmp/load_AMAZON_ipset_iface.lock)))" -gt "1800" ]; then
       Kill_Lock
     else
-      logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/load_AMAZON_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock)) - Exiting (cpid=$$)"
-      echo
-      exit 1
+      Error_Exit "[*] Lock File Detected ($(sed -n '1p' /tmp/load_AMAZON_ipset_iface.lock)) (pid=$(sed -n '2p' /tmp/load_AMAZON_ipset_iface.lock)) - Exiting (cpid=$$)"
     fi
   fi
   echo "$@" >/tmp/load_AMAZON_ipset_iface.lock
@@ -119,17 +128,16 @@ Chk_Entware() {
     if [ "$READY" -eq 1 ]; then
       opkg install "$ENTWARE_UTILITY" && READY=0 && logger -st "($(basename "$0"))" $$ "Entware $ENTWARE_UTILITY successfully installed"
     fi
-
+  
   return $READY
-}
+} 
 
 # Download Amazon AWS json file
 Download_AMAZON() {
 
   wget https://ip-ranges.amazonaws.com/ip-ranges.json -O "$DIR/ip-ranges.json"
   if [ "$?" = "1" ]; then # file download failed
-    logger -t "($(basename "$0"))" $$ Script execution failed because https://ip-ranges.amazonaws.com/ip-ranges.json file could not be downloaded
-    exit 1
+    Error_Exit "Script execution failed because https://ip-ranges.amazonaws.com/ip-ranges.json file could not be downloaded"
   fi
   true >"$DIR/AMAZON"
   for REGION in us-east-1 us-east-2 us-west-1 us-west-2; do
@@ -140,9 +148,9 @@ Download_AMAZON() {
 # if ipset AMAZON does not exist, create it
 
 Check_Ipset_List_Exist_AMAZON() {
-
+  
   IPSET_NAME="$1"
-
+  
   if [ "$2" != "del" ]; then
       if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
         ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
@@ -196,7 +204,9 @@ Set_Fwmark_Parms() {
 }
 
 Set_IP_Rule() {
-
+  
+  VPNID=$1
+  
   case "$VPNID" in
   0)
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
@@ -208,7 +218,7 @@ Set_IP_Rule() {
     ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
     ip route flush cache
     ;;
-  2)
+  2)  
     ip rule del fwmark "$TAG_MARK" >/dev/null 2>&1
     ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
     ip route flush cache
@@ -235,14 +245,14 @@ Set_IP_Rule() {
 }
 
 Unlock_Script() {
-
-  if [ "$lock_load_AMAZON_ipset_iface" = "true" ]; then
+  
+  if [ "$lock_load_AMAZON_ipset_iface" = "true" ]; then 
     rm -rf "/tmp/load_AMAZON_ipset_iface.lock"
   fi
 }
 
 Error_Exit() {
-
+  
     error_str="$@"
     logger -t "($(basename "$0"))" $$ "$error_str"
     Unlock_Script
@@ -251,8 +261,6 @@ Error_Exit() {
 
 # Call functions below this line
 Check_Lock "$@"
-
-#======================================================================================Martineau Hack
 
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
   DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
@@ -268,7 +276,7 @@ else
 fi
 
 Set_Fwmark_Parms
-
+  
 case "$VPNID" in
 0)
   TAG_MARK="$FWMARK_WAN" # Which Target WAN or VPN? Martineau Hack
@@ -283,8 +291,6 @@ case "$VPNID" in
   ;;
 esac
 
-#============================================================================= End of Martineau Hacks
-
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Create_Routing_Rules "del"
@@ -292,7 +298,7 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
 else
   Chk_Entware jq 30
   if [ "$READY" -eq 1 ]; then Error_Exit "Required entware package 'jq' not installed"; fi
-  Set_IP_Rule
+  Set_IP_Rule "$VPNID"
   Check_Ipset_List_Exist_AMAZON "AMAZON"
   Check_Ipset_List_Values_AMAZON "AMAZON"
   Create_Routing_Rules

@@ -3,7 +3,7 @@
 # Script: load_AMAZON_ipset.sh
 # VERSION=1.0.0
 # Authors: Xentrk, Martineau
-# Date: 28-April-2019
+# Date: 6-May-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -23,18 +23,29 @@
 #    opkg install jq
 #  from an SSH session.
 #
+# You must specify one of the regions below when creating the IPSET list:
+#
+# AP - Asia Pacific
+# CA - Canada
+# CN - China
+# EU - European Union
+# SA - South America
+# US - USA
+# GV - USA Government
+# GLOBAL - Global
+#
 # Usage example:
 #
-# Usage:     load_AMAZON_ipset.sh   [del] [dir='directory']
+# Usage:     load_AMAZON_ipset.sh   {ipset_name [US|CA|CN|EU|SA|US|GV|GLOBAL]} [del] [dir='directory']
 #
-# Usage:     load_AMAZON_ipset.sh   
-#               Create and populate IPSET AMAZON
+# Usage:     load_AMAZON_ipset.sh   AMAZON-US US
+#               Create and populate IPSET AMAZON-US from US region
 #
-# Usage:     load_AMAZON_ipset.sh   dir=/mnt/sda1/Backups
+# Usage:     load_AMAZON_ipset.sh   AMAZON-US US dir=/mnt/sda1/Backups
 #               As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore directory
 #
-# Usage:     load_AMAZON_ipset.sh   del
-#               Delete IPSET AMAZON
+# Usage:     load_AMAZON_ipset.sh   AMAZON-US del
+#               Delete IPSET AMAZON-US
 #
 #####################################################################################################
 logger -t "($(basename "$0"))" $$ Starting Script Execution
@@ -125,20 +136,25 @@ Chk_Entware() {
 # Download Amazon AWS json file
 Download_AMAZON() {
 
+  IPSET_NAME="$1"
+  REGION="$2"
+
   wget https://ip-ranges.amazonaws.com/ip-ranges.json -O "$DIR/ip-ranges.json"
   if [ "$?" = "1" ]; then # file download failed
     Error_Exit "Script execution failed because https://ip-ranges.amazonaws.com/ip-ranges.json file could not be downloaded"
   fi
-  true >"$DIR/AMAZON"
-  for REGION in us-east-1 us-east-2 us-west-1 us-west-2; do
-    jq '.prefixes[] | select(.region=='\"$REGION\"') | .ip_prefix' <"$DIR/ip-ranges.json" | sed 's/"//g' | sort -u >>"$DIR/AMAZON"
+  true >"$DIR/$IPSET_NAME"
+#  for REGION in us-east-1 us-east-2 us-west-1 us-west-2; do
+# don't quote the parameter so it is treated like an array!
+   for REGION in $REGION; do
+    jq '.prefixes[] | select(.region=='\"$REGION\"') | .ip_prefix' <"$DIR/ip-ranges.json" | sed 's/"//g' | sort -u >>"$DIR/$IPSET_NAME"
   done
 }
 
 # if ipset AMAZON does not exist, create it
 
 Check_Ipset_List_Exist_AMAZON() {
-  
+
   IPSET_NAME="$1"
   
   if [ "$2" != "del" ]; then
@@ -156,15 +172,18 @@ Check_Ipset_List_Exist_AMAZON() {
 # if ipset list AMAZON is empty or source file is older than 7 days, download source file; load ipset list
 
 Check_Ipset_List_Values_AMAZON() {
+  
   IPSET_NAME="$1"
+  REGION="$2"
+  
   if [ "$(ipset -L $IPSET_NAME 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
     if [ ! -s "$DIR/$IPSET_NAME" ] || [ "$(find "$DIR" -name $IPSET_NAME -mtime +7 -print)" = "$DIR/$IPSET_NAME" ]; then
-      Download_AMAZON
+      Download_AMAZON "$IPSET_NAME" "$REGION"
     fi
     awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   else
     if [ ! -s "$DIR/$IPSET_NAME" ]; then
-      Download_AMAZON
+      Download_AMAZON "$IPSET_NAME" "$REGION"
     fi
   fi
 }
@@ -185,26 +204,72 @@ Error_Exit() {
 # Call functions below this line
 Check_Lock "$@"
 
-#======================================================================================Martineau Hack
-
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
   DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
 else
   DIR="/opt/tmp"
 fi
 
-#============================================================================= End of Martineau Hacks
+if [ -n "$1" ]; then
+  IPSET_NAME=$1
+else
+  Error_Exit "ERROR missing arg1 'ipset_name'"
+fi
+
+if [ -n "$2" ]; then
+  if [ "$(echo "$@" | grep -cw 'del')" -eq 0 ]; then
+    REGION="$2"
+    case "$REGION" in
+    AP)
+      REGION="ap-east-1 ap-northeast-1 ap-northeast-2 ap-northeast-3 ap-south-1 ap-southeast-1 ap-southeast-2" 
+      break
+      ;;
+    CA)
+      REGION="ca-central-1"
+      break
+      ;;
+    CN)
+      REGION="cn-north-1 cn-northwest-1" 
+      break
+      ;;
+    EU)
+      REGION="eu-central-1 eu-north-1 eu-west-1 eu-west-2 eu-west-3" 
+      break
+      ;;
+    SA)
+      REGION="sa-east-1"
+      break
+      ;;
+    US)
+      REGION="us-east-1 us-east-2 us-west-1 us-west-2"
+      break
+      ;;
+    GV)
+      REGION="us-gov-east-1 us-gov-west-1"
+      break
+      ;;
+    GLOBAL)
+      REGION="GLOBAL"
+      break
+      ;;
+    *)
+      Error_Exit "Invalid AMAZON region specified: $REGION. Valid values are: AP CA CN EU SA US GV GLOBAL"
+      ;;
+    esac
+  fi
+else
+  Error_Exit "ERROR missing arg2 'Region'"
+fi
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
-  Check_Ipset_List_Exist_AMAZON "AMAZON" "del"
+  Check_Ipset_List_Exist_AMAZON "$IPSET_NAME" "del"
 else
   Chk_Entware jq 30
   if [ "$READY" -eq 1 ]; then Error_Exit "Required entware package 'jq' not installed"; fi
-  Check_Ipset_List_Exist_AMAZON "AMAZON"
-  Check_Ipset_List_Values_AMAZON "AMAZON"
+  Check_Ipset_List_Exist_AMAZON "$IPSET_NAME"
+  Check_Ipset_List_Values_AMAZON "$IPSET_NAME" "$REGION"
 fi
-#==================================================================================================
 
 Unlock_Script
 

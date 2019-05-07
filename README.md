@@ -4,6 +4,8 @@ The features of **x3mRouting** include an alternative method to selectively rout
 
 I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media traffic in devoloping the project.
 
+Amazon Prime, BBC, Hulu and Netflix block known VPN servers. If you want a VPN provider who can circumvent the VPN blocks, see my blog post [Why I use Torguard as my VPN Provider](https://x3mtek.com/why-i-use-torguard-as-my-vpn-provider) to learn more. 
+
 ## Routing Policy Databse (RPDB)
 
 The routing policy database (RPDB) controls the order in which the kernel searches through the routing tables. Each rule has a priority, and rules are examined sequentially from rule 0 through rule 32767.

@@ -184,8 +184,6 @@ Following is an exammple of how to configure /**jffs/scripts/nat-start** to crea
     sh /jffs/scripts/x3mRouting/load_AMAZON_ipset.sh AMAZON-US US
 
     sh /jffs/scripts/x3mRouting/load_MANUAL_ipset.sh BBC
-    sh /jffs/scripts/x3mRouting/load_MANUAL_ipset.sh BBC_IPLAYER
-    sh /jffs/scripts/x3mRouting/load_MANUAL_ipset.sh CBS
 
     sh /jffs/scripts/x3mRouting/load_ASN_ipset.sh HULU AS23286
     sh /jffs/scripts/x3mRouting/load_ASN_ipset.sh NETFLIX AS2906

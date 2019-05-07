@@ -22,7 +22,7 @@ Copy and paste the command below into an SSH session:
 
     /usr/sbin/curl --retry 3 "https://raw.githubusercontent.com/Xentrk/x3mRouting/master/install_x3mRouting.sh" -o "/jffs/scripts/install_x3mRouting.sh" && chmod 755 /jffs/scripts/install_x3mRouting.sh && sh /jffs/scripts/install_x3mRouting.sh
 
-This command will download and install the installation script **/jffs/scripts/install_x3mRouting.sh**. The installation script is a menu with the options to install the three methods described below, along with options to update or remove the repository. 
+This command will download and install the installation script **/jffs/scripts/install_x3mRouting.sh**. The installation script is a menu with options to install the three methods described below and options to update or remove the repository. 
 
 ## x3mRouting Methods
 

@@ -1,6 +1,8 @@
 # x3mRouting ~ Selective Routing for Asuswrt-Merlin Firmware
 ## Introduction
-The features of **x3mRouting** include an alternative method to selectively route LAN Clients in the Asuswrt-Merlin firmware and two alternative methods for selectively routing traffic using IPSET lists.
+The features of **x3mRouting** include an alternative method to selectively route LAN Clients in the Asuswrt-Merlin firmware and two alternative methods for selectively routing traffic using IPSET lists. I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media traffic in devoloping the project.
+
+Amazon Prime, BBC, Hulu and Netflix block known VPN servers. If you want a VPN provider who can circumvent the VPN blocks, see my blog post [Why I use Torguard as my VPN Provider](https://x3mtek.com/why-i-use-torguard-as-my-vpn-provider) to learn more. 
 
 ### x3mRouting LAN Client Method
 An altenative approve to easily assign LAN clients to a WAN or OpenVPN Client interface.
@@ -10,10 +12,6 @@ Provides the ability to create IPSET lists using shell scripts and selectively r
 
 ### x3mRouting IPSET Shell Script Method
 Provides the ability to create and selectively route IPSET lists using shell scripts.
-
-I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media traffic in devoloping the project.
-
-Amazon Prime, BBC, Hulu and Netflix block known VPN servers. If you want a VPN provider who can circumvent the VPN blocks, see my blog post [Why I use Torguard as my VPN Provider](https://x3mtek.com/why-i-use-torguard-as-my-vpn-provider) to learn more. 
 
 ## Installation
 

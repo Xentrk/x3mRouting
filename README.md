@@ -2,19 +2,18 @@
 ## Introduction
 The features of **x3mRouting** include an alternative method to selectively route LAN Clients in the Asuswrt-Merlin firmware and two alternative methods for selectively routing traffic using IPSET lists.
 
+### x3mRouting LAN Client Method
+An altenative approve to easily assign LAN clients to a WAN or OpenVPN Client interface.
+
+### x3mRouting OpenVPN Client Screen & IPSET Shell Script Method 
+Provides the ability to create IPSET lists using shell scripts and selectively route the IPSET lists using the OpenVPN Client Screen.
+
+### x3mRouting IPSET Shell Script Method
+Provides the ability to create and selectively route IPSET lists using shell scripts.
+
 I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media traffic in devoloping the project.
 
 Amazon Prime, BBC, Hulu and Netflix block known VPN servers. If you want a VPN provider who can circumvent the VPN blocks, see my blog post [Why I use Torguard as my VPN Provider](https://x3mtek.com/why-i-use-torguard-as-my-vpn-provider) to learn more. 
-
-## Routing Policy Databse (RPDB)
-
-The routing policy database (RPDB) controls the order in which the kernel searches through the routing tables. Each rule has a priority, and rules are examined sequentially from rule 0 through rule 32767.
-
-When a new packet arrives for routing (assuming the routing cache is empty), the kernel begins at the highest priority rule in the RPDB--rule 0. The kernel iterates over each rule in turn until the packet to be routed matches a rule. When this happens the kernel follows the instructions in that rule. Typically, this causes the kernel to perform a route lookup in a specified routing table. If a matching route is found in the routing table, the kernel uses that route. If no such route is found, the kernel returns to traverse the RPDB again, until every option has been exhausted.
-
-The selective routing of IPSET lists use **"fwmark"** rules to manage the RPDB by assigning them to currently unused priority slots within the reserved RPDB rule range. This modification does not undermine the stability nor integrity of the Asuswrt-Merlin firmware.
-
-However, the Asuswrt-Merlin firmware author [RMerlin](https://www.snbforums.com/members/rmerlin.10954/) does not condone the use of fwmarks. He has rejected their use because of the additional work effort involved if Asus suddenly decides to use his current RPDB rule 10000-20000 range, and also decides to use the routing tables 111-115.
 
 ## Installation
 

@@ -74,7 +74,7 @@ As part of this project, you can also choose to download and install a modified 
 A video tutorial on how to allow the use of IPSET lists via the Selective routing VPN Client Policy Routing Screen can be viewed on [Vimeo](https://vimeo.com/287067217).
 
 #### DummyVPN
-In the screen picture above, you will notice an entry for **DummyVPN1**.  For the Selective routing of Ports/MACs and IPSETs, [@Martineau](https://www.snbforums.com/members/martineau.13215/) recommends creating a “dummy” VPN Client entry if you require the ability to exploit the **Accept DNS Configuration=Exclusive** option that only creates the appropriate DNSVPN iptable chains if the table isn't empty.  Use a valid IPv4 address for the DummyVPN entry that differs from your LAN IPv4 address range. I recommend using a [bogon IP addres](https://ipinfo.io/bogon) for this purpose.    
+In the screen picture above, you will notice an entry for **DummyVPN1**. For the Selective routing of Ports/MACs and IPSETs, [@Martineau](https://www.snbforums.com/members/martineau.13215/) recommends creating a “dummy” VPN Client entry if you require the ability to exploit the **Accept DNS Configuration=Exclusive** option that only creates the appropriate DNSVPN iptable chain if the table isn't empty. Use a valid IPv4 address for the DummyVPN entry that differs from your LAN IPv4 address range. I recommend using a [bogon IP addres](https://ipinfo.io/bogon) for this purpose.    
 
 #### IPSET Save/Restore File Location
 By default, all of the scripts will store backup copies of the IPSET lists in the **/opt/tmp** entware directory. This will allow the IPSET lists to be restored on system boot. If you prefer, you can specify another directory location by passing a directory parameter to the script. Usage examples are provided below.
@@ -148,7 +148,7 @@ Delete IPSET NETFLIX (the AS Number parameter is not required when using the del
     load_ASN_ipset.sh NETFLIX del
 
 ##### load_DNSMASQ_ipset.sh
-This script will create an IPSET list using the IPSET feature inside of dnsmasq to collect IPv4 addresses. The script will also create a cron job to backup the list every 24 hours to the **/opt/tmp** directory so the IPSET list can be restored on system boot.  Pass the script the name of the IPSET list followed by the domain names separated by a comma.
+This script will create an IPSET list using the IPSET feature inside of dnsmasq to collect IPv4 addresses. The script will also create a cron job to backup the list every 24 hours to the **/opt/tmp** directory so the IPSET list can be restored on system boot. Pass the script the name of the IPSET list followed by the domain names separated by a comma.
 
 Usage example:
 
@@ -320,7 +320,6 @@ Following is an example of how to configure /**jffs/scripts/nat-start** to creat
     #!/bin/sh
     sh /jffs/scripts/x3mRouting/load_AMAZON_ipset_iface.sh 1 AMAZON-US US
 
-    sh /jffs/scripts/x3mRouting/load_ASN_ipset_iface.sh 1 HULU AS23286
     sh /jffs/scripts/x3mRouting/load_ASN_ipset_iface.sh 1 NETFLIX AS2906
 
     sh /jffs/scripts/x3mRouting/load_MANUAL_ipset_iface.sh 5 PLUTOTV
@@ -353,7 +352,7 @@ The installation script **install_x3mRouting.sh** will display a menu with the o
 
 ### Validation and Troubleshooting
 #### IPSET lists
-The install script will add a function to **/jffs/configs/profile.add** called **liststats** that will list the name of all IPSET lists and the number of IP address entries. To use the function, type **liststats** from the SSH command line (Note: For first time users, you must open up a new SSH session after running the installation script):
+The install script will add a function to **/jffs/configs/profile.add** called **liststats** that will list the name of all IPSET lists and the number of IP address entries. To use the function, type **liststats** from the SSH command line (Note: For first time users, you must open up a new SSH session after running the installation script). Following is the sample output:
 
     AMAZON - 326
     BBC_WEB - 128
@@ -385,7 +384,7 @@ Display information about an IPSET list, type the command **ipset -L ipset_name*
     198.45.56.0/24
     <snip>
 
-#### OpenVPN and LAN Client Routing and Priorities Rules
+#### OpenVPN and LAN Client RPDB Routing and Priorities Rules
 Type the command
 
     ip rule

@@ -60,7 +60,7 @@ Similar to the firmware, the next step is to bounce the OpenVPN Client interface
 
 The routing rules for LAN Clients will automatically be applied upon a system boot.  You only need to rerun **x3mRouting_client_nvram.sh** and bounce the OpenVPN client if you have made LAN Client interface assignment changes in the **/jffs/configs/x3mRouting_client_rules** file.  
 
-For the **x3Routing for LAN Clients** to work, the install script will also download customized versions of the **vpnrouting.sh** and **updown.sh** scripts used by the firmware.  *These scripts will not replace or delete the firmware versions* of the **vpnrouting.sh** and **updown.sh** scripts.  Rather, it will store the customized versions of the files in the project directory **/jffs/scripts/x3mRouting** and inform the firmware to use the project versions of the files by mapping the modified scripts to the original firmware versions using the **mount** command.
+For **x3mRouting for LAN Clients** to work, the install script will also download customized versions of the **vpnrouting.sh** and **updown.sh** scripts used by the firmware.  *These scripts will not replace or delete the firmware versions* of the **vpnrouting.sh** and **updown.sh** scripts.  Rather, it will store the customized versions of the files in the project directory **/jffs/scripts/x3mRouting** and inform the firmware to use the project versions of the files by mapping the modified scripts to the original firmware versions using the **mount** command.
 
 The installation script will also insert a line in **/jffs/scripts/init-start** to execute a script to mount **vpnrouting.sh** and **updown.sh** on system boot.
 

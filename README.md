@@ -6,9 +6,13 @@ I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming medi
 
 ## Routing Policy Databse (RPDB)
 
+The routing policy database (RPDB) controls the order in which the kernel searches through the routing tables. Each rule has a priority, and rules are examined sequentially from rule 0 through rule 32767.
+
+When a new packet arrives for routing (assuming the routing cache is empty), the kernel begins at the highest priority rule in the RPDB--rule 0. The kernel iterates over each rule in turn until the packet to be routed matches a rule. When this happens the kernel follows the instructions in that rule. Typically, this causes the kernel to perform a route lookup in a specified routing table. If a matching route is found in the routing table, the kernel uses that route. If no such route is found, the kernel returns to traverse the RPDB again, until every option has been exhausted.
+
 The selective routing of IPSET lists use **"fwmark"** rules to manage the RPDB by assigning them to currently unused priority slots within the reserved RPDB rule range. This modification does not undermine the stability nor integrity of the Asuswrt-Merlin firmware.
 
-However, the Asuswrt-Merlin firmware author [RMerlin](https://www.snbforums.com/members/rmerlin.10954/) does not condone the use of fwmarks. He has rejected their use because of the additional work effort should the upstream code change if Asus suddenly decides to use his current RPDB rule 10000-20000 range, and also decide to use the routing tables 111-115.
+However, the Asuswrt-Merlin firmware author [RMerlin](https://www.snbforums.com/members/rmerlin.10954/) does not condone the use of fwmarks. He has rejected their use because of the additional work effort involved if Asus suddenly decides to use his current RPDB rule 10000-20000 range, and also decides to use the routing tables 111-115.
 
 ## Installation
 

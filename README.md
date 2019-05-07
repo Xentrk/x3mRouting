@@ -59,12 +59,8 @@ Similar to the firmware, the next step is to bounce the OpenVPN Client interface
 
 The routing rules for LAN Clients will automatically be applied upon a system boot.  You only need to rerun **x3mRouting_client_nvram.sh** and bounce the OpenVPN client if you have made LAN Client interface assignment changes in the **/jffs/configs/x3mRouting_client_rules** file.  
 
-For **x3mRouting for LAN Clients** to work, the install script will also download customized versions of the **vpnrouting.sh** and **updown.sh** scripts used by the firmware.  *These scripts will not replace or delete the firmware versions* of the **vpnrouting.sh** and **updown.sh** scripts.  Rather, it will store the customized versions of the files in the project directory **/jffs/scripts/x3mRouting** and inform the firmware to use the project versions of the files by mapping the modified scripts to the original firmware versions using the **mount** command.
-
-The installation script will also insert a line in **/jffs/scripts/init-start** to execute a script to mount **vpnrouting.sh** and **updown.sh** on system boot.
-
 ### x3mRouting OpenVPN Client Screen & IPSET Shell Script Method
-As part of this project, you can also choose to download and install a modified OpenVPN Client screen to selectively route IPSET lists thru an OpenVPN Client.  Similar to the **vpnrouting.sh** and **updown.sh** script, the installer will not replace or delete the firmware version of the OpenVPN Client web page.  Rather, it will store the customized version of the web page in the project directory and inform the firmware to use the project version of the file by mapping the modified scripts to the original firmware versions using the **mount** command.
+As part of this project, you can also choose to download and install a modified OpenVPN Client screen to selectively route IPSET lists thru an OpenVPN Client.
 
 [@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. I greatly appreciate his generosity in providing the modified code and allowing me to include it in the project.
 

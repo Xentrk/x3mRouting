@@ -217,10 +217,10 @@ Update_Version() {
                 #	/usr/sbin/curl -fsL --retry 3 "$SPD_REPO/$SPD_NAME_LOWER.sh" | grep -qF "jackyaz" || { Print_Output "true" "404 error detected - stopping update" "$ERR"; return 1; }
                 serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
                 if [ "$localver" != "$serverver" ]; then
-                  printf 'New version of $FILE available - updating to $serverver\n'
+                  printf 'New version of %b%s%b available - updating to %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
                   Download_File "$DIR" "$FILE"
                 else
-                  echo "No new version to update - latest is $localver"
+                  printf 'No new version of %b%s%b to update - latest is %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
                 fi
               fi
             fi
@@ -228,7 +228,7 @@ Update_Version() {
           localmd5="$(md5sum "$DIR/$FILE" | awk '{print $1}')"
           remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
           if [ "$localmd5" != "$remotemd5" ]; then
-            printf 'MD5 hash of $FILE does not match - downloading updated $serverver\n'
+            printf 'MD5 hash of %s does not match - downloading updated $serverver\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" 
             Download_File "$DIR" "$FILE"
           fi
         fi
@@ -251,6 +251,10 @@ Update_Version() {
     echo "Select the install option from the main menu to install the respository"
   fi
 
+  echo 
+  echo "Update of x3mRouting completed"
+  echo "Press enter to continue"
+  read -r "enter"
   Welcome_Message
 }
 
@@ -435,6 +439,7 @@ Install_x3mRouting_LAN_Clients() {
   Download_File "$LOCAL_REPO" "mount_files_lan.sh"
   Init_Start_Update "mount_files_lan.sh"
   sh /jffs/scripts/init-start
+  echo
   echo "Installation of x3mRouting for LAN Clients completed"
   echo "Press enter to continue"
   read -r "enter"
@@ -520,6 +525,7 @@ Install_x3mRouting_GUI() {
   Init_Start_Update "mount_files_gui.sh"
   sh /jffs/scripts/init-start
   Check_Profile_Add
+  echo
   echo "Installation of x3mRouting for IPSET lists completed"
   echo "Press enter to continue"
   read -r "enter"
@@ -534,6 +540,7 @@ Install_x3mRouting_Shell_Scripts() {
   Download_File "$LOCAL_REPO" "load_DNSMASQ_ipset_iface.sh"
   Download_File "$LOCAL_REPO" "load_AMAZON_ipset_iface.sh"
   Check_Profile_Add
+  echo
   echo "Installation of x3mRouting for IPSET Shell Scripts completed"
   echo "Press enter to continue"
   read -r "enter"

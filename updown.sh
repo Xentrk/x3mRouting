@@ -7,20 +7,20 @@ resolvfile=$filebase\.resolv
 dnsscript=$(echo /etc/openvpn/fw/$(echo $dev)-dns\.sh | sed 's/\(tun\|tap\)1/client/;s/\(tun\|tap\)2/server/')
 qosscript=$(echo /etc/openvpn/fw/$(echo $dev)-qos\.sh | sed 's/\(tun\|tap\)1/client/;s/\(tun\|tap\)2/server/')
 fileexists=
-instance=$(echo $dev | sed "s/tun1//;s/tun2*/0/")
+instance=$(echo $dev | sed "s/tun1//;s/tun2//")
 serverips=
 searchdomains=
 
 create_client_list(){
 	server=$1
 	VPN_IP_LIST=$(nvram get vpn_client$(echo $instance)_clientlist)
- 
-#################### Xentrk: Concatenate custom nvram file in /jffs/configs to nvram vpn_clientx 
+
+#################### Xentrk: Concatenate custom nvram file in /jffs/configs to nvram vpn_clientx
   if [ -s "/jffs/configs/ovpnc${instance}.nvram" ]; then
      VPN_IP_LIST=${VPN_IP_LIST}$(cat "/jffs/configs/ovpnc${instance}.nvram")
-  fi 
+  fi
 #################### end of custom code
-	
+
   OLDIFS=$IFS
 	IFS="<"
 
@@ -65,7 +65,7 @@ then
 	else
 		setdns=-1
 	fi
- 
+
 # Extract IPs and search domains; write WINS
 	for optionname in `set | grep "^foreign_option_" | sed "s/^\(.*\)=.*$/\1/g"`
 	do

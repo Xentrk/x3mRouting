@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: install_x3mRouting.sh
 # Author: Xentrk
-# Last Updated Date: 6-May-2019
+# Last Updated Date: 9-May-2019
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -192,11 +192,11 @@ Update_Version() {
   DIR="$LOCAL_REPO"
 
   if [ -d "$DIR" ]; then
-    for FILE in x3mRouting_client_nvram.sh \
-      x3mRouting_client_config.sh \
-      vpnrouting.sh \
+    for FILE in vpnrouting.sh \
       updown.sh \
       Advanced_OpenVPNClient_Content.asp \
+      x3mRouting_client_nvram.sh \
+      x3mRouting_client_config.sh \
       mount_files_lan.sh \
       mount_files_gui.sh \
       load_MANUAL_ipset.sh \
@@ -209,22 +209,27 @@ Update_Version() {
       load_AMAZON_ipset_iface.sh; do
       if [ -s "$DIR/$FILE" ]; then
         if [ -z "$1" ]; then
-          # force_update="false"
-          localver=$(grep "VERSION=" "$DIR/$FILE" | grep -m1 -oE 'v[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
-          #	/usr/sbin/curl -fsL --retry 3 "$SPD_REPO/$SPD_NAME_LOWER.sh" | grep -qF "jackyaz" || { Print_Output "true" "404 error detected - stopping update" "$ERR"; return 1; }
-          serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE 'v[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
-          if [ "$localver" != "$serverver" ]; then
-            printf 'New version of $FILE available - updating to $serverver\n'
-            Download_File "$DIR" "$FILE"
-          else
-            localmd5="$(md5sum "$DIR/$FILE" | awk '{print $1}')"
-            remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
-            if [ "$localmd5" != "$remotemd5" ]; then
-              printf 'MD5 hash of $FILE does not match - downloading updated $serverver\n'
-              Download_File "$DIR" "$FILE"
-            else
-              printf 'No new version to update - latest is $localver\n'
+          if [ "$FILE" != "vpnrouting.sh" ]; then
+            if [ "$FILE" != "updown.sh" ]; then
+              if [ "$FILE" != "Advanced_OpenVPNClient_Content.asp" ]; then
+                # force_update="false"
+                localver=$(grep "VERSION=" "$DIR/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
+                #	/usr/sbin/curl -fsL --retry 3 "$SPD_REPO/$SPD_NAME_LOWER.sh" | grep -qF "jackyaz" || { Print_Output "true" "404 error detected - stopping update" "$ERR"; return 1; }
+                serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
+                if [ "$localver" != "$serverver" ]; then
+                  printf 'New version of $FILE available - updating to $serverver\n'
+                  Download_File "$DIR" "$FILE"
+                else
+                  echo "No new version to update - latest is $localver"
+                fi
+              fi
             fi
+          fi
+          localmd5="$(md5sum "$DIR/$FILE" | awk '{print $1}')"
+          remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
+          if [ "$localmd5" != "$remotemd5" ]; then
+            printf 'MD5 hash of $FILE does not match - downloading updated $serverver\n'
+            Download_File "$DIR" "$FILE"
           fi
         fi
 

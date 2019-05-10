@@ -199,9 +199,6 @@ Following is an exammple of how to configure /**jffs/scripts/nat-start** to crea
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh BBC_WEB bbc.co.uk,bbc.com,bbc.gscontxt.net,bbci.co.uk,bbctvapps.co.uk,ssl-bbcsmarttv.2cnt.net,llnwd.net
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh MOVETV movetv.com
 
-#### IPSET Save/Restore File Location
-By default, all of the scripts will store backup copies of the IPSET lists in the **/opt/tmp** entware directory. This will allow the IPSET lists to be restored on system boot. If you prefer, you can specify another directory location by passing a directory parameter to the script. Usage examples are provided below.
-
 ### x3mRouting using the IPSET Shell Script Method
 This method is intended for users who want the ability to create and route traffic using IPSET lists, but prefer to use Asuswrt-Merlin firmware without the firmware modifications utilized by the method listed above.
 

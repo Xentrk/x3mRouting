@@ -362,11 +362,6 @@ The install script will add a function to **/jffs/configs/profile.add** called *
     HULU_WEB - 8
     MOVETV - 95
     NETFLIX - 150
-    Skynet-Blacklist - 138055
-    Skynet-BlockedRanges - 1562
-    Skynet-IOT - 0
-    Skynet-Master - 2
-    Skynet-Whitelist - 3456
 
 Display information about an IPSET list, type the command **ipset -L ipset_name**. For example, to display the information about the IPSET list NETFLIX, type: **ipset -L NETFLIX**
 

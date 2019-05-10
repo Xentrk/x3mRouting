@@ -5,7 +5,7 @@ The features of **x3mRouting** include an alternative method to selectively rout
 Amazon Prime, BBC, Hulu and Netflix block known VPN servers. If you want a VPN provider who can circumvent the VPN blocks, see my blog post [Why I use Torguard as my VPN Provider](https://x3mtek.com/why-i-use-torguard-as-my-vpn-provider) to learn more.
 
 ### x3mRouting LAN Client Method
-An altenative approve to easily assign LAN clients to a WAN or OpenVPN Client interface.
+An alternative approach to easily assign LAN clients to a WAN or OpenVPN Client interface.
 
 ### x3mRouting OpenVPN Client Screen & IPSET Shell Script Method
 Provides the ability to create IPSET lists using shell scripts and selectively route the IPSET lists using the OpenVPN Client Screen.

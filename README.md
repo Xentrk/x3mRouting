@@ -2,12 +2,12 @@
 ## Introduction
 The features of **x3mRouting** include an alternative method to selectively route LAN Clients in the Asuswrt-Merlin firmware and two alternative methods for selectively routing traffic using IPSET lists. I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media traffic in devoloping the project.
 
-Amazon Prime, BBC, Hulu and Netflix block known VPN servers. If you want a VPN provider who can circumvent the VPN blocks, see my blog post [Why I use Torguard as my VPN Provider](https://x3mtek.com/why-i-use-torguard-as-my-vpn-provider) to learn more. 
+Amazon Prime, BBC, Hulu and Netflix block known VPN servers. If you want a VPN provider who can circumvent the VPN blocks, see my blog post [Why I use Torguard as my VPN Provider](https://x3mtek.com/why-i-use-torguard-as-my-vpn-provider) to learn more.
 
 ### x3mRouting LAN Client Method
 An altenative approve to easily assign LAN clients to a WAN or OpenVPN Client interface.
 
-### x3mRouting OpenVPN Client Screen & IPSET Shell Script Method 
+### x3mRouting OpenVPN Client Screen & IPSET Shell Script Method
 Provides the ability to create IPSET lists using shell scripts and selectively route the IPSET lists using the OpenVPN Client Screen.
 
 ### x3mRouting IPSET Shell Script Method
@@ -19,7 +19,7 @@ Copy and paste the command below into an SSH session:
 
     /usr/sbin/curl --retry 3 "https://raw.githubusercontent.com/Xentrk/x3mRouting/master/install_x3mRouting.sh" -o "/jffs/scripts/install_x3mRouting.sh" && chmod 755 /jffs/scripts/install_x3mRouting.sh && sh /jffs/scripts/install_x3mRouting.sh
 
-This command will download and install the installation script **/jffs/scripts/install_x3mRouting.sh**. The installation script is a menu with options to install the three methods described below and options to update or remove the repository. 
+This command will download and install the installation script **/jffs/scripts/install_x3mRouting.sh**. The installation script is a menu with options to install the three methods described below and options to update or remove the repository.
 
 ## x3mRouting Methods
 
@@ -64,7 +64,12 @@ As part of this project, you can also choose to download and install a modified 
 
 [@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. I greatly appreciate his generosity in providing the modified code and allowing me to include it in the project.
 
-![OpenVPN Client Screen](https://github.com/Xentrk/x3mRouting/blob/master/OpenVPN_Client_GUI.png "OpenVPN Client Screen")
+#### Policy Routing Screen
+![Policy Routing Screen](https://github.com/Xentrk/x3mRouting/blob/master/Policy_Routing_Screen.png "Policy Routing Screen")
+
+#### IPSET Dimensions
+The OpenVPN Client Screen accepts single and multiple dimension IPSET lists. See the [IPSET Man Page](http://ipset.netfilter.org/ipset.man.html) for information.
+![IPSET Dimensions](https://github.com/Xentrk/x3mRouting/blob/master/OpenVPN_Client_GUI.png "OpenVPN Client Screen")
 
 #### Video Tutorial
 

@@ -515,7 +515,7 @@ var item_num = document.getElementById('clientlist_table').rows[0].cells.length;
 tmp_value = "";
 for(i=0; i<rule_num; i++){
 	tmp_value += "<";
-	for(j=0; j<item_num-1; j++){				
+	for(j=0; j<item_num-1; j++){
 		tmp_value += document.getElementById('clientlist_table').rows[i].cells[j].innerHTML;
 		if(j != item_num-2)
 			tmp_value += ">";
@@ -523,7 +523,7 @@ for(i=0; i<rule_num; i++){
 }
 <!-- Martineau Hack 2 of 12 IPSET  processing ###################################################-->
 var rule_num = document.getElementById('IPSETlist_table').rows.length;
-if (rule_num > 0 ) {										// Valid entries in the IPSET routing table?		
+if (rule_num > 0 ) {										// Valid entries in the IPSET routing table?
 	var item_num = document.getElementById('IPSETlist_table').rows[0].cells.length;
 	for(i=0; i<rule_num; i++){
 		tmp_value += "<";
@@ -545,7 +545,7 @@ if (rule_num > 0 ) {										// Valid entries in the IPSET routing table?
 				break
 			default :
 				break
-			}			
+			}
 		}
 	}
 }
@@ -661,7 +661,7 @@ function showclientlist(){
 	var code = "";
 	var width = ["24%", "29%", "25%", "10%", "12%"];
 	var codeipset = "";													// Martineau Hack - HTML code block for IPSET display
-	var widthipset = ["24%", "29%", "13%", "12%", "10%", "12%"];		// Martineau Hack - Columns for IPSETlient table 
+	var widthipset = ["24%", "29%", "13%", "12%", "10%", "12%"];		// Martineau Hack - Columns for IPSETlient table
 	code +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="clientlist_table">';
 	codeipset +='<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="IPSETlist_table">';
 	if ( clientlist_row.length == 1)
@@ -737,7 +737,7 @@ if(item_num >=2){
 for(i=0; i<rule_num; i++){
 if(document.form.clientlist_ipAddr.value.toLowerCase() == document.getElementById('clientlist_table').rows[i].cells[1].innerHTML.toLowerCase() &&
 document.form.clientlist_dstipAddr.value.toLowerCase() == document.getElementById('clientlist_table').rows[i].cells[2].innerHTML.toLowerCase()){
-alert("<#1903#> " + "<#916#> " + "<#685#>");   <!-- Martineau Hack 3 of 8 -->
+alert("<#920#> " + "<#2836#> " + "<#2811#>");   <!-- Martineau Hack 3 of 8 -->
 document.form.clientlist_ipAddr.focus();
 document.form.clientlist_ipAddr.select();
 return false;
@@ -905,7 +905,7 @@ document.form.clientlist_deviceName.value = _name;
 document.form.clientlist_ipAddr.value = _ipaddr;
 hideClients_Block();
 over_var = 0;
-}		
+}
 <!-- Martineau Hack 8 of 12 IPSET  processing ###################################################-->
 function setIPSETIP(_name, _ipaddr){
 document.form.clientlist_IPSETipAddr.value = _ipaddr;			// Unlike true VPN rule only fill in the IPSET IP address field

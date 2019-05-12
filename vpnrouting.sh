@@ -14,6 +14,29 @@ my_logger(){
 	fi
 }
 
+Chk_IPSET_List_Ready() {
+
+  # ARGS [wait attempts] [specific_entware_utility]
+  IPSET_NAME=$1
+  READY=1 # Assume IPSET list is NOT available
+  MAX_TRIES=60
+
+  # Wait up to (default) 30 seconds to see if IPSET is available.....
+  TRIES=0
+
+  while [ "$TRIES" -lt "$MAX_TRIES" ]; do
+	  if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then
+		  READY=0 # Specific IPSET name found
+      break
+    else
+		  sleep 1
+		  logger -st "($(basename "$0"))" $$ "IPSET save/restore file $IPSET_NAME not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
+		  TRIES=$((TRIES + 1))
+    fi
+  done
+
+  return $READY
+}
 
 create_client_list(){
 	OLDIFS=$IFS
@@ -132,13 +155,15 @@ if [ ! -z $(echo $DEST_IP | grep -Eo '(([0-9]{1,3})\.){3}([0-9]{1,3}){1}' | grep
 
 fi
 
- ## Xentrk Hack to Validate that $IPSET_NAME does physically exist etc.
-    if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$IPSET_NAME" ]; then
-        logger -st "($(basename $0))" $$ "IPSET list name $IPSET_NAME does not exist. $IPSET_NAME routing iptable rule not created."
-    else
-        iptables -t mangle -D PREROUTING $SRC -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
-        iptables -t mangle -A PREROUTING $SRC -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
-    fi
+Chk_IPSET_List_Ready "$IPSET_NAME"
+  
+  if [ "$READY" -eq 0 ]; then
+		iptables -t mangle -D PREROUTING $SRC -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
+    iptables -t mangle -A PREROUTING $SRC -i br0 -m set --match-set $IPSET_NAME $DIM -j MARK --set-mark $FWMARK 2> /dev/null
+    logger -st "($(basename $0))" $$ "Routing rules created for IPSET list $IPSET_NAME"
+  else
+    logger -st "($(basename "$0"))" $$ "IPSET save/restore file for IPSET list $IPSET_NAME not available. Unable to create routing rule."  
+  fi       
  
 fi
 ######################################################################## End of IPSET Mods
@@ -325,7 +350,7 @@ export VPN_GW VPN_IP VPN_TBL VPN_FORCE
 # webui reports that vpn_force changed while vpn client was down
 if [ $script_type = "rmupdate" ]
 then
-logger "..script_type==> rmupdate"
+#logger "..script_type==> rmupdate"
 	my_logger "Refreshing policy rules for client $VPN_UNIT"
 	purge_client_list
 

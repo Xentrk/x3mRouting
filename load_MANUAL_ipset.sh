@@ -190,10 +190,9 @@ fi
 
 # Delete mode?
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
-  Chk_Entware 30
   Check_MANUAL_Ipset_List_Exist "$IPSET_NAME" "del"
 else
-  Chk_Entware 30
+  Chk_Entware 60
   if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
   Check_MANUAL_Ipset_List_Exist "$IPSET_NAME"
   Check_MANUAL_Ipset_List_Values "$IPSET_NAME" "$DIR"

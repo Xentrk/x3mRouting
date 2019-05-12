@@ -357,7 +357,7 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Create_Routing_Rules "$IPSET_NAME" "del"
   Check_Ipset_List_Exist "$IPSET_NAME" "del"
 else
-  Chk_Entware jq 30
+  Chk_Entware jq 60
   if [ "$READY" -eq 1 ]; then Error_Exit "Required entware package 'jq' not installed"; fi
   Set_IP_Rule "$VPNID"
   Check_Ipset_List_Exist "$IPSET_NAME"

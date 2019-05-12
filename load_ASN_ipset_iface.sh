@@ -302,7 +302,7 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Create_Routing_Rules "$IPSET_NAME" "del"
   Check_ASN_Ipset_List_Exist "$IPSET_NAME" "del"
 else
-  Chk_Entware 30
+  Chk_Entware 60
   if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
   Set_IP_Rule "$VPNID"
   Check_ASN_Ipset_List_Exist "$IPSET_NAME"

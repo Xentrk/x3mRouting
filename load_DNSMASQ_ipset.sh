@@ -278,7 +278,7 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Check_Cron_Job "$IPSET_NAME" "del"
   Check_Ipset_List "$IPSET_NAME" "del"
 else
-  Chk_Entware 30
+  Chk_Entware 60
   if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
   Check_Dnsmasq "$DNSMASQ_ENTRY"
   Check_Ipset_List "$IPSET_NAME"

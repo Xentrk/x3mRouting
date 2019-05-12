@@ -266,7 +266,7 @@ fi
 if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Check_Ipset_List_Exist "$IPSET_NAME" "del"
 else
-  Chk_Entware jq 30
+  Chk_Entware jq 60
   if [ "$READY" -eq 1 ]; then Error_Exit "Required entware package 'jq' not installed"; fi
   Check_Ipset_List_Exist "$IPSET_NAME"
   Check_Ipset_List_Values "$IPSET_NAME" "$REGION"

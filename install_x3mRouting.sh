@@ -228,7 +228,7 @@ Update_Version() {
           localmd5="$(md5sum "$DIR/$FILE" | awk '{print $1}')"
           remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
           if [ "$localmd5" != "$remotemd5" ]; then
-            printf 'MD5 hash of %s does not match - downloading updated $serverver\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" 
+            printf 'MD5 hash of %b%s%b does not match - downloading %b%s%b\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$COLOR_GREEN" "$FILE" "$COLOR_WHITE"
             Download_File "$DIR" "$FILE"
           fi
         fi

@@ -370,14 +370,13 @@ Alternatively, you can use the **nslookup** command to find the IP address of a 
     Address 1: 2a00:86c0:600:96::138 ipv6_1.lagg0.c009.lax004.ix.nflxvideo.net
     Address 3: 198.38.96.132 ipv4_1.lagg0.c003.lax004.ix.nflxvideo.net
 
-    # whob 198.38.96.147
+    # whob 198.38.96.132
 
-    IP: 198.38.96.147
+    IP: 198.38.96.132
     Origin-AS: 2906
     Prefix: 198.38.96.0/24
-    AS-Path: 18106 4657 6762 2906
+    AS-Path: 34224 3356 2906
     AS-Org-Name: Netflix Streaming Services Inc.
-    Org-Name: Netflix Streaming Services Inc.
     <snip>
 
 ### Validation and Troubleshooting

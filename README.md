@@ -257,9 +257,9 @@ Create IPSET BBC via VPN Client 3 and use the **/mnt/sda1/Backups** directory ra
 
     load_MANUAL_ipset_iface.sh 3 BBC dir=/mnt/sda1/Backups
 
-Create IPSET BBC via VPN Client 3 and use the **/mnt/sda1/Backups** directory rather than the default **/opt/tmp** directory for IPSET save/restore location:
+Delete IPSET BBC and remove from VPN Client 3:
 
-    load_MANUAL_ipset_iface.sh 3 BBC
+    load_MANUAL_ipset_iface.sh 3 BBC del
 
 ##### load_ASN_ipset_iface.sh
 This script will create an IPSET list using the [AS Number](https://www.apnic.net/get-ip/faqs/asn/). The IPv4 addresses are downloaded from https://ipinfo.io/. https://ipinfo.io/ may require whitelisting if you use an ad-blocker program.  You must pass the script the name of the IPSET list followed by the AS Number.  

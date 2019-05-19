@@ -21,27 +21,6 @@ I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming medi
 
 Please beware that Amazon Prime, BBC, Hulu and Netflix block known VPN servers. If you want a VPN provider who can circumvent the VPN blocks, see my blog post [Why I use Torguard as my VPN Provider](https://x3mtek.com/why-i-use-torguard-as-my-vpn-provider) to learn more.
 
-## x3mRouting Project Code Files
-The installation script **install_x3mRouting.sh** will display a menu with the options to install, update the current installation or remove the project from the router. The following table lists the files that will be downloaded for each method.
-
-| Script Name   | LAN Clients   |  OpenVPN Client + IPSET Shell Scripts | IPSET Shell Scripts |
-| --- | :---: | :---: | :---: |
-|x3mRouting_client_nvram.sh         | X |   |   |
-|x3mRouting_config.sh               | X |   |   |
-|updown.sh                          | X | X |   |
-|vpnrouting.sh                      | X | X |   |
-|mount_files_lan.sh                 | X |   |   |
-|mount_files_gui.sh                 |   | X |   |
-|Advanced_OpenVPNClient_Content.asp |   | X |   |  
-|load_AMAZON_ipset.sh               |   | X |   |
-|load_ASN_ipset.sh                  |   | X |   |
-|load_DNSMASQ_ipset.sh              |   | X |   |
-|load_MANUAL_ipset.sh               |   | X |   |
-|load_AMAZON_ipset_iface.sh         |   |   | X |
-|load_ASN_ipset_iface.sh            |   |   | X |
-|load_DNSMASQ_ipset_iface_ipset.sh  |   |   | X |
-|load_MANUAL_ipset_iface_ipset.sh   |   |   | X |
-
 ## Installation
 
 Copy and paste the command below into an SSH session:
@@ -475,6 +454,27 @@ If you use an ad blocker, some domains may require whitelisting for the streamin
 
     dpm.demdex.net
     b.scorecardresearch.com
+
+## x3mRouting Project Code Files
+The installation script **install_x3mRouting.sh** will display a menu with the options to install, update the current installation or remove the project from the router. The following table lists the files that will be downloaded for each method.
+
+| Script Name   | LAN Clients   |  OpenVPN Client + IPSET Shell Scripts | IPSET Shell Scripts |
+| --- | :---: | :---: | :---: |
+|x3mRouting_client_nvram.sh         | X |   |   |
+|x3mRouting_config.sh               | X |   |   |
+|updown.sh                          | X | X |   |
+|vpnrouting.sh                      | X | X |   |
+|mount_files_lan.sh                 | X |   |   |
+|mount_files_gui.sh                 |   | X |   |
+|Advanced_OpenVPNClient_Content.asp |   | X |   |  
+|load_AMAZON_ipset.sh               |   | X |   |
+|load_ASN_ipset.sh                  |   | X |   |
+|load_DNSMASQ_ipset.sh              |   | X |   |
+|load_MANUAL_ipset.sh               |   | X |   |
+|load_AMAZON_ipset_iface.sh         |   |   | X |
+|load_ASN_ipset_iface.sh            |   |   | X |
+|load_DNSMASQ_ipset_iface_ipset.sh  |   |   | X |
+|load_MANUAL_ipset_iface_ipset.sh   |   |   | X |
 
 ### Acknowledgements
 I want to acknowledge the following [snbforums](https://www.snbforums.com) members who helped make this project possible.

@@ -2,7 +2,7 @@
 ## Introduction
 The features of **x3mRouting** include three selective routing methods to choose from:
 
-#### 1. x3mRouting for LAN Client Method
+#### 1. x3mRouting for LAN Clients Method
 
 An alternative approach to automate and easily assign LAN clients to a WAN or OpenVPN Client interface. This method eliminates the need to enter the LAN Client information and IP addresses in the OpenVPN Client Screen. The **x3mRouting for LAN Client Method** can be used by itself or with one of the two methods below.
 

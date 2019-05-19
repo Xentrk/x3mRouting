@@ -1,17 +1,46 @@
 # x3mRouting ~ Selective Routing for Asuswrt-Merlin Firmware
 ## Introduction
-The features of **x3mRouting** include an alternative method to selectively route LAN Clients in the Asuswrt-Merlin firmware and two alternative methods for selectively routing traffic using IPSET lists. I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media traffic in devoloping the project.
+The features of **x3mRouting** include three selective routing methods to choose from:
 
-Amazon Prime, BBC, Hulu and Netflix block known VPN servers. If you want a VPN provider who can circumvent the VPN blocks, see my blog post [Why I use Torguard as my VPN Provider](https://x3mtek.com/why-i-use-torguard-as-my-vpn-provider) to learn more.
+#### 1. x3mRouting for LAN Client Method
 
-### x3mRouting LAN Client Method
-An alternative approach to easily assign LAN clients to a WAN or OpenVPN Client interface.
+An alternative approach to automate and easily assign LAN clients to a WAN or OpenVPN Client interface. This method eliminates the need to enter the LAN Client information and IP addresses in the OpenVPN Client Screen. The **x3mRouting for LAN Client Method** can be used by itself or with one of the two methods below.
 
-### x3mRouting OpenVPN Client Screen & IPSET Shell Script Method
-Provides the ability to create IPSET lists using shell scripts and selectively route the IPSET lists using the OpenVPN Client Screen.
+#### 2. x3mRouting OpenVPN Client Screen & IPSET Shell Script Method
 
-### x3mRouting IPSET Shell Script Method
-Provides the ability to create and selectively route IPSET lists using shell scripts.
+Provides the ability to create IPSET lists using shell scripts and selectively route the IPSET lists by entering the IPSET name in a modified OpenVPN Client Screen.  
+
+#### 3. x3mRouting IPSET Shell Script Method
+
+Provides the ability to create and selectively route IPSET lists using shell scripts. If you're the person who likes to flash alpha and beta software releases and perform firmware updates once they become available, then this is the method for you . No modifications to the firmware source code are used in this method.
+
+Detailed descriptions of each method are listed below.
+
+## Project Development
+I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media traffic in developing the project. Amazon Prime, BBC, Hulu and Netflix block known VPN servers. If you want a VPN provider who can circumvent the VPN blocks, see my blog post [Why I use Torguard as my VPN Provider](https://x3mtek.com/why-i-use-torguard-as-my-vpn-provider) to learn more.
+
+If you have found domain names or AS Numbers that work for a streaming service you provided, please let me know by creating an issue and I will update the README.md with the information.
+
+## x3mRouting Project Code Files
+The installation script **install_x3mRouting.sh** will display a menu with the options to install, update the current installation or remove the project from the router. The following table lists the files that will be downloaded for each method.
+
+| Script Name   | LAN Clients   |  OpenVPN GUI + Shell Scripts | Shell Scripts |
+| --- | :---: | :---: | :---: |
+|x3mRouting_client_nvram.sh         | X |   |   |
+|x3mRouting_config.sh               | X |   |   |
+|updown.sh                          | X | X |   |
+|vpnrouting.sh                      | X | X |   |
+|mount_files_lan.sh                 | X |   |   |
+|mount_files_gui.sh                 |   | X |   |
+|Advanced_OpenVPNClient_Content.asp |   | X |   |  
+|load_AMAZON_ipset.sh               |   | X |   |
+|load_ASN_ipset.sh                  |   | X |   |
+|load_DNSMASQ_ipset.sh              |   | X |   |
+|load_MANUAL_ipset.sh               |   | X |   |
+|load_AMAZON_ipset_iface.sh         |   |   | X |
+|load_ASN_ipset_iface.sh            |   |   | X |
+|load_DNSMASQ_ipset_iface_ipset.sh  |   |   | X |
+|load_MANUAL_ipset_iface_ipset.sh   |   |   | X |
 
 ## Installation
 
@@ -23,7 +52,7 @@ This command will download and install the installation script **/jffs/scripts/i
 
 ## x3mRouting Methods
 
-### x3mRouting LAN Client Method
+### 1. x3mRouting LAN Client Method
 In the Asuswrt-Merlin firmware, one must type the IP address of each LAN client into the Policy Routing section of the OpenVPN Client screen in order to assign the LAN client to the OpenVPN Client interface.  If you have many LAN clients, the process of entering the IP address and other required information can be time consuming - especially after performing a factory reset.
 
 The x3mRouting LAN Client method is an alternative approach to assigning LAN clients to a WAN or OpenVPN Client interface.  If you have many LAN clients to assign to the interface, the scripts will eliminate the manual effort involved in typing the DHCP IP address of each LAN client in the Policy Routing section of the OpenVPN Client screen.  You can still use the OpenVPN screen to assign LAN clients in addition to the scripts. The two methods can coexist.  
@@ -59,7 +88,7 @@ Similar to the firmware, the next step is to bounce the OpenVPN Client interface
 
 The routing rules for LAN Clients will automatically be applied upon a system boot.  You only need to rerun **x3mRouting_client_nvram.sh** and bounce the OpenVPN client if you have made LAN Client interface assignment changes in the **/jffs/configs/x3mRouting_client_rules** file.  
 
-### x3mRouting OpenVPN Client Screen & IPSET Shell Script Method
+### 2. x3mRouting OpenVPN Client Screen & IPSET Shell Script Method
 As part of this project, you can also choose to download and install a modified OpenVPN Client screen to selectively route IPSET lists thru an OpenVPN Client.
 
 [@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. I greatly appreciate his generosity in providing the modified code and allowing me to include it in the project.
@@ -199,7 +228,7 @@ Following is an exammple of how to configure /**jffs/scripts/nat-start** to crea
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh BBC_WEB bbc.co.uk,bbc.com,bbc.gscontxt.net,bbci.co.uk,bbctvapps.co.uk,ssl-bbcsmarttv.2cnt.net,llnwd.net
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh MOVETV movetv.com
 
-### x3mRouting using the IPSET Shell Script Method
+### 3. x3mRouting using the IPSET Shell Script Method
 This method is intended for users who want the ability to create and route traffic using IPSET lists, but prefer to use Asuswrt-Merlin firmware without the firmware modifications utilized by the method listed above.
 
 The difference with the scripts above is the ability to pass the interface parameter to the script to specify either the WAN or one of the five OpenVPN Client interfaces.
@@ -327,26 +356,29 @@ Following is an example of how to configure /**jffs/scripts/nat-start** to creat
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 2 CBS_WEB cbs.com,cbsnews.com,cbssports.com,cbsaavideo.com,omtrdc.net,akamaihd.net,irdeto.com,cbsi.com,cbsig.net
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 3 BBC_WEB bbc.co.uk,bbc.com,bbc.gscontxt.net,bbci.co.uk,bbctvapps.co.uk,ssl-bbcsmarttv.2cnt.net,llnwd.net
 
-## x3mRouting Project Code Files
-The installation script **install_x3mRouting.sh** will display a menu with the options to install, update the current installation or remove the project from the router. The following table lists the files that will be downloaded for each method.
+### How to determine AS Numbers for streaming services.
+Use the site [https://bgp.he.net](https://bgp.he.net/) to find AS Numbers for streaming services. You can type the name of the streaming service in the **search box** or an IP address.
 
-| Script Name   | LAN Clients   |  OpenVPN GUI + Shell Scripts | Shell Scripts |
-| --- | :---: | :---: | :---: |
-|x3mRouting_client_nvram.sh         | X |   |   |
-|x3mRouting_config.sh               | X |   |   |
-|updown.sh                          | X | X |   |
-|vpnrouting.sh                      | X | X |   |
-|mount_files_lan.sh                 | X |   |   |
-|mount_files_gui.sh                 |   | X |   |
-|Advanced_OpenVPNClient_Content.asp |   | X |   |  
-|load_AMAZON_ipset.sh               |   | X |   |
-|load_ASN_ipset.sh                  |   | X |   |
-|load_DNSMASQ_ipset.sh              |   | X |   |
-|load_MANUAL_ipset.sh               |   | X |   |
-|load_AMAZON_ipset_iface.sh         |   |   | X |
-|load_ASN_ipset_iface.sh            |   |   | X |
-|load_DNSMASQ_ipset_iface_ipset.sh  |   |   | X |
-|load_MANUAL_ipset_iface_ipset.sh   |   |   | X |
+Alternatively, you can use the **nslookup** command to find the IP address of a domain name. Then use the **whob** command to find the AS Number of the IP address.
+
+    # nslookup occ-0-1077-1062.1.nflxso.net
+
+    Server:    127.0.0.1
+    Address 1: 127.0.0.1 localhost.localdomain
+
+    Name:      occ-0-1077-1062.1.nflxso.net
+    Address 1: 2a00:86c0:600:96::138 ipv6_1.lagg0.c009.lax004.ix.nflxvideo.net
+    Address 3: 198.38.96.132 ipv4_1.lagg0.c003.lax004.ix.nflxvideo.net
+
+    # whob 198.38.96.147
+
+    IP: 198.38.96.147
+    Origin-AS: 2906
+    Prefix: 198.38.96.0/24
+    AS-Path: 18106 4657 6762 2906
+    AS-Org-Name: Netflix Streaming Services Inc.
+    Org-Name: Netflix Streaming Services Inc.
+    <snip>
 
 ### Validation and Troubleshooting
 #### IPSET lists

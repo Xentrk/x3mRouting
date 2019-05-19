@@ -12,9 +12,9 @@ Provides the ability to create IPSET lists using shell scripts and selectively r
 
 #### 3. x3mRouting IPSET Shell Script Method
 
-Provides the ability to create and selectively route IPSET lists using shell scripts. If you're the person who likes to flash alpha and beta software releases and perform firmware updates once they become available, then this is the method for you . No modifications to the firmware source code are used in this method.
+Provides the ability to create and selectively route IPSET lists using shell scripts. If you're the person who likes to flash alpha and beta software releases and perform firmware updates once they become available, then this is the method for you. No modifications to the firmware source code are used in this method.
 
-Detailed descriptions of each method are listed below.
+Detailed descriptions and usage examples of each method are listed in the **x3mRouting Methods** section below.
 
 ## Project Development
 I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media traffic in developing the project. Amazon Prime, BBC, Hulu and Netflix block known VPN servers. If you want a VPN provider who can circumvent the VPN blocks, see my blog post [Why I use Torguard as my VPN Provider](https://x3mtek.com/why-i-use-torguard-as-my-vpn-provider) to learn more.

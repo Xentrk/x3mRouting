@@ -17,9 +17,9 @@ Provides the ability to create and selectively route IPSET lists using shell scr
 Detailed descriptions and usage examples of each method are listed in the **x3mRouting Methods** section below.
 
 ## Project Development
-I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media traffic in developing the project. Amazon Prime, BBC, Hulu and Netflix block known VPN servers. If you want a VPN provider who can circumvent the VPN blocks, see my blog post [Why I use Torguard as my VPN Provider](https://x3mtek.com/why-i-use-torguard-as-my-vpn-provider) to learn more.
+I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media services in developing the project and included these in the usage examples below.
 
-If you have found domain names or AS Numbers that work for a streaming service you provided, please let me know by creating an issue and I will update the README.md with the information.
+Please beware that Amazon Prime, BBC, Hulu and Netflix block known VPN servers. If you want a VPN provider who can circumvent the VPN blocks, see my blog post [Why I use Torguard as my VPN Provider](https://x3mtek.com/why-i-use-torguard-as-my-vpn-provider) to learn more.
 
 ## x3mRouting Project Code Files
 The installation script **install_x3mRouting.sh** will display a menu with the options to install, update the current installation or remove the project from the router. The following table lists the files that will be downloaded for each method.
@@ -455,6 +455,22 @@ The output will also display the number of packets and bytes traversing the ipta
     10    129K 9898K MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set MOVETV dst MARK set 0x3000
     11   27284 5635K MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set CBS_WEB dst MARK set 0x3000
     12       0     0 MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set BBC_WEB dst MARK set 0x4000
+
+
+#### Ad Blockers
+If you use an ad blocker, some domains may require whitelisting for the streaming service to properly playback video.       
+
+##### CBS All Access
+
+    cbsinteractive.hb.omtrdc.net
+    cws.conviva.com
+    imasdk.googleapis.com
+    pubads.g.doubleclick.net
+
+##### SLING
+
+    dpm.demdex.net
+    b.scorecardresearch.com
 
 ### Acknowledgements
 I want to acknowledge the following [snbforums](https://www.snbforums.com) members who helped make this project possible.

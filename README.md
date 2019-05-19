@@ -52,7 +52,7 @@ This command will download and install the installation script **/jffs/scripts/i
 
 ![x3mRouting Installation Menu](https://github.com/Xentrk/x3mRouting/blob/master/InstallationMenu.png "x3mRouting Installation Menu")
 
-<img src="https://github.com/Xentrk/x3mRouting/blob/master/InstallationMenu.png" alt="drawing" width="200" height="200"/>
+<img src="https://github.com/Xentrk/x3mRouting/blob/master/InstallationMenu.png" alt="drawing" width="800" height="800"/>
 ## x3mRouting Methods
 
 ### 1. x3mRouting LAN Client Method

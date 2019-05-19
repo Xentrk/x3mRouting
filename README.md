@@ -24,7 +24,6 @@ Please beware that Amazon Prime, BBC, Hulu and Netflix block known VPN servers. 
 ## x3mRouting Project Code Files
 The installation script **install_x3mRouting.sh** will display a menu with the options to install, update the current installation or remove the project from the router. The following table lists the files that will be downloaded for each method.
 
-|               | LAN Clients   |     OpenVPN GUI +    |                     |
 | Script Name   | LAN Clients   |  IPSET Shell Scripts | IPSET Shell Scripts |
 | --- | :---: | :---: | :---: |
 |x3mRouting_client_nvram.sh         | X |   |   |

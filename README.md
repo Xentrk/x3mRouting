@@ -50,9 +50,8 @@ Copy and paste the command below into an SSH session:
 
 This command will download and install the installation script **/jffs/scripts/install_x3mRouting.sh**. The installation script is a menu with options to install the three methods described below and options to update or remove the repository.
 
-![x3mRouting Installation Menu](https://github.com/Xentrk/x3mRouting/blob/master/InstallationMenu.png "x3mRouting Installation Menu")
+<img src="https://github.com/Xentrk/x3mRouting/blob/master/InstallationMenu.png" alt="drawing" width="600" height="600"/>
 
-<img src="https://github.com/Xentrk/x3mRouting/blob/master/InstallationMenu.png" alt="drawing" width="800" height="800"/>
 ## x3mRouting Methods
 
 ### 1. x3mRouting LAN Client Method

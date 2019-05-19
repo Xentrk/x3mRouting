@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: install_x3mRouting.sh
 # Author: Xentrk
-# Last Updated Date: 9-May-2019
+# Last Updated Date: 19-May-2019
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -52,7 +52,7 @@ Welcome_Message() {
 }
 
 Main_Menu() {
-  printf '%b[1]%b = Install x3mRouting for LAN Clients Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[1]%b = Install x3mRouting for LAN Clients\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[2]%b = Install x3mRouting OpenVPN Client GUI & IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[3]%b = Install x3mRouting IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[4]%b = Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"

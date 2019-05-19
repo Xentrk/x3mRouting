@@ -467,7 +467,7 @@ If you use an ad blocker, some domains may require whitelisting for the streamin
     imasdk.googleapis.com
     pubads.g.doubleclick.net
 
-##### SLING
+##### Sling
 
     dpm.demdex.net
     b.scorecardresearch.com

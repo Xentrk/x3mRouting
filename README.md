@@ -3,7 +3,7 @@
 The features of **x3mRouting** include three selective routing methods to choose from:
 
 #### 1. x3mRouting for LAN Clients Method
- 
+
 An alternative approach to automate and easily assign LAN clients to a WAN or OpenVPN Client interface. This method eliminates the need to enter the LAN Client information and IP addresses in the OpenVPN Client Screen. The **x3mRouting for LAN Client Method** can be used by itself or with one of the two methods below.
 
 #### 2. x3mRouting OpenVPN Client Screen & IPSET Shell Script Method
@@ -33,7 +33,7 @@ This command will download and install the installation script **/jffs/scripts/i
 
 ## x3mRouting Methods
 
-### [1] ~ x3mRouting LAN Client Method
+### [1] ~ x3mRouting LAN Clients Method
 In the Asuswrt-Merlin firmware, one must type the IP address of each LAN client into the Policy Routing section of the OpenVPN Client screen in order to assign the LAN client to the OpenVPN Client interface.  If you have many LAN clients, the process of entering the IP address and other required information can be time consuming - especially after performing a factory reset.
 
 The x3mRouting LAN Client method is an alternative approach to assigning LAN clients to a WAN or OpenVPN Client interface.  If you have many LAN clients to assign to the interface, the scripts will eliminate the manual effort involved in typing the DHCP IP address of each LAN client in the Policy Routing section of the OpenVPN Client screen.  You can still use the OpenVPN screen to assign LAN clients in addition to the scripts. The two methods can coexist.  
@@ -69,7 +69,7 @@ Similar to the firmware, the next step is to bounce the OpenVPN Client interface
 
 The routing rules for LAN Clients will automatically be applied upon a system boot.  You only need to rerun **x3mRouting_client_nvram.sh** and bounce the OpenVPN client if you have made LAN Client interface assignment changes in the **/jffs/configs/x3mRouting_client_rules** file.  
 
-### [2] ~ x3mRouting OpenVPN Client Screen & IPSET Shell Script Method
+### [2] ~ x3mRouting OpenVPN Client Screen & IPSET Shell Scripts Method
 As part of this project, you can also choose to download and install a modified OpenVPN Client screen to selectively route IPSET lists thru an OpenVPN Client.
 
 [@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. I greatly appreciate his generosity in providing the modified code and allowing me to include it in the project.
@@ -209,7 +209,7 @@ Following is an exammple of how to configure /**jffs/scripts/nat-start** to crea
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh BBC_WEB bbc.co.uk,bbc.com,bbc.gscontxt.net,bbci.co.uk,bbctvapps.co.uk,ssl-bbcsmarttv.2cnt.net,llnwd.net
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh MOVETV movetv.com
 
-### [3] ~ x3mRouting using the IPSET Shell Script Method
+### [3] ~ x3mRouting using the IPSET Shell Scripts Method
 This method is intended for users who want the ability to create and route traffic using IPSET lists, but prefer to use Asuswrt-Merlin firmware without the firmware modifications utilized by the method listed above.
 
 The difference with the scripts above is the ability to pass the interface parameter to the script to specify either the WAN or one of the five OpenVPN Client interfaces.

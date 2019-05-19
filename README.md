@@ -381,6 +381,9 @@ Alternatively, you can use the **nslookup** command to find the IP address of a 
     AS-Org-Name: Netflix Streaming Services Inc.
     <snip>
 
+### IPSET List Update Frequency
+The IPSET shell scripts for Amazon and AS Numbers will download new data when the associated file in the IPSET list save/restore location is older than 7 days. The scripts execute whenever there is an event that causes /jffs/scripts/nat-start to execute.  
+
 ### Validation and Troubleshooting
 #### IPSET lists
 The install script will add a function to **/jffs/configs/profile.add** called **liststats** that will list the name of all IPSET lists and the number of IP address entries. To use the function, type **liststats** from the SSH command line (Note: For first time users, you must open up a new SSH session after running the installation script). Following is the sample output:

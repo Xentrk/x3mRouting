@@ -301,7 +301,7 @@ Delete IPSET BBC and remove from VPN Client 3:
 
 Create IPSET NETFLIX via WAN and auto populate IPs for multiple Netflix domains
 
-    load_DNSMASQ_ipset_iface.sh 0 NETFLIX amazonaws.com,netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
+    load_DNSMASQ_ipset_iface.sh 0 NETFLIX netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 
 Create IPSET SKY and extract all matching Top-Level domains containing **sky.com** from **/opt/var/log/dnsmasq.log**:
 

@@ -48,7 +48,6 @@ create_client_list(){
 	IFS=$OLDIFS
 }
 
-
 run_script_event(){
 	if [ -f /jffs/scripts/openvpn-event ]
 	then
@@ -56,8 +55,6 @@ run_script_event(){
 		/bin/sh /jffs/scripts/openvpn-event $*
 	fi
 }
-
-
 
 ### Main
 
@@ -112,15 +109,16 @@ then
 		echo /usr/sbin/iptables -t nat -I PREROUTING -p udp -m udp --dport 53 -j DNSVPN$instance >> $dnsscript
 		echo /usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN$instance >> $dnsscript
 	fi
-fi
+
 
 # QoS
-if [ "$(nvram get vpn_client$(echo $instance)_rgw)" -ge 1 ] && [ "$(nvram get qos_enable)" -eq 1 ] && [ "$(nvram get qos_type)" -eq 1 ]
-then
-		echo "#!/bin/sh" >> $qosscript
-		echo /usr/sbin/iptables -t mangle -A POSTROUTING -o br0 -m mark --mark 0x40000000/0xc0000000 -j MARK --set-xmark 0x80000000/0xC0000000 >> $qosscript
-		/bin/sh $qosscript
-	fi
+		if [ "$(nvram get vpn_client$(echo $instance)_rgw)" -ge 1 ] && [ "$(nvram get qos_enable)" -eq 1 ] && [ "$(nvram get qos_type)" -eq 1 ]
+		then
+				echo "#!/bin/sh" >> $qosscript
+				echo /usr/sbin/iptables -t mangle -A POSTROUTING -o br0 -m mark --mark 0x40000000/0xc0000000 -j MARK --set-xmark 0x80000000/0xC0000000 >> $qosscript
+				/bin/sh $qosscript
+		fi
+fi
 
 if [ $script_type = 'down' ]
 then
@@ -159,13 +157,8 @@ fi
 rmdir $filedir
 rmdir /etc/openvpn
 
-if [ -f /jffs/scripts/openvpn-event ]
-then
-	/usr/bin/logger -t "custom_script" "Running /jffs/scripts/openvpn-event (args: $*)"
-	/bin/sh /jffs/scripts/openvpn-event $*
-fi
-/usr/bin/logger -t "($(basename "$0"))" $$ "Ending custom /jffs/scripts/x3mRouting/updown.sh script execution"
-
 run_script_event $*
+
+/usr/bin/logger -t "($(basename "$0"))" $$ "Ending custom /jffs/scripts/x3mRouting/updown.sh script execution"
 
 exit 0

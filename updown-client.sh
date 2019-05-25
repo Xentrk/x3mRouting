@@ -1,5 +1,5 @@
 #!/bin/sh
-/usr/bin/logger -t "($(basename "$0"))" $$ "Starting custom /jffs/scripts/x3mRouting/updown.sh script execution"
+/usr/bin/logger -t "($(basename "$0"))" $$ "Starting custom /jffs/scripts/x3mRouting/updown-client.sh script execution"
 filedir=/etc/openvpn/dns
 filebase=$(echo $filedir/$dev | sed 's/\(tun\|tap\)1/client/')
 conffile=$filebase\.conf
@@ -159,6 +159,6 @@ rmdir /etc/openvpn
 
 run_script_event $*
 
-/usr/bin/logger -t "($(basename "$0"))" $$ "Ending custom /jffs/scripts/x3mRouting/updown.sh script execution"
+/usr/bin/logger -t "($(basename "$0"))" $$ "Ending custom /jffs/scripts/x3mRouting/updown-client.sh script execution"
 
 exit 0

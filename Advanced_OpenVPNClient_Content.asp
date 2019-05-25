@@ -227,10 +227,9 @@
 				document.getElementById("divSwitchMenu").style.display = "";
 			}
 			showclientlist();
+			showDropdownClientList('setClientIP', 'name>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
 			<!-- Martineau Hack 1 of 12 IPSET  processing ###################################################-->
-			// showLANIPList();
-			showLANIPList("setClientIP"); // Martineau Hack - Pass the name of the function to call
-			showLANIPList("setIPSETIP"); // Martineau Hack - Pass the name of the function to call
+			showDropdownClientList('setIPSETIP', 'name>ip', 'all', 'ClientList_IPSETBlock_PC', 'pull_arrow', 'online'); // Martineau Hack - Pass the name of the function to call
 			document.form.clientlist_DIM1.value = "DST";
 			document.form.clientlist_DIM2.value = "";
 			document.form.clientlist_DIM3.value = "";
@@ -259,7 +258,7 @@
 			}
 			for (var i = 0; i < digestsarray.length; i++) {
 				add_option(document.form.vpn_client_digest,
-					digestsarray[i][0], digestsarray[i][0],
+					digestsarray[i][0], digestsarray[i][0], 
 					(currentdigest.toLowerCase() == digestsarray[i][0].toLowerCase()));
 			}
 			setRadioValue(document.form.vpn_client_x_eas, ((document.form.vpn_clientx_eas.value.indexOf('' + (openvpn_unit)) >= 0) ? "1" : "0"));
@@ -901,61 +900,18 @@
 			if (clientlist_array == "")
 				showclientlist();
 		}
-		<!-- Martineau Hack 5 of 12 IPSET  processing ###################################################-->
-		// function showLANIPList(){
-		function showLANIPList(_Call_function) {
-			<!-- Martineau Hack ############################################################################-->
-			if (clientList.length == 0) {
-				setTimeout(function() {
-					genClientList();
-					<!-- Martineau Hack 6 of 12 IPSET  processing ###################################################-->
-					// showLANIPList();
-					showLANIPList("setClientIP"); // Martineau Hack - Pass the name of the function to call
-					<!-- Martineau Hack ############################################################################-->
-				}, 500);
-				return false;
-			}
-			var htmlCode = "";
-			for (var i = 0; i < clientList.length; i++) {
-				var clientObj = clientList[clientList[i]];
-				if (clientObj.ip != "offline") {
-					if (clientObj.name.length > 20) clientObj.name = clientObj.name.substring(0, 16) + "..";
-					<!-- Martineau Hack 7 of 12 IPSET  processing ###################################################-->
-					//htmlCode += '<a><div onmouseover="over_var=1;" onmouseout="over_var=0;" onclick="setClientIP(\'';
-					htmlCode += '<a><div onmouseover="over_var=1;" onmouseout="over_var=0;" onclick="' + _Call_function + '(\'';
-					<!-- Martineau Hack ############################################################################-->
-					htmlCode += clientObj.name;
-					htmlCode += '\', \'';
-					htmlCode += clientObj.ip;
-					htmlCode += '\');"><strong>';
-					htmlCode += clientObj.name;
-					htmlCode += '</strong> (' + clientObj.ip + ')</div></a><!--[if lte IE 6.5]><iframe class="hackiframe2"></iframe><![endif]-->';
+		function hideClients_Block(evt){
+			if(typeof(evt) != "undefined"){
+				if(!evt.srcElement)
+					evt.srcElement = evt.target; // for Firefox
+				if(evt.srcElement.id == "pull_arrow" || evt.srcElement.id == "ClientList_Block"){
+						return;
 				}
 			}
-			document.getElementById("ClientList_Block_PC").innerHTML = htmlCode;
-		}
-
-		function setClientIP(_name, _ipaddr) {
-			document.form.clientlist_deviceName.value = _name;
-			document.form.clientlist_ipAddr.value = _ipaddr;
-			hideClients_Block();
-			over_var = 0;
-		}
-		<!-- Martineau Hack 8 of 12 IPSET  processing ###################################################-->
-		function setIPSETIP(_name, _ipaddr) {
-			document.form.clientlist_IPSETipAddr.value = _ipaddr; // Unlike true VPN rule only fill in the IPSET IP address field
-			hideClients_Block();
-			over_var = 0;
-		}
-		<!-- Martineau Hack ############################################################################-->
-		var over_var = 0;
-		var isMenuopen = 0;
-
-		function hideClients_Block() {
 			document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
 			document.getElementById('ClientList_Block_PC').style.display = 'none';
-			isMenuopen = 0;
 		}
+
 		<!-- Martineau Hack 9 of 12 IPSET  processing ###################################################-->
 		function hideClients_IPSETBlock() {
 			document.getElementById("Xpull_arrow").src = "/images/arrow-down.gif";
@@ -966,9 +922,7 @@
 		function pullLANIPList(obj) {
 			if (isMenuopen == 0) {
 				obj.src = "/images/arrow-top.gif"
-				document.getElementById("ClientList_Block_PC").style.display = 'block';
-				document.form.clientlist_deviceName.focus();
-				isMenuopen = 1;
+				element.style.display = 'block';
 			} else
 				hideClients_Block();
 		}
@@ -983,6 +937,12 @@
 				hideClients_IPSETBlock();
 		}
 		<!-- Martineau Hack ############################################################################-->
+		function setClientIP(name, ipaddr){
+			document.form.clientlist_ipAddr.value = ipaddr;
+			document.form.clientlist_deviceName.value = name;
+			hideClients_Block();
+		}
+
 		function getConnStatus() {
 			$.ajax({
 				url: 'ajax_vpn_status.asp',
@@ -1594,9 +1554,9 @@
 											<input type="text" class="input_15_table" maxlength="15" name="clientlist_deviceName" onClick="hideClients_Block();" onKeyPress="return validator.isString(this, event);">
 										</td>
 										<td width="29%">
-											<input type="text" class="input_18_table" maxlength="18" name="clientlist_ipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
-											<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#2428#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
-											<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
+											<input type="text" class="input_18_table" maxlength="18" name="clientlist_ipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
+											<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_device_name#>">
+											<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
 										</td>
 										<td width="25%">
 											<input type="text" class="input_18_table" maxlength="18" name="clientlist_dstipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">

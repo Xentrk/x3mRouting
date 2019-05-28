@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: install_x3mRouting.sh
 # Author: Xentrk
-# Last Updated Date: 19-May-2019
+# Last Updated Date: 28-May-2019
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -251,7 +251,7 @@ Update_Version() {
     echo "Select the install option from the main menu to install the respository"
   fi
 
-  echo 
+  echo
   echo "Update of x3mRouting completed"
   echo "Press enter to continue"
   read -r "enter"
@@ -499,6 +499,8 @@ Check_Profile_Add() {
     if [ -s "$CONFIG_DIR/$PROFILE_FILE" ]; then
       if [ "$(grep -cw "$PARM" "$CONFIG_DIR/$PROFILE_FILE")" -gt 0 ]; then # see if line exists
         return
+      else
+        Update_Profile_Add "$CONFIG_DIR" "$PROFILE_FILE"
       fi
     else
       true >"$CONFIG_DIR/$PROFILE_FILE"

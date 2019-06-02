@@ -226,14 +226,13 @@
 				$('#divSwitchMenu').html(gen_switch_menu(vpn_client_array, "OpenVPN"));
 				document.getElementById("divSwitchMenu").style.display = "";
 			}
-
+			showclientlist();
 			<!-- Martineau Hack 1 of 12 IPSET  processing ###################################################-->
 			// showLANIPList();
-			showDropdownClientList('setClientIP', 'name>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
-			showDropdownClientList('setIPSETIP', 'name>ip', 'all', 'ClientList_IPSETBlock_PC', 'pull_arrow', 'online');
-
 			//showLANIPList("setClientIP"); // Martineau Hack - Pass the name of the function to call
 			//showLANIPList("setIPSETIP"); // Martineau Hack - Pass the name of the function to call
+      showDropdownClientList('setClientIP', 'name>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
+      showDropdownClientList('setIPSETIP', 'name>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
 			document.form.clientlist_DIM1.value = "DST";
 			document.form.clientlist_DIM2.value = "";
 			document.form.clientlist_DIM3.value = "";
@@ -904,56 +903,62 @@
 			if (clientlist_array == "")
 				showclientlist();
 		}
-		function hideClients_Block(evt){
-			if(typeof(evt) != "undefined"){
-				if(!evt.srcElement)
-					evt.srcElement = evt.target; // for Firefox
-				if(evt.srcElement.id == "pull_arrow" || evt.srcElement.id == "ClientList_Block"){
-						return;
+		<!-- Martineau Hack 5 of 12 IPSET  processing ###################################################-->
+    function hideClients_Block(evt){
+	    if(typeof(evt) != "undefined"){
+		    if(!evt.srcElement)
+			    evt.srcElement = evt.target; // for Firefox
+        if(evt.srcElement.id == "pull_arrow" || evt.srcElement.id == "ClientList_Block"){
+			    return;
+				}
 			}
-}
-		<!-- Martineau Hack 8 of 12 IPSET  processing ###################################################-->
-		function setIPSETIP(_name, _ipaddr) {
-			document.form.clientlist_IPSETipAddr.value = _ipaddr; // Unlike true VPN rule only fill in the IPSET IP address field
-			hideClients_Block();
-			over_var = 0;
-		}
-		<!-- Martineau Hack ############################################################################-->
 			document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
 			document.getElementById('ClientList_Block_PC').style.display = 'none';
-}
-		<!-- Martineau Hack 9 of 12 IPSET  processing ###################################################-->
-		function hideClients_IPSETBlock() {
+		}
+   		<!-- Martineau Hack 9 of 12 IPSET  processing ###################################################-->
+      function hideClients_IPSETBlock(evt) {
+	    if(typeof(evt) != "undefined"){
+		    if(!evt.srcElement)
+			    evt.srcElement = evt.target; // for Firefox
+        if(evt.srcElement.id == "pull_arrow" || evt.srcElement.id == "ClientList_Block"){
+			    return;
+				}
+			}
 			document.getElementById("Xpull_arrow").src = "/images/arrow-down.gif";
 			document.getElementById('ClientList_IPSETBlock_PC').style.display = 'none';
-			isMenuopen = 0;
 		}
 		<!-- Martineau Hack ############################################################################-->
 		function pullLANIPList(obj) {
-			var element = document.getElementById('ClientList_Block_PC');
-			var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
+   	  var element = document.getElementById('ClientList_Block_PC');
+	    var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
 			if (isMenuopen == 0) {
 				obj.src = "/images/arrow-top.gif"
-				document.getElementById("ClientList_Block_PC").style.display = 'block';
-				document.form.clientlist_deviceName.focus();
-				isMenuopen = 1;
-			} else
+        element.style.display = 'block';
+			} 
+      else
 				hideClients_Block();
 		}
 		<!-- Martineau Hack 10 of 12 IPSET  processing ###################################################-->
 		function pullIPSETLANIPList(obj) {
+      var element = document.getElementById('ClientList_Block_PC');
+	    var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
 			if (isMenuopen == 0) {
-				//obj.src = "/images/arrow-top.gif"
-			} else
-				hideClients_IPSETBlock();
+        //obj.src = "/images/arrow-top.gif"
+				//document.getElementById("ClientList_Block_PC").style.display = 'block';
+				//document.form.clientlist_IPSETipAddr.focus();
+        element.style.display = 'block';
+				} 
+        else
+				  hideClients_IPSETBlock();
 		}
-function setClientIP(name, ipaddr){
-	document.form.clientlist_ipAddr.value = ipaddr;
-	document.form.clientlist_deviceName.value = name;
-	hideClients_Block();
-}
 		<!-- Martineau Hack ############################################################################-->
-		function getConnStatus() {
+		function setClientIP(name, ipaddr){
+	    document.form.clientlist_ipAddr.value = ipaddr;
+	    document.form.clientlist_deviceName.value = name;
+	    hideClients_Block();
+    }
+    
+    function getConnStatus() {
 			$.ajax({
 				url: 'ajax_vpn_status.asp',
 				dataType: 'script',
@@ -1345,6 +1350,13 @@ function setClientIP(name, ipaddr){
 																	<span id="client_nat_warn_text">Routes must be configured manually.</span>
 														</td>
 													</tr>
+        					        <tr>
+						                  <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,30);">Inbound Firewall</a></th>
+						                  <td>
+							                    <input type="radio" name="vpn_client_fw" class="input" value="1" <% nvram_match_x("", "vpn_client_fw", "1", "checked"); %>>Block
+					                      <input type="radio" name="vpn_client_fw" class="input" value="0" <% nvram_match_x("", "vpn_client_fw", "0", "checked"); %>>Allow
+						                  </td>
+					                </tr>                                                                  
 													<tr id="client_local_1">
 														<th>Local/remote endpoint addresses</th>
 														<td>
@@ -1542,7 +1554,7 @@ function setClientIP(name, ipaddr){
 									<thead>
 										<tr>
 											<!-- Martineau Hack 11 of 12 #####################################################################-->
-											<td colspan="5">Rules for routing client traffic through the tunnel (<#2001#>&nbsp;100) Patched by Martineau v2.01
+											<td colspan="5">Rules for routing client traffic through the tunnel (<#2001#>&nbsp;100) Patched by Martineau v2.01/Xentrk 384.12
 													<!-- Martineau Hack -->
 											</td>
 											<!-- Martineau Hack ############################################################################-->
@@ -1564,9 +1576,9 @@ function setClientIP(name, ipaddr){
 											<input type="text" class="input_15_table" maxlength="15" name="clientlist_deviceName" onClick="hideClients_Block();" onKeyPress="return validator.isString(this, event);">
 										</td>
 										<td width="29%">
-											<input type="text" class="input_18_table" maxlength="18" name="clientlist_ipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
-											<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#select_device_name#>">
-											<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
+  							      <input type="text" class="input_18_table" maxlength="18" name="clientlist_ipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
+							        <img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#2428#>">
+							        <div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
 										</td>
 										<td width="25%">
 											<input type="text" class="input_18_table" maxlength="18" name="clientlist_dstipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">

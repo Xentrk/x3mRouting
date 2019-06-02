@@ -73,7 +73,7 @@ then
 	echo "#!/bin/sh" >> $dnsscript
 	echo /usr/sbin/iptables -t nat -N DNSVPN$instance >> $dnsscript
 
-	if [ "$(nvram get vpn_client$(echo $instance)_rgw)" -ge 2 ] && [ "$(nvram get vpn_client$(echo $instance)_adns)" -eq 3 ] get vpn_client$(echo $instance)_adns) == 3 ]
+	if [ "$(nvram get vpn_client$(echo $instance)_rgw)" -ge 2 ] && [ "$(nvram get vpn_client$(echo $instance)_adns)" -eq 3 ]
 	then
 		setdns=0
 	else
@@ -110,15 +110,15 @@ then
 		echo /usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN$instance >> $dnsscript
 	fi
 
-
 # QoS
-		if [ "$(nvram get vpn_client$(echo $instance)_rgw)" -ge 1 ] && [ "$(nvram get qos_enable)" -eq 1 ] && [ "$(nvram get qos_type)" -eq 1 ]
-		then
-				echo "#!/bin/sh" >> $qosscript
-				echo /usr/sbin/iptables -t mangle -A POSTROUTING -o br0 -m mark --mark 0x40000000/0xc0000000 -j MARK --set-xmark 0x80000000/0xC0000000 >> $qosscript
-				/bin/sh $qosscript
-		fi
+	if [ "$(nvram get vpn_client$(echo $instance)_rgw)" -ge 1 ] && [ "$(nvram get qos_enable)" -eq 1 ] && [ "$(nvram get qos_type)" -eq 1 ]
+	then
+		echo "#!/bin/sh" >> $qosscript
+		echo /usr/sbin/iptables -t mangle -A POSTROUTING -o br0 -m mark --mark 0x40000000/0xc0000000 -j MARK --set-xmark 0x80000000/0xC0000000 >> $qosscript
+		/bin/sh $qosscript
+	fi
 fi
+
 
 if [ $script_type = 'down' ]
 then
@@ -135,9 +135,10 @@ then
 	fi
 fi
 
+
 if [ -f $conffile ] || [ -f $resolvfile ] || [ -n "$fileexists" ]
 then
-		if [ $script_type = 'up' ] ; then
+	if [ $script_type = 'up' ] ; then
 		if [ -f $dnsscript ]
 		then
 			/bin/sh $dnsscript

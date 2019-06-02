@@ -221,10 +221,11 @@ purge_client_list(){
             5)  FWMARK=0x3000 ;; # table 115
         esac
 
-   iptables -nvL PREROUTING -t mangle --line | grep "match-set" | grep "$FWMARK" | awk '{print $1}' | sort -r | while read -r CHAIN_NUM 
+# $9 = SRC, $12=IPSET_NAME, $13=DIM 
+#
+   iptables -nvL PREROUTING -t mangle --line | grep "match-set" | grep "$FWMARK" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME
       do
-          IPSET_NAME=$(iptables -nvL PREROUTING -t mangle --line | grep "match-set" | awk -v numb="$CHAIN_NUM" '$1 == numb {print $12}')
-          logger -t "($(basename "$0"))" $$ "Deleting PREROUTING CHAIN $CHAIN_NUM for IPSET List $IPSET_NAME"
+          logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
           iptables -t mangle -D PREROUTING "$CHAIN_NUM"
       done 
 

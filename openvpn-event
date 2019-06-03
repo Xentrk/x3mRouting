@@ -53,7 +53,7 @@ if [ "$vpn_script_name" = "$vpn_script_state" ]; then
 fi
 
 if [ -f "$PROJECT_REPO/$vpn_script_name" ]; then
-  echo "Running PROJECT_REPO/$vpn_script_name $*" | logger -t $scr_name
+  echo "Running $PROJECT_REPO/$vpn_script_name $*" | logger -t $scr_name
   sh $PROJECT_REPO/$vpn_script_name $*
 else
   echo "Script not defined for event: "$vpn_script_name | logger -t $scr_name

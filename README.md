@@ -399,6 +399,20 @@ Display information about an IPSET list, type the command **ipset -L ipset_name*
     198.45.56.0/24
     <snip>
 
+#### IPSET List not Populating
+##### Duplicate Host Entires
+Beware of duplicate hosts entries when using the DNSMASQ script method to populate an IPSET list. In the example below, the nslookup commmand will only populate the first IPSET list in **/jffs/configs/dnsmasq.conf.add**.  
+````
+ipset=/pandora.com/PANDORA
+ipset=/pandora.com/US_VPN
+````
+##### Local Caching DNS
+There was an update made to the firmware in 384.12 that prevents IPSET lists from being populated when doing an **nslookup** on a domain name.
+
+The router will now use ISP-provided resolvers instead of local dnsmasq when attempting to resolve addresses, for improved reliability. This reproduces how stock firmware behaves. This only affects name resolution done by the router itself, not by the LAN clients. The behavior can still be changed on the **Tools** -> **Other Settings page** -> **Wan: Use local caching DNS server as system resolver (default: No)**.
+
+To resolve the issue, the installation script changes the default value to **"Yes"**.
+
 #### OpenVPN and LAN Client RPDB Routing and Priorities Rules
 Type the command
 

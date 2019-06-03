@@ -1,0 +1,63 @@
+#!/bin/sh
+###########################################################################################################
+# Script: openvpn-event
+# Author: Xentrk
+# Last Updated Date: 3-June-2019
+#
+# Description:
+#   Original Script by John9527:
+#   https://www.snbforums.com/threads/fork-asuswrt-merlin-374-43-lts-releases-v39e3.18914/page-238#post-294825
+#
+#   Modified by Xentrk for x3mRouting project
+############################################################################################################
+PROJECT_REPO="/jffs/scripts/x3mRouting"
+
+scr_name="$(basename $0)[$$]"
+
+case "$1" in
+"tun11")
+  vpn_name="client1"
+  ;;
+"tun12")
+  vpn_name="client2"
+  ;;
+"tun13")
+  vpn_name="client3"
+  ;;
+"tun14")
+  vpn_name="client4"
+  ;;
+"tun15")
+  vpn_name="client5"
+  ;;
+"tun21")
+  vpn_name="server1"
+  ;;
+"tun22")
+  vpn_name="server2"
+  ;;
+*)
+  vpn_name=""
+  ;;
+esac
+
+# Call appropriate script based on script_type
+vpn_script_name="vpn$vpn_name-$script_type"
+
+# Check script state/use nvram to save last script run
+vpn_script_state=$(nvram get vpn_script_state)
+nvram set vpn_script_state="$vpn_script_name"
+if [ "$vpn_script_name" = "$vpn_script_state" ]; then
+  echo "VPN script" $vpn_script_name "already run" | logger -t "$scr_name"
+  exit 0
+fi
+
+if [ -f "$PROJECT_REPO/$vpn_script_name" ]; then
+  echo "Running PROJECT_REPO/$vpn_script_name $*" | logger -t $scr_name
+  sh $PROJECT_REPO/$vpn_script_name $*
+else
+  echo "Script not defined for event: "$vpn_script_name | logger -t $scr_name
+  exit 0
+fi
+
+exit 0

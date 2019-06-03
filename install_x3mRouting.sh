@@ -461,7 +461,7 @@ Install_x3mRouting_OpenVPN_Event() {
   Download_File "$LOCAL_REPO" "openvpn-event"
   chmod 0755 "$DIR/$FILE"
   if [ -s /jffs/scripts/openvpn-event ]; then
-    if [ "$(grep -cw "/jffs/scripts/x3mRouting/openvpn-event" "$LOCAL_REPO")" -gt 0 ]; then # see if line exists
+    if [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" "$LOCAL_REPO")" -gt 0 ]; then # see if line exists
         return
     else
         printf 'sh /jffs/scripts/x3mRouting/openvpn-event\n' >> /jffs/scripts/openvpn-event

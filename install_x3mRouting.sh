@@ -55,13 +55,16 @@ Main_Menu() {
   printf '%b[1]%b = Install x3mRouting for LAN Clients\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[2]%b = Install x3mRouting OpenVPN Client GUI & IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[3]%b = Install x3mRouting IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[4]%b = Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[5]%b = Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[6]%b = Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[4]%b = Install x3mRouting OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '      ** Install Option 4 if you have installed Method 1 + Method 3'
+  echo
+  printf '%b[5]%b = Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[6]%b = Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[7]%b = Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   localmd5="$(md5sum "$0" | awk '{print $1}')"
   remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/install_x3mRouting.sh" | md5sum | awk '{print $1}')"
   if [ "$localmd5" != "$remotemd5" ]; then
-    printf '%b[7]%b = Update install_x3mRouting.sh\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[8]%b = Update install_x3mRouting.sh\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   fi
   printf '\n%b[e]%b = Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '\n%bOption ==>%b ' "${COLOR_GREEN}" "${COLOR_WHITE}"
@@ -81,18 +84,22 @@ Main_Menu() {
     break
     ;;
   4)
-    Confirm_Update
+    Install_x3mRouting_OpenVPN_Event
     break
     ;;
   5)
-    Confirm_Update force
+    Confirm_Update
     break
     ;;
   6)
-    Validate_Removal
+    Confirm_Update force
     break
     ;;
   7)
+    Validate_Removal
+    break
+    ;;
+  8)
     Update_Installer
     break
     ;;
@@ -206,7 +213,8 @@ Update_Version() {
       load_MANUAL_ipset_iface.sh \
       load_ASN_ipset_iface.sh \
       load_DNSMASQ_ipset_iface.sh \
-      load_AMAZON_ipset_iface.sh; do
+      load_AMAZON_ipset_iface.sh \
+      openvpn-event; do
       if [ -s "$DIR/$FILE" ]; then
         if [ -z "$1" ]; then
           if [ "$FILE" != "vpnrouting.sh" ]; then
@@ -254,7 +262,7 @@ Update_Version() {
   echo
   echo "Update of x3mRouting completed"
   echo "Press enter to continue"
-  read -r "enter"
+  read -r
   Welcome_Message
 }
 
@@ -380,7 +388,7 @@ Download_File() {
   if [ "$STATUS" -eq "200" ]; then
     printf '%b%s%b downloaded successfully\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE"
     if [ "$(echo "$FILE" | grep -c '.sh')" -gt 0 ]; then
-      chmod 755 "$DIR/$FILE"
+      chmod 0755 "$DIR/$FILE"
     fi
   else
     printf '%b%s%b download failed with curl error %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$STATUS"
@@ -388,6 +396,7 @@ Download_File() {
     exit 1
   fi
 }
+
 
 Exit_Message() {
 
@@ -424,7 +433,7 @@ Init_Start_Update() {
   else
     echo "#!/bin/sh" >/jffs/scripts/init-start
     echo "sh $LOCAL_REPO/$PARM" >>/jffs/scripts/init-start
-    chmod 755 /jffs/scripts/init-start
+    chmod 0755 /jffs/scripts/init-start
     printf 'Created %b/jffs/scripts/init-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
   fi
 }
@@ -442,7 +451,28 @@ Install_x3mRouting_LAN_Clients() {
   echo
   echo "Installation of x3mRouting for LAN Clients completed"
   echo "Press enter to continue"
-  read -r "enter"
+  read -r
+  Welcome_Message
+}
+
+Install_x3mRouting_OpenVPN_Event() {
+
+  Create_Project_Directory
+  Download_File "$LOCAL_REPO" "openvpn-event"
+  chmod 0755 "$DIR/$FILE"
+  if [ -s /jffs/scripts/openvpn-event ]; then
+    if [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" "/jffs/scripts/openvpn-event")" -eq 0 ]; then # see if line exists
+      printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >> /jffs/scripts/openvpn-event
+    fi
+  else
+    echo "#!/bin/sh" >/jffs/scripts/openvpn-event
+    printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >> /jffs/scripts/openvpn-event
+    chmod 0755 /jffs/scripts/openvpn-event
+  fi
+  echo
+  echo "Installation of x3mRouting OpenVPN Event completed"
+  echo "Press enter to continue"
+  read -r
   Welcome_Message
 }
 
@@ -566,7 +596,8 @@ Update_Installer() {
     1)
       Download_File /jffs/scripts install_x3mRouting.sh
       printf '\nUpdate Complete! %s\n' "$remotemd5"
-      Welcome_Message
+      sh /jffs/scripts/install_x3mRouting.sh
+      #Welcome_Message
       break
       ;;
     2)

@@ -320,7 +320,9 @@ from the following entries in **/opt/var/log/dnsmasq.log**:
     awk.epgsky.com
     etc...
 
-In order to have the IPSET lists and routing rules restored at boot, execute the scripts from **/jffs/scripts/nat-start**. Refer to the [Wiki](https://github.com/RMerl/asuswrt-merlin/wiki/User-scripts#creating-scripts ) for instructions on how to configure nat-start.
+There are two options available to choose from so the IPSET lists and routing rules are restored at boot when using the when using the **x3mRouting IPSET Shell Script Method**
+
+1. If you only use Method 3 - **x3mRouting IPSET Shell Script Method**, you can execute the scripts from **/jffs/scripts/nat-start**.
 
 #### /jffs/scripts/nat-start example
 Following is an example of how to configure /**jffs/scripts/nat-start** to create the IPSET lists and define the routing rules for streaming media traffic at system boot.
@@ -336,6 +338,20 @@ Following is an example of how to configure /**jffs/scripts/nat-start** to creat
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh 2 MOVETV movetv.com
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 2 CBS_WEB cbs.com,cbsnews.com,cbssports.com,cbsaavideo.com,omtrdc.net,akamaihd.net,irdeto.com,cbsi.com,cbsig.net
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 3 BBC_WEB bbc.co.uk,bbc.com,bbc.gscontxt.net,bbci.co.uk,bbctvapps.co.uk,ssl-bbcsmarttv.2cnt.net,llnwd.net
+
+2. If you use **Method 1 - x3mRouting for LAN Clients Method** combined with **Method 3 - x3mRouting IPSET Shell Script Method**, don't use the nat-start method. Instead, select **Option 4 - Install x3mRouting OpenVPN Event** from the installation menu. Then, in the project directory **/jffs/scripts/x3mRouting**, create a corresponding script called **vpnclientX-route-up** for each OpenVPN Client used for x3mRouting, where the "X" is the OpenVPN Client number 1, 2, 3, 4 or 5, and add the required entry for each x3mRouting script that requires routing through the OpenVPN Client.
+
+#### /jffs/scripts/x3mRouting/vpnclient1-route-up example
+Following is an example of how to configure /**jffs/scripts/x3mRouting/vpnclient1-route-up** to create the IPSET lists and define the routing rules for streaming media traffic at system boot. This script will get executed whenever the OpenVPN Client 1 route-up state has completed processing.  
+
+````
+#!/bin/sh
+sh /jffs/scripts/x3mRouting/load_AMAZON_ipset_iface.sh 1 AMAZON-US US
+sh /jffs/scripts/x3mRouting/load_ASN_ipset_iface.sh 1 NETFLIX AS2906
+sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 1 HULU_WEB hulu.com,hulustream.com,akamaihd.net
+````
+
+Refer to the [Wiki](https://github.com/RMerl/asuswrt-merlin/wiki/User-scripts#creating-scripts ) for instructions on how to configure nat-start and other user scripts.
 
 ## Helpful Tips, Validation and Troubleshooting
 

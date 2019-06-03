@@ -527,10 +527,11 @@ Install_x3mRouting_GUI() {
   Init_Start_Update "mount_files_gui.sh"
   sh /jffs/scripts/init-start
   Check_Profile_Add
+  Local_DNS
   echo
   echo "Installation of x3mRouting for IPSET lists completed"
   echo "Press enter to continue"
-  read -r "enter"
+  read -r
   Welcome_Message
 }
 
@@ -542,10 +543,11 @@ Install_x3mRouting_Shell_Scripts() {
   Download_File "$LOCAL_REPO" "load_DNSMASQ_ipset_iface.sh"
   Download_File "$LOCAL_REPO" "load_AMAZON_ipset_iface.sh"
   Check_Profile_Add
+  Local_DNS
   echo
   echo "Installation of x3mRouting for IPSET Shell Scripts completed"
   echo "Press enter to continue"
-  read -r "enter"
+  read -r
   Welcome_Message
 }
 
@@ -576,6 +578,16 @@ Update_Installer() {
       ;;
     esac
   done
+}
+
+Local_DNS () {
+  if [ -n "$(nvram get dns_local_cache)" ] && [ "$(nvram get dns_local_cache)" != "1" ];  then
+    nvram set dns_local_cache="1"
+    nvram commit
+  elif [ -n "$(nvram get dns_local)" ] && [ "$(nvram get dns_local)" != "1" ]; then
+    nvram set dns_local="1"
+    nvram commit
+  fi
 }
 
 Welcome_Message

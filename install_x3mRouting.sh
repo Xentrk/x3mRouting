@@ -56,7 +56,7 @@ Main_Menu() {
   printf '%b[2]%b = Install x3mRouting OpenVPN Client GUI & IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[3]%b = Install x3mRouting IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[4]%b = Install x3mRouting OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '      **Install Option 4 if you use Method 1 + Method 2'
+  printf '      ** Install Option 4 if you have installed Method 1 + Method 3'
   echo
   printf '%b[5]%b = Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[6]%b = Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
@@ -213,7 +213,8 @@ Update_Version() {
       load_MANUAL_ipset_iface.sh \
       load_ASN_ipset_iface.sh \
       load_DNSMASQ_ipset_iface.sh \
-      load_AMAZON_ipset_iface.sh; do
+      load_AMAZON_ipset_iface.sh \
+      openvpn-event; do
       if [ -s "$DIR/$FILE" ]; then
         if [ -z "$1" ]; then
           if [ "$FILE" != "vpnrouting.sh" ]; then
@@ -261,7 +262,7 @@ Update_Version() {
   echo
   echo "Update of x3mRouting completed"
   echo "Press enter to continue"
-  read -r "enter"
+  read -r
   Welcome_Message
 }
 

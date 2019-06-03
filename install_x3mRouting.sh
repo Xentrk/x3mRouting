@@ -56,7 +56,7 @@ Main_Menu() {
   printf '%b[2]%b = Install x3mRouting OpenVPN Client GUI & IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[3]%b = Install x3mRouting IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[4]%b = Install x3mRouting OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf 'Install Option 4 if you use Method 1 + Method 2'
+  printf '      **Install Option 4 if you use Method 1 + Method 2'
   echo
   printf '%b[5]%b = Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[6]%b = Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"

@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: install_x3mRouting.sh
 # Author: Xentrk
-# Last Updated Date: 3-June-2019
+# Last Updated Date: 9-June-2019
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -290,7 +290,17 @@ Remove_Existing_Installation() {
       fi
     done
   fi
-  # TBD - ckeck if only the she-bang exists and del file it it does
+
+  # Remove entry from /jffs/scripts/openvpn-event
+  if [ -s "/jffs/scripts/openvpn-event" ]; then # file exists
+    for PARM in "sh $LOCAL_REPO/openvpn-event"; do
+      if grep -q "$PARM" "/jffs/scripts/openvpn-event"; then # see if line exists
+        sed -i "\\~$PARM~d" "/jffs/scripts/openvpn-event"
+        echo "$PARM entry removed from /jffs/scripts/openvpn-event"
+        echo "You can manaully delete /jffs/scripts/openvpn-event if you no longer require it"
+      fi
+    done
+  fi
 
   if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ]; then
     umount /usr/sbin/vpnrouting.sh

@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: install_x3mRouting.sh
 # Author: Xentrk
-# Last Updated Date: 3-June-2019
+# Last Updated Date: 9-June-2019
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -273,11 +273,11 @@ Remove_Existing_Installation() {
   Chk_Entware jq 1
   if [ "$READY" -eq "0" ]; then
     echo "Existing jq package found. Removing jq"
-      if opkg remove jq; then
-        echo "jq successfully removed"
-      else
-        echo "Error occurred when removing jq"
-      fi
+    if opkg remove jq; then
+      echo "jq successfully removed"
+    else
+      echo "Error occurred when removing jq"
+    fi
   fi
 
   # Remove entries from /jffs/scripts/init-start
@@ -290,7 +290,17 @@ Remove_Existing_Installation() {
       fi
     done
   fi
-  # TBD - ckeck if only the she-bang exists and del file it it does
+
+  # Remove entry from /jffs/scripts/openvpn-event
+  if [ -s "/jffs/scripts/openvpn-event" ]; then # file exists
+    for PARM in "sh $LOCAL_REPO/openvpn-event"; do
+      if grep -q "$PARM" "/jffs/scripts/openvpn-event"; then # see if line exists
+        sed -i "\\~$PARM~d" "/jffs/scripts/openvpn-event"
+        echo "$PARM entry removed from /jffs/scripts/openvpn-event"
+        echo "You can manaully delete /jffs/scripts/openvpn-event if you no longer require it"
+      fi
+    done
+  fi
 
   if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ]; then
     umount /usr/sbin/vpnrouting.sh
@@ -397,7 +407,6 @@ Download_File() {
   fi
 }
 
-
 Exit_Message() {
 
   printf '\n   %bhttps://github.com/Xentrk/Stubby-Installer-Asuswrt-Merlin%b\n' "$COLOR_GREEN" "$COLOR_WHITE\\n"
@@ -462,11 +471,11 @@ Install_x3mRouting_OpenVPN_Event() {
   chmod 0755 "$DIR/$FILE"
   if [ -s /jffs/scripts/openvpn-event ]; then
     if [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" "/jffs/scripts/openvpn-event")" -eq 0 ]; then # see if line exists
-      printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >> /jffs/scripts/openvpn-event
+      printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
     fi
   else
     echo "#!/bin/sh" >/jffs/scripts/openvpn-event
-    printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >> /jffs/scripts/openvpn-event
+    printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
     chmod 0755 /jffs/scripts/openvpn-event
   fi
   echo
@@ -611,8 +620,8 @@ Update_Installer() {
   done
 }
 
-Local_DNS () {
-  if [ -n "$(nvram get dns_local_cache)" ] && [ "$(nvram get dns_local_cache)" != "1" ];  then
+Local_DNS() {
+  if [ -n "$(nvram get dns_local_cache)" ] && [ "$(nvram get dns_local_cache)" != "1" ]; then
     nvram set dns_local_cache="1"
     nvram commit
   elif [ -n "$(nvram get dns_local)" ] && [ "$(nvram get dns_local)" != "1" ]; then

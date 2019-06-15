@@ -3,7 +3,7 @@
 # Script: load_DNSMASQ_ipset_iface.sh
 # VERSION=1.0.0
 # Author: Martineau, Xentrk
-# Date: 6-May-2019
+# Date: 15-June-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -78,52 +78,43 @@ Chk_Entware() {
   # ARGS [wait attempts] [specific_entware_utility]
 
   READY=1 # Assume Entware Utilities are NOT available
-  ENTWARE="opkg"
-  ENTWARE_UTILITY= # Specific Entware utility to search for (Tacky GLOBAL variable returned!)
-
+  ENTWARE_UTILITY= # Specific Entware utility to search for
   MAX_TRIES=30
-  if [ -n "$2" ] && [ -n "$(echo $2 | grep -E '^[0-9]+$')" ]; then
-    MAX_TRIES=$2
+
+  if [ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null; then
+    MAX_TRIES="$2"
+  elif [ -z "$2" ] && [ "$1" -eq "$1" ] 2>/dev/null; then
+    MAX_TRIES="$1"
   fi
 
-  if [ -n "$1" ] && [ -z "$(echo $1 | grep -E '^[0-9]+$')" ]; then
-    ENTWARE_UTILITY=$1
-  else
-    if [ -z "$2" ] && [ -n "$(echo $1 | grep -E '^[0-9]+$')" ]; then
-      MAX_TRIES=$1
-    fi
+  if [ -n "$1" ] && ! [ "$1" -eq "$1" ] 2>/dev/null; then
+    ENTWARE_UTILITY="$1"
   fi
 
   # Wait up to (default) 30 seconds to see if Entware utilities available.....
-  TRIES=0
+  TRIES="0"
+
   while [ "$TRIES" -lt "$MAX_TRIES" ]; do
-    if [ -n "$(which $ENTWARE)" ] && [ "$($ENTWARE -v | grep -o "version")" = "version" ]; then # Check Entware exists and it executes OK
-      if [ -n "$ENTWARE_UTILITY" ]; then # Specific Entware utility installed?
-        if [ -n "$($ENTWARE list-installed $ENTWARE_UTILITY)" ]; then
-          READY=0 # Specific Entware utility found
+    if [ -f "/opt/bin/opkg" ]; then
+      if [ -n "$ENTWARE_UTILITY" ]; then            # Specific Entware utility installed?
+        if [ -n "$(opkg list-installed "$ENTWARE_UTILITY")" ]; then
+          READY="0"                                 # Specific Entware utility found
         else
-          # Not all Entware utilities exist as a stand-alone package e.g. 'find' is in package 'findutils'
-          # 	opkg files findutils
-          #
-          # 	Package findutils (4.6.0-1) is installed on root and has the following files:
-          # 	/opt/bin/xargs
-          # 	/opt/bin/find
-          # Add 'executable' as 'stubby' leaves behind two directories containing the string 'stubby'
-          if [ -d /opt ] && [ -n "$(find /opt/ -type f -executable -name $ENTWARE_UTILITY)" ]; then
-            READY=0 # Specific Entware utility found
+          # Not all Entware utilities exists as a stand-alone package e.g. 'find' is in package 'findutils'
+          if [ -d /opt ] && [ -n "$(find /opt/ -name "$ENTWARE_UTILITY")" ]; then
+            READY="0"                               # Specific Entware utility found
           fi
         fi
       else
-        READY=0 # Entware utilities ready
+        READY="0"                                     # Entware utilities ready
       fi
       break
     fi
     sleep 1
-    logger -st "($(basename $0))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
+    logger -st "($(basename "$0"))" "$$ Entware $ENTWARE_UTILITY not available - wait time $((MAX_TRIES - TRIES-1)) secs left"
     TRIES=$((TRIES + 1))
   done
-
-  return $READY
+  return "$READY"
 }
 
 ### Define interface/bitmask to route traffic to below
@@ -138,6 +129,8 @@ Set_Fwmark_Parms() {
 }
 
 Set_IP_Rule() {
+
+  VPNID="$1"
 
   case "$VPNID" in
   0)
@@ -185,10 +178,10 @@ Check_Dnsmasq() {
     if [ "$(grep -c "$DNSMASQ_ENTRY" "/jffs/configs/dnsmasq.conf.add")" -ge "1" ]; then # if true, then one or more lines exist in dnsmasq.conf.add
       if [ "$2" = "del" ]; then
         sed -i "/^ipset.*${IPSET_NAME}$/d" /jffs/configs/dnsmasq.conf.add
-        logger -st "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" deleted from "'/jffs/configs/dnsmasq.conf.add'"
+        logger -st "($(basename "$0"))" $$ ipset="$DNSMASQ_ENTRY" deleted from "/jffs/configs/dnsmasq.conf.add"
       fi
     else
-      printf "ipset=$DNSMASQ_ENTRY\n" >>/jffs/configs/dnsmasq.conf.add # add 'ipset=' domains entry to dnsmasq.conf.add
+      echo "ipset=$DNSMASQ_ENTRY" >>/jffs/configs/dnsmasq.conf.add # add 'ipset=' domains entry to dnsmasq.conf.add
     fi
     service restart_dnsmasq >/dev/null 2>&1
 #  else
@@ -205,7 +198,7 @@ Check_Ipset_List() {
   IPSET_NAME=$1
 
   if [ "$2" != "del" ]; then
-    if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$1" ]; then #does ipset list exist?
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$1" ]; then #does ipset list exist?
       if [ -s "$DIR/$IPSET_NAME" ]; then # does $1 ipset restore file exist?
         ipset restore -! <"$DIR/$IPSET_NAME" # Restore ipset list if restore file exists at $DIR/$1
         logger -st "($(basename "$0"))" $$ IPSET restored: "$IPSET_NAME" from "$DIR/$IPSET_NAME"
@@ -215,9 +208,9 @@ Check_Ipset_List() {
       fi
     fi
   else
-    if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" = "$IPSET_NAME" ]; then
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then
       ipset destroy "$IPSET_NAME"
-      logger -st "($(basename "$0"))" $$ IPSET $1 deleted!
+      logger -st "($(basename "$0"))" $$ IPSET "$IPSET_NAME" deleted!
     fi
   fi
 }
@@ -229,7 +222,7 @@ Check_Restore_File_Age() {
   DIR=$2
 
   if [ -s "$DIR" ]; then
-    if [ "$(find $DIR -name $IPSET_NAME -mtime +1 -print 2>/dev/null)" = "$DIR/$IPSET_NAME" ]; then
+    if [ "$(find "$DIR" -name "$IPSET_NAME" -mtime +1 -print 2>/dev/null)" = "$DIR/$IPSET_NAME" ]; then
       ipset save "$IPSET_NAME" >"$DIR/$IPSET_NAME"
     fi
   fi
@@ -240,15 +233,15 @@ Check_Cron_Job() {
 
   IPSET_NAME=$1
 
-  cru l | grep $1 2>/dev/null # Martineau Fix
+  cru l | grep "$1" 2>/dev/null # Martineau Fix
   if [ "$?" = "1" ]; then # no cronjob entry found, create it
     if [ "$2" != "del" ]; then
-      cru a $IPSET_NAME "0 2 * * * ipset save $IPSET_NAME > $DIR/$IPSET_NAME" >/dev/null 2>&1
+      cru a "$IPSET_NAME" "0 2 * * * ipset save $IPSET_NAME > $DIR/$IPSET_NAME" >/dev/null 2>&1
       logger -st "($(basename "$0"))" $$ CRON schedule created: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
     fi
   else
     if [ "$2" = "del" ]; then
-      cru d $IPSET_NAME "0 2 * * * ipset save $IPSET_NAME" >/dev/null 2>&1
+      cru d "$IPSET_NAME" "0 2 * * * ipset save $IPSET_NAME" >/dev/null 2>&1
       logger -st "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
     fi
   fi
@@ -262,9 +255,9 @@ Create_Routing_Rules() {
   iptables -t mangle -D PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
   if [ "$2" != "del" ]; then
     iptables -t mangle -A PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
-    logger -st "($(basename "$0"))" $$ "Selective Routing Rule via $TARGET_DESC created for $IPSET_NAME" "("TAG fwmark $TAG_MARK")"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via "$TARGET_DESC" created for "$IPSET_NAME" TAG fwmark "$TAG_MARK"
   else
-    logger -st "($(basename "$0"))" $$ "Selective Routing Rule via $TARGET_DESC deleted for $IPSET_NAME" "("TAG fwmark $TAG_MARK")"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via "$TARGET_DESC" deleted for "$IPSET_NAME" TAG fwmark "$TAG_MARK"
   fi
 }
 
@@ -324,7 +317,7 @@ else
     DOMAIN=$3
     # So having extracted the matching domains
     # Extract only the two-part TL domain i.e. disregard the sub-domains
-    DOMAINS_LIST=$(grep $DOMAIN $AUTOSCAN | grep reply | awk '{print $(NF-2)}' | awk -F\. '{print $(NF-1) FS $NF}' | sort | uniq | tr '\n' ',')
+    DOMAINS_LIST=$(grep "$DOMAIN" "$AUTOSCAN" | grep reply | awk '{print $(NF-2)}' | awk -F\. '{print $(NF-1) FS $NF}' | sort | uniq | tr '\n' ',')
     if [ -z "$DOMAINS_LIST" ]; then
       Error_Exit "No domain names were harvested from /opt/var/log/dnsmasq.log"
     fi
@@ -349,12 +342,28 @@ case "$VPNID" in
   TAG_MARK="$FWMARK_WAN" # Which Target WAN or VPN? Martineau Hack
   TARGET_DESC="WAN"
   ;;
-1 | 2 | 3 | 4 | 5)
-  eval "TAG_MARK=\$FWMARK_OVPNC"${VPNID}
-  TARGET_DESC="VPN Client $VPNID"
+1)
+  TAG_MARK="$FWMARK_OVPNC1"
+  TARGET_DESC="VPN Client 1"
+  ;;
+2)
+  TAG_MARK="$FWMARK_OVPNC2"
+  TARGET_DESC="VPN Client 2"
+  ;;
+3)
+  TAG_MARK="$FWMARK_OVPNC3"
+  TARGET_DESC="VPN Client 3"
+  ;;
+4)
+  TAG_MARK="$FWMARK_OVPNC4"
+  TARGET_DESC="VPN Client 4"
+  ;;
+5)
+  TAG_MARK="$FWMARK_OVPNC5"
+  TARGET_DESC="VPN Client 5"
   ;;
 *)
-  Error_Exit "ERROR $VPNID should be 0-WAN or 1-5=VPN"
+  Error_Exit "ERROR $1 should be 0-WAN or 1-5=VPN"
   ;;
 esac
 
@@ -367,7 +376,7 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
 else
   Chk_Entware 60
   if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
-  Set_IP_Rule
+  Set_IP_Rule "$VPNID"
   Check_Dnsmasq "$DNSMASQ_ENTRY"
   Check_Ipset_List "$IPSET_NAME"
   Check_Restore_File_Age "$IPSET_NAME" "$DIR"

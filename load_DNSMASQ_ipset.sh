@@ -3,7 +3,7 @@
 # Script: load_DNSMASQ_ipset.sh
 # VERSION=1.0.0
 # Author: Martineau, Xentrk
-# Date: 6-May-2019
+# Date: 15-June-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -78,52 +78,43 @@ Chk_Entware() {
   # ARGS [wait attempts] [specific_entware_utility]
 
   READY=1 # Assume Entware Utilities are NOT available
-  ENTWARE="opkg"
-  ENTWARE_UTILITY= # Specific Entware utility to search for (Tacky GLOBAL variable returned!)
-
+  ENTWARE_UTILITY= # Specific Entware utility to search for
   MAX_TRIES=30
-  if [ -n "$2" ] && [ -n "$(echo $2 | grep -E '^[0-9]+$')" ]; then
-    MAX_TRIES=$2
+
+  if [ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null; then
+    MAX_TRIES="$2"
+  elif [ -z "$2" ] && [ "$1" -eq "$1" ] 2>/dev/null; then
+    MAX_TRIES="$1"
   fi
 
-  if [ -n "$1" ] && [ -z "$(echo $1 | grep -E '^[0-9]+$')" ]; then
-    ENTWARE_UTILITY=$1
-  else
-    if [ -z "$2" ] && [ -n "$(echo $1 | grep -E '^[0-9]+$')" ]; then
-      MAX_TRIES=$1
-    fi
+  if [ -n "$1" ] && ! [ "$1" -eq "$1" ] 2>/dev/null; then
+    ENTWARE_UTILITY="$1"
   fi
 
   # Wait up to (default) 30 seconds to see if Entware utilities available.....
-  TRIES=0
+  TRIES="0"
+
   while [ "$TRIES" -lt "$MAX_TRIES" ]; do
-    if [ -n "$(which $ENTWARE)" ] && [ "$($ENTWARE -v | grep -o "version")" = "version" ]; then # Check Entware exists and it executes OK
-      if [ -n "$ENTWARE_UTILITY" ]; then # Specific Entware utility installed?
-        if [ -n "$($ENTWARE list-installed $ENTWARE_UTILITY)" ]; then
-          READY=0 # Specific Entware utility found
+    if [ -f "/opt/bin/opkg" ]; then
+      if [ -n "$ENTWARE_UTILITY" ]; then            # Specific Entware utility installed?
+        if [ -n "$(opkg list-installed "$ENTWARE_UTILITY")" ]; then
+          READY="0"                                 # Specific Entware utility found
         else
-          # Not all Entware utilities exist as a stand-alone package e.g. 'find' is in package 'findutils'
-          # 	opkg files findutils
-          #
-          # 	Package findutils (4.6.0-1) is installed on root and has the following files:
-          # 	/opt/bin/xargs
-          # 	/opt/bin/find
-          # Add 'executable' as 'stubby' leaves behind two directories containing the string 'stubby'
-          if [ -d /opt ] && [ -n "$(find /opt/ -type f -executable -name $ENTWARE_UTILITY)" ]; then
-            READY=0 # Specific Entware utility found
+          # Not all Entware utilities exists as a stand-alone package e.g. 'find' is in package 'findutils'
+          if [ -d /opt ] && [ -n "$(find /opt/ -name "$ENTWARE_UTILITY")" ]; then
+            READY="0"                               # Specific Entware utility found
           fi
         fi
       else
-        READY=0 # Entware utilities ready
+        READY="0"                                     # Entware utilities ready
       fi
       break
     fi
     sleep 1
-    logger -st "($(basename $0))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
+    logger -st "($(basename "$0"))" "$$ Entware $ENTWARE_UTILITY not available - wait time $((MAX_TRIES - TRIES-1)) secs left"
     TRIES=$((TRIES + 1))
   done
-
-  return $READY
+  return "$READY"
 }
 
 # check if /jffs/configs/dnsmasq.conf.add contains 'ipset=' entry for the domains
@@ -135,10 +126,10 @@ Check_Dnsmasq() {
     if [ "$(grep -c "$DNSMASQ_ENTRY" "/jffs/configs/dnsmasq.conf.add")" -ge "1" ]; then # if true, then one or more lines exist in dnsmasq.conf.add
       if [ "$2" = "del" ]; then
         sed -i "/^ipset.*${IPSET_NAME}$/d" /jffs/configs/dnsmasq.conf.add
-        logger -st "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" deleted from "'/jffs/configs/dnsmasq.conf.add'"
+        logger -st "($(basename "$0"))" $$ ipset="$DNSMASQ_ENTRY" entry deleted from "'/jffs/configs/dnsmasq.conf.add'"
       fi
     else
-      printf "ipset=$DNSMASQ_ENTRY\n" >>/jffs/configs/dnsmasq.conf.add # add 'ipset=' domains entry to dnsmasq.conf.add
+      echo "ipset=$DNSMASQ_ENTRY" >>/jffs/configs/dnsmasq.conf.add # add 'ipset=' domains entry to dnsmasq.conf.add
     fi
     service restart_dnsmasq >/dev/null 2>&1
 #  else
@@ -155,7 +146,7 @@ Check_Ipset_List() {
   IPSET_NAME="$1"
 
   if [ "$2" != "del" ]; then
-    if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$1" ]; then #does ipset list exist?
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$1" ]; then #does ipset list exist?
       if [ -s "$DIR/$IPSET_NAME" ]; then # does $1 ipset restore file exist?
         ipset restore -! <"$DIR/$IPSET_NAME" # Restore ipset list if restore file exists at $DIR/$1
         logger -st "($(basename "$0"))" $$ IPSET restored: "$IPSET_NAME" from "$DIR/$IPSET_NAME"
@@ -165,9 +156,9 @@ Check_Ipset_List() {
       fi
     fi
   else
-    if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" = "$IPSET_NAME" ]; then
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then
       ipset destroy "$IPSET_NAME"
-      logger -st "($(basename "$0"))" $$ IPSET $1 deleted!
+      logger -st "($(basename "$0"))" $$ IPSET "$1" deleted!
     fi
   fi
 }
@@ -179,7 +170,7 @@ Check_Restore_File_Age() {
   DIR="$2"
 
   if [ -s "$DIR" ]; then
-    if [ "$(find $DIR -name $IPSET_NAME -mtime +1 -print 2>/dev/null)" = "$DIR/$IPSET_NAME" ]; then
+    if [ "$(find "$DIR" -name "$IPSET_NAME" -mtime +1 -print 2>/dev/null)" = "$DIR/$IPSET_NAME" ]; then
       ipset save "$IPSET_NAME" >"$DIR/$IPSET_NAME"
     fi
   fi
@@ -190,15 +181,15 @@ Check_Cron_Job() {
 
   IPSET_NAME="$1"
 
-  cru l | grep $1 >/dev/null 2>&1 # Martineau Fix
+  cru l | grep "$1" >/dev/null 2>&1 # Martineau Fix
   if [ "$?" = "1" ]; then # no cronjob entry found, create it
     if [ "$2" != "del" ]; then
-      cru a $IPSET_NAME "0 2 * * * ipset save $IPSET_NAME > $DIR/$IPSET_NAME" >/dev/null 2>&1
+      cru a "$IPSET_NAME" "0 2 * * * ipset save $IPSET_NAME > $DIR/$IPSET_NAME" >/dev/null 2>&1
       logger -st "($(basename "$0"))" $$ CRON schedule created: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
     fi
   else
     if [ "$2" = "del" ]; then
-      cru d $IPSET_NAME "0 2 * * * ipset save $IPSET_NAME" >/dev/null 2>&1
+      cru d "$IPSET_NAME" "0 2 * * * ipset save $IPSET_NAME" >/dev/null 2>&1
       logger -st "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
     fi
   fi
@@ -213,7 +204,7 @@ Unlock_Script() {
 
 Error_Exit() {
 
-    error_str="$@"
+    error_str="$*"
     logger -st "($(basename "$0"))" $$ "$error_str"
     Unlock_Script
     exit 1
@@ -254,7 +245,7 @@ else
     DOMAIN=$2
     # So having extracted the matching domains
     # Extract only the two-part TL domain i.e. disregard the sub-domains
-    DOMAINS_LIST=$(grep $DOMAIN $AUTOSCAN | grep reply | awk '{print $(NF-2)}' | awk -F\. '{print $(NF-1) FS $NF}' | sort | uniq | tr '\n' ',')
+    DOMAINS_LIST=$(grep "$DOMAIN" $AUTOSCAN | grep reply | awk '{print $(NF-2)}' | awk -F\. '{print $(NF-1) FS $NF}' | sort | uniq | tr '\n' ',')
     if [ -z "$DOMAINS_LIST" ]; then
       Error_Exit "No domain names were harvested from /opt/var/log/dnsmasq.log"
     fi

@@ -12,7 +12,7 @@
 ############################################################################################################
 PROJECT_REPO="/jffs/scripts/x3mRouting"
 
-scr_name="$(basename $0)[$$]"
+scr_name="$(basename "$0")[$$]"
 
 case "$1" in
 "tun11")
@@ -48,15 +48,15 @@ vpn_script_name="vpn$vpn_name-$script_type"
 vpn_script_state=$(nvram get vpn_script_state)
 nvram set vpn_script_state="$vpn_script_name"
 if [ "$vpn_script_name" = "$vpn_script_state" ]; then
-  echo "VPN script" $vpn_script_name "already run" | logger -t "$scr_name"
+  echo "VPN script" "$vpn_script_name" "already run" | logger -t "$scr_name"
   exit 0
 fi
 
 if [ -f "$PROJECT_REPO/$vpn_script_name" ]; then
-  echo "Running $PROJECT_REPO/$vpn_script_name $*" | logger -t $scr_name
-  sh $PROJECT_REPO/$vpn_script_name $*
+  echo "Running $PROJECT_REPO/$vpn_script_name $*" | logger -t "$scr_name"
+  sh $PROJECT_REPO/"$vpn_script_name" "$*"
 else
-  echo "Script not defined for event: "$vpn_script_name | logger -t $scr_name
+  echo "Script not defined for event: ""$vpn_script_name" | logger -t "$scr_name"
   exit 0
 fi
 

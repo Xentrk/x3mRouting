@@ -3,7 +3,7 @@
 # Script: load_MANUAL_ipset_iface.sh
 # VERSION=1.0.0
 # Author: Xentrk, Martineau
-# Date: 6-May-2019
+# Date: 15-June-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -219,7 +219,7 @@ Unlock_Script() {
 
 Error_Exit() {
 
-    error_str="$@"
+    error_str="$*"
     logger -st "($(basename "$0"))" $$ "$error_str"
     Unlock_Script
     exit 1

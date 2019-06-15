@@ -73,39 +73,39 @@ Main_Menu() {
   case "$menu1" in
   1)
     Install_x3mRouting_LAN_Clients
-    break
+    #break
     ;;
   2)
     Install_x3mRouting_GUI
-    break
+    #break
     ;;
   3)
     Install_x3mRouting_Shell_Scripts
-    break
+    #break
     ;;
   4)
     Install_x3mRouting_OpenVPN_Event
-    break
+    #break
     ;;
   5)
     Confirm_Update
-    break
+    #break
     ;;
   6)
     Confirm_Update force
-    break
+    #break
     ;;
   7)
     Validate_Removal
-    break
+    #break
     ;;
   8)
     Update_Installer
-    break
+    #break
     ;;
   e)
     Exit_Message
-    break
+    #break
     ;;
   *)
     printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu1" "$COLOR_WHITE"
@@ -124,11 +124,11 @@ Validate_Removal() {
     case "$menu_Validate_Removal" in
     1)
       Remove_Existing_Installation
-      break
+      #break
       ;;
     2)
       Welcome_Message
-      break
+      #break
       ;;
     *)
       printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu_Validate_Removal" "$COLOR_WHITE"
@@ -154,11 +154,11 @@ Confirm_Update() {
       case "$Confirm_Update_Option" in
       1)
         Update_Version
-        break
+        #break
         ;;
       2)
         Welcome_Message
-        break
+        #break
         ;;
       *)
         echo "[*] $Confirm_Update_Option Isn't An Option!"
@@ -178,11 +178,11 @@ Confirm_Update() {
       case "$Confirm_Update_Option" in
       1)
         Update_Version force
-        break
+        #break
         ;;
       2)
         Welcome_Message
-        break
+        #break
         ;;
       *)
         echo "[*] $Confirm_Update_Option Isn't An Option!"
@@ -244,7 +244,7 @@ Update_Version() {
         case "$1" in
         force)
           serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE 'v[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
-          printf 'Downloading latest version ($serverver) of $FILE\n'
+          printf 'Downloading latest version %s of %s\n' "$serverver" "$FILE"
           Download_File "$DIR" "$FILE"
           ;;
         esac
@@ -514,6 +514,7 @@ Update_Profile_Add() {
 
   CONFIG_DIR="$1"
   PROFILE_FILE="$2"
+  PRINTF="printf"
 
   echo "liststats () {" >>"$CONFIG_DIR/$PROFILE_FILE"
   echo "  GREEN='\033[0;32m'" >>"$CONFIG_DIR/$PROFILE_FILE"
@@ -521,7 +522,7 @@ Update_Profile_Add() {
   echo "  NC='\033[0m'" >>"$CONFIG_DIR/$PROFILE_FILE"
   echo "  true > /tmp/liststats" >>"$CONFIG_DIR/$PROFILE_FILE"
   echo "  for SETLIST in \$(ipset -L -n); do" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "    printf '%s - %b%s%b\n' \"\$SETLIST\" \"\$GREEN\" \"\$((\$(ipset -L \"\$SETLIST\" | wc -l) - 8))\" \"\$NC\" >> /tmp/liststats" >>"$CONFIG_DIR/$PROFILE_FILE"
+  echo "    $PRINTF '%s - %b%s%b\n' \"\$SETLIST\" \"\$GREEN\" \"\$((\$(ipset -L \"\$SETLIST\" | wc -l) - 8))\" \"\$NC\" >> /tmp/liststats" >>"$CONFIG_DIR/$PROFILE_FILE"
   echo "  done" >>"$CONFIG_DIR/$PROFILE_FILE"
   echo "  cat /tmp/liststats | sort" >>"$CONFIG_DIR/$PROFILE_FILE"
   echo "  rm /tmp/liststats" >>"$CONFIG_DIR/$PROFILE_FILE"
@@ -607,11 +608,11 @@ Update_Installer() {
       printf '\nUpdate Complete! %s\n' "$remotemd5"
       sh /jffs/scripts/install_x3mRouting.sh
       #Welcome_Message
-      break
+      #break
       ;;
     2)
       Main_Menu
-      break
+      #break
       ;;
     *)
       echo "[*] $menu_Update_Installer Isn't An Option!"

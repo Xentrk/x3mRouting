@@ -3,7 +3,7 @@
 # Script: load_AMAZON_ipset.sh
 # VERSION=1.0.0
 # Authors: Xentrk, Martineau
-# Date: 6-May-2019
+# Date: 15-June-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -85,53 +85,44 @@ Chk_Entware() {
   # ARGS [wait attempts] [specific_entware_utility]
 
   READY=1 # Assume Entware Utilities are NOT available
-  ENTWARE="opkg"
   ENTWARE_UTILITY= # Specific Entware utility to search for
   MAX_TRIES=30
 
-  if [ -n "$2" ] && [ -n "$(echo "$2" | grep -E '^[0-9]+$')" ]; then
-    MAX_TRIES=$2
+  if [ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null; then
+    MAX_TRIES="$2"
+  elif [ -z "$2" ] && [ "$1" -eq "$1" ] 2>/dev/null; then
+    MAX_TRIES="$1"
   fi
 
-  if [ -n "$1" ] && [ -z "$(echo "$1" | grep -E '^[0-9]+$')" ]; then
-    ENTWARE_UTILITY=$1
-  else
-    if [ -z "$2" ] && [ -n "$(echo "$1" | grep -E '^[0-9]+$')" ]; then
-      MAX_TRIES=$1
-    fi
+  if [ -n "$1" ] && ! [ "$1" -eq "$1" ] 2>/dev/null; then
+    ENTWARE_UTILITY="$1"
   fi
 
   # Wait up to (default) 30 seconds to see if Entware utilities available.....
-  TRIES=0
+  TRIES="0"
 
   while [ "$TRIES" -lt "$MAX_TRIES" ]; do
-    if [ -n "$(which $ENTWARE)" ] && [ "$($ENTWARE -v | grep -o "version")" = "version" ]; then
-      if [ -n "$ENTWARE_UTILITY" ]; then # Specific Entware utility installed?
-        if [ -n "$("$ENTWARE" list-installed "$ENTWARE_UTILITY")" ]; then
-          READY=0 # Specific Entware utility found
+    if [ -f "/opt/bin/opkg" ]; then
+      if [ -n "$ENTWARE_UTILITY" ]; then            # Specific Entware utility installed?
+        if [ -n "$(opkg list-installed "$ENTWARE_UTILITY")" ]; then
+          READY="0"                                 # Specific Entware utility found
         else
           # Not all Entware utilities exists as a stand-alone package e.g. 'find' is in package 'findutils'
           if [ -d /opt ] && [ -n "$(find /opt/ -name "$ENTWARE_UTILITY")" ]; then
-            READY=0 # Specific Entware utility found
+            READY="0"                               # Specific Entware utility found
           fi
         fi
       else
-        READY=0 # Entware utilities ready
+        READY="0"                                     # Entware utilities ready
       fi
       break
     fi
     sleep 1
-    logger -st "($(basename "$0"))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
+    logger -st "($(basename "$0"))" "$$ Entware $ENTWARE_UTILITY not available - wait time $((MAX_TRIES - TRIES-1)) secs left"
     TRIES=$((TRIES + 1))
   done
-  # Attempt  to install missing package if not found
-    if [ "$READY" -eq 1 ]; then
-      opkg install "$ENTWARE_UTILITY" && READY=0 && echo "entware package $ENTWARE_UTILITY installed"
-    fi
-
-  return $READY
+  return "$READY"
 }
-
 
 # Download Amazon AWS json file
 Download_AMAZON() {
@@ -147,7 +138,7 @@ Download_AMAZON() {
 #  for REGION in us-east-1 us-east-2 us-west-1 us-west-2; do
 # don't quote the parameter so it is treated like an array!
    for REGION in $REGION; do
-    jq '.prefixes[] | select(.region=='\"$REGION\"') | .ip_prefix' <"$DIR/ip-ranges.json" | sed 's/"//g' | sort -u >>"$DIR/$IPSET_NAME"
+    jq '.prefixes[] | select(.region=='\""$REGION"\"') | .ip_prefix' <"$DIR/ip-ranges.json" | sed 's/"//g' | sort -u >>"$DIR/$IPSET_NAME"
   done
 }
 
@@ -159,13 +150,17 @@ Check_Ipset_List_Exist() {
   DEL_FLAG="$2"
 
   if [ "$DEL_FLAG" != "del" ]; then
-      if [ "$(ipset list -n $IPSET_NAME 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
+      if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
         ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create AMAZON ipset list from scratch
         logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
       fi
   else
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
-      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
+      if [ "$(ipset destroy "$IPSET_NAME")" ]; then
+        logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!"
+      else
+        Error_Exit "Error attempting to delete IPSET $IPSET_NAME!"
+      fi
     fi
   fi
 }
@@ -177,8 +172,8 @@ Check_Ipset_List_Values() {
   IPSET_NAME="$1"
   REGION="$2"
 
-  if [ "$(ipset -L $IPSET_NAME 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
-    if [ ! -s "$DIR/$IPSET_NAME" ] || [ "$(find "$DIR" -name $IPSET_NAME -mtime +7 -print)" = "$DIR/$IPSET_NAME" ]; then
+  if [ "$(ipset -L "$IPSET_NAME" 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
+    if [ ! -s "$DIR/$IPSET_NAME" ] || [ "$(find "$DIR" -name "$IPSET_NAME" -mtime +7 -print)" = "$DIR/$IPSET_NAME" ]; then
       Download_AMAZON "$IPSET_NAME" "$REGION"
     fi
     awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
@@ -196,7 +191,7 @@ Unlock_Script() {
 }
 
 Error_Exit() {
-    error_str="$@"
+    error_str="$*"
     logger -st "($(basename "$0"))" $$ "$error_str"
     Unlock_Script
     exit 1
@@ -223,35 +218,27 @@ if [ -n "$2" ]; then
     case "$REGION" in
     AP)
       REGION="ap-east-1 ap-northeast-1 ap-northeast-2 ap-northeast-3 ap-south-1 ap-southeast-1 ap-southeast-2"
-      break
       ;;
     CA)
       REGION="ca-central-1"
-      break
       ;;
     CN)
       REGION="cn-north-1 cn-northwest-1"
-      break
       ;;
     EU)
       REGION="eu-central-1 eu-north-1 eu-west-1 eu-west-2 eu-west-3"
-      break
       ;;
     SA)
       REGION="sa-east-1"
-      break
       ;;
     US)
       REGION="us-east-1 us-east-2 us-west-1 us-west-2"
-      break
       ;;
     GV)
       REGION="us-gov-east-1 us-gov-west-1"
-      break
       ;;
     GLOBAL)
       REGION="GLOBAL"
-      break
       ;;
     *)
       Error_Exit "Invalid AMAZON region specified: $REGION. Valid values are: AP CA CN EU SA US GV GLOBAL"

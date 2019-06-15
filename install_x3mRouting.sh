@@ -73,39 +73,30 @@ Main_Menu() {
   case "$menu1" in
   1)
     Install_x3mRouting_LAN_Clients
-    #break
     ;;
   2)
     Install_x3mRouting_GUI
-    #break
     ;;
   3)
     Install_x3mRouting_Shell_Scripts
-    #break
     ;;
   4)
     Install_x3mRouting_OpenVPN_Event
-    #break
     ;;
   5)
     Confirm_Update
-    #break
     ;;
   6)
     Confirm_Update force
-    #break
     ;;
   7)
     Validate_Removal
-    #break
     ;;
   8)
     Update_Installer
-    #break
     ;;
   e)
     Exit_Message
-    #break
     ;;
   *)
     printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu1" "$COLOR_WHITE"
@@ -124,11 +115,9 @@ Validate_Removal() {
     case "$menu_Validate_Removal" in
     1)
       Remove_Existing_Installation
-      #break
       ;;
     2)
       Welcome_Message
-      #break
       ;;
     *)
       printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu_Validate_Removal" "$COLOR_WHITE"
@@ -154,11 +143,9 @@ Confirm_Update() {
       case "$Confirm_Update_Option" in
       1)
         Update_Version
-        #break
         ;;
       2)
         Welcome_Message
-        #break
         ;;
       *)
         echo "[*] $Confirm_Update_Option Isn't An Option!"
@@ -178,11 +165,9 @@ Confirm_Update() {
       case "$Confirm_Update_Option" in
       1)
         Update_Version force
-        #break
         ;;
       2)
         Welcome_Message
-        #break
         ;;
       *)
         echo "[*] $Confirm_Update_Option Isn't An Option!"
@@ -293,13 +278,12 @@ Remove_Existing_Installation() {
 
   # Remove entry from /jffs/scripts/openvpn-event
   if [ -s "/jffs/scripts/openvpn-event" ]; then # file exists
-    for PARM in "sh $LOCAL_REPO/openvpn-event"; do
+      PARM="sh $LOCAL_REPO/openvpn-event"
       if grep -q "$PARM" "/jffs/scripts/openvpn-event"; then # see if line exists
         sed -i "\\~$PARM~d" "/jffs/scripts/openvpn-event"
         echo "$PARM entry removed from /jffs/scripts/openvpn-event"
         echo "You can manaully delete /jffs/scripts/openvpn-event if you no longer require it"
       fi
-    done
   fi
 
   if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ]; then
@@ -608,11 +592,9 @@ Update_Installer() {
       printf '\nUpdate Complete! %s\n' "$remotemd5"
       sh /jffs/scripts/install_x3mRouting.sh
       #Welcome_Message
-      #break
       ;;
     2)
       Main_Menu
-      #break
       ;;
     *)
       echo "[*] $menu_Update_Installer Isn't An Option!"

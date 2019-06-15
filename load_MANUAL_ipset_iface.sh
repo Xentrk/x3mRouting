@@ -73,47 +73,43 @@ Chk_Entware() {
   # ARGS [wait attempts] [specific_entware_utility]
 
   READY=1 # Assume Entware Utilities are NOT available
-  ENTWARE="opkg"
   ENTWARE_UTILITY= # Specific Entware utility to search for
   MAX_TRIES=30
 
-  if [ ! -z "$2" ] && [ ! -z "$(echo "$2" | grep -E '^[0-9]+$')" ]; then
-    MAX_TRIES=$2
+  if [ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null; then
+    MAX_TRIES="$2"
+  elif [ -z "$2" ] && [ "$1" -eq "$1" ] 2>/dev/null; then
+    MAX_TRIES="$1"
   fi
 
-  if [ ! -z "$1" ] && [ -z "$(echo "$1" | grep -E '^[0-9]+$')" ]; then
-    ENTWARE_UTILITY=$1
-  else
-    if [ -z "$2" ] && [ ! -z "$(echo "$1" | grep -E '^[0-9]+$')" ]; then
-      MAX_TRIES=$1
-    fi
+  if [ -n "$1" ] && ! [ "$1" -eq "$1" ] 2>/dev/null; then
+    ENTWARE_UTILITY="$1"
   fi
 
   # Wait up to (default) 30 seconds to see if Entware utilities available.....
-  TRIES=0
+  TRIES="0"
 
   while [ "$TRIES" -lt "$MAX_TRIES" ]; do
-    if [ ! -z "$(which $ENTWARE)" ] && [ "$($ENTWARE -v | grep -o "version")" = "version" ]; then
-      if [ ! -z "$ENTWARE_UTILITY" ]; then # Specific Entware utility installed?
-        if [ ! -z "$("$ENTWARE" list-installed "$ENTWARE_UTILITY")" ]; then
-          READY=0 # Specific Entware utility found
+    if [ -f "/opt/bin/opkg" ]; then
+      if [ -n "$ENTWARE_UTILITY" ]; then            # Specific Entware utility installed?
+        if [ -n "$(opkg list-installed "$ENTWARE_UTILITY")" ]; then
+          READY="0"                                 # Specific Entware utility found
         else
           # Not all Entware utilities exists as a stand-alone package e.g. 'find' is in package 'findutils'
-          if [ -d /opt ] && [ ! -z "$(find /opt/ -name "$ENTWARE_UTILITY")" ]; then
-            READY=0 # Specific Entware utility found
+          if [ -d /opt ] && [ -n "$(find /opt/ -name "$ENTWARE_UTILITY")" ]; then
+            READY="0"                               # Specific Entware utility found
           fi
         fi
       else
-        READY=0 # Entware utilities ready
+        READY="0"                                     # Entware utilities ready
       fi
       break
     fi
     sleep 1
-    logger -st "($(basename "$0"))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
+    logger -st "($(basename "$0"))" "$$ Entware $ENTWARE_UTILITY not available - wait time $((MAX_TRIES - TRIES-1)) secs left"
     TRIES=$((TRIES + 1))
   done
-
-  return $READY
+  return "$READY"
 }
 
 ### Define interface/bitmask to route traffic to below
@@ -180,7 +176,11 @@ Check_MANUAL_Ipset_List_Exist() {
     fi
   else
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
-      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
+      if [ "$(ipset destroy "$IPSET_NAME")" ]; then
+          logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!"
+      else
+          Error_Exit "Error attempting to delete IPSET $IPSET_NAME!"
+      fi
     fi
   fi
 }
@@ -199,18 +199,20 @@ Check_MANUAL_Ipset_List_Values() {
 # Route IPSET to target WAN or VPN
 Create_Routing_Rules() {
 
-  iptables -t mangle -D PREROUTING -i br0 -m set --match-set $1 dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
+  IPSET_NAME="$1"
+
+  iptables -t mangle -D PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
   if [ "$2" != "del" ]; then
-    iptables -t mangle -A PREROUTING -i br0 -m set --match-set $1 dst -j MARK --set-mark "$TAG_MARK"
-    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created "("TAG fwmark $TAG_MARK")"
+    iptables -t mangle -A PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via "$TARGET_DESC" created TAG fwmark "$TAG_MARK"
   else
-    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted "("TAG fwmark $TAG_MARK")"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via "$TARGET_DESC" deleted TAG fwmark "$TAG_MARK"
   fi
 }
 
 Unlock_Script() {
 
-  if [ "$lock_load_MANUAL_ipset" = "true" ]; then
+  if [ "$lock_load_MANUAL_ipset_iface" = "true" ]; then
     rm -rf "/tmp/load_MANUAL_ipset.lock";
   fi
 }
@@ -248,17 +250,33 @@ fi
 
 Set_Fwmark_Parms
 
-case $VPNID in
+case "$VPNID" in
 0)
-  TAG_MARK=$FWMARK_WAN # Which Target WAN or VPN? Martineau Hack
+  TAG_MARK="$FWMARK_WAN" # Which Target WAN or VPN? Martineau Hack
   TARGET_DESC="WAN"
   ;;
-1 | 2 | 3 | 4 | 5)
-  eval "TAG_MARK=\$FWMARK_OVPNC"${VPNID}
-  TARGET_DESC="VPN Client "$VPNID
+1)
+  TAG_MARK="$FWMARK_OVPNC1"
+  TARGET_DESC="VPN Client 1"
+  ;;
+2)
+  TAG_MARK="$FWMARK_OVPNC2"
+  TARGET_DESC="VPN Client 2"
+  ;;
+3)
+  TAG_MARK="$FWMARK_OVPNC3"
+  TARGET_DESC="VPN Client 3"
+  ;;
+4)
+  TAG_MARK="$FWMARK_OVPNC4"
+  TARGET_DESC="VPN Client 4"
+  ;;
+5)
+  TAG_MARK="$FWMARK_OVPNC5"
+  TARGET_DESC="VPN Client 5"
   ;;
 *)
-  Error_Exit "ERROR $VPNID should be 0-WAN or 1-5=VPN"
+  Error_Exit "ERROR $1 should be 0-WAN or 1-5=VPN"
   ;;
 esac
 

@@ -200,7 +200,7 @@ Update_Version() {
 
   if [ -d "$DIR" ]; then
     for FILE in vpnrouting.sh \
-      updown.sh \
+      updown-client.sh \
       Advanced_OpenVPNClient_Content.asp \
       x3mRouting_client_nvram.sh \
       x3mRouting_client_config.sh \
@@ -218,7 +218,7 @@ Update_Version() {
       if [ -s "$DIR/$FILE" ]; then
         if [ -z "$1" ]; then
           if [ "$FILE" != "vpnrouting.sh" ]; then
-            if [ "$FILE" != "updown.sh" ]; then
+            if [ "$FILE" != "updown-client.sh" ]; then
               if [ "$FILE" != "Advanced_OpenVPNClient_Content.asp" ]; then
                 # force_update="false"
                 localver=$(grep "VERSION=" "$DIR/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
@@ -273,11 +273,11 @@ Remove_Existing_Installation() {
   Chk_Entware jq 1
   if [ "$READY" -eq "0" ]; then
     echo "Existing jq package found. Removing jq"
-      if opkg remove jq; then
-        echo "jq successfully removed"
-      else
-        echo "Error occurred when removing jq"
-      fi
+    if opkg remove jq; then
+      echo "jq successfully removed"
+    else
+      echo "Error occurred when removing jq"
+    fi
   fi
 
   # Remove entries from /jffs/scripts/init-start
@@ -305,8 +305,8 @@ Remove_Existing_Installation() {
   if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ]; then
     umount /usr/sbin/vpnrouting.sh
   fi
-  if [ "$(df | grep -c "/usr/sbin/updown.sh")" -eq 1 ]; then
-    umount /usr/sbin/updown.sh
+  if [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ]; then
+    umount /usr/sbin/updown-client.sh
   fi
   if [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ]; then
     umount /www/Advanced_OpenVPNClient_Content.asp
@@ -407,7 +407,6 @@ Download_File() {
   fi
 }
 
-
 Exit_Message() {
 
   printf '\n   %bhttps://github.com/Xentrk/Stubby-Installer-Asuswrt-Merlin%b\n' "$COLOR_GREEN" "$COLOR_WHITE\\n"
@@ -454,7 +453,7 @@ Install_x3mRouting_LAN_Clients() {
   Download_File "$LOCAL_REPO" "x3mRouting_client_nvram.sh"
   Download_File "$LOCAL_REPO" "x3mRouting_client_config.sh"
   Download_File "$LOCAL_REPO" "vpnrouting.sh"
-  Download_File "$LOCAL_REPO" "updown.sh"
+  Download_File "$LOCAL_REPO" "updown-client.sh"
   Download_File "$LOCAL_REPO" "mount_files_lan.sh"
   Init_Start_Update "mount_files_lan.sh"
   sh /jffs/scripts/init-start
@@ -472,11 +471,11 @@ Install_x3mRouting_OpenVPN_Event() {
   chmod 0755 "$DIR/$FILE"
   if [ -s /jffs/scripts/openvpn-event ]; then
     if [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" "/jffs/scripts/openvpn-event")" -eq 0 ]; then # see if line exists
-      printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >> /jffs/scripts/openvpn-event
+      printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
     fi
   else
     echo "#!/bin/sh" >/jffs/scripts/openvpn-event
-    printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >> /jffs/scripts/openvpn-event
+    printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
     chmod 0755 /jffs/scripts/openvpn-event
   fi
   echo
@@ -557,7 +556,7 @@ Install_x3mRouting_GUI() {
   Check_Requirements
   Create_Project_Directory
   Download_File "$LOCAL_REPO" "vpnrouting.sh"
-  Download_File "$LOCAL_REPO" "updown.sh"
+  Download_File "$LOCAL_REPO" "updown-client.sh"
   Download_File "$LOCAL_REPO" "Advanced_OpenVPNClient_Content.asp"
   Download_File "$LOCAL_REPO" "load_MANUAL_ipset.sh"
   Download_File "$LOCAL_REPO" "load_ASN_ipset.sh"
@@ -621,8 +620,8 @@ Update_Installer() {
   done
 }
 
-Local_DNS () {
-  if [ -n "$(nvram get dns_local_cache)" ] && [ "$(nvram get dns_local_cache)" != "1" ];  then
+Local_DNS() {
+  if [ -n "$(nvram get dns_local_cache)" ] && [ "$(nvram get dns_local_cache)" != "1" ]; then
     nvram set dns_local_cache="1"
     nvram commit
   elif [ -n "$(nvram get dns_local)" ] && [ "$(nvram get dns_local)" != "1" ]; then

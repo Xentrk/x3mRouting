@@ -3,7 +3,7 @@
 # Script: load_MANUAL_ipset.sh
 # VERSION=1.0.0
 # Author: Xentrk, Martineau
-# Date: 6-May-2019
+# Date: 15-June-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -73,47 +73,43 @@ Chk_Entware() {
   # ARGS [wait attempts] [specific_entware_utility]
 
   READY=1 # Assume Entware Utilities are NOT available
-  ENTWARE="opkg"
   ENTWARE_UTILITY= # Specific Entware utility to search for
   MAX_TRIES=30
 
-  if [ ! -z "$2" ] && [ ! -z "$(echo "$2" | grep -E '^[0-9]+$')" ]; then
-    MAX_TRIES=$2
+  if [ -n "$2" ] && [ "$2" -eq "$2" ] 2>/dev/null; then
+    MAX_TRIES="$2"
+  elif [ -z "$2" ] && [ "$1" -eq "$1" ] 2>/dev/null; then
+    MAX_TRIES="$1"
   fi
 
-  if [ ! -z "$1" ] && [ -z "$(echo "$1" | grep -E '^[0-9]+$')" ]; then
-    ENTWARE_UTILITY=$1
-  else
-    if [ -z "$2" ] && [ ! -z "$(echo "$1" | grep -E '^[0-9]+$')" ]; then
-      MAX_TRIES=$1
-    fi
+  if [ -n "$1" ] && ! [ "$1" -eq "$1" ] 2>/dev/null; then
+    ENTWARE_UTILITY="$1"
   fi
 
   # Wait up to (default) 30 seconds to see if Entware utilities available.....
-  TRIES=0
+  TRIES="0"
 
   while [ "$TRIES" -lt "$MAX_TRIES" ]; do
-    if [ ! -z "$(which $ENTWARE)" ] && [ "$($ENTWARE -v | grep -o "version")" = "version" ]; then
-      if [ ! -z "$ENTWARE_UTILITY" ]; then # Specific Entware utility installed?
-        if [ ! -z "$("$ENTWARE" list-installed "$ENTWARE_UTILITY")" ]; then
-          READY=0 # Specific Entware utility found
+    if [ -f "/opt/bin/opkg" ]; then
+      if [ -n "$ENTWARE_UTILITY" ]; then            # Specific Entware utility installed?
+        if [ -n "$(opkg list-installed "$ENTWARE_UTILITY")" ]; then
+          READY="0"                                 # Specific Entware utility found
         else
           # Not all Entware utilities exists as a stand-alone package e.g. 'find' is in package 'findutils'
-          if [ -d /opt ] && [ ! -z "$(find /opt/ -name "$ENTWARE_UTILITY")" ]; then
-            READY=0 # Specific Entware utility found
+          if [ -d /opt ] && [ -n "$(find /opt/ -name "$ENTWARE_UTILITY")" ]; then
+            READY="0"                               # Specific Entware utility found
           fi
         fi
       else
-        READY=0 # Entware utilities ready
+        READY="0"                                     # Entware utilities ready
       fi
       break
     fi
     sleep 1
-    logger -st "($(basename "$0"))" $$ "Entware" "$ENTWARE_UTILITY" "not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
+    logger -st "($(basename "$0"))" "$$ Entware $ENTWARE_UTILITY not available - wait time $((MAX_TRIES - TRIES-1)) secs left"
     TRIES=$((TRIES + 1))
   done
-
-  return $READY
+  return "$READY"
 }
 
 # Create IPSET lists if it doesn not exist
@@ -129,7 +125,11 @@ Check_MANUAL_Ipset_List_Exist() {
     fi
   else
     if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then # del condition is true
-      ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || logger -st "($(basename "$0"))" $$ Error attempting to delete IPSET "$IPSET_NAME"!
+      if [ "$(ipset destroy "$IPSET_NAME")" ]; then
+        logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!"
+      else
+        Error_Exit "Error attempting to delete IPSET $IPSET_NAME!"
+      fi
     fi
   fi
 }
@@ -148,12 +148,12 @@ Check_MANUAL_Ipset_List_Values() {
 # Route IPSET to target WAN or VPN
 create_routing_rules() {
 
-  iptables -t mangle -D PREROUTING -i br0 -m set --match-set $1 dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
+  iptables -t mangle -D PREROUTING -i br0 -m set --match-set "$1" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
   if [ "$2" != "del" ]; then
-    iptables -t mangle -A PREROUTING -i br0 -m set --match-set $1 dst -j MARK --set-mark "$TAG_MARK"
-    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC created "("TAG fwmark $TAG_MARK")"
+    iptables -t mangle -A PREROUTING -i br0 -m set --match-set "$1" dst -j MARK --set-mark "$TAG_MARK"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via "$TARGET_DESC" created "("TAG fwmark "$TAG_MARK"")"
   else
-    logger -st "($(basename "$0"))" $$ Selective Routing Rule via $TARGET_DESC deleted "("TAG fwmark $TAG_MARK")"
+    logger -st "($(basename "$0"))" $$ Selective Routing Rule via "$TARGET_DESC" deleted "("TAG fwmark "$TAG_MARK"")"
   fi
 }
 
@@ -166,7 +166,7 @@ Unlock_Script() {
 
 Error_Exit() {
 
-    error_str="$@"
+    error_str="$*"
     logger -st "($(basename "$0"))" $$ "$error_str"
     Unlock_Script
     exit 1

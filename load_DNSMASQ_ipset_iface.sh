@@ -270,7 +270,7 @@ Unlock_Script() {
 
 Error_Exit() {
 
-    error_str="$@"
+    error_str="$*"
     logger -st "($(basename "$0"))" $$ "$error_str"
     Unlock_Script
     exit 1

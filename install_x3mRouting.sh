@@ -299,7 +299,7 @@ Remove_Existing_Installation() {
   # Purge /jffs/scripts/x3mRouting directory
   for DIR in $LOCAL_REPO; do
     if [ -d "$DIR" ]; then
-      if ! rm -rf "$DIR"/* >/dev/null 2>&1; then
+      if ! rm -rf "${DIR:?}/"* >/dev/null 2>&1; then
         printf '\nNo files found to remove in %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
       fi
       if ! rmdir "$DIR" >/dev/null 2>&1; then
@@ -500,17 +500,19 @@ Update_Profile_Add() {
   PROFILE_FILE="$2"
   PRINTF="printf"
 
-  echo "liststats () {" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  GREEN='\033[0;32m'" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  RED='\033[0;31m'" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  NC='\033[0m'" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  true > /tmp/liststats" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  for SETLIST in \$(ipset -L -n); do" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "    $PRINTF '%s - %b%s%b\n' \"\$SETLIST\" \"\$GREEN\" \"\$((\$(ipset -L \"\$SETLIST\" | wc -l) - 8))\" \"\$NC\" >> /tmp/liststats" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  done" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  cat /tmp/liststats | sort" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  rm /tmp/liststats" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "}" >>"$CONFIG_DIR/$PROFILE_FILE"
+  {
+  echo "liststats () {"
+  echo "  GREEN='\033[0;32m'"
+  echo "  RED='\033[0;31m'"
+  echo "  NC='\033[0m'"
+  echo "  true > /tmp/liststats"
+  echo "  for SETLIST in \$(ipset -L -n); do"
+  echo "    $PRINTF '%s - %b%s%b\n' \"\$SETLIST\" \"\$GREEN\" \"\$((\$(ipset -L \"\$SETLIST\" | wc -l) - 8))\" \"\$NC\" >> /tmp/liststats"
+  echo "  done"
+  echo "  cat /tmp/liststats | sort"
+  echo "  rm /tmp/liststats"
+  echo "}"
+  } >>"$CONFIG_DIR/$PROFILE_FILE"
 }
 
 Check_Profile_Add() {

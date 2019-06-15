@@ -42,7 +42,7 @@ case "$1" in
 esac
 
 # Call appropriate script based on script_type
-vpn_script_name="vpn$vpn_name-$script_type"
+vpn_script_name=vpn"$vpn_name"-"$script_type"
 
 # Check script state/use nvram to save last script run
 vpn_script_state=$(nvram get vpn_script_state)

@@ -1,4 +1,6 @@
 #!/bin/sh
+# shellcheck disable=SC2154
+# shellcheck disable=SC2034
 /usr/bin/logger -t "($(basename "$0"))" $$ "Starting custom /jffs/scripts/x3mRouting/updown-client.sh script execution"
 filedir=/etc/openvpn/dns
 filebase=$(echo "$filedir/$dev" | sed 's/\(tun\|tap\)1/client/')

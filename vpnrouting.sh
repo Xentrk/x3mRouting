@@ -1,5 +1,5 @@
 #!/bin/sh
-# param=$dev $tun_mtu $link_mtu $ifconfig_local $ifconfig_remote
+# shellcheck disable=SC2154
 
 PARAM=$*
 if [ "$PARAM" = "" ]; then

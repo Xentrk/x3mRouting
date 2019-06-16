@@ -1,5 +1,7 @@
 # x3mRouting ~ Selective Routing for Asuswrt-Merlin Firmware
 ## Introduction
+[![Build Status](https://travis-ci.com/Xentrk/x3mRouting.svg?branch=master)](https://travis-ci.com/Xentrk/x3mRouting)
+
 The features of **x3mRouting** include three selective routing methods to choose from:
 
 #### 1. x3mRouting for LAN Clients Method

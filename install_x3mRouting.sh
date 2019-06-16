@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: install_x3mRouting.sh
 # Author: Xentrk
-# Last Updated Date: 16-June-2019
+# Last Updated Date: 3-June-2019
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -14,7 +14,6 @@
 # Code for update code functions inspired by https://github.com/Adamm00 - credit to @Adamm
 # and https://github.com/jackyaz/spdMerlin - credit to Jack Yaz
 ####################################################################################################
-# shellcheck disable=SC2028
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
 logger -t "($(basename "$0"))" "$$ Starting Script Execution ($(if [ -n "$1" ]; then echo "$1"; else echo "menu"; fi))"
 VERSION="1.0.0"
@@ -201,7 +200,7 @@ Update_Version() {
 
   if [ -d "$DIR" ]; then
     for FILE in vpnrouting.sh \
-      updown-client.sh \
+      updown.sh \
       Advanced_OpenVPNClient_Content.asp \
       x3mRouting_client_nvram.sh \
       x3mRouting_client_config.sh \
@@ -219,7 +218,7 @@ Update_Version() {
       if [ -s "$DIR/$FILE" ]; then
         if [ -z "$1" ]; then
           if [ "$FILE" != "vpnrouting.sh" ]; then
-            if [ "$FILE" != "updown-client.sh" ]; then
+            if [ "$FILE" != "updown.sh" ]; then
               if [ "$FILE" != "Advanced_OpenVPNClient_Content.asp" ]; then
                 # force_update="false"
                 localver=$(grep "VERSION=" "$DIR/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
@@ -245,7 +244,7 @@ Update_Version() {
         case "$1" in
         force)
           serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE 'v[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
-          printf 'Downloading latest version %s of %s\n' "$serverver" "$FILE"
+          printf 'Downloading latest version ($serverver) of $FILE\n'
           Download_File "$DIR" "$FILE"
           ;;
         esac
@@ -274,11 +273,11 @@ Remove_Existing_Installation() {
   Chk_Entware jq 1
   if [ "$READY" -eq "0" ]; then
     echo "Existing jq package found. Removing jq"
-    if opkg remove jq; then
-      echo "jq successfully removed"
-    else
-      echo "Error occurred when removing jq"
-    fi
+      if opkg remove jq; then
+        echo "jq successfully removed"
+      else
+        echo "Error occurred when removing jq"
+      fi
   fi
 
   # Remove entries from /jffs/scripts/init-start
@@ -291,22 +290,13 @@ Remove_Existing_Installation() {
       fi
     done
   fi
-
-  # Remove entry from /jffs/scripts/openvpn-event
-  if [ -s "/jffs/scripts/openvpn-event" ]; then # file exists
-      PARM="sh $LOCAL_REPO/openvpn-event"
-      if grep -q "$PARM" "/jffs/scripts/openvpn-event"; then # see if line exists
-        sed -i "\\~$PARM~d" "/jffs/scripts/openvpn-event"
-        echo "$PARM entry removed from /jffs/scripts/openvpn-event"
-        echo "You can manaully delete /jffs/scripts/openvpn-event if you no longer require it"
-      fi
-  fi
+  # TBD - ckeck if only the she-bang exists and del file it it does
 
   if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ]; then
     umount /usr/sbin/vpnrouting.sh
   fi
-  if [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ]; then
-    umount /usr/sbin/updown-client.sh
+  if [ "$(df | grep -c "/usr/sbin/updown.sh")" -eq 1 ]; then
+    umount /usr/sbin/updown.sh
   fi
   if [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ]; then
     umount /www/Advanced_OpenVPNClient_Content.asp
@@ -315,7 +305,7 @@ Remove_Existing_Installation() {
   # Purge /jffs/scripts/x3mRouting directory
   for DIR in $LOCAL_REPO; do
     if [ -d "$DIR" ]; then
-      if ! rm -rf "${DIR:?}/"* >/dev/null 2>&1; then
+      if ! rm -rf "$DIR"/* >/dev/null 2>&1; then
         printf '\nNo files found to remove in %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
       fi
       if ! rmdir "$DIR" >/dev/null 2>&1; then
@@ -407,6 +397,7 @@ Download_File() {
   fi
 }
 
+
 Exit_Message() {
 
   printf '\n   %bhttps://github.com/Xentrk/Stubby-Installer-Asuswrt-Merlin%b\n' "$COLOR_GREEN" "$COLOR_WHITE\\n"
@@ -453,7 +444,7 @@ Install_x3mRouting_LAN_Clients() {
   Download_File "$LOCAL_REPO" "x3mRouting_client_nvram.sh"
   Download_File "$LOCAL_REPO" "x3mRouting_client_config.sh"
   Download_File "$LOCAL_REPO" "vpnrouting.sh"
-  Download_File "$LOCAL_REPO" "updown-client.sh"
+  Download_File "$LOCAL_REPO" "updown.sh"
   Download_File "$LOCAL_REPO" "mount_files_lan.sh"
   Init_Start_Update "mount_files_lan.sh"
   sh /jffs/scripts/init-start
@@ -471,11 +462,11 @@ Install_x3mRouting_OpenVPN_Event() {
   chmod 0755 "$DIR/$FILE"
   if [ -s /jffs/scripts/openvpn-event ]; then
     if [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" "/jffs/scripts/openvpn-event")" -eq 0 ]; then # see if line exists
-      printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
+      printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >> /jffs/scripts/openvpn-event
     fi
   else
     echo "#!/bin/sh" >/jffs/scripts/openvpn-event
-    printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
+    printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >> /jffs/scripts/openvpn-event
     chmod 0755 /jffs/scripts/openvpn-event
   fi
   echo
@@ -515,19 +506,17 @@ Update_Profile_Add() {
   CONFIG_DIR="$1"
   PROFILE_FILE="$2"
 
-  {
-  echo "liststats () {"
-  echo "  GREEN='\033[0;32m'"
-  echo "  RED='\033[0;31m'"
-  echo "  NC='\033[0m'"
-  echo "  true > /tmp/liststats"
-  echo "  for SETLIST in \$(ipset -L -n); do"
-  echo "   printf '%s - %b%s%b\n' \"\$SETLIST\" \"\$GREEN\" \"\$((\$(ipset -L \"\$SETLIST\" | wc -l) - 8))\" \"\$NC\" >> /tmp/liststats"
-  echo "  done"
-  echo "  cat /tmp/liststats | sort"
-  echo "  rm /tmp/liststats"
-  echo "}"
-  } >>"$CONFIG_DIR/$PROFILE_FILE"
+  echo "liststats () {" >>"$CONFIG_DIR/$PROFILE_FILE"
+  echo "  GREEN='\033[0;32m'" >>"$CONFIG_DIR/$PROFILE_FILE"
+  echo "  RED='\033[0;31m'" >>"$CONFIG_DIR/$PROFILE_FILE"
+  echo "  NC='\033[0m'" >>"$CONFIG_DIR/$PROFILE_FILE"
+  echo "  true > /tmp/liststats" >>"$CONFIG_DIR/$PROFILE_FILE"
+  echo "  for SETLIST in \$(ipset -L -n); do" >>"$CONFIG_DIR/$PROFILE_FILE"
+  echo "    printf '%s - %b%s%b\n' \"\$SETLIST\" \"\$GREEN\" \"\$((\$(ipset -L \"\$SETLIST\" | wc -l) - 8))\" \"\$NC\" >> /tmp/liststats" >>"$CONFIG_DIR/$PROFILE_FILE"
+  echo "  done" >>"$CONFIG_DIR/$PROFILE_FILE"
+  echo "  cat /tmp/liststats | sort" >>"$CONFIG_DIR/$PROFILE_FILE"
+  echo "  rm /tmp/liststats" >>"$CONFIG_DIR/$PROFILE_FILE"
+  echo "}" >>"$CONFIG_DIR/$PROFILE_FILE"
 }
 
 Check_Profile_Add() {
@@ -558,7 +547,7 @@ Install_x3mRouting_GUI() {
   Check_Requirements
   Create_Project_Directory
   Download_File "$LOCAL_REPO" "vpnrouting.sh"
-  Download_File "$LOCAL_REPO" "updown-client.sh"
+  Download_File "$LOCAL_REPO" "updown.sh"
   Download_File "$LOCAL_REPO" "Advanced_OpenVPNClient_Content.asp"
   Download_File "$LOCAL_REPO" "load_MANUAL_ipset.sh"
   Download_File "$LOCAL_REPO" "load_ASN_ipset.sh"
@@ -607,8 +596,8 @@ Update_Installer() {
     1)
       Download_File /jffs/scripts install_x3mRouting.sh
       printf '\nUpdate Complete! %s\n' "$remotemd5"
-      #sh /jffs/scripts/install_x3mRouting.sh
-      Welcome_Message
+      sh /jffs/scripts/install_x3mRouting.sh
+      #Welcome_Message
       break
       ;;
     2)
@@ -622,8 +611,8 @@ Update_Installer() {
   done
 }
 
-Local_DNS() {
-  if [ -n "$(nvram get dns_local_cache)" ] && [ "$(nvram get dns_local_cache)" != "1" ]; then
+Local_DNS () {
+  if [ -n "$(nvram get dns_local_cache)" ] && [ "$(nvram get dns_local_cache)" != "1" ];  then
     nvram set dns_local_cache="1"
     nvram commit
   elif [ -n "$(nvram get dns_local)" ] && [ "$(nvram get dns_local)" != "1" ]; then

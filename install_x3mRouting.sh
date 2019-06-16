@@ -201,7 +201,7 @@ Update_Version() {
 
   if [ -d "$DIR" ]; then
     for FILE in vpnrouting.sh \
-      updown.sh \
+      updown-client.sh \
       Advanced_OpenVPNClient_Content.asp \
       x3mRouting_client_nvram.sh \
       x3mRouting_client_config.sh \
@@ -219,7 +219,7 @@ Update_Version() {
       if [ -s "$DIR/$FILE" ]; then
         if [ -z "$1" ]; then
           if [ "$FILE" != "vpnrouting.sh" ]; then
-            if [ "$FILE" != "updown.sh" ]; then
+            if [ "$FILE" != "updown-client.sh" ]; then
               if [ "$FILE" != "Advanced_OpenVPNClient_Content.asp" ]; then
                 # force_update="false"
                 localver=$(grep "VERSION=" "$DIR/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
@@ -296,8 +296,8 @@ Remove_Existing_Installation() {
   if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ]; then
     umount /usr/sbin/vpnrouting.sh
   fi
-  if [ "$(df | grep -c "/usr/sbin/updown.sh")" -eq 1 ]; then
-    umount /usr/sbin/updown.sh
+  if [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ]; then
+    umount /usr/sbin/updown-client.sh
   fi
   if [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ]; then
     umount /www/Advanced_OpenVPNClient_Content.asp
@@ -445,7 +445,7 @@ Install_x3mRouting_LAN_Clients() {
   Download_File "$LOCAL_REPO" "x3mRouting_client_nvram.sh"
   Download_File "$LOCAL_REPO" "x3mRouting_client_config.sh"
   Download_File "$LOCAL_REPO" "vpnrouting.sh"
-  Download_File "$LOCAL_REPO" "updown.sh"
+  Download_File "$LOCAL_REPO" "updown-client.sh"
   Download_File "$LOCAL_REPO" "mount_files_lan.sh"
   Init_Start_Update "mount_files_lan.sh"
   sh /jffs/scripts/init-start
@@ -550,7 +550,7 @@ Install_x3mRouting_GUI() {
   Check_Requirements
   Create_Project_Directory
   Download_File "$LOCAL_REPO" "vpnrouting.sh"
-  Download_File "$LOCAL_REPO" "updown.sh"
+  Download_File "$LOCAL_REPO" "updown-client.sh"
   Download_File "$LOCAL_REPO" "Advanced_OpenVPNClient_Content.asp"
   Download_File "$LOCAL_REPO" "load_MANUAL_ipset.sh"
   Download_File "$LOCAL_REPO" "load_ASN_ipset.sh"

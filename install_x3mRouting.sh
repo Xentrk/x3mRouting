@@ -306,7 +306,7 @@ Remove_Existing_Installation() {
   # Purge /jffs/scripts/x3mRouting directory
   for DIR in $LOCAL_REPO; do
     if [ -d "$DIR" ]; then
-      if ! rm -rf "$DIR"/* >/dev/null 2>&1; then
+      if ! rm -rf "${DIR:?}/"* >/dev/null 2>&1; then
         printf '\nNo files found to remove in %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
       fi
       if ! rmdir "$DIR" >/dev/null 2>&1; then

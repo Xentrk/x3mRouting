@@ -98,6 +98,7 @@ Main_Menu() {
     ;;
   e)
     Exit_Message
+    break
     ;;
   *)
     printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu1" "$COLOR_WHITE"

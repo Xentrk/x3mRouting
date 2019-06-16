@@ -15,6 +15,7 @@
 # and https://github.com/jackyaz/spdMerlin - credit to Jack Yaz
 ####################################################################################################
 # shellcheck disable=SC2028
+set -x
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
 logger -t "($(basename "$0"))" "$$ Starting Script Execution ($(if [ -n "$1" ]; then echo "$1"; else echo "menu"; fi))"
 VERSION="1.0.0"
@@ -98,7 +99,6 @@ Main_Menu() {
     ;;
   e)
     Exit_Message
-    break
     ;;
   *)
     printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu1" "$COLOR_WHITE"
@@ -403,7 +403,7 @@ Exit_Message() {
   printf '    \ \/ / |_  | %b %b \  __|/ _ \| |/ /   /  _//    \| %b %b \ \n' "\`" "\`" "\`" "\`"
   printf '     /  /  __| | | | |  |_ | __/|   <   (  (_ | [] || | | |  \n'
   printf '    /_/\_\|___ |_|_|_|\___|\___||_|\_\[] \___\\\____/|_|_|_| \n\n\n'
-  exit 0
+  exit
 }
 
 Init_Start_Update() {

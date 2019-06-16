@@ -14,6 +14,7 @@
 # Code for update code functions inspired by https://github.com/Adamm00 - credit to @Adamm
 # and https://github.com/jackyaz/spdMerlin - credit to Jack Yaz
 ####################################################################################################
+# shellcheck disable=SC2028
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
 logger -t "($(basename "$0"))" "$$ Starting Script Execution ($(if [ -n "$1" ]; then echo "$1"; else echo "menu"; fi))"
 VERSION="1.0.0"
@@ -244,7 +245,7 @@ Update_Version() {
         case "$1" in
         force)
           serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE 'v[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
-          printf 'Downloading latest version ($serverver) of $FILE\n'
+          echo "Downloading latest version $serverver of $FILE"
           Download_File "$DIR" "$FILE"
           ;;
         esac
@@ -506,17 +507,19 @@ Update_Profile_Add() {
   CONFIG_DIR="$1"
   PROFILE_FILE="$2"
 
-  echo "liststats () {" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  GREEN='\033[0;32m'" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  RED='\033[0;31m'" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  NC='\033[0m'" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  true > /tmp/liststats" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  for SETLIST in \$(ipset -L -n); do" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "    printf '%s - %b%s%b\n' \"\$SETLIST\" \"\$GREEN\" \"\$((\$(ipset -L \"\$SETLIST\" | wc -l) - 8))\" \"\$NC\" >> /tmp/liststats" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  done" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  cat /tmp/liststats | sort" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "  rm /tmp/liststats" >>"$CONFIG_DIR/$PROFILE_FILE"
-  echo "}" >>"$CONFIG_DIR/$PROFILE_FILE"
+  {
+  echo "liststats () {"
+  echo "  GREEN='\033[0;32m'"
+  echo "  RED='\033[0;31m'"
+  echo "  NC='\033[0m'"
+  echo "  true > /tmp/liststats"
+  echo "  for SETLIST in \$(ipset -L -n); do"
+  echo "   printf '%s - %b%s%b\n' \"\$SETLIST\" \"\$GREEN\" \"\$((\$(ipset -L \"\$SETLIST\" | wc -l) - 8))\" \"\$NC\" >> /tmp/liststats"
+  echo "  done"
+  echo "  cat /tmp/liststats | sort"
+  echo "  rm /tmp/liststats"
+  echo "}"
+  } >>"$CONFIG_DIR/$PROFILE_FILE"
 }
 
 Check_Profile_Add() {

@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: install_x3mRouting.sh
 # Author: Xentrk
-# Last Updated Date: 9-June-2019
+# Last Updated Date: 16-June-2019
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -498,7 +498,6 @@ Update_Profile_Add() {
 
   CONFIG_DIR="$1"
   PROFILE_FILE="$2"
-  PRINTF="printf"
 
   {
   echo "liststats () {"
@@ -507,7 +506,7 @@ Update_Profile_Add() {
   echo "  NC='\033[0m'"
   echo "  true > /tmp/liststats"
   echo "  for SETLIST in \$(ipset -L -n); do"
-  echo "    $PRINTF '%s - %b%s%b\n' \"\$SETLIST\" \"\$GREEN\" \"\$((\$(ipset -L \"\$SETLIST\" | wc -l) - 8))\" \"\$NC\" >> /tmp/liststats"
+  echo "   printf '%s - %b%s%b\n' \"\$SETLIST\" \"\$GREEN\" \"\$((\$(ipset -L \"\$SETLIST\" | wc -l) - 8))\" \"\$NC\" >> /tmp/liststats"
   echo "  done"
   echo "  cat /tmp/liststats | sort"
   echo "  rm /tmp/liststats"

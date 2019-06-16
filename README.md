@@ -1,4 +1,7 @@
 # x3mRouting ~ Selective Routing for Asuswrt-Merlin Firmware
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/eecd42499e2446819b1f6f80c6a55d50)](https://app.codacy.com/app/Xentrk/x3mRouting?utm_source=github.com&utm_medium=referral&utm_content=Xentrk/x3mRouting&utm_campaign=Badge_Grade_Dashboard)
+
 ## Introduction
 The features of **x3mRouting** include three selective routing methods to choose from:
 

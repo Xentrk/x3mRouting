@@ -607,8 +607,8 @@ Update_Installer() {
     1)
       Download_File /jffs/scripts install_x3mRouting.sh
       printf '\nUpdate Complete! %s\n' "$remotemd5"
-      sh /jffs/scripts/install_x3mRouting.sh
-      #Welcome_Message
+      #sh /jffs/scripts/install_x3mRouting.sh
+      Welcome_Message
       break
       ;;
     2)

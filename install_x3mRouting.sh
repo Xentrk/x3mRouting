@@ -74,39 +74,39 @@ Main_Menu() {
   case "$menu1" in
   1)
     Install_x3mRouting_LAN_Clients
-    break
+    return 1
     ;;
   2)
     Install_x3mRouting_GUI
-    break
+    return 1
     ;;
   3)
     Install_x3mRouting_Shell_Scripts
-    break
+    return 1
     ;;
   4)
     Install_x3mRouting_OpenVPN_Event
-    break
+    return 1
     ;;
   5)
     Confirm_Update
-    break
+    return 1
     ;;
   6)
     Confirm_Update force
-    break
+    return 1
     ;;
   7)
     Validate_Removal
-    break
+    return 1
     ;;
   8)
     Update_Installer
-    break
+    return 1
     ;;
   e)
     Exit_Message
-    break
+    return 1
     ;;
   *)
     printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu1" "$COLOR_WHITE"

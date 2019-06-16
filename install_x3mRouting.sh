@@ -95,10 +95,10 @@ Main_Menu() {
     ;;
   8)
     Update_Installer
-    return
     ;;
   e)
     Exit_Message
+    exit 0
     ;;
   *)
     printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu1" "$COLOR_WHITE"

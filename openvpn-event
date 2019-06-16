@@ -11,6 +11,7 @@
 #   Modified by Xentrk for x3mRouting project
 ############################################################################################################
 # shellcheck disable=SC2154
+# shellcheck disable=SC2034
 PROJECT_REPO="/jffs/scripts/x3mRouting"
 
 scr_name="$(basename "$0")[$$]"

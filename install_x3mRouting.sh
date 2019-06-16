@@ -14,6 +14,7 @@
 # Code for update code functions inspired by https://github.com/Adamm00 - credit to @Adamm
 # and https://github.com/jackyaz/spdMerlin - credit to Jack Yaz
 ####################################################################################################
+# shellcheck disable=SC2028
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
 logger -t "($(basename "$0"))" "$$ Starting Script Execution ($(if [ -n "$1" ]; then echo "$1"; else echo "menu"; fi))"
 VERSION="1.0.0"

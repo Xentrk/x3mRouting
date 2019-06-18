@@ -1,5 +1,9 @@
 #!/bin/sh
 # shellcheck disable=SC2154
+# shellcheck disable=SC2019
+# ^-- SC2019: Use '[:upper:]' to support accents and foreign alphabets.
+# shellcheck disable=SC2018
+# ^-- SC2018: Use '[:lower:]' to support accents and foreign alphabets.
 
 PARAM=$*
 if [ "$PARAM" = "" ]; then
@@ -9,7 +13,7 @@ fi
 
 my_logger() {
   if [ "$VPN_LOGGING" -gt "3" ]; then
-    /usr/bin/logger -st "($(basename "$0"))" "$1"
+    /usr/bin/logger -t "openvpn-routing" "$1"
   fi
 }
 
@@ -29,7 +33,7 @@ Chk_IPSET_List_Ready() {
       break
     else
       sleep 1
-      logger -st "($(basename "$0"))" $$ "IPSET save/restore file $IPSET_NAME not available - wait time $((MAX_TRIES - TRIES - 1)) secs left"
+      logger -st "($(basename "$0"))" $$ "IPSET save/restore file $IPSET_NAME not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
       TRIES=$((TRIES + 1))
     fi
   done
@@ -97,11 +101,11 @@ create_client_list() {
     ################################## Martineau Hack process IPSET Lists
     if echo "$TARGET_ROUTE" | grep -oE "SRC|DST|^D|^S"; then
 
-      IPSET_NAME=$DESC
+      IPSET_NAME="$DESC"
 
       # Allow for 2-dimension and 3-dimension IPSETs.....
       case "$TARGET_ROUTE" in # TBA review static 'case' with a regexp? ;-)
-      SRC | DST) DIM=$(echo "$TARGET_ROUTE" | tr '[:upper:]' '[:lower:]') ;;
+      SRC | DST) DIM=$(echo "$TARGET_ROUTE" | tr 'A-Z' 'a-z') ;;
       *) case $TARGET_ROUTE in
         DD) DIM="dst,dst" ;;
         SS) DIM="src,src" ;;
@@ -120,7 +124,7 @@ create_client_list() {
 
       LAN_IP=$(nvram get lan_ipaddr)
       DEST_IP="$VPN_IP"
-      SRC=""
+      SRC=
 
       lanip_oct1=$(echo "$LAN_IP" | cut -d "." -f1)
       lanip_oct2=$(echo "$LAN_IP" | cut -d "." -f2)
@@ -148,9 +152,34 @@ create_client_list() {
 
       Chk_IPSET_List_Ready "$IPSET_NAME"
 
+      ############################# Create ip rule fwmark/bitmask for OpenVPN Client Table
+      case "${VPN_UNIT}" in
+      1)
+        FWMARK=0x1000/0x1000
+        PRIO=9995
+        ;;
+      2)
+        FWMARK=0x2000/0x2000
+        PRIO=9994
+        ;;
+      3)
+        FWMARK=0x4000/0x4000
+        PRIO=9993
+        ;;
+      4)
+        FWMARK=0x7000/0x7000
+        PRIO=9992
+        ;;
+      5)
+        FWMARK=0x3000/0x3000
+        PRIO=9991
+        ;;
+      esac
+
       if [ "$READY" -eq 0 ]; then
-        iptables -t mangle -D PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" $DIM -j MARK --set-mark "$FWMARK" 2>/dev/null
-        iptables -t mangle -A PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" $DIM -j MARK --set-mark "$FWMARK" 2>/dev/null
+        logger -st "($(basename "$0"))" $$ "Debugger VARS-> SRC:$SRC IPSET_NAME:$IPSET_NAME DIM:$DIM FWMARK:$FWMARK"
+        iptables -t mangle -D PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" "$DIM" -j MARK --set-mark "$FWMARK" 2>/dev/null
+        iptables -t mangle -A PREROUTING $SRC -i br0 -m set --match-set "$IPSET_NAME" $DIM -j MARK --set-mark "$FWMARK" 2>/dev/null
         logger -st "($(basename "$0"))" $$ "Routing rules created for IPSET list $IPSET_NAME"
       else
         logger -st "($(basename "$0"))" $$ "IPSET save/restore file for IPSET list $IPSET_NAME not available. Unable to create routing rule."
@@ -169,30 +198,6 @@ create_client_list() {
     ip rule add from 0/0 fwmark 0x8000/0x8000 table 254 prio 9990
     logger -st "($(basename "$0"))" $$ "x3mRouting Adding WAN0 RPDB fwmark rule 0x8000/0x8000 prio 9990"
   fi
-
-  ############################# Create ip rule fwmark/bitmask for OpenVPN Client Table
-  case "${VPN_UNIT}" in
-  1)
-    FWMARK=0x1000/0x1000
-    PRIO=9995
-    ;;
-  2)
-    FWMARK=0x2000/0x2000
-    PRIO=9994
-    ;;
-  3)
-    FWMARK=0x4000/0x4000
-    PRIO=9993
-    ;;
-  4)
-    FWMARK=0x7000/0x7000
-    PRIO=9992
-    ;;
-  5)
-    FWMARK=0x3000/0x3000
-    PRIO=9991
-    ;;
-  esac
 
   if [ "$(ip rule | grep -c "from all fwmark $FWMARK")" -eq "0" ]; then
     ip rule add from 0/0 fwmark "$FWMARK" table "11${VPN_UNIT}" prio "$PRIO"
@@ -239,7 +244,7 @@ purge_client_list() {
 
 run_custom_script() {
   if [ -f /jffs/scripts/openvpn-event ]; then
-    my_loggger "Running /jffs/scripts/openvpn-event (args: $PARAM)"
+    /usr/bin/logger -t "custom_script" "Running /jffs/scripts/openvpn-event (args: $PARAM)"
     /bin/sh /jffs/scripts/openvpn-event "$PARAM"
   fi
 }
@@ -331,7 +336,7 @@ else
   exit 0
 fi
 
-VPN_TBL=ovpnc"$VPN_UNIT"
+VPN_TBL="ovpnc"$VPN_UNIT
 START_PRIO=$((10000 + (200 * (VPN_UNIT - 1))))
 END_PRIO=$((START_PRIO + 199))
 WAN_PRIO=$START_PRIO
@@ -341,18 +346,19 @@ export VPN_GW VPN_IP VPN_TBL VPN_FORCE
 
 # webui reports that vpn_force changed while vpn client was down
 if [ "$script_type" = "rmupdate" ]; then
+  #logger "..script_type=> rmupdate"
   my_logger "Refreshing policy rules for client $VPN_UNIT"
   purge_client_list
 
   if [ "$VPN_FORCE" = "1" ] && [ "$VPN_REDIR" -ge "2" ]; then
     init_table
     my_logger "Tunnel down - VPN client access blocked"
-    ip route del default table $VPN_TBL
-    ip route add prohibit default table $VPN_TBL
+    ip route del default table "$VPN_TBL"
+    ip route add prohibit default table "$VPN_TBL"
     create_client_list
   else
     my_logger "Allow WAN access to all VPN clients"
-    ip route flush table $VPN_TBL
+    ip route flush table "$VPN_TBL"
   fi
   ip route flush cache
   exit 0
@@ -364,13 +370,13 @@ if [ "$script_type" = "route-up" ] && [ "$VPN_REDIR" -lt "2" ]; then
   exit 0
 fi
 
-my_logger "Configuring policy rules for client $VPN_UNIT"
+/usr/bin/logger -t "openvpn-routing" "Configuring policy rules for client $VPN_UNIT"
 
 if [ "$script_type" = "route-pre-down" ]; then
   purge_client_list
 
   if [ "$VPN_FORCE" = "1" ] && [ "$VPN_REDIR" -ge "2" ]; then
-    /my_logger "Tunnel down - VPN client access blocked"
+    /usr/bin/logger -t "openvpn-routing" "Tunnel down - VPN client access blocked"
     ip route change prohibit default table "$VPN_TBL"
     create_client_list
   else
@@ -383,7 +389,7 @@ if [ "$script_type" = "route-up" ]; then
   init_table
 
   # Delete existing VPN routes that were pushed by server on table main
-  NET_LIST=$(ip route show | awk '$2="via" && $3=ENVIRON["route_vpn_gateway"] && $4="dev" && $5=ENVIRON["dev"] {print $1}')
+  NET_LIST=$(ip route show | awk '$2="via" && $3=ENVIRON[ "route_vpn_gateway" ] && $4="dev" && $5=ENVIRON[ "dev" ] {print $1}')
   for NET in $NET_LIST; do
     ip route del "$NET" dev "$dev"
     my_logger "Removing route for $NET to $dev from main routing table"
@@ -396,13 +402,13 @@ if [ "$script_type" = "route-up" ]; then
   # Setup table default route
   if [ "$VPN_IP_LIST" != "" ]; then
     if [ "$VPN_FORCE" = "1" ]; then
-      my_logger "Tunnel re-established, restoring WAN access to clients"
+      /usr/bin/logger -t "openvpn-routing" "Tunnel re-established, restoring WAN access to clients"
     fi
     if [ "$route_net_gateway" != "" ]; then
-      ip route del default table $VPN_TBL
-      ip route add default via "$route_vpn_gateway" table $VPN_TBL
+      ip route del default table "$VPN_TBL"
+      ip route add default via "$route_vpn_gateway" table "$VPN_TBL"
     else
-      my_logger "WARNING: no VPN gateway provided, routing might not work properly!"
+      /usr/bin/logger -t "openvpn-routing" "WARNING: no VPN gateway provided, routing might not work properly!"
     fi
   fi
 

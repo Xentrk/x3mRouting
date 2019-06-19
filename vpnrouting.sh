@@ -1,5 +1,6 @@
 #!/bin/sh
 # shellcheck disable=SC2154
+# SC2154: dev is referenced but not assigned. (stay true to firmware for these warnings!)
 # shellcheck disable=SC2019
 # ^-- SC2019: Use '[:upper:]' to support accents and foreign alphabets.
 # shellcheck disable=SC2018
@@ -124,7 +125,7 @@ create_client_list() {
 
       LAN_IP=$(nvram get lan_ipaddr)
       DEST_IP="$VPN_IP"
-      SRC=
+      SRC="-s 0.0.0.0/0"
 
       lanip_oct1=$(echo "$LAN_IP" | cut -d "." -f1)
       lanip_oct2=$(echo "$LAN_IP" | cut -d "." -f2)
@@ -152,7 +153,6 @@ create_client_list() {
 
       Chk_IPSET_List_Ready "$IPSET_NAME"
 
-      ############################# Create ip rule fwmark/bitmask for OpenVPN Client Table
       case "${VPN_UNIT}" in
       1)
         FWMARK=0x1000/0x1000
@@ -179,7 +179,7 @@ create_client_list() {
       if [ "$READY" -eq 0 ]; then
         logger -st "($(basename "$0"))" $$ "Debugger VARS-> SRC:$SRC IPSET_NAME:$IPSET_NAME DIM:$DIM FWMARK:$FWMARK"
         iptables -t mangle -D PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" "$DIM" -j MARK --set-mark "$FWMARK" 2>/dev/null
-        iptables -t mangle -A PREROUTING $SRC -i br0 -m set --match-set "$IPSET_NAME" $DIM -j MARK --set-mark "$FWMARK" 2>/dev/null
+        iptables -t mangle -A PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" "$DIM" -j MARK --set-mark "$FWMARK" 2>/dev/null
         logger -st "($(basename "$0"))" $$ "Routing rules created for IPSET list $IPSET_NAME"
       else
         logger -st "($(basename "$0"))" $$ "IPSET save/restore file for IPSET list $IPSET_NAME not available. Unable to create routing rule."
@@ -198,6 +198,30 @@ create_client_list() {
     ip rule add from 0/0 fwmark 0x8000/0x8000 table 254 prio 9990
     logger -st "($(basename "$0"))" $$ "x3mRouting Adding WAN0 RPDB fwmark rule 0x8000/0x8000 prio 9990"
   fi
+
+  ############################# Create ip rule fwmark/bitmask for OpenVPN Client Table
+  case "${VPN_UNIT}" in
+  1)
+    FWMARK=0x1000/0x1000
+    PRIO=9995
+    ;;
+  2)
+    FWMARK=0x2000/0x2000
+    PRIO=9994
+    ;;
+  3)
+    FWMARK=0x4000/0x4000
+    PRIO=9993
+    ;;
+  4)
+    FWMARK=0x7000/0x7000
+    PRIO=9992
+    ;;
+  5)
+    FWMARK=0x3000/0x3000
+    PRIO=9991
+    ;;
+  esac
 
   if [ "$(ip rule | grep -c "from all fwmark $FWMARK")" -eq "0" ]; then
     ip rule add from 0/0 fwmark "$FWMARK" table "11${VPN_UNIT}" prio "$PRIO"
@@ -336,7 +360,7 @@ else
   exit 0
 fi
 
-VPN_TBL="ovpnc"$VPN_UNIT
+VPN_TBL="ovpnc${VPN_UNIT}"
 START_PRIO=$((10000 + (200 * (VPN_UNIT - 1))))
 END_PRIO=$((START_PRIO + 199))
 WAN_PRIO=$START_PRIO
@@ -377,7 +401,7 @@ if [ "$script_type" = "route-pre-down" ]; then
 
   if [ "$VPN_FORCE" = "1" ] && [ "$VPN_REDIR" -ge "2" ]; then
     /usr/bin/logger -t "openvpn-routing" "Tunnel down - VPN client access blocked"
-    ip route change prohibit default table "$VPN_TBL"
+    ip route change prohibit default table"$VPN_TBL"
     create_client_list
   else
     ip route flush table "$VPN_TBL"
@@ -389,7 +413,7 @@ if [ "$script_type" = "route-up" ]; then
   init_table
 
   # Delete existing VPN routes that were pushed by server on table main
-  NET_LIST=$(ip route show | awk '$2="via" && $3=ENVIRON[ "route_vpn_gateway" ] && $4="dev" && $5=ENVIRON[ "dev" ] {print $1}')
+  NET_LIST=$(ip route show|awk '$2=="via" && $3==ENVIRON["route_vpn_gateway"] && $4=="dev" && $5==ENVIRON["dev"] {print $1}')
   for NET in $NET_LIST; do
     ip route del "$NET" dev "$dev"
     my_logger "Removing route for $NET to $dev from main routing table"

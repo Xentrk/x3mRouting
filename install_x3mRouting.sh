@@ -218,7 +218,7 @@ Update_Version() {
       openvpn-event; do
       if [ -s "$DIR/$FILE" ]; then
         if [ -z "$1" ]; then
-          if [ "$FILE" != "openvpn-event.sh" ]; then
+          if [ "$FILE" != "openvpn-event" ]; then
             if [ "$FILE" != "vpnrouting.sh" ]; then
               if [ "$FILE" != "updown-client.sh" ]; then
                 if [ "$FILE" != "Advanced_OpenVPNClient_Content.asp" ]; then

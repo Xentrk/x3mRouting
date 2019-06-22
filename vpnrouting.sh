@@ -1,7 +1,7 @@
 #!/bin/sh
 # shellcheck disable=SC2154
 # SC2154: dev is referenced but not assigned. (stay true to firmware for these warnings!)
-# -- shellcheck disable=SC2019
+# shellcheck disable=SC2019
 # -- SC2019: Use '[:upper:]' to support accents and foreign alphabets.
 # shellcheck disable=SC2018
 # -- SC2018: Use '[:lower:]' to support accents and foreign alphabets.

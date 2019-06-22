@@ -1,10 +1,10 @@
 #!/bin/sh
 # shellcheck disable=SC2154
 # SC2154: dev is referenced but not assigned. (stay true to firmware for these warnings!)
-# shellcheck disable=SC2019
-# ^-- SC2019: Use '[:upper:]' to support accents and foreign alphabets.
+# -- shellcheck disable=SC2019
+# -- SC2019: Use '[:upper:]' to support accents and foreign alphabets.
 # shellcheck disable=SC2018
-# ^-- SC2018: Use '[:lower:]' to support accents and foreign alphabets.
+# -- SC2018: Use '[:lower:]' to support accents and foreign alphabets.
 
 PARAM=$*
 if [ "$PARAM" = "" ]; then
@@ -278,7 +278,7 @@ init_table() {
   ip route flush table "$VPN_TBL"
 
   # Fill it with copy of existing main table
-  if [ "$VPN_REDIR" = "3" ]; then
+  if [ "$VPN_REDIR" -eq 3 ]; then
     LANIFNAME=$(nvram get lan_ifname)
     ip route show table main dev "$LANIFNAME" | while read -r ROUTE; do
       ip route add table "$VPN_TBL" "$ROUTE" dev "$LANIFNAME"
@@ -286,7 +286,7 @@ init_table() {
     ip route show table main dev "$dev" | while read -r ROUTE; do
       ip route add table "$VPN_TBL" "$ROUTE" dev "$dev"
     done
-  elif [ "$VPN_REDIR" = "2" ]; then
+  elif [ "$VPN_REDIR" -eq 2 ]; then
     ip route show table main | while read -r ROUTE; do
       ip route add table "$VPN_TBL" "$ROUTE"
     done
@@ -374,7 +374,7 @@ if [ "$script_type" = "rmupdate" ]; then
   my_logger "Refreshing policy rules for client $VPN_UNIT"
   purge_client_list
 
-  if [ "$VPN_FORCE" = "1" ] && [ "$VPN_REDIR" -ge "2" ]; then
+  if [ "$VPN_FORCE" -eq 1 ] && [ "$VPN_REDIR" -ge 2 ]; then
     init_table
     my_logger "Tunnel down - VPN client access blocked"
     ip route del default table "$VPN_TBL"
@@ -388,7 +388,7 @@ if [ "$script_type" = "rmupdate" ]; then
   exit 0
 fi
 
-if [ "$script_type" = "route-up" ] && [ "$VPN_REDIR" -lt "2" ]; then
+if [ "$script_type" = "route-up" ] && [ "$VPN_REDIR" -lt 2 ]; then
   my_logger "Skipping, client $VPN_UNIT not in routing policy mode"
   run_custom_script
   exit 0
@@ -399,7 +399,7 @@ fi
 if [ "$script_type" = "route-pre-down" ]; then
   purge_client_list
 
-  if [ "$VPN_FORCE" = "1" ] && [ "$VPN_REDIR" -ge "2" ]; then
+  if [ "$VPN_FORCE" -eq 1 ] && [ "$VPN_REDIR" -ge 2 ]; then
     /usr/bin/logger -t "openvpn-routing" "Tunnel down - VPN client access blocked"
     ip route change prohibit default table"$VPN_TBL"
     create_client_list
@@ -413,7 +413,7 @@ if [ "$script_type" = "route-up" ]; then
   init_table
 
   # Delete existing VPN routes that were pushed by server on table main
-  NET_LIST=$(ip route show|awk '$2=="via" && $3==ENVIRON["route_vpn_gateway"] && $4=="dev" && $5==ENVIRON["dev"] {print $1}')
+  NET_LIST=$(ip route show | awk '$2=="via" && $3==ENVIRON["route_vpn_gateway"] && $4=="dev" && $5==ENVIRON["dev"] {print $1}')
   for NET in $NET_LIST; do
     ip route del "$NET" dev "$dev"
     my_logger "Removing route for $NET to $dev from main routing table"
@@ -425,7 +425,7 @@ if [ "$script_type" = "route-up" ]; then
 
   # Setup table default route
   if [ "$VPN_IP_LIST" != "" ]; then
-    if [ "$VPN_FORCE" = "1" ]; then
+    if [ "$VPN_FORCE" -eq 1 ]; then
       /usr/bin/logger -t "openvpn-routing" "Tunnel re-established, restoring WAN access to clients"
     fi
     if [ "$route_net_gateway" != "" ]; then

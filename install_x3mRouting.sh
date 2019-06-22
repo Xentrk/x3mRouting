@@ -218,18 +218,19 @@ Update_Version() {
       openvpn-event; do
       if [ -s "$DIR/$FILE" ]; then
         if [ -z "$1" ]; then
-          if [ "$FILE" != "vpnrouting.sh" ]; then
-            if [ "$FILE" != "updown-client.sh" ]; then
-              if [ "$FILE" != "Advanced_OpenVPNClient_Content.asp" ]; then
-                # force_update="false"
-                localver=$(grep "VERSION=" "$DIR/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
-                #	/usr/sbin/curl -fsL --retry 3 "$SPD_REPO/$SPD_NAME_LOWER.sh" | grep -qF "jackyaz" || { Print_Output "true" "404 error detected - stopping update" "$ERR"; return 1; }
-                serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
-                if [ "$localver" != "$serverver" ]; then
-                  printf 'New version of %b%s%b available - updating to %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
-                  Download_File "$DIR" "$FILE"
-                else
-                  printf 'No new version of %b%s%b to update - latest is %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
+          if [ "$FILE" != "openvpn-event.sh" ]; then
+            if [ "$FILE" != "vpnrouting.sh" ]; then
+              if [ "$FILE" != "updown-client.sh" ]; then
+                if [ "$FILE" != "Advanced_OpenVPNClient_Content.asp" ]; then
+                  # force_update="false"
+                  localver=$(grep "VERSION=" "$DIR/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
+                  serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
+                  if [ "$localver" != "$serverver" ]; then
+                    printf 'New version of %b%s%b available - updating to %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
+                    Download_File "$DIR" "$FILE"
+                  else
+                    printf 'No new version of %b%s%b to update - latest is %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
+                  fi
                 fi
               fi
             fi

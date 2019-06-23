@@ -30,7 +30,7 @@ Copy and paste the command below into an SSH session:
 
       /usr/sbin/curl --retry 3 "https://raw.githubusercontent.com/Xentrk/x3mRouting/master/x3mRouting" -o "/opt/bin/x3mRouting" && chmod 755 /opt/bin/x3mRouting && x3mRouting
 
-This command will download and install the installation script **/jffs/scripts/install_x3mRouting.sh**. The installation script is a menu with options to install the three methods described below and options to update or remove the repository.
+This command will download and install the installation menu **x3mRouting** to the **/opt/bin** directory. The installation script is a menu with options to install the three methods described below and options to update or remove the repository. To access the installation menu, type the command **x3mRouting**.
 
 <img src="https://github.com/Xentrk/x3mRouting/blob/master/InstallationMenu.png" alt="drawing" width="600" height="600"/>
 
@@ -496,7 +496,7 @@ If you use an ad blocker, some domains may require whitelisting for the streamin
     b.scorecardresearch.com
 
 ## x3mRouting Project Code Files
-The installation script **install_x3mRouting.sh** will display a menu with the options to install, update the current installation or remove the project from the router. The following table lists the files that will be downloaded for each method.
+The installation menu **x3mRouting** will display a menu with the options to install, update the current installation or remove the project from the router. The following table lists the files that will be downloaded for each method.
 
 | Script Name   | LAN Clients   |  OpenVPN Client + IPSET Shell Scripts | IPSET Shell Scripts |
 | --- | :---: | :---: | :---: |

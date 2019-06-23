@@ -1,8 +1,8 @@
 #!/bin/sh
 ####################################################################################################
-# Script: install_x3mRouting.sh
+# Script: x3mRouting
 # Author: Xentrk
-# Last Updated Date: 22-June-2019
+# Last Updated Date: 23-June-2019
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -62,10 +62,10 @@ Main_Menu() {
   printf '%b[5]%b = Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[6]%b = Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[7]%b = Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  localmd5="$(md5sum "$0" | awk '{print $1}')"
-  remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/install_x3mRouting.sh" | md5sum | awk '{print $1}')"
+  localmd5="$(md5sum "/opt/bin/x3mRouting" | awk '{print $1}')"
+  remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/x3mRouting" | md5sum | awk '{print $1}')"
   if [ "$localmd5" != "$remotemd5" ]; then
-    printf '%b[8]%b = Update install_x3mRouting.sh\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[8]%b = Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   fi
   printf '\n%b[e]%b = Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '\n%bOption ==>%b ' "${COLOR_GREEN}" "${COLOR_WHITE}"
@@ -313,13 +313,20 @@ Remove_Existing_Installation() {
       if ! rmdir "$DIR" >/dev/null 2>&1; then
         printf '\nError trying to remove %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
       else
-        #rm -rf /jffs/scripts/install_x3mRouting.sh
         printf '\n%b%s%b folder and all files removed\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
       fi
     else
       printf '\n%b%s%b folder does not exist. No directory to remove\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
     fi
   done
+
+  if [ -s "/opt/bin/x3mRouting" ]; then
+    if ! rm "/opt/bin/x3mRouting" >/dev/null 2>&1; then
+      printf '\nError trying to remove %b"/opt/bin/x3mRouting"%b\n' "$COLOR_GREEN"  "$COLOR_WHITE"
+    else
+      printf '\n%b"/opt/bin/x3mRouting"%b menu file removed\n' "$COLOR_GREEN"  "$COLOR_WHITE"
+    fi
+  fi
 
   Exit_Message
 }
@@ -596,9 +603,9 @@ Update_Installer() {
     echo
     case "$menu_Update_Installer" in
     1)
-      Download_File /jffs/scripts install_x3mRouting.sh
+      Download_File /opt/bin x3mRouting
       printf '\nUpdate Complete! %s\n' "$remotemd5"
-      sh /jffs/scripts/install_x3mRouting.sh
+      /opt/bin/x3mRouting
       #Welcome_Message
       break
       ;;

@@ -172,7 +172,7 @@ Usage example:
 
 Create IPSET BBC and auto populate IPs for domain 'bbc.co.uk'
 
-    load_DNSMASQ_ipset_iface.sh BBC bbc.co.uk
+    load_DNSMASQ_ipset.sh BBC bbc.co.uk
 
 Delete IPSET BBC and associated entry in dnsmasq.conf.add:
 
@@ -180,11 +180,11 @@ Delete IPSET BBC and associated entry in dnsmasq.conf.add:
 
 Create IPSET BBC and use the **/mnt/sda1/Backups** directory rather than the default **/opt/tmp** directory for IPSET save/restore location:
 
-    load_DNSMASQ_ipset_iface.sh BBC bbc.co.uk dir=/mnt/sda1/Backups
+    load_DNSMASQ_ipset.sh BBC bbc.co.uk dir=/mnt/sda1/Backups
 
 Create IPSET NETFLIX and auto populate IPs for multiple Netflix domains
 
-    load_DNSMASQ_ipset_iface.sh NETFLIX amazonaws.com,netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
+    load_DNSMASQ_ipset.sh NETFLIX amazonaws.com,netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 
 Create IPSET SKY and extract all matching Top-Level domains containing 'sky.com' from '/opt/var/log/dnsmasq.log'
 
@@ -250,7 +250,7 @@ This script will create an IPSET list from a file containing IPv4 addresses stor
 
 Usage:
 
-    load_MANUAL_ipset.sh {[0|1|2|3|4|5] ipset_name} [del] [dir='directory']
+    load_MANUAL_ipset_iface.sh {[0|1|2|3|4|5] ipset_name} [del] [dir='directory']
 
 Create IPSET BBC via VPN Client 3 and use the default **/opt/tmp** directory as the IPSET save/restore location:
 

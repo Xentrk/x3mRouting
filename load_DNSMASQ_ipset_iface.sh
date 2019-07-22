@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: load_DNSMASQ_ipset_iface.sh
-# VERSION=1.0.0
+# VERSION=1.0.1
 # Author: Martineau, Xentrk
-# Date: 15-June-2019
+# Date: 22-July-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -77,7 +77,7 @@ Chk_Entware() {
 
   # ARGS [wait attempts] [specific_entware_utility]
 
-  READY=1 # Assume Entware Utilities are NOT available
+  READY=1          # Assume Entware Utilities are NOT available
   ENTWARE_UTILITY= # Specific Entware utility to search for
   MAX_TRIES=30
 
@@ -96,22 +96,22 @@ Chk_Entware() {
 
   while [ "$TRIES" -lt "$MAX_TRIES" ]; do
     if [ -f "/opt/bin/opkg" ]; then
-      if [ -n "$ENTWARE_UTILITY" ]; then            # Specific Entware utility installed?
+      if [ -n "$ENTWARE_UTILITY" ]; then # Specific Entware utility installed?
         if [ -n "$(opkg list-installed "$ENTWARE_UTILITY")" ]; then
-          READY="0"                                 # Specific Entware utility found
+          READY="0" # Specific Entware utility found
         else
           # Not all Entware utilities exists as a stand-alone package e.g. 'find' is in package 'findutils'
           if [ -d /opt ] && [ -n "$(find /opt/ -name "$ENTWARE_UTILITY")" ]; then
-            READY="0"                               # Specific Entware utility found
+            READY="0" # Specific Entware utility found
           fi
         fi
       else
-        READY="0"                                     # Entware utilities ready
+        READY="0" # Entware utilities ready
       fi
       break
     fi
     sleep 1
-    logger -st "($(basename "$0"))" "$$ Entware $ENTWARE_UTILITY not available - wait time $((MAX_TRIES - TRIES-1)) secs left"
+    logger -st "($(basename "$0"))" "$$ Entware $ENTWARE_UTILITY not available - wait time $((MAX_TRIES - TRIES - 1)) secs left"
     TRIES=$((TRIES + 1))
   done
   return "$READY"
@@ -184,12 +184,12 @@ Check_Dnsmasq() {
       echo "ipset=$DNSMASQ_ENTRY" >>/jffs/configs/dnsmasq.conf.add # add 'ipset=' domains entry to dnsmasq.conf.add
     fi
     service restart_dnsmasq >/dev/null 2>&1
-#  else
-#    if [ "$2" != "del" ]; then
-#      printf "ipset=$DNSMASQ_ENTRY\n" >/jffs/configs/dnsmasq.conf.add # dnsmasq.conf.add does not exist, create dnsmasq.conf.add
-#      logger -st "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" added to "'/jffs/configs/dnsmasq.conf.add'"
-#      service restart_dnsmasq >/dev/null 2>&1
-#    fi
+  else
+    if [ "$2" != "del" ]; then
+      printf "ipset=$DNSMASQ_ENTRY\n" >/jffs/configs/dnsmasq.conf.add # dnsmasq.conf.add does not exist, create dnsmasq.conf.add
+      logger -st "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" added to "'/jffs/configs/dnsmasq.conf.add'"
+      service restart_dnsmasq >/dev/null 2>&1
+    fi
   fi
 }
 
@@ -270,12 +270,11 @@ Unlock_Script() {
 
 Error_Exit() {
 
-    error_str="$*"
-    logger -st "($(basename "$0"))" $$ "$error_str"
-    Unlock_Script
-    exit 1
+  error_str="$*"
+  logger -st "($(basename "$0"))" $$ "$error_str"
+  Unlock_Script
+  exit 1
 }
-
 
 #==================== end of functions
 Check_Lock "$@"

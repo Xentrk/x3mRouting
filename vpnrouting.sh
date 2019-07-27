@@ -269,7 +269,7 @@ purge_client_list() {
 run_custom_script() {
   if [ -f /jffs/scripts/openvpn-event ]; then
     /usr/bin/logger -t "custom_script" "Running /jffs/scripts/openvpn-event (args: $PARAM)"
-    /bin/sh /jffs/scripts/openvpn-event "$PARAM"
+    /bin/sh /jffs/scripts/openvpn-event $PARAM
   fi
 }
 

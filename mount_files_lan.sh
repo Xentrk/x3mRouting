@@ -3,7 +3,7 @@
 # Script: mount_files_ipset.sh
 # VERSION=1.0.0
 # Author: Xentrk
-# Date: 16-June-2019
+# Date: 27-Julu-2019
 #
 # Grateful:
 # Thank you to @Martineau on snbforums.com for educating myself and others on Selective
@@ -21,7 +21,7 @@ logger -t "($(basename "$0"))" $$ Starting Script Execution
 if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 0 ]; then
   mount -o bind /jffs/scripts/x3mRouting/vpnrouting.sh /usr/sbin/vpnrouting.sh
 fi
-if [ "$(df | grep -c "/usr/sbin/updown.sh")" -eq 0 ]; then
+if [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 0 ]; then
   mount -o bind /jffs/scripts/x3mRouting/updown-client.sh /usr/sbin/updown-client.sh
 fi
 

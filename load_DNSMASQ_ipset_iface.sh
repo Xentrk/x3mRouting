@@ -3,7 +3,7 @@
 # Script: load_DNSMASQ_ipset_iface.sh
 # VERSION=1.0.1
 # Author: Martineau, Xentrk
-# Date: 22-July-2019
+# Date: 28-July-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -186,8 +186,8 @@ Check_Dnsmasq() {
     service restart_dnsmasq >/dev/null 2>&1
   else
     if [ "$2" != "del" ]; then
-      printf "ipset=$DNSMASQ_ENTRY\n" >/jffs/configs/dnsmasq.conf.add # dnsmasq.conf.add does not exist, create dnsmasq.conf.add
-      logger -st "($(basename "$0"))" $$ "'"ipset=$DNSMASQ_ENTRY"'" added to "'/jffs/configs/dnsmasq.conf.add'"
+      printf 'ipset=%s\n' "$DNSMASQ_ENTRY" >/jffs/configs/dnsmasq.conf.add # dnsmasq.conf.add does not exist, create dnsmasq.conf.add
+      logger -st "($(basename "$0"))" $$ "ipset=$DNSMASQ_ENTRY" added to "/jffs/configs/dnsmasq.conf.add"
       service restart_dnsmasq >/dev/null 2>&1
     fi
   fi

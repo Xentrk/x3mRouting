@@ -179,7 +179,7 @@ create_client_list() {
       esac
 
       if [ "$READY" -eq 0 ]; then
-        logger -st "($(basename "$0"))" $$ "Debugger VARS-> SRC:$SRC IPSET_NAME:$IPSET_NAME DIM:$DIM FWMARK:$FWMARK"
+        #logger -st "($(basename "$0"))" $$ "Debugger VARS-> SRC:$SRC IPSET_NAME:$IPSET_NAME DIM:$DIM FWMARK:$FWMARK"
         iptables -t mangle -D PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" "$DIM" -j MARK --set-mark "$FWMARK" 2>/dev/null
         iptables -t mangle -A PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" "$DIM" -j MARK --set-mark "$FWMARK" 2>/dev/null
         logger -st "($(basename "$0"))" $$ "Routing rules created for IPSET list $IPSET_NAME"

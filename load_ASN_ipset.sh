@@ -110,7 +110,7 @@ Chk_Entware() {
 
 #Download ASN ipset list
 
-Downlad_ASN_Ipset_List() {
+Download_ASN_Ipset_List() {
 
   IPSET_NAME=$1
   ASN=$2
@@ -158,7 +158,7 @@ Check_ASN_Ipset_List_Values() {
 
   if [ "$(ipset -L "$IPSET_NAME" 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
     if [ ! -s "$DIR/$IPSET_NAME" ] || [ "$(find "$DIR" -name "$IPSET_NAME" -mtime +1 -print)" = "$DIR/$IPSET_NAME" ]; then
-      Downlad_ASN_Ipset_List "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
+      Download_ASN_Ipset_List "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
     fi
     awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   else

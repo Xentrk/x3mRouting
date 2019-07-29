@@ -22,6 +22,7 @@ Detailed descriptions and usage examples of each method are listed in the **x3mR
 ## Requirements
 1.  An Asus router with  [Asuswrt-Merlin](http://asuswrt.lostrealm.ca/) firmware installed.
 2.  A USB drive with [entware](https://github.com/RMerl/asuswrt-merlin/wiki/Entware) installed. Entware can be installed using [amtm - the SNBForum Asuswrt-Merlin Terminal Menu](https://www.snbforums.com/threads/amtm-the-snbforum-asuswrt-merlin-terminal-menu.42415/)
+3.  Policy Rules (Strict) or Policy Rules enabled on the OpenVPN Client screen.
 
 ## Project Development
 I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media services in developing the project and include them in the usage examples below.

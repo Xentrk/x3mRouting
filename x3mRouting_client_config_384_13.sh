@@ -24,7 +24,7 @@ logger -st "($(basename "$0"))" $$ Starting Script Execution
 
 VERSION="1.0.0"
 GITHUB_URL="https://github.com/Xentrk/x3mRouting"
-CONFIG_FILE="/jffs/configs/x3mRouting_client_rulesTEST"
+CONFIG_FILE="/jffs/configs/x3mRouting_client_rules"
 COLOR_WHITE='\033[0m'
 COLOR_GREEN='\e[0;32m'
 

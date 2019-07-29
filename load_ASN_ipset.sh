@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
-# Script: load_ASN_ipsets_iface.sh
-# VERSION=1.0.0
+# Script: load_ASN_ipset.sh
+# VERSION=1.0.1
 # Authors: Xentrk, Martineau
-# Date: 15-June-2019
+# Date: 29-July-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -110,7 +110,7 @@ Chk_Entware() {
 
 #Download ASN ipset list
 
-Downlad_ASN_Ipset_List() {
+Download_ASN_Ipset_List() {
 
   IPSET_NAME=$1
   ASN=$2

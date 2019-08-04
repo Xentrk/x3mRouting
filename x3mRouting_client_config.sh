@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting_client_config.sh
-# VERSION=1.0.0
+# VERSION=1.0.1
 # Author: Xentrk
-# 21-April-2019
+# 4-August-2019
 #
 #####################################################################################################
 # Description:
@@ -45,15 +45,61 @@ printf '|  /_/\_\|___ |_|_|_|\___|\___||_|\_\[] \___\\\____/|_|_|_|    |\n'
 printf '|                                                             |\n'
 printf '|_____________________________________________________________|\n\n'
 
-# Retrieve Static DHCP assignments; remove < and > symbols and separate fields with a space.
-nvram get dhcp_staticlist | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/my-scripts.$$
+# Retrieve Static DHCP assignments MAC and IP Address; remove < and > symbols and separate fields with a space.
+nvram get dhcp_staticlist | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/staticlist.$$
 
+# Retrieve Static DHCP assignments MAC and hostname; remove < and > symbols and separate fields with a space.
+
+if [ -s /jffs/nvram/dhcp_hostnames ]; then #HND Routers store hostnames in a file
+  awk '1' /jffs/nvram/dhcp_hostnames | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/hostnames.$$
+else
+  nvram get dhcp_hostnames | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/hostnames.$$
+fi
 # count number of fields in the file
-word_count=$(head -1 /tmp/my-scripts.$$ | wc -w)
+word_count_staticlist=$(head -1 /tmp/staticlist.$$ | wc -w)
+word_count_hostnames=$(head -1 /tmp/hostnames.$$ | wc -w)
 
-# count number of static leases. This is the number of loops required to get IP address and client name
-# divide word_count by 3 since client information is listed in groups of 3 fields: MAC_Address, IP_Address and Client_Name
-static_leases_count=$((word_count / 3))
+if [ "$word_count_staticlist" -ne "$word_count_hostnames" ]; then
+  echo "Unexpected error condition dhcp_staticlist and dhcp_hostnames don't match"
+else
+  # count number of static leases. This is the number of loops required to get IP address and client name
+  # divide word_count by 2 since client information is listed in groups of 2 fields: MAC_Address and IP_Address
+  static_leases_count=$((word_count_staticlist / 2))
+fi
+
+# write MAC and IP Addresses for Static DHCP LAN Clients to /tmp/MACIP.$$
+true >/tmp/MACIP.$$
+
+loop_count=1
+MAC=1
+IP=2
+
+while [ "$loop_count" -le "$static_leases_count" ]; do
+  cut -d' ' -f"$MAC","$IP" </tmp/staticlist.$$ >>"/tmp/MACIP.$$"
+  MAC=$((MAC + 2))
+  IP=$((IP + 2))
+  loop_count=$((loop_count + 1))
+done
+
+# write MAC and HOSTNAME for Static DHCP LAN Clients to /tmp/MACHOSTNAMES.$$
+true >/tmp/MACHOSTNAMES.$$
+
+loop_count=1
+MAC=1
+HOSTNAME=2
+
+while [ "$loop_count" -le "$static_leases_count" ]; do
+  cut -d' ' -f"$MAC","$HOSTNAME" </tmp/hostnames.$$ >>"/tmp/MACHOSTNAMES.$$"
+  MAC=$((MAC + 2))
+  HOSTNAME=$((HOSTNAME + 2))
+  loop_count=$((loop_count + 1))
+done
+
+# Join the two files together to form one file containing MAC, IP, HOSTNAME
+awk '
+  NR==FNR { k[$1]=$2; next }
+  { print $0, k[$1] }
+' /tmp/MACHOSTNAMES.$$ /tmp/MACIP.$$ >/tmp/MACIPHOSTNAMES.$$
 
 # Check to see if a prior x3mRouting_rules file exists. Make a backup if it does.
 if [ -s "$CONFIG_FILE" ]; then
@@ -66,25 +112,21 @@ if [ -s "$CONFIG_FILE" ]; then
   fi
 fi
 
-#Write IP address and Client Name to lan_clients
-loop_count=1
-IP=2
-CLIENT=3
-
 # write a new x3mRouting_rules file
 true >"$CONFIG_FILE"
 
-# write Static DHCP LAN Clients to /jffs/scripts/x3mRouting_rules
-while [ "$loop_count" -le "$static_leases_count" ]; do
-  cut -d' ' -f"$IP","$CLIENT" </tmp/my-scripts.$$ >>"$CONFIG_FILE"
-  IP=$((IP + 3))
-  CLIENT=$((CLIENT + 3))
-  loop_count=$((loop_count + 1))
-done
+# write IP and HOSTNAME for Static DHCP LAN Clients to $CONFIG_FILE
+while read -r MAC IP HOSTNAME; do
+  echo "$IP $HOSTNAME" >>$CONFIG_FILE
+done </tmp/MACIPHOSTNAMES.$$
 
 sort "$CONFIG_FILE" -o "$CONFIG_FILE"
 
-rm -rf /tmp/my-scripts.$$
+rm -rf /tmp/staticlist.$$
+rm -rf /tmp/hostnames.$$
+rm -rf /tmp/MACIP.$$
+rm -rf /tmp/MACHOSTNAMES.$$
+rm -rf /tmp/MACIPHOSTNAMES.$$
 
 # Default all lan clients to OVPNC1 interface
 sed -i -e 's/^/1 /' "$CONFIG_FILE"

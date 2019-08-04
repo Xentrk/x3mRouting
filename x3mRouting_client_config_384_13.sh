@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting_client_config_384_13.sh
-# VERSION=1.0.0
+# VERSION=1.0.1
 # Author: Xentrk
-# 29-July-2019
+# 4-August-2019
 #
 #####################################################################################################
 # Description:
@@ -49,8 +49,12 @@ printf '|_____________________________________________________________|\n\n'
 nvram get dhcp_staticlist | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/staticlist.$$
 
 # Retrieve Static DHCP assignments MAC and hostname; remove < and > symbols and separate fields with a space.
-nvram get dhcp_hostnames | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/hostnames.$$
 
+if [ -s /jffs/nvram/dhcp_hostnames ]; then #HND Routers store hostnames in a file
+  awk '1' /jffs/nvram/dhcp_hostnames | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/hostnames.$$
+else
+  nvram get dhcp_hostnames | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/hostnames.$$
+fi
 # count number of fields in the file
 word_count_staticlist=$(head -1 /tmp/staticlist.$$ | wc -w)
 word_count_hostnames=$(head -1 /tmp/hostnames.$$ | wc -w)
@@ -119,6 +123,7 @@ done </tmp/MACIPHOSTNAMES.$$
 sort "$CONFIG_FILE" -o "$CONFIG_FILE"
 
 rm -rf /tmp/staticlist.$$
+rm -rf /tmp/hostnames.$$
 rm -rf /tmp/MACIP.$$
 rm -rf /tmp/MACHOSTNAMES.$$
 rm -rf /tmp/MACIPHOSTNAMES.$$

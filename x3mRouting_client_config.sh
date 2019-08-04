@@ -51,7 +51,7 @@ nvram get dhcp_staticlist | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/staticlist.$$
 # Retrieve Static DHCP assignments MAC and hostname; remove < and > symbols and separate fields with a space.
 
 if [ -s /jffs/nvram/dhcp_hostnames ]; then #HND Routers store hostnames in a file
-  awk '1' /jffs/nvram/dhcp_hostnames | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/hostnames.$$
+  awk '{print $0}' /jffs/nvram/dhcp_hostnames | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/hostnames.$$
 else
   nvram get dhcp_hostnames | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/hostnames.$$
 fi

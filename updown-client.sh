@@ -20,7 +20,7 @@ searchdomains=
 
 create_client_list(){
 	server=$1
-	VPN_IP_LIST="$(nvram get vpn_client$(echo $instance)_clientlist)$(nvram get vpn_client$(echo $instance)_clientlist1)$(nvram get vpn_client$(echo $instance)_clientlist2)$(nvram get vpn_client$(echo $instance)_clientlist3)$(nvram get vpn_client$(echo $instance)_clientlist4)$(nvram get vpn_client$(echo $instance)_clientlist5)"
+  VPN_IP_LIST="$(nvram get vpn_client"$instance"_clientlist)$(nvram get vpn_client"$instance"_clientlist1)$(nvram get vpn_client"$instance"_clientlist2)$(nvram get vpn_client"$instance"_clientlist3)$(nvram get vpn_client"$instance"_clientlist4)$(nvram get vpn_client"$instance"_clientlist5)"
 
  #################### Xentrk: Concatenate custom nvram file in /jffs/configs to nvram vpn_clientx
   if [ -s "/jffs/configs/ovpnc${instance}.nvram" ]; then

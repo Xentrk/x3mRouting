@@ -1,6 +1,10 @@
 #!/bin/sh
 # shellcheck disable=SC2154
 # shellcheck disable=SC2034
+# shellcheck disable=SC2048
+#  : Use "$@" (with quotes) to prevent whitespace problems.
+# shellcheck disable=SC2086
+#  : Double quote to prevent globbing and word splitting.
 /usr/bin/logger -t "($(basename "$0"))" $$ "Starting custom /jffs/scripts/x3mRouting/updown-client.sh script execution"
 
 filedir=/etc/openvpn/dns

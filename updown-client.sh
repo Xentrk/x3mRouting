@@ -92,7 +92,7 @@ then
 	fi
 
 # Extract IPs and search domains; write WINS
-	for optionname in `set | grep "^foreign_option_" | sed "s/^\(.*\)=.*$/\1/g"`
+	for optionname in $(set | grep "^foreign_option_" | sed "s/^\(.*\)=.*$/\1/g")
 	do
 		option=`eval "echo \\$$optionname"`
 		if echo $option | grep "dhcp-option WINS "; then echo $option | sed "s/ WINS /=44,/" >> $conffile; fi

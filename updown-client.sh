@@ -3,7 +3,6 @@
 # shellcheck disable=SC2034
 # shellcheck disable=SC2048
 #  : Use "$@" (with quotes) to prevent whitespace problems.
-# shellcheck disable=SC2086
 #  : Double quote to prevent globbing and word splitting.
 # shellcheck disable=SC2006
 #  : Use $(...) notation instead of legacy backticked `...`.
@@ -46,10 +45,10 @@ create_client_list(){
 			TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 4)
 			if [ "$TARGET_ROUTE" = "VPN" ]
 			then
-				echo /usr/sbin/iptables -t nat -A DNSVPN$instance -s $VPN_IP -j DNAT --to-destination $server >> $dnsscript
+				echo /usr/sbin/iptables -t nat -A DNSVPN"$instance" -s "$VPN_IP" -j DNAT --to-destination "$server" >> "$dnsscript"
 				/usr/bin/logger -t "openvpn-updown" "Forcing $VPN_IP to use DNS server $server"
 			else
-				echo /usr/sbin/iptables -t nat -I DNSVPN$instance -s $VPN_IP -j RETURN >> $dnsscript
+				echo /usr/sbin/iptables -t nat -I DNSVPN"$instance" -s "$VPN_IP" -j RETURN >> "$dnsscript"
 				/usr/bin/logger -t "openvpn-updown" "Excluding $VPN_IP from forced DNS routing"
 			fi
 		fi

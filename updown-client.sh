@@ -67,7 +67,7 @@ run_script_event(){
 
 ### Main
 
-if [ "$instance" = "" ] || [ "$(nvram get vpn_client$(echo $instance)_adns)" -eq 0 ]
+if [ "$instance" = "" ] || [ "$(nvram get vpn_client"$instance"_adns)" -eq 0 ]
 then
 	run_script_event $*
 	exit 0

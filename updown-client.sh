@@ -2,6 +2,7 @@
 # shellcheck disable=SC2154
 # shellcheck disable=SC2034
 # shellcheck disable=SC2048
+# shellcheck disable=SC2086
 #  : Use "$@" (with quotes) to prevent whitespace problems.
 #  : Double quote to prevent globbing and word splitting.
 # shellcheck disable=SC2006

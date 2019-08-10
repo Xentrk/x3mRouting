@@ -8,13 +8,13 @@
 /usr/bin/logger -t "($(basename "$0"))" $$ "Starting custom /jffs/scripts/x3mRouting/updown-client.sh script execution"
 
 filedir=/etc/openvpn/dns
-filebase=$(echo $filedir/$dev | sed 's/\(tun\|tap\)1/client/')
+filebase=$(echo "$filedir/$dev" | sed 's/\(tun\|tap\)1/client/')
 conffile=$filebase\.conf
 resolvfile=$filebase\.resolv
 dnsscript=$(echo /etc/openvpn/fw/"$dev"-dns\.sh | sed 's/\(tun\|tap\)1/client/')
 qosscript=$(echo /etc/openvpn/fw/"$dev"-qos\.sh | sed 's/\(tun\|tap\)1/client/')
 fileexists=
-instance=$(echo $dev | sed "s/tun1//")
+instance=$(echo "$dev" | sed "s/tun1//")
 serverips=
 searchdomains=
 

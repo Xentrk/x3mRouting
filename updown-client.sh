@@ -84,7 +84,7 @@ then
 	echo "#!/bin/sh" >> $dnsscript
 	echo /usr/sbin/iptables -t nat -N DNSVPN$instance >> $dnsscript
 
-	if [ "$(nvram get vpn_client$(echo $instance)_rgw)" -ge 2 ] && [ "$(nvram get vpn_client$(echo $instance)_adns)" -eq 3 ]
+  if [ "$(nvram get vpn_client"$instance"_rgw)" -ge 2 ] && [ "$(nvram get vpn_client"$instance"_adns)" -eq 3 ]
 	then
 		setdns=0
 	else

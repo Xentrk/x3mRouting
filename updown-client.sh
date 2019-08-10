@@ -76,14 +76,14 @@ fi
 
 
 if [ ! -d $filedir ]; then mkdir $filedir; fi
-if [ -f $conffile ]; then rm $conffile; fileexists=1; fi
-if [ -f $resolvfile ]; then rm $resolvfile; fileexists=1; fi
+if [ -f "$conffile" ]; then rm "$conffile"; fileexists=1; fi
+if [ -f "$resolvfile" ]; then rm "$resolvfile"; fileexists=1; fi
 
 if [ "$script_type" = "up" ]
 then
 
-	echo "#!/bin/sh" >> $dnsscript
-	echo /usr/sbin/iptables -t nat -N DNSVPN$instance >> $dnsscript
+	echo "#!/bin/sh" >> "$dnsscript"
+	echo /usr/sbin/iptables -t nat -N DNSVPN"$instance" >> "$dnsscript"
 
   if [ "$(nvram get vpn_client"$instance"_rgw)" -ge 2 ] && [ "$(nvram get vpn_client"$instance"_adns)" -eq 3 ]
 	then
@@ -96,43 +96,43 @@ then
 	for optionname in $(set | grep "^foreign_option_" | sed "s/^\(.*\)=.*$/\1/g")
 	do
 		option=`eval "echo \\$$optionname"`
-		if echo $option | grep "dhcp-option WINS "; then echo $option | sed "s/ WINS /=44,/" >> $conffile; fi
-		if echo $option | grep "dhcp-option DNS"; then serverips="$serverips $(echo $option | sed "s/dhcp-option DNS //")"; fi
-		if echo $option | grep "dhcp-option DOMAIN"; then searchdomains="$searchdomains $(echo $option | sed "s/dhcp-option DOMAIN //")"; fi
+		if echo "$option" | grep "dhcp-option WINS "; then echo "$option" | sed "s/ WINS /=44,/" >> "$conffile"; fi
+		if echo "$option" | grep "dhcp-option DNS"; then serverips="$serverips $(echo "$option" | sed "s/dhcp-option DNS //")"; fi
+		if echo "$option" | grep "dhcp-option DOMAIN"; then searchdomains="$searchdomains $(echo "$option" | sed "s/dhcp-option DOMAIN //")"; fi
 	done
 
 # Write resolv file
 	for server in $serverips
 	do
-		echo "server=$server" >> $resolvfile
+		echo "server=$server" >> "$resolvfile"
 		if [ "$setdns" -eq 0 ]
 		then
-			create_client_list $server
+			create_client_list "$server"
 			setdns=1
 		fi
 		for domain in $searchdomains
 		do
-			echo "server=/$domain/$server" >> $resolvfile
+			echo "server=/$domain/$server" >> "$resolvfile"
 		done
 	done
 
 	if [ "$setdns" -eq 1 ]
 	then
-		echo /usr/sbin/iptables -t nat -I PREROUTING -p udp -m udp --dport 53 -j DNSVPN$instance >> $dnsscript
-		echo /usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN$instance >> $dnsscript
+		echo /usr/sbin/iptables -t nat -I PREROUTING -p udp -m udp --dport 53 -j DNSVPN"$instance" >> "$dnsscript"
+		echo /usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN"$instance" >> "$dnsscript"
 	fi
 
 # QoS
 	if [ "$(nvram get vpn_client"$instance"_rgw)" -ge 1 ] && [ "$(nvram get qos_enable)" -eq 1 ] && [ "$(nvram get qos_type)" -eq 1 ]
 	then
-		echo "#!/bin/sh" >> $qosscript
+		echo "#!/bin/sh" >> "$qosscript"
 		echo /usr/sbin/iptables -t mangle -A POSTROUTING -o br0 -m mark --mark 0x40000000/0xc0000000 -j MARK --set-xmark 0x80000000/0xC0000000 >> $qosscript
-		/bin/sh $qosscript
+		/bin/sh "$qosscript"
 	fi
 fi
 
 
-if [ $script_type = 'down' ]
+if [ "$script_type" = 'down' ]
 then
 	/usr/sbin/iptables -t nat -D PREROUTING -p udp -m udp --dport 53 -j DNSVPN$instance
 	/usr/sbin/iptables -t nat -D PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN$instance
@@ -150,7 +150,7 @@ fi
 if [ -f $conffile ] || [ -f $resolvfile ] || [ -n "$fileexists" ]
 then
 	if [ $script_type = 'up' ] ; then
-		if [ -f $dnsscript ]
+		if [ -f "$dnsscript" ]
 		then
 			/bin/sh $dnsscript
 		fi

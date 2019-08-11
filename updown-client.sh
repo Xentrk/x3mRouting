@@ -133,7 +133,7 @@ then
 fi
 
 
-if [ "$script_type" = 'down' ]
+if [ "$script_type" = "down" ]
 then
 	/usr/sbin/iptables -t nat -D PREROUTING -p udp -m udp --dport 53 -j DNSVPN"$instance"
 	/usr/sbin/iptables -t nat -D PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN"$instance"
@@ -150,13 +150,13 @@ fi
 
 if [ -f "$conffile" ] || [ -f "$resolvfile" ] || [ -n "$fileexists" ]
 then
-	if [ "$script_type" = 'up' ] ; then
+	if [ "$script_type" = "up" ] ; then
 		if [ -f "$dnsscript" ]
 		then
 			/bin/sh "$dnsscript"
 		fi
 		/sbin/service updateresolv
-	elif [ "$script_type" = 'down' ]; then
+	elif [ "$script_type" = "down" ]; then
 		rm "$dnsscript"
 		if [ "$(nvram get vpn_client"$instance"_adns)" = 2 ]
 		then

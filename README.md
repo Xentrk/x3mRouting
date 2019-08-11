@@ -20,7 +20,7 @@ Provides the ability to create and selectively route IPSET lists using shell scr
 Detailed descriptions and usage examples of each method are listed in the **x3mRouting Methods** section below.
 
 ## Support
-For help and support, please visit the support thread on [snbforums.com](https://www.snbforums.com/threads/x3mrouting-selective-routing-for-asuswrt-merlin-firmware.57793/#post-506675)
+For help and support, please visit the x3mRouting support thread on [snbforums.com](https://www.snbforums.com/threads/x3mrouting-selective-routing-for-asuswrt-merlin-firmware.57793/#post-506675).
 
 ## Requirements
 1.  An Asus router with  [Asuswrt-Merlin](http://asuswrt.lostrealm.ca/) firmware installed.

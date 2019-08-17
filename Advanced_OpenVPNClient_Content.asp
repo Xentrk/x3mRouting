@@ -227,7 +227,7 @@
 				document.getElementById("divSwitchMenu").style.display = "";
 			}
 			showclientlist();
-			<!-- Martineau Hack 1 of 12 IPSET  processing ###################################################-->
+			//<!-- Martineau Hack 1 of 12 IPSET  processing ###################################################-->
 			// showLANIPList();
 			//showLANIPList("setClientIP"); // Martineau Hack - Pass the name of the function to call
 			//showLANIPList("setIPSETIP"); // Martineau Hack - Pass the name of the function to call
@@ -236,7 +236,7 @@
 			document.form.clientlist_DIM1.value = "DST";
 			document.form.clientlist_DIM2.value = "";
 			document.form.clientlist_DIM3.value = "";
-			<!-- Martineau Hack ############################################################################-->
+			//<!-- Martineau Hack ############################################################################-->
 			free_options(document.form.vpn_client_unit);
 			add_option(document.form.vpn_client_unit, "1: <% nvram_get("vpn_client1_desc"); %>", "1", (openvpn_unit == 1));
 			add_option(document.form.vpn_client_unit, "2: <% nvram_get("vpn_client2_desc"); %>", "2", (openvpn_unit == 2));
@@ -385,7 +385,7 @@
 			}
 			free_options(document.form.vpn_client_rgw);
 			add_option(document.form.vpn_client_rgw, "No", "0", (currentpolicy == 0));
-			add_option(document.form.vpn_client_rgw, "All", "1", (currentpolicy == 1));
+			add_option(document.form.vpn_client_rgw, "Yes", "1", (currentpolicy == 1));
 			if (iface == "tun") {
 				add_option(document.form.vpn_client_rgw, "Policy Rules", "2", (currentpolicy == 2));
 				add_option(document.form.vpn_client_rgw, "Policy Rules (strict)", "3", (currentpolicy == 3));
@@ -550,7 +550,7 @@
 						tmp_value += ">";
 				}
 			}
-			<!-- Martineau Hack 2 of 12 IPSET  processing ###################################################-->
+			//<!-- Martineau Hack 2 of 12 IPSET  processing ###################################################-->
 			var rule_num = document.getElementById('IPSETlist_table').rows.length;
 			if (rule_num > 0) { // Valid entries in the IPSET routing table?
 				var item_num = document.getElementById('IPSETlist_table').rows[0].cells.length;
@@ -578,7 +578,7 @@
 					}
 				}
 			}
-			<!-- Martineau Hack ############################################################################-->
+			//<!-- Martineau Hack ############################################################################-->
 			if (tmp_value == "<" + "<#1851#>" || tmp_value == "<")
 				tmp_value = "";
 			if (isSupport("hnd")) {
@@ -689,7 +689,7 @@
 				document.form.vpn_client_local_1.value = object.value;
 			document.form.vpn_client_local.value = object.value;
 		}
-		<!-- Martineau Hack 3 of 12 ############################################################################-->
+		//<!-- Martineau Hack 3 of 12 ############################################################################-->
 		function showclientlist() {
 			var clientlist_row = clientlist_array.split('&#60');
 			var code = "";
@@ -735,7 +735,7 @@
 			document.getElementById("clientlist_Block").innerHTML = code;
 			document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table
 		}
-		<!-- Martineau Hack ############################################################################-->
+		//<!-- Martineau Hack ############################################################################-->
 		function addRow(obj, head) {
 			if (head == 1)
 				clientlist_array += "&#60" /*&#60*/
@@ -772,7 +772,7 @@
 				for (i = 0; i < rule_num; i++) {
 					if (document.form.clientlist_ipAddr.value.toLowerCase() == document.getElementById('clientlist_table').rows[i].cells[1].innerHTML.toLowerCase() &&
 						document.form.clientlist_dstipAddr.value.toLowerCase() == document.getElementById('clientlist_table').rows[i].cells[2].innerHTML.toLowerCase()) {
-						alert("<#920#> " + "<#2836#> " + "<#2811#>"); <!-- Martineau Hack 3 of 8 -->
+						alert("<#920#> " + "<#2836#> " + "<#2811#>"); //<!-- Martineau Hack 3 of 8 -->
 						document.form.clientlist_ipAddr.focus();
 						document.form.clientlist_ipAddr.select();
 						return false;
@@ -786,7 +786,7 @@
 			document.form.clientlist_iface.value = "VPN";
 			showclientlist();
 		}
-		<!-- Martineau Hack 4 of 12 IPSET  processing ###################################################-->
+		//<!-- Martineau Hack 4 of 12 IPSET  processing ###################################################-->
 		function addRow_Group2(upper) {
 			var rule_num = document.getElementById('clientlist_table').rows.length;
 			var item_num = document.getElementById('clientlist_table').rows[0].cells.length;
@@ -884,7 +884,7 @@
 			if (clientlist_array == "")
 				showclientlist();
 		}
-		<!-- Martineau Hack ############################################################################-->
+		//<!-- Martineau Hack ############################################################################-->
 		function del_Row(r) {
 			var i = r.parentNode.parentNode.rowIndex;
 			document.getElementById('clientlist_table').deleteRow(i);
@@ -903,7 +903,7 @@
 			if (clientlist_array == "")
 				showclientlist();
 		}
-		<!-- Martineau Hack 5 of 12 IPSET  processing ###################################################-->
+		//<!-- Martineau Hack 5 of 12 IPSET  processing ###################################################-->
 		function hideClients_Block(evt) {
 			if (typeof(evt) != "undefined") {
 				if (!evt.srcElement)
@@ -915,7 +915,7 @@
 			document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
 			document.getElementById('ClientList_Block_PC').style.display = 'none';
 		}
-		<!-- Martineau Hack 9 of 12 IPSET  processing ###################################################-->
+		//<!-- Martineau Hack 9 of 12 IPSET  processing ###################################################-->
 		function hideClients_IPSETBlock(evt) {
 			if (typeof(evt) != "undefined") {
 				if (!evt.srcElement)
@@ -927,7 +927,7 @@
 			document.getElementById("Xpull_arrow").src = "/images/arrow-down.gif";
 			document.getElementById('ClientList_IPSETBlock_PC').style.display = 'none';
 		}
-		<!-- Martineau Hack ############################################################################-->
+		//<!-- Martineau Hack ############################################################################-->
 		function pullLANIPList(obj) {
 			var element = document.getElementById('ClientList_Block_PC');
 			var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
@@ -937,7 +937,7 @@
 			} else
 				hideClients_Block();
 		}
-		<!-- Martineau Hack 10 of 12 IPSET  processing ###################################################-->
+//		<!-- Martineau Hack 10 of 12 IPSET  processing ###################################################-->
 		function pullIPSETLANIPList(obj) {
 			var element = document.getElementById('ClientList_Block_PC');
 			var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
@@ -949,7 +949,7 @@
 			} else
 				hideClients_IPSETBlock();
 		}
-		<!-- Martineau Hack ############################################################################-->
+		//<!-- Martineau Hack ############################################################################-->
 		function setClientIP(name, ipaddr) {
 			document.form.clientlist_ipAddr.value = ipaddr;
 			document.form.clientlist_deviceName.value = name;
@@ -1530,7 +1530,7 @@
 										</td>
 									</tr>
 									<tr>
-										<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,19);">Redirect Internet traffic</a></th>
+										<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,19);">Force Internet traffic through tunnel</a></th>
 										<td colspan="2">
 											<select name="vpn_client_rgw" class="input_option" onChange="update_visibility();">
 											</select>

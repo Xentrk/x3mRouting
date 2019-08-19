@@ -20,15 +20,15 @@
 #
 # Usage example:
 #
-# Usage: load_ASN_ipset_iface.sh {ipset_name ASN} [del] [dir='directory']
+# Usage: load_ASN_ipset.sh {ipset_name ASN} [del] [dir='directory']
 #
-# Usage: load_ASN_ipset_iface.sh NETFLIX  AS2906
+# Usage: load_ASN_ipset.sh NETFLIX  AS2906
 #          Create IPSET NETFLIX from AS2906
 #
-# Usage: load_ASN_ipset_iface.sh NETFLIX  AS2906  dir=/mnt/sda1/Backups
+# Usage: load_ASN_ipset.sh NETFLIX  AS2906  dir=/mnt/sda1/Backups
 #          As per example one, but use '/mnt/sda1/Backups' rather than Entware's 'opt/tmp' for ipset save/restore directory
 #
-# Usage: load_ASN_ipset_iface.sh NETFLIX  del
+# Usage: load_ASN_ipset.sh NETFLIX  del
 #          Delete IPSET NETFLIX
 #
 ####################################################################################################

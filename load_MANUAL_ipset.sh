@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: load_MANUAL_ipset.sh
-# VERSION=1.0.0
+# VERSION=1.0.1
 # Author: Xentrk, Martineau
-# Date: 15-June-2019
+# Date: 12-October-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -142,18 +142,6 @@ Check_MANUAL_Ipset_List_Values() {
 
   if [ "$(ipset -L "$IPSET_NAME" 2>/dev/null | awk '{ if (FNR == 7) print $0 }' | awk '{print $4 }')" -eq "0" ]; then
     awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
-  fi
-}
-
-# Route IPSET to target WAN or VPN
-create_routing_rules() {
-
-  iptables -t mangle -D PREROUTING -i br0 -m set --match-set "$1" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
-  if [ "$2" != "del" ]; then
-    iptables -t mangle -A PREROUTING -i br0 -m set --match-set "$1" dst -j MARK --set-mark "$TAG_MARK"
-    logger -st "($(basename "$0"))" $$ Selective Routing Rule via "$TARGET_DESC" created "("TAG fwmark "$TAG_MARK"")"
-  else
-    logger -st "($(basename "$0"))" $$ Selective Routing Rule via "$TARGET_DESC" deleted "("TAG fwmark "$TAG_MARK"")"
   fi
 }
 

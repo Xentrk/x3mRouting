@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: load_ASN_ipset.sh
-# VERSION=1.0.1
+# VERSION=1.0.2
 # Authors: Xentrk, Martineau
-# Date: 29-July-2019
+# Date: 12-October-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -165,18 +165,6 @@ Check_ASN_Ipset_List_Values() {
     if [ ! -s "$DIR/$IPSET_NAME" ]; then
       Download_ASN_Ipset_List "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
     fi
-  fi
-}
-
-# Route IPSET to target WAN or VPN
-create_routing_rules() {
-  IPSET_NAME="$1"
-  iptables -t mangle -D PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1
-  if [ "$2" != "del" ]; then
-    iptables -t mangle -A PREROUTING -i br0 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
-    logger -st "($(basename "$0"))" $$ Selective Routing Rule via "$TARGET_DESC" created for "$IPSET_NAME" TAG fwmark "$TAG_MARK"
-  else
-    logger -st "($(basename "$0"))" $$ Selective Routing Rule via "$TARGET_DESC" deleted for "$IPSET_NAME" TAG fwmark "$TAG_MARK"
   fi
 }
 

@@ -1,19 +1,32 @@
 #!/bin/sh
 ###########################################################################################################
 # Script: openvpn-event
-# Author: Xentrk
-# Last Updated Date: 3-June-2019
+# VERSION=1.0.1
+# Author: John9527, Martineau, Xentrk
+# Last Updated Date: 13-October-2019
 #
 # Description:
 #   Original Script by John9527:
 #   https://www.snbforums.com/threads/fork-asuswrt-merlin-374-43-lts-releases-v39e3.18914/page-238#post-294825
 #
+#   Updated Script by John9527
+#   https://www.snbforums.com/threads/solved-protocol-based-vpn-port-5060-blocked.41585/page-2#post-352772
+#
+#   Implemented additional patches suggested by Martineau
+#   https://www.snbforums.com/threads/solved-protocol-based-vpn-port-5060-blocked.41585/page-2#post-352772
+#   https://www.snbforums.com/threads/x3mrouting-selective-routing-for-asuswrt-merlin-firmware.57793/page-7#post-520433
+#
 #   Modified by Xentrk for x3mRouting project
 ############################################################################################################
 # shellcheck disable=SC2154
+# shellcheck disable=SC2048
+# shellcheck disable=SC2086
+
 PROJECT_REPO="/jffs/scripts/x3mRouting"
 
 scr_name="$(basename "$0")[$$]"
+
+#Determine Caller
 
 case "$1" in
 "tun11")
@@ -43,21 +56,24 @@ case "$1" in
 esac
 
 # Call appropriate script based on script_type
-vpn_script_name=vpn"$vpn_name"-"$script_type"
+vpn_script_name="vpn$vpn_name-$script_type"
+vpn_script_log="/tmp/vpn${vpn_name}_state"
 
-# Check script state/use nvram to save last script run
-vpn_script_state=$(nvram get vpn_script_state)
-nvram set vpn_script_state="$vpn_script_name"
+# Check script state
+vpn_script_state=$(cat $vpn_script_log 2>/dev/null)
 if [ "$vpn_script_name" = "$vpn_script_state" ]; then
-  echo "VPN script" "$vpn_script_name" "already run" | logger -t "$scr_name"
+  echo "VPN script $vpn_script_name already run" | logger -t "$scr_name"
   exit 0
 fi
 
+# Execute and log script state
 if [ -f "$PROJECT_REPO/$vpn_script_name" ]; then
+  echo "$vpn_script_name" >"$vpn_script_log"
   echo "Running $PROJECT_REPO/$vpn_script_name $*" | logger -t "$scr_name"
-  sh $PROJECT_REPO/"$vpn_script_name" "$*"
+  sh "$PROJECT_REPO/$vpn_script_name" $*
 else
-  echo "Script not defined for event: ""$vpn_script_name" | logger -t "$scr_name"
+  echo "Script not defined for event: $vpn_script_name" | logger -t "$scr_name"
+  echo "${vpn_script_name}-NOSCRIPT" >"$vpn_script_log" # (or nvram set vpn_script_state="${vpn_script_name}-NOSCRIPT"")
   exit 0
 fi
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 ####################################################################################################
-# Script: mount_files_ipset.sh
+# Script: mount_files_gui.sh
 # VERSION=1.0.1
 # Author: Xentrk
 # Date: 27-July-2019

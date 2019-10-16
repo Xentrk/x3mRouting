@@ -1,6 +1,6 @@
 #!/bin/sh
 ####################################################################################################
-# Script: mount_files_ipset.sh
+# Script: mount_files_lan.sh
 # VERSION=1.0.0
 # Author: Xentrk
 # Date: 27-Julu-2019

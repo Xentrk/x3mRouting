@@ -53,28 +53,6 @@ Check_vpnserverX_up() {
 }
 
 # check if /jffs/scripts/x3mRouting/vpnserverX-down exists and has entry
-Check_vpnserverX_down() {
-
-  DNSMASQ_ENTRY=$1
-
-  if [ -s /jffs/configs/dnsmasq.conf.add ]; then # dnsmasq.conf.add file exists
-    if [ "$(grep -c "$DNSMASQ_ENTRY" "/jffs/configs/dnsmasq.conf.add")" -ge "1" ]; then # if true, then one or more lines exist in dnsmasq.conf.add
-      if [ "$2" = "del" ]; then
-        sed -i "/^ipset.*${IPSET_NAME}$/d" /jffs/configs/dnsmasq.conf.add
-        logger -st "($(basename "$0"))" $$ ipset="$DNSMASQ_ENTRY" deleted from "/jffs/configs/dnsmasq.conf.add"
-      fi
-    else
-      echo "ipset=$DNSMASQ_ENTRY" >>/jffs/configs/dnsmasq.conf.add # add 'ipset=' domains entry to dnsmasq.conf.add
-    fi
-    service restart_dnsmasq >/dev/null 2>&1
-  else
-    if [ "$2" != "del" ]; then
-      printf 'ipset=%s\n' "$DNSMASQ_ENTRY" >/jffs/configs/dnsmasq.conf.add # dnsmasq.conf.add does not exist, create dnsmasq.conf.add
-      logger -st "($(basename "$0"))" $$ "ipset=$DNSMASQ_ENTRY" added to "/jffs/configs/dnsmasq.conf.add"
-      service restart_dnsmasq >/dev/null 2>&1
-    fi
-  fi
-}
 
 Routing_Rules() {
 
@@ -82,14 +60,41 @@ Routing_Rules() {
   IPSET_NAME=$2
   TAG_MARK=$3
   DEL_FLAG=$4
-    IPTABLES_D_ENTRY="iptables -t mangle -D PREROUTING -i tun2$VPN_SERVER_INSTANCE -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1"
+  IPTABLES_D_ENTRY="iptables -t mangle -D PREROUTING -i tun2$VPN_SERVER_INSTANCE -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" >/dev/null 2>&1"
   IPTABLES_A_ENTRY=iptables -t mangle -A PREROUTING -i tun2$VPN_SERVER_INSTANCE -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
+  vpnserver1_up_file=/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-up
+  vpnserver1_down_file=/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-down
 
-if [ "$4" != "del" ]; then
-  if [ -s /jffs/sciprts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-up ]; then #file exists
-  for iptables_entry in "$IPTABLES_D_ENTRY" "$IPTABLES_A_ENTRY";
+  if [ "$4" != "del" ]; then #add entry
+    if [ -s /jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-up ]; then #file exists
+
+    #Check if an existing entry exists
+
+    for iptables_entry in "$IPTABLES_D_ENTRY" "$IPTABLES_A_ENTRY";
     do
-  #Check if an existing entry exists
+      if [ "$(grep -c "$iptables_entry" "/jffs/scripts/x3mRouting/vpnserver-up")" -ge "1" ]; then # if true, then one or more lines exist
+      echo "entry for iptables rules already exists"
+    else
+      # add entry
+      echo "IPTABLES_D_ENTRY" >> $vpnserver1_up_file
+      echo "IPTABLES_A_ENTRY" >> $vpnserver1_up_file
+else
+  sed -i "/^ipset.*${IPSET_NAME}$/d" $vpnserver1_up_file
+fi
+
+
+
+    printf 'ipset=%s\n' "$DNSMASQ_ENTRY" >/jffs/configs/dnsmasq.conf.add # dnsmasq.conf.add does not exist, create dnsmasq.conf.add
+    if [ -s /jffs/sciprts/x3mRouting/vpnserver-up ]; then #file exists
+      if [ "$(grep -c "$DNSMASQ_ENTRY" "/jffs/scripts/x3mRouting/vpnserver-up")" -ge "1" ]; then # if true, then one or more lines exist in dnsmasq.conf.add
+        if [ "$4" = "del" ]; then
+          sed -i "/^ipset.*${IPSET_NAME}$/d" /jffs/configs/dnsmasq.conf.add
+          logger -st "($(basename "$0"))" $$ ipset="$DNSMASQ_ENTRY" deleted from "/jffs/configs/dnsmasq.conf.add"
+        fi
+      else
+        echo "ipset=$DNSMASQ_ENTRY" >>/jffs/configs/dnsmasq.conf.add # add 'ipset=' domains entry to dnsmasq.conf.add
+      fi
+      service restart_dnsmasq >/dev/null 2>&1
   # If entry exist, don't add.
   # If entry doesn't not exist, add.
     done

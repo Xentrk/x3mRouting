@@ -17,7 +17,7 @@
 # shellcheck disable=SC2028
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
 logger -t "($(basename "$0"))" "$$ Starting Script Execution ($(if [ -n "$1" ]; then echo "$1"; else echo "menu"; fi))"
-VERSION="1.0.2"
+VERSION="1.0.3"
 GIT_REPO="x3mRouting"
 GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/master"
 LOCAL_REPO="/jffs/scripts/x3mRouting"
@@ -86,11 +86,11 @@ Main_Menu() {
       return 1
       ;;
     4)
-      Install_x3mRouting_OpenVPN_Event
+      Install_Route_All_VpnServer
       return 1
       ;;
     5)
-      Install_Route_All_VpnServer
+      Install_x3mRouting_OpenVPN_Event
       return 1
       ;;
     6)

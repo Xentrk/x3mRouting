@@ -349,13 +349,13 @@ Usage example:
 
 Route VPN Server traffic to VPN Client 5
 
-  sh /jffs/scripts/x3mRouting/route_all_vpnserver.sh 1 5
+    sh /jffs/scripts/x3mRouting/route_all_vpnserver.sh 1 5
 
 Delete rules to route VPN Server traffic to VPN Client 5
 
-  sh /jffs/scripts/x3mRouting/route_all_vpnserver.sh 1 5 del
+    sh /jffs/scripts/x3mRouting/route_all_vpnserver.sh 1 5 del
 
-**Important!** You must also delete the entry from the OpenVPN Client Screen in the Policy Routing section.
+**IMPORTANT!** You must also delete the entry from the OpenVPN Client Screen in the Policy Routing section.
 
 ## Run Scripts at System Boot
 

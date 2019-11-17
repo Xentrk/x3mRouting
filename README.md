@@ -339,7 +339,7 @@ from the following entries in **/opt/var/log/dnsmasq.log**:
 ### [4] ~ Install route_all_vpnserver.sh
 Provides the ability to route all VPN Server traffic to one of the VPN Clients. You must pass the VPN Server interface number as the first parameter and the VPN Client interface as the second parameter. You can also specify an optional third parameter to delete the rule. You only have to run the script one time as the rules will automatically start at system boot.
 
-####Prerequisite####
+#### Prerequisite
 
 The **route_all_vpnserver** script requires that the **openvpn-event** script included in the x3mRouting project also be installed. The installation script will check if **openvpn-event** is installed and prompt you to install it if does not exist.
 
@@ -359,7 +359,7 @@ Delete rules to route VPN Server traffic to VPN Client 5
 
     sh /jffs/scripts/x3mRouting/route_all_vpnserver.sh 1 5 del
 
-####IMPORTANT!####
+#### IMPORTANT!
 
 You must also delete the entry from the OpenVPN Client Screen in the Policy Routing section.
 

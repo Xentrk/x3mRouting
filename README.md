@@ -351,11 +351,11 @@ Usage example:
 
     sh /jffs/scripts/x3mRouting/route_all_vpnserver.sh   {[1|2] [1|2|3|4|5]} [del]
 
-Route VPN Server traffic to VPN Client 5
+Route VPN Server 1 traffic to VPN Client 5
 
     sh /jffs/scripts/x3mRouting/route_all_vpnserver.sh 1 5
 
-Delete rules to route VPN Server traffic to VPN Client 5
+Delete rules to route VPN Server 1 traffic to VPN Client 5
 
     sh /jffs/scripts/x3mRouting/route_all_vpnserver.sh 1 5 del
 

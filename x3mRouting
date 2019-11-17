@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting
 # Author: Xentrk
-# Last Updated Date: 27-Jul-2019
+# Last Updated Date: 17-Nov-2019
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -17,7 +17,7 @@
 # shellcheck disable=SC2028
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
 logger -t "($(basename "$0"))" "$$ Starting Script Execution ($(if [ -n "$1" ]; then echo "$1"; else echo "menu"; fi))"
-VERSION="1.0.1"
+VERSION="1.0.2"
 GIT_REPO="x3mRouting"
 GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/master"
 LOCAL_REPO="/jffs/scripts/x3mRouting"
@@ -57,15 +57,15 @@ Main_Menu() {
   printf '%b[2]%b = Install x3mRouting OpenVPN Client GUI & IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[3]%b = Install x3mRouting IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[4]%b = Install x3mRouting OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '      ** Install Option 4 if you have installed Method 1 + Method 3'
-  echo
-  printf '%b[5]%b = Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[6]%b = Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[7]%b = Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '      ** Install Option 4 if you have installed Method 1 + Method 3\n'
+  printf '%b[5]%b = Install route_all_vpnserver.sh\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[6]%b = Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[7]%b = Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[8]%b = Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   localmd5="$(md5sum "/opt/bin/x3mRouting" | awk '{print $1}')"
   remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/x3mRouting" | md5sum | awk '{print $1}')"
   if [ "$localmd5" != "$remotemd5" ]; then
-    printf '%b[8]%b = Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[9]%b = Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   fi
   printf '\n%b[e]%b = Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   while true; do
@@ -90,18 +90,22 @@ Main_Menu() {
       return 1
       ;;
     5)
-      Confirm_Update
+      Install_Route_All_VpnServer
       return 1
       ;;
     6)
-      Confirm_Update force
+      Confirm_Update
       return 1
       ;;
     7)
-      Validate_Removal
+      Confirm_Update force
       return 1
       ;;
     8)
+      Validate_Removal
+      return 1
+      ;;
+    9)
       Update_Installer
       return 1
       ;;
@@ -216,7 +220,8 @@ Update_Version() {
       load_ASN_ipset_iface.sh \
       load_DNSMASQ_ipset_iface.sh \
       load_AMAZON_ipset_iface.sh \
-      openvpn-event; do
+      openvpn-event \
+      route_all_server.sh; do
       if [ -s "$DIR/$FILE" ]; then
         if [ -z "$1" ]; then
           if [ "$FILE" != "openvpn-event" ]; then
@@ -591,6 +596,55 @@ Install_x3mRouting_Shell_Scripts() {
   Welcome_Message
 }
 
+Install_Route_All_VpnServer() {
+  Create_Project_Directory
+  Download_File "$LOCAL_REPO" "route_all_server.sh"
+  Check_OpenVPN_Event
+  echo
+  echo "Press enter to continue"
+  read -r
+  Welcome_Message
+}
+
+Check_OpenVPN_Event() {
+
+  PROJECT_DIR="/jffs/scripts/x3mRouting"
+  OPENVPN_EVENT_FILE="openvpn-event"
+
+
+    if [ -s "$PROJECT_DIR/$OPENVPN_EVENT_FILE" ]; then
+      # file exists
+        return
+    else
+      while true; do
+        printf '\n\n%b%s%b file was not found.\n' "${COLOR_GREEN}" "$PROJECT_DIR/$OPENVPN_EVENT_FILE" "${COLOR_WHITE}"
+        printf '\n\nThe openvpn-event file is required for route_all_server.sh script to work.\n'
+        printf 'Would you like to download %b%s%b now?\n' "${COLOR_GREEN}" "$OPENVPN_EVENT_FILE" "${COLOR_WHITE}"
+        printf '%b[1]%b  --> Yes\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+        printf '%b[2]%b  --> No\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+        echo
+        printf '[1-2]: '
+        read -r "User_Option"
+        echo
+        case "$User_Option" in
+        1)
+          Download_File /jffs/scripts/x3mRouting openvpn-event
+          printf '\nUpdate Complete!\n'
+          break
+          ;;
+        2)
+          Main_Menu
+          break
+          ;;
+        *)
+          echo "[*] $menu_Update_Installer Isn't An Option!"
+          ;;
+        esac
+      done
+    fi
+
+}
+
 Update_Installer() {
   while true; do
     printf '\n\nAn updated version of the x3mRouting menu as been detected\n'
@@ -614,7 +668,7 @@ Update_Installer() {
       break
       ;;
     *)
-      echo "[*] $menu_Update_Installer Isn't An Option!"
+      echo "[*] $menu_Update_Installer Is Not An Option!"
       ;;
     esac
   done

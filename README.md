@@ -361,7 +361,7 @@ Delete rules to route VPN Server 1 traffic to VPN Client 5
 
 #### IMPORTANT!
 
-You must also delete the entry from the OpenVPN Client Screen in the Policy Routing section.
+You must also delete the VPN Server entry from the OpenVPN Client Screen in the Policy Routing section or you will have problems accessing websites.
 
 ## Run Scripts at System Boot
 

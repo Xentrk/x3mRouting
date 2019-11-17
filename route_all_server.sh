@@ -35,7 +35,7 @@ Routing_Rules() {
   IFACE="$2"
   DEL_FLAG="$3"
 
-  VPN_SERVER_SUBNET="$(nvram get vpn_server${VPN_SERVER_INSTANCE}_sn)/24"
+  VPN_SERVER_SUBNET="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24"
   IPTABLES_D_ENTRY="iptables -D POSTROUTING -t nat -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE >/dev/null 2>&1"
   IPTABLES_A_ENTRY="iptables -A POSTROUTING -t nat -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE"
 
@@ -72,10 +72,10 @@ Routing_Rules() {
       echo "$IPTABLES_D_ENTRY" >>"$vpnserver_down_file"
       chmod 755 "$vpnserver_down_file"
     fi
-    service restart_vpnserver$VPN_SERVER_INSTANCE
+    service restart_vpnserver"$VPN_SERVER_INSTANCE"
   else
     # delete routing and routing rules in vpn server up down scripts
-    iptables -D POSTROUTING -t nat -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE >/dev/null 2>&1
+    iptables -D POSTROUTING -t nat -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE >/dev/null 2>&1
     sed -i "/$CLIENT_INSTANCE/d" "$vpnserver_up_file"
     logger -t "($(basename "$0"))" $$ "iptables entry deleted from $vpnserver_up_file"
     # check if she-bang is the only line that exists and remove file if it does.

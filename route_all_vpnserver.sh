@@ -109,16 +109,26 @@ fi
 
 # Check for valid VPN Server parameter. Expecting a 1 or 2.
 if [ -n "$SERVER_INSTANCE" ]; then
-  if [ "$SERVER_INSTANCE" -ne 1 ] && [ "$SERVER_INSTANCE" -ne 2 ]; then
+  case "$SERVER_INSTANCE" in
+  [1-2])
+    echo "Valid VPN Server Instance specified"
+    ;;
+  *)
     Error_Exit 'Error! Expecting a 1 or 2 for VPN Server\n'
-  fi
+    ;;
+  esac
 fi
 
-# Check for valid VPN Server parameter. Expecting a 1 or 2.
+# Check for valid VPN Client parameter. Expecting a 1, 2, 3, 4 or 5
 if [ -n "$CLIENT_INSTANCE" ]; then
-  if [ "$CLIENT_INSTANCE" -le 1 ] && [ "$SERVER_INSTANCE" -le 5 ]; then
+  case "$CLIENT_INSTANCE" in
+  [1-5])
+    echo "Valid VPN Client Instance specified"
+    ;;
+  *)
     Error_Exit 'Error! Expecting a 1 thru 5 for VPN Client Instance\n'
-  fi
+    ;;
+  esac
 fi
 
 case "$CLIENT_INSTANCE" in

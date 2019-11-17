@@ -124,84 +124,84 @@ This script will create an IPSET list called containing all IPv4 address for the
 
 **Usage:**
 
-    sh load_AMAZON_ipset.sh {ipset_name region} [dir='directory'] [del]
+    sh /jffs/scripts/x3mRouting/load_AMAZON_ipset.sh {ipset_name region} [dir='directory'] [del]
 
 Create the IPSET list AMAZON-US for the US region use the **/opt/tmp** directory for the IPSET save/restore file location:
 
-    sh load_AMAZON_ipset.sh AMAZON-US US
+    sh /jffs/scripts/x3mRouting/load_AMAZON_ipset.sh AMAZON-US US
 
 Create the IPSET list AMAZON-US for the US region and use the **/mnt/sda1/Backups** directory rather than Entware's **/opt/tmp** directory for the IPSET save/restore file location:
 
-    sh load_AMAZON_ipset.sh AMAZON-US US dir=/mnt/sda1/Backups
+    sh /jffs/scripts/x3mRouting/load_AMAZON_ipset.sh AMAZON-US US dir=/mnt/sda1/Backups
 
 Delete IPSET AMAZON-US (the region parameter is not required when using the delete function):
 
-    sh load_AMAZON_ipset.sh AMAZON-US del
+    sh /jffs/scripts/x3mRouting/load_AMAZON_ipset.sh AMAZON-US del
 
 ##### load_MANUAL_ipset.sh
 This script will create an IPSET list from a file containing IPv4 addresses. For example, I mined the domain names for BBC from dnsmasq and converted the domain names to their respective IPv4 addresses. You must pass the script the IPSET list name. The IPSET list name must match the name of the file containing the IPv4 addresses.
 
 Usage:
 
-    sh load_MANUAL_ipset.sh {ipset_name} [del] [dir='directory']
+    sh /jffs/scripts/x3mRouting/load_MANUAL_ipset.sh {ipset_name} [del] [dir='directory']
 
 Create IPSET BBC and use the default **/opt/tmp** directory as the IPSET save/restore location:
 
-    sh load_MANUAL_ipset.sh BBC
+    sh /jffs/scripts/x3mRouting/load_MANUAL_ipset.sh BBC
 
 Create IPSET BBC and use the **/mnt/sda1/Backups** directory rather than the default **/opt/tmp** directory for IPSET save/restore location:
 
-    sh load_MANUAL_ipset.sh BBC dir=/mnt/sda1/Backups
+    sh /jffs/scripts/x3mRouting/load_MANUAL_ipset.sh BBC dir=/mnt/sda1/Backups
 
 Delete IPSET BBC:
 
-    sh load_MANUAL_ipset.sh BBC del
+    sh /jffs/scripts/x3mRouting/load_MANUAL_ipset.sh BBC del
 
 ##### load_ASN_ipset.sh
 This script will create an IPSET list using the [AS Number](https://www.apnic.net/get-ip/faqs/asn/).  The IPv4 addresses are downloaded from https://ipinfo.io/. https://ipinfo.io/ may require whitelisting if you use an ad-blocker program.  You must pass the script the name of the IPSET list followed by the AS Number.  
 
 Usage example:
 
-    sh load_ASN_ipset.sh {ipset_name ASN} [del] [dir='directory']
+    sh /jffs/scripts/x3mRouting/load_ASN_ipset.sh {ipset_name ASN} [del] [dir='directory']
 
 Create IPSET NETFLIX and use the default **/opt/tmp** directory as the IPSET save/restore location:
 
-    sh load_ASN_ipset.sh NETFLIX AS2906
+    sh /jffs/scripts/x3mRouting/load_ASN_ipset.sh NETFLIX AS2906
 
 Create IPSET NETFLIX and use the **/mnt/sda1/Backups** directory rather than the default **/opt/tmp** directory for IPSET save/restore location:
 
-    sh load_ASN_ipset.sh NETFLIX AS2906 dir=/mnt/sda1/Backups
+    sh /jffs/scripts/x3mRouting/load_ASN_ipset.sh NETFLIX AS2906 dir=/mnt/sda1/Backups
 
 Delete IPSET NETFLIX (the AS Number parameter is not required when using the delete function):
 
-    sh load_ASN_ipset.sh NETFLIX del
+    sh /jffs/scripts/x3mRouting/load_ASN_ipset.sh NETFLIX del
 
 ##### load_DNSMASQ_ipset.sh
 This script will create an IPSET list using the IPSET feature inside of dnsmasq to collect IPv4 addresses. The script will also create a cron job to backup the list every 24 hours to the **/opt/tmp** directory so the IPSET list can be restored on system boot. Pass the script the name of the IPSET list followed by the domain names separated by a comma.
 
 Usage example:
 
-    sh load_DNSMASQ_ipset.sh {ipset_name domains[,...]} ['autoscan'] [del]  [dir='directory']
+    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh {ipset_name domains[,...]} ['autoscan'] [del]  [dir='directory']
 
 Create IPSET BBC and auto populate IPs for domain 'bbc.co.uk'
 
-    sh load_DNSMASQ_ipset.sh BBC bbc.co.uk
+    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh BBC bbc.co.uk
 
 Delete IPSET BBC and associated entry in dnsmasq.conf.add:
 
-    sh load_DNSMASQ_ipset.sh BBC bbc.co.uk del
+    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh BBC bbc.co.uk del
 
 Create IPSET BBC and use the **/mnt/sda1/Backups** directory rather than the default **/opt/tmp** directory for IPSET save/restore location:
 
-    sh load_DNSMASQ_ipset.sh BBC bbc.co.uk dir=/mnt/sda1/Backups
+    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh BBC bbc.co.uk dir=/mnt/sda1/Backups
 
 Create IPSET NETFLIX and auto populate IPs for multiple Netflix domains
 
-    sh load_DNSMASQ_ipset.sh NETFLIX amazonaws.com,netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
+    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh NETFLIX amazonaws.com,netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 
 Create IPSET SKY and extract all matching Top-Level domains containing 'sky.com' from '/opt/var/log/dnsmasq.log'
 
-    sh load_DNSMASQ_ipset.sh SKY sky.com autoscan
+    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh SKY sky.com autoscan
 
 Example:
 
@@ -244,84 +244,84 @@ This script will create an IPSET list called containing all IPv4 address for the
 
 Usage:
 
-    sh load_AMAZON_ipset_iface.sh {[0|1|2|3|4|5] ipset_name region} [del] [dir='directory']
+    sh /jffs/scripts/x3mRouting/load_AMAZON_ipset_iface.sh {[0|1|2|3|4|5] ipset_name region} [del] [dir='directory']
 
 Create the IPSET list AMAZON-US from the US region via VPN Client 2 and use the **/opt/tmp** directory for the IPSET save/restore file location:
 
-    sh load_AMAZON_ipset_iface.sh 2 AMAZON-US US
+    sh /jffs/scripts/x3mRouting/load_AMAZON_ipset_iface.sh 2 AMAZON-US US
 
 Create the IPSET list AMAZON-US from the US region via VPN Client 2 and use the **/mnt/sda1/Backups** directory rather than the **/opt/tmp** directory for the IPSET save/restore location:
 
-    sh load_AMAZON_ipset_iface.sh 2 AMAZON-US US dir=/mnt/sda1/Backups
+    sh /jffs/scripts/x3mRouting/load_AMAZON_ipset_iface.sh 2 AMAZON-US US dir=/mnt/sda1/Backups
 
 Delete the IPSET list AMAZON-US and remove from VPN Client 2 (the region parameter is not required when using the delete function):
 
-    sh load_AMAZON_ipset_iface.sh 2 AMAZON-US del
+    sh /jffs/scripts/x3mRouting/load_AMAZON_ipset_iface.sh 2 AMAZON-US del
 
 ##### load_MANUAL_ipset_iface.sh
 This script will create an IPSET list from a file containing IPv4 addresses stored in the **/opt/tmp** directory on entware. For example, I mined the domain names from dnsmasq for BBC and converted the domain names to their respective IPv4 addresses. You must pass the script the IPSET list name. The IPSET list name must match the name of the file containing the IPv4 addresses stored in **/opt/tmp**.
 
 Usage:
 
-    sh load_MANUAL_ipset_iface.sh {[0|1|2|3|4|5] ipset_name} [del] [dir='directory']
+    sh /jffs/scripts/x3mRouting/load_MANUAL_ipset_iface.sh {[0|1|2|3|4|5] ipset_name} [del] [dir='directory']
 
 Create IPSET BBC via VPN Client 3 and use the default **/opt/tmp** directory as the IPSET save/restore location:
 
-    sh load_MANUAL_ipset_iface.sh 3 BBC
+    sh /jffs/scripts/x3mRouting/load_MANUAL_ipset_iface.sh 3 BBC
 
 Create IPSET BBC via VPN Client 3 and use the **/mnt/sda1/Backups** directory rather than the default **/opt/tmp** directory for IPSET save/restore location:
 
-    sh load_MANUAL_ipset_iface.sh 3 BBC dir=/mnt/sda1/Backups
+    sh /jffs/scripts/x3mRouting/load_MANUAL_ipset_iface.sh 3 BBC dir=/mnt/sda1/Backups
 
 Delete IPSET BBC and remove from VPN Client 3:
 
-    sh load_MANUAL_ipset_iface.sh 3 BBC del
+    sh /jffs/scripts/x3mRouting/load_MANUAL_ipset_iface.sh 3 BBC del
 
 ##### load_ASN_ipset_iface.sh
 This script will create an IPSET list using the [AS Number](https://www.apnic.net/get-ip/faqs/asn/). The IPv4 addresses are downloaded from https://ipinfo.io/. https://ipinfo.io/ may require whitelisting if you use an ad-blocker program.  You must pass the script the name of the IPSET list followed by the AS Number.  
 
 Usage example:
 
-    sh load_ASN_ipset_iface.sh {[0|1|2|3|4|5] ipset_name ASN} [del] [dir='directory']
+    sh /jffs/scripts/x3mRouting/load_ASN_ipset_iface.sh {[0|1|2|3|4|5] ipset_name ASN} [del] [dir='directory']
 
 Create IPSET NETFLIX from AS2906 via VPN Client 2:
 
-    sh load_ASN_ipset_iface.sh 2 NETFLIX AS2906
+    sh /jffs/scripts/x3mRouting/load_ASN_ipset_iface.sh 2 NETFLIX AS2906
 
 Create IPSET NETFLIX from AS2906 via VPN Client 2, but use the **/mnt/sda1/Backups** directory rather than the default **opt/tmp** as the IPSET save/restore file location:
 
-    sh load_ASN_ipset_iface.sh 2 NETFLIX AS2906 dir=/mnt/sda1/Backups
+    sh /jffs/scripts/x3mRouting/load_ASN_ipset_iface.sh 2 NETFLIX AS2906 dir=/mnt/sda1/Backups
 
 Delete IPSET NETFLIX and remove routing via VPN Client 2 (the AS Number parameter is not required when using the delete function):
 
-    sh load_ASN_ipset_iface.sh 2 NETFLIX del
+    sh /jffs/scripts/x3mRouting/load_ASN_ipset_iface.sh 2 NETFLIX del
 
 ##### load_DNSMASQ_ipset_iface.sh
 This script will create an IPSET list using the IPSET feature inside of dnsmasq to collect IPv4 addresses. The script will also create a cron job to backup the list every 24 hours to the **/opt/tmp** directory so the IPSET list can be restored on system boot.  Pass the script the name of the IPSET list followed by the domain names separated by a comma.
 
 Usage example:
 
-    sh load_DNSMASQ_ipset_iface.sh   {[0|1|2|3|4|5]  ipset_name  domains[,...]} ['autoscan'] [del]  [dir='directory']
+    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh   {[0|1|2|3|4|5]  ipset_name  domains[,...]} ['autoscan'] [del]  [dir='directory']
 
 Create IPSET BBC via VPN Client 3 and auto populate IPs for domain **bbc.co.uk**:
 
-    sh load_DNSMASQ_ipset_iface.sh 3 BBC bbc.co.uk
+    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 3 BBC bbc.co.uk
 
 Create IPSET BBC via VPN Client 3 and auto populate IPs for domain **bbc.co.uk**, but use **/mnt/sda1/Backups** directory rather than the **opt/tmp** directory for the IPSET  save/restore
 
-    sh load_DNSMASQ_ipset_iface.sh 3 BBC bbc.co.uk dir=/mnt/sda1/Backups
+    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 3 BBC bbc.co.uk dir=/mnt/sda1/Backups
 
 Delete IPSET BBC and remove from VPN Client 3:
 
-    sh load_DNSMASQ_ipset_iface.sh 3 BBC bbc.co.uk del
+    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 3 BBC bbc.co.uk del
 
 Create IPSET NETFLIX via WAN and auto populate IPs for multiple Netflix domains
 
-    sh load_DNSMASQ_ipset_iface.sh 0 NETFLIX netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
+    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 0 NETFLIX netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 
 Create IPSET SKY and extract all matching Top-Level domains containing **sky.com** from **/opt/var/log/dnsmasq.log**:
 
-    sh load_DNSMASQ_ipset_iface.sh 2 SKY sky.com autoscan
+    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 2 SKY sky.com autoscan
 
 For example, the following entry will be created in **/jffs/configs/dnsmasq.confg.add**:
 
@@ -337,15 +337,28 @@ from the following entries in **/opt/var/log/dnsmasq.log**:
     etc...
 
 ### [4] ~ Install route_all_vpnserver.sh
-Provides the ability to route all VPN Server traffic to one of the VPN Clients. You must pass the VPN Server interface number as the first parameter and the VPN Client interface as the second parameter. You can also specify an optional third parameter to delete the rule. 
+Provides the ability to route all VPN Server traffic to one of the VPN Clients. You must pass the VPN Server interface number as the first parameter and the VPN Client interface as the second parameter. You can also specify an optional third parameter to delete the rule.
+
+It is required that you manually enter the VPN Server IP address in CIDR format in the OpenVPN Client Screen in the Policy Routing section and route the traffic to the VPN Client. Following is an example for VPN Server 1:
+
+![Policy Routing Screen](https://github.com/Xentrk/x3mRouting/blob/master/VPNServerEntry.PNG "Policy Routing Screen")
 
 Usage example:
 
     sh /jffs/scripts/x3mRouting/route_all_vpnserver.sh   {[1|2] [1|2|3|4|5]} [del]
 
-Route
+Route VPN Server traffic to VPN Client 5
+
+  sh /jffs/scripts/x3mRouting/route_all_vpnserver.sh 1 5
+
+Delete rules to route VPN Server traffic to VPN Client 5
+
+  sh /jffs/scripts/x3mRouting/route_all_vpnserver.sh 1 5 del
+
+**Important!** You must also delete the entry from the OpenVPN Client Screen in the Policy Routing section.
 
 ## Run Scripts at System Boot
+
 There are two options available to choose from so the IPSET lists and routing rules are restored at boot when using the **x3mRouting IPSET Shell Script Method**
 
 1. If you only use Method 3 - **x3mRouting IPSET Shell Script Method**, you can execute the scripts from **/jffs/scripts/nat-start**.

@@ -56,9 +56,9 @@ Main_Menu() {
   printf '%b[1]%b = Install x3mRouting for LAN Clients\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[2]%b = Install x3mRouting OpenVPN Client GUI & IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[3]%b = Install x3mRouting IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[4]%b = Install x3mRouting OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '      ** Install Option 4 if you have installed Method 1 + Method 3\n'
-  printf '%b[5]%b = Install route_all_vpnserver.sh\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[4]%b = Install route_all_vpnserver.sh\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[5]%b = Install x3mRouting OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '      ** Install Option 5 if you have installed Method 1 + Method 3\n'
   printf '%b[6]%b = Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[7]%b = Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[8]%b = Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
@@ -221,7 +221,7 @@ Update_Version() {
       load_DNSMASQ_ipset_iface.sh \
       load_AMAZON_ipset_iface.sh \
       openvpn-event \
-      route_all_server.sh; do
+      route_all_vpnserver.sh; do
       if [ -s "$DIR/$FILE" ]; then
         if [ -z "$1" ]; then
           if [ "$FILE" != "openvpn-event" ]; then
@@ -281,11 +281,11 @@ Remove_Existing_Installation() {
   Chk_Entware jq 1
   if [ "$READY" -eq "0" ]; then
     echo "Existing jq package found. Removing jq"
-      if opkg remove jq; then
-        echo "jq successfully removed"
-      else
-        echo "Error occurred when removing jq"
-      fi
+    if opkg remove jq; then
+      echo "jq successfully removed"
+    else
+      echo "Error occurred when removing jq"
+    fi
   fi
 
   # Remove entries from /jffs/scripts/init-start
@@ -328,9 +328,9 @@ Remove_Existing_Installation() {
 
   if [ -s "/opt/bin/x3mRouting" ]; then
     if ! rm "/opt/bin/x3mRouting" >/dev/null 2>&1; then
-      printf '\nError trying to remove %b"/opt/bin/x3mRouting"%b\n' "$COLOR_GREEN"  "$COLOR_WHITE"
+      printf '\nError trying to remove %b"/opt/bin/x3mRouting"%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
     else
-      printf '\n%b"/opt/bin/x3mRouting"%b menu file removed\n' "$COLOR_GREEN"  "$COLOR_WHITE"
+      printf '\n%b"/opt/bin/x3mRouting"%b menu file removed\n' "$COLOR_GREEN" "$COLOR_WHITE"
     fi
   fi
 
@@ -412,7 +412,6 @@ Download_File() {
   fi
 }
 
-
 Exit_Message() {
 
   printf '\n   %bhttps://github.com/Xentrk/Stubby-Installer-Asuswrt-Merlin%b\n' "$COLOR_GREEN" "$COLOR_WHITE\\n"
@@ -477,11 +476,11 @@ Install_x3mRouting_OpenVPN_Event() {
   chmod 0755 "$DIR/$FILE"
   if [ -s /jffs/scripts/openvpn-event ]; then
     if [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" "/jffs/scripts/openvpn-event")" -eq 0 ]; then # see if line exists
-      printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >> /jffs/scripts/openvpn-event
+      printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
     fi
   else
     echo "#!/bin/sh" >/jffs/scripts/openvpn-event
-    printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >> /jffs/scripts/openvpn-event
+    printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
     chmod 0755 /jffs/scripts/openvpn-event
   fi
   echo
@@ -522,17 +521,17 @@ Update_Profile_Add() {
   PROFILE_FILE="$2"
 
   {
-  echo "liststats () {"
-  echo "  GREEN='\033[0;32m'"
-  echo "  RED='\033[0;31m'"
-  echo "  NC='\033[0m'"
-  echo "  true > /tmp/liststats"
-  echo "  for SETLIST in \$(ipset -L -n); do"
-  echo "   printf '%s - %b%s%b\n' \"\$SETLIST\" \"\$GREEN\" \"\$((\$(ipset -L \"\$SETLIST\" | wc -l) - 8))\" \"\$NC\" >> /tmp/liststats"
-  echo "  done"
-  echo "  cat /tmp/liststats | sort"
-  echo "  rm /tmp/liststats"
-  echo "}"
+    echo "liststats () {"
+    echo "  GREEN='\033[0;32m'"
+    echo "  RED='\033[0;31m'"
+    echo "  NC='\033[0m'"
+    echo "  true > /tmp/liststats"
+    echo "  for SETLIST in \$(ipset -L -n); do"
+    echo "   printf '%s - %b%s%b\n' \"\$SETLIST\" \"\$GREEN\" \"\$((\$(ipset -L \"\$SETLIST\" | wc -l) - 8))\" \"\$NC\" >> /tmp/liststats"
+    echo "  done"
+    echo "  cat /tmp/liststats | sort"
+    echo "  rm /tmp/liststats"
+    echo "}"
   } >>"$CONFIG_DIR/$PROFILE_FILE"
 }
 
@@ -598,7 +597,7 @@ Install_x3mRouting_Shell_Scripts() {
 
 Install_Route_All_VpnServer() {
   Create_Project_Directory
-  Download_File "$LOCAL_REPO" "route_all_server.sh"
+  Download_File "$LOCAL_REPO" "route_all_vpnserver.sh"
   Check_OpenVPN_Event
   echo
   echo "Press enter to continue"
@@ -611,37 +610,36 @@ Check_OpenVPN_Event() {
   PROJECT_DIR="/jffs/scripts/x3mRouting"
   OPENVPN_EVENT_FILE="openvpn-event"
 
-
-    if [ -s "$PROJECT_DIR/$OPENVPN_EVENT_FILE" ]; then
-      # file exists
-        return
-    else
-      while true; do
-        printf '\n\n%b%s%b file was not found.\n' "${COLOR_GREEN}" "$PROJECT_DIR/$OPENVPN_EVENT_FILE" "${COLOR_WHITE}"
-        printf '\n\nThe openvpn-event file is required for route_all_server.sh script to work.\n'
-        printf 'Would you like to download %b%s%b now?\n' "${COLOR_GREEN}" "$OPENVPN_EVENT_FILE" "${COLOR_WHITE}"
-        printf '%b[1]%b  --> Yes\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-        printf '%b[2]%b  --> No\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-        echo
-        printf '[1-2]: '
-        read -r "User_Option"
-        echo
-        case "$User_Option" in
-        1)
-          Download_File /jffs/scripts/x3mRouting openvpn-event
-          printf '\nUpdate Complete!\n'
-          break
-          ;;
-        2)
-          Main_Menu
-          break
-          ;;
-        *)
-          echo "[*] $menu_Update_Installer Isn't An Option!"
-          ;;
-        esac
-      done
-    fi
+  if [ -s "$PROJECT_DIR/$OPENVPN_EVENT_FILE" ]; then
+    # file exists
+    return
+  else
+    while true; do
+      printf '\n\n%b%s%b file was not found.\n' "${COLOR_GREEN}" "$PROJECT_DIR/$OPENVPN_EVENT_FILE" "${COLOR_WHITE}"
+      printf '\n\nThe openvpn-event file is required for route_all_server.sh script to work.\n'
+      printf 'Would you like to download %b%s%b now?\n' "${COLOR_GREEN}" "$OPENVPN_EVENT_FILE" "${COLOR_WHITE}"
+      printf '%b[1]%b  --> Yes\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+      printf '%b[2]%b  --> No\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+      echo
+      printf '[1-2]: '
+      read -r "User_Option"
+      echo
+      case "$User_Option" in
+      1)
+        Download_File /jffs/scripts/x3mRouting openvpn-event
+        printf '\nUpdate Complete!\n'
+        break
+        ;;
+      2)
+        Main_Menu
+        break
+        ;;
+      *)
+        echo "[*] $menu_Update_Installer Isn't An Option!"
+        ;;
+      esac
+    done
+  fi
 
 }
 

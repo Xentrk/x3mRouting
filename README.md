@@ -4,7 +4,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ## Introduction
-The features of **x3mRouting** include three selective routing methods to choose from:
+The features of **x3mRouting** include four selective routing methods to choose from:
 
 #### 1. x3mRouting for LAN Clients Method
 
@@ -17,6 +17,10 @@ Provides the ability to create IPSET lists using shell scripts and selectively r
 #### 3. x3mRouting IPSET Shell Script Method
 
 Provides the ability to create and selectively route IPSET lists using shell scripts. If you're the person who likes to flash alpha and beta software releases and perform firmware updates once they become available, then this is the method for you. No modifications to the firmware source code are used in this method.
+
+#### 4. Route ALL VPN Server Traffic to a VPN Client
+
+Provides the ability to route all VPN Server traffic to one of the VPN Clients.   
 
 Detailed descriptions and usage examples of each method are listed in the **x3mRouting Methods** section below.
 
@@ -331,6 +335,15 @@ from the following entries in **/opt/var/log/dnsmasq.log**:
     assets.sky.com-secure.edgekey.net
     awk.epgsky.com
     etc...
+
+### [4] ~ Install route_all_vpnserver.sh
+Provides the ability to route all VPN Server traffic to one of the VPN Clients. You must pass the VPN Server interface number as the first parameter and the VPN Client interface as the second parameter. You can also specify an optional third parameter to delete the rule. 
+
+Usage example:
+
+    sh /jffs/scripts/x3mRouting/route_all_vpnserver.sh   {[1|2] [1|2|3|4|5]} [del]
+
+Route
 
 ## Run Scripts at System Boot
 There are two options available to choose from so the IPSET lists and routing rules are restored at boot when using the **x3mRouting IPSET Shell Script Method**

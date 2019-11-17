@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: route_all_vpnserver.sh
-# VERSION=1.0.0
+# VERSION=1.0.1
 # Author: Martineau, Xentrk
-# Date: 10-November-2019
+# Date: 17-November-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -76,17 +76,21 @@ Routing_Rules() {
   else
     # delete routing and routing rules in vpn server up down scripts
     iptables -D POSTROUTING -t nat -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE >/dev/null 2>&1
-    sed -i "/$CLIENT_INSTANCE/d" "$vpnserver_up_file"
-    logger -t "($(basename "$0"))" $$ "iptables entry deleted from $vpnserver_up_file"
-    # check if she-bang is the only line that exists and remove file if it does.
-    if [ "$(wc -l <"$vpnserver_up_file")" -le 1 ] && [ "$(head -n 1 "$vpnserver_up_file")" = "#!/bin/sh" ]; then
-      rm -r "$vpnserver_up_file"
+    if [ -s "/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-up" ]; then #file exists
+      sed -i "/$CLIENT_INSTANCE/d" "$vpnserver_up_file"
+      logger -t "($(basename "$0"))" $$ "iptables entry deleted from $vpnserver_up_file"
+      # check if she-bang is the only line that exists and remove file if it does.
+      if [ "$(wc -l <"$vpnserver_up_file")" -le 1 ] && [ "$(head -n 1 "$vpnserver_up_file")" = "#!/bin/sh" ]; then
+        rm -r "$vpnserver_up_file"
+      fi
     fi
-    sed -i "/$CLIENT_INSTANCE/d" "$vpnserver_down_file"
-    logger -t "($(basename "$0"))" $$ "iptables entry deleted from $vpnserver_down_file"
-    # check if she-bang is the only line that exists and remove file if it does.
-    if [ "$(wc -l <"$vpnserver_down_file")" -eq 1 ] && [ "$(head -n 1 "$vpnserver_down_file")" = "#!/bin/sh" ]; then
-      rm -r "$vpnserver_down_file"
+    if [ -s "/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-down" ]; then #file exists
+      sed -i "/$CLIENT_INSTANCE/d" "$vpnserver_down_file"
+      logger -t "($(basename "$0"))" $$ "iptables entry deleted from $vpnserver_down_file"
+      # check if she-bang is the only line that exists and remove file if it does.
+      if [ "$(wc -l <"$vpnserver_down_file")" -eq 1 ] && [ "$(head -n 1 "$vpnserver_down_file")" = "#!/bin/sh" ]; then
+        rm -r "$vpnserver_down_file"
+      fi
     fi
   fi
 }

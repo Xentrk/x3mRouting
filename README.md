@@ -345,7 +345,7 @@ Provides the ability to route all VPN Server traffic to one of the VPN Clients. 
 
 #### Prerequisite
 
-The **route_all_vpnserver** script requires that the **openvpn-event** script included in the x3mRouting project also be installed. The installation script will check if **openvpn-event** is installed and prompt you to install it if does not exist.
+The **route_all_vpnserver.sh** script requires that the **openvpn-event** script included in the x3mRouting project also be installed. The installation script will check if **openvpn-event** is installed and prompt you to install it if does not exist.
 
 It is also required that you manually enter the VPN Server IP address in CIDR format in the OpenVPN Client Screen in the Policy Routing section and route the traffic to the VPN Client. Following is an example for VPN Server 1:
 

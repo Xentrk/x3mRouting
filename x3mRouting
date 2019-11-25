@@ -59,7 +59,7 @@ Main_Menu() {
   printf '%b[4]%b  Install route_all_vpnserver.sh\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[5]%b  Install route_ipset_vpnserver.sh\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[6]%b  Install x3mRouting OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '      ** Install Option 5 if you have installed Method 1 + Method 3\n'
+  printf '      ** Install Option 6 if you have installed Method 1 + Method 3\n'
   printf '%b[7]%b  Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[8]%b  Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[9]%b  Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"

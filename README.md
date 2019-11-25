@@ -49,7 +49,7 @@ Copy and paste the command below into an SSH session:
 
 This command will download and install the installation menu **x3mRouting** to the **/opt/bin** directory. The installation script is a menu with options to install the three methods described below and options to update or remove the repository. To access the installation menu, type the command **x3mRouting**.
 
-<img src="https://github.com/Xentrk/x3mRouting/blob/master/InstallationMenu.png" alt="drawing" width="600" height="600"/>
+<img src="https://github.com/Xentrk/x3mRouting/blob/master/InstallationMenu.PNG" alt="drawing" width="600" height="600"/>
 
 ## x3mRouting Methods
 

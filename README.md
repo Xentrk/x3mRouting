@@ -372,7 +372,7 @@ Provides the ability to route VPN Server traffic to one of the VPN Clients via a
 
 #### Prerequisite
 
-The **route_all_vpnserver** script requires that the **openvpn-event** script included in the x3mRouting project also be installed. The installation script will check if **openvpn-event** is installed and prompt you to install it if does not exist.
+The **route_ipset_vpnserver.sh** script requires that the **openvpn-event** script included in the x3mRouting project also be installed. The installation script will check if **openvpn-event** is installed and prompt you to install it if does not exist.
 
 Usage example:
 

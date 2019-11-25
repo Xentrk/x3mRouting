@@ -53,20 +53,20 @@ Welcome_Message() {
 }
 
 Main_Menu() {
-  printf '%b[1]%b   = Install x3mRouting for LAN Clients\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[2]%b   = Install x3mRouting OpenVPN Client GUI & IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[3]%b   = Install x3mRouting IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[4]%b   = Install route_all_vpnserver.sh\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[5]%b   = Install route_ipset_vpnserver.sh\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[6]%b   = Install x3mRouting OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[1]%b Install x3mRouting for LAN Clients\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[2]%b Install x3mRouting OpenVPN Client GUI & IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[3]%b Install x3mRouting IPSET Shell Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[4]%b Install route_all_vpnserver.sh\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[5]%b Install route_ipset_vpnserver.sh\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[6]%b Install x3mRouting OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '      ** Install Option 5 if you have installed Method 1 + Method 3\n'
-  printf '%b[7]%b   = Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[8]%b   = Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[9]%b   = Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[7]%b Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[8]%b Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[9]%b = Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   localmd5="$(md5sum "/opt/bin/x3mRouting" | awk '{print $1}')"
   remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/x3mRouting" | md5sum | awk '{print $1}')"
   if [ "$localmd5" != "$remotemd5" ]; then
-    printf '%b[10]%b = Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[10]%b Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   fi
   printf '\n%b[e]%b = Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   while true; do

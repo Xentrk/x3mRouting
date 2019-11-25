@@ -68,7 +68,7 @@ Main_Menu() {
   if [ "$localmd5" != "$remotemd5" ]; then
     printf '%b[10]%b Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   fi
-  printf '\n%b[e]%b = Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '\n%b[e]%b Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   while true; do
     printf '\n%bOption ==>%b ' "${COLOR_GREEN}" "${COLOR_WHITE}"
     read -r "menu1"

@@ -370,7 +370,7 @@ You must also delete the VPN Server entry from the OpenVPN Client Screen in the 
 ### [5] ~ Install route_ipset_vpnserver.sh
 Provides the ability to route VPN Server traffic to one of the VPN Clients via an IPSET list. You must pass the VPN Server interface number as the first parameter and the IPSET list name as the second parameter. You can also specify an optional third parameter to delete the rule. You only have to run the script one time as the rules will automatically start at system boot.
 
-#### Prerequisit
+#### Prerequisite
 
 The **route_all_vpnserver** script requires that the **openvpn-event** script included in the x3mRouting project also be installed. The installation script will check if **openvpn-event** is installed and prompt you to install it if does not exist.
 

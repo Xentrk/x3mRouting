@@ -378,11 +378,11 @@ Usage example:
 
     sh /jffs/scripts/x3mRouting/route_ipset_vpnserver.sh   {[1|2]} [IPSET_LIST] [del]
 
-Route VPN Server 1 traffic to the VPN Client specified by the existing x3mRouting rule for the PANDORA ipset list:
+Route VPN Server 1 traffic to the VPN Client specified by the existing x3mRouting rule for the PANDORA IPSET list:
 
     sh /jffs/scripts/x3mRouting/route_ipset_vpnserver.sh 1 PANDORA
 
-Delete rules to route VPN Server 1 traffic to VPN Client specified by the existing x3mRouting rule:
+Delete rules to route VPN Server 1 traffic to VPN Client specified by the existing x3mRouting rule for the PANDORA IPSET list:
 
     sh /jffs/scripts/x3mRouting/route_ipset_vpnserver.sh 1 PANDORA del
 

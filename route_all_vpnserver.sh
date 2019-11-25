@@ -3,7 +3,7 @@
 # Script: route_all_vpnserver.sh
 # VERSION=1.0.1
 # Author: Martineau, Xentrk
-# Date: 17-November-2019
+# Date: 24-November-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -36,60 +36,63 @@ Routing_Rules() {
   DEL_FLAG="$3"
 
   VPN_SERVER_SUBNET="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24"
-  IPTABLES_D_ENTRY="iptables -D POSTROUTING -t nat -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE >/dev/null 2>&1"
-  IPTABLES_A_ENTRY="iptables -A POSTROUTING -t nat -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE"
+  IPTABLES_DEL_ENTRY="iptables -t nat -D POSTROUTING -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE >/dev/null 2>&1"
+  IPTABLES_APP_ENTRY="iptables -t nat -A POSTROUTING -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE"
 
-  vpnserver_up_file=/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-up
-  vpnserver_down_file=/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-down
+  VPNSERVER_UP_FILE="/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-up"
+  VPNSERVER_DOWN_FILE="/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-down"
 
   if [ "$DEL_FLAG" != "del" ]; then #add entry
-    if [ -s "/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-up" ]; then #file exists
+    if [ -s "$VPNSERVER_UP_FILE" ]; then #file exists
       #Check if an existing entry exists
-      for iptables_entry in "$IPTABLES_D_ENTRY" "$IPTABLES_A_ENTRY"; do
-        if [ "$(grep -c "$iptables_entry" "$vpnserver_up_file")" -ge "1" ]; then # if true, then one or more lines exist
+      for IPTABLES_ENTRY in "$IPTABLES_DEL_ENTRY" "$IPTABLES_APP_ENTRY"; do
+        if [ "$(grep -c "$IPTABLES_ENTRY" "$VPNSERVER_UP_FILE")" -ge "1" ]; then # if true, then one or more lines exist
           logger -t "($(basename "$0"))" $$ "Entry for iptables rule already exists"
         else
           # add entry
-          echo "$iptables_entry" >>"$vpnserver_up_file"
+          echo "$IPTABLES_ENTRY" >>"$VPNSERVER_UP_FILE"
         fi
       done
     else #file does not exist
-      echo "#!/bin/sh" >"$vpnserver_up_file"
-      echo "$IPTABLES_D_ENTRY" >>"$vpnserver_up_file"
-      echo "$IPTABLES_A_ENTRY" >>"$vpnserver_up_file"
-      chmod 755 "$vpnserver_up_file"
+      echo "#!/bin/sh" >"$VPNSERVER_UP_FILE"
+      echo "$IPTABLES_DEL_ENTRY" >>"$VPNSERVER_UP_FILE"
+      echo "$IPTABLES_APP_ENTRY" >>"$VPNSERVER_UP_FILE"
+      chmod 755 "$VPNSERVER_UP_FILE"
     fi
-    if [ -s "/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-down" ]; then #file exists
+    if [ -s "$VPNSERVER_DOWN_FILE" ]; then #file exists
       #Check if an existing entry exists
-      if [ "$(grep -c "$IPTABLES_D_ENTRY" "$vpnserver_up_file")" -ge "1" ]; then # if true, then one or more lines exist
+      if [ "$(grep -c "$IPTABLES_DEL_ENTRY" "$VPNSERVER_UP_FILE")" -ge "1" ]; then # if true, then one or more lines exist
         logger -t "($(basename "$0"))" $$ "Entry for iptables rule already exists"
       else
         # add entry
-        echo "$iptables_entry" >>"$vpnserver_up_file"
+        echo "$IPTABLES_ENTRY" >>"$VPNSERVER_UP_FILE"
       fi
     else #file does not exist
-      echo "#!/bin/sh" >"$vpnserver_down_file"
-      echo "$IPTABLES_D_ENTRY" >>"$vpnserver_down_file"
-      chmod 755 "$vpnserver_down_file"
+      echo "#!/bin/sh" >"$VPNSERVER_DOWN_FILE"
+      echo "$IPTABLES_DEL_ENTRY" >>"$VPNSERVER_DOWN_FILE"
+      chmod 755 "$VPNSERVER_DOWN_FILE"
     fi
-    service restart_vpnserver"$VPN_SERVER_INSTANCE"
+    # Implement routing rules
+    sh "$VPNSERVER_UP_FILE"
   else
     # delete routing and routing rules in vpn server up down scripts
-    iptables -D POSTROUTING -t nat -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE >/dev/null 2>&1
-    if [ -s "/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-up" ]; then #file exists
-      sed -i "/$CLIENT_INSTANCE/d" "$vpnserver_up_file"
-      logger -t "($(basename "$0"))" $$ "iptables entry deleted from $vpnserver_up_file"
+    sh "$VPNSERVER_DOWN_FILE"
+    if [ -s "$VPNSERVER_UP_FILE" ]; then #file exists
+      sed -i "/$CLIENT_INSTANCE/d" "$VPNSERVER_UP_FILE"
+      logger -t "($(basename "$0"))" $$ "iptables entry deleted from $VPNSERVER_UP_FILE"
       # check if she-bang is the only line that exists and remove file if it does.
-      if [ "$(wc -l <"$vpnserver_up_file")" -le 1 ] && [ "$(head -n 1 "$vpnserver_up_file")" = "#!/bin/sh" ]; then
-        rm -r "$vpnserver_up_file"
+      sed '/^$/d' "$VPNSERVER_UP_FILE"
+      if [ "$(grep "#!/bin/sh" "$VPNSERVER_UP_FILE")" = "#!/bin/sh" ] && [ "$(wc -l <"$VPNSERVER_UP_FILE")" -eq 1 ]; then
+        rm -r "$VPNSERVER_UP_FILE"
       fi
     fi
-    if [ -s "/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-down" ]; then #file exists
-      sed -i "/$CLIENT_INSTANCE/d" "$vpnserver_down_file"
-      logger -t "($(basename "$0"))" $$ "iptables entry deleted from $vpnserver_down_file"
+    if [ -s "$VPNSERVER_DOWN_FILE" ]; then #file exists
+      sed -i "/$CLIENT_INSTANCE/d" "$VPNSERVER_DOWN_FILE"
+      logger -t "($(basename "$0"))" $$ "iptables entry deleted from $VPNSERVER_DOWN_FILE"
       # check if she-bang is the only line that exists and remove file if it does.
-      if [ "$(wc -l <"$vpnserver_down_file")" -eq 1 ] && [ "$(head -n 1 "$vpnserver_down_file")" = "#!/bin/sh" ]; then
-        rm -r "$vpnserver_down_file"
+      sed '/^$/d' "$VPNSERVER_DOWN_FILE"
+      if [ "$(grep "#!/bin/sh" "$VPNSERVER_DOWN_FILE")" = "#!/bin/sh" ] && [ "$(wc -l <"$VPNSERVER_DOWN_FILE")" -eq 1 ]; then
+        rm -r "$VPNSERVER_DOWN_FILE"
       fi
     fi
   fi
@@ -106,6 +109,7 @@ Error_Exit() {
 # Begin
 SERVER_INSTANCE="$1"
 CLIENT_INSTANCE="$2"
+DEL_FLAG="$3"
 
 if [ -z "$SERVER_INSTANCE" ] || [ -z "$CLIENT_INSTANCE" ]; then
   Error_Exit 'Error! Expecting 2 parameters to be passed to script.\n'
@@ -133,6 +137,13 @@ if [ -n "$CLIENT_INSTANCE" ]; then
     Error_Exit 'Error! Expecting a 1 thru 5 for VPN Client Instance\n'
     ;;
   esac
+fi
+
+# Check of 3rd PARM is del flag
+if [ -n "$DEL_FLAG" ]; then
+  if [ "$DEL_FLAG" != "del" ]; then
+    Error_Exit "Third parameter is invalid. Expecting null value or 'del'."
+  fi
 fi
 
 case "$CLIENT_INSTANCE" in

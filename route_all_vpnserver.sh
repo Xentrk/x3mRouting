@@ -77,11 +77,12 @@ Routing_Rules() {
   else
     # delete routing and routing rules in vpn server up down scripts
     sh "$VPNSERVER_DOWN_FILE"
+    #iptables -t nat -D POSTROUTING -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE >/dev/null 2>&1
     if [ -s "$VPNSERVER_UP_FILE" ]; then #file exists
       sed -i "/$CLIENT_INSTANCE/d" "$VPNSERVER_UP_FILE"
       logger -t "($(basename "$0"))" $$ "iptables entry deleted from $VPNSERVER_UP_FILE"
       # check if she-bang is the only line that exists and remove file if it does.
-      sed '/^$/d' "$VPNSERVER_UP_FILE"
+      sed -i "/^$/d" "$VPNSERVER_UP_FILE"
       if [ "$(grep "#!/bin/sh" "$VPNSERVER_UP_FILE")" = "#!/bin/sh" ] && [ "$(wc -l <"$VPNSERVER_UP_FILE")" -eq 1 ]; then
         rm -r "$VPNSERVER_UP_FILE"
       fi
@@ -90,7 +91,7 @@ Routing_Rules() {
       sed -i "/$CLIENT_INSTANCE/d" "$VPNSERVER_DOWN_FILE"
       logger -t "($(basename "$0"))" $$ "iptables entry deleted from $VPNSERVER_DOWN_FILE"
       # check if she-bang is the only line that exists and remove file if it does.
-      sed '/^$/d' "$VPNSERVER_DOWN_FILE"
+      sed -i "/^$/d" "$VPNSERVER_DOWN_FILE"
       if [ "$(grep "#!/bin/sh" "$VPNSERVER_DOWN_FILE")" = "#!/bin/sh" ] && [ "$(wc -l <"$VPNSERVER_DOWN_FILE")" -eq 1 ]; then
         rm -r "$VPNSERVER_DOWN_FILE"
       fi
@@ -116,28 +117,32 @@ if [ -z "$SERVER_INSTANCE" ] || [ -z "$CLIENT_INSTANCE" ]; then
 fi
 
 # Check for valid VPN Server parameter. Expecting a 1 or 2.
-if [ -n "$SERVER_INSTANCE" ]; then
-  case "$SERVER_INSTANCE" in
-  [1-2])
-    echo "Valid VPN Server Instance specified"
-    ;;
-  *)
-    Error_Exit 'Error! Expecting a 1 or 2 for VPN Server\n'
-    ;;
-  esac
-fi
+while true; do
+  if [ -n "$SERVER_INSTANCE" ]; then
+    case "$SERVER_INSTANCE" in
+    [1-2])
+      break
+      ;;
+    *)
+      Error_Exit 'Error! Expecting a 1 or 2 for VPN Server\n'
+      ;;
+    esac
+  fi
+done
 
 # Check for valid VPN Client parameter. Expecting a 1, 2, 3, 4 or 5
-if [ -n "$CLIENT_INSTANCE" ]; then
-  case "$CLIENT_INSTANCE" in
-  [1-5])
-    echo "Valid VPN Client Instance specified"
-    ;;
-  *)
-    Error_Exit 'Error! Expecting a 1 thru 5 for VPN Client Instance\n'
-    ;;
-  esac
-fi
+while true; do
+  if [ -n "$CLIENT_INSTANCE" ]; then
+    case "$CLIENT_INSTANCE" in
+    [1-5])
+      break
+      ;;
+    *)
+      Error_Exit 'Error! Expecting a 1 thru 5 for VPN Client Instance\n'
+      ;;
+    esac
+  fi
+done
 
 # Check of 3rd PARM is del flag
 if [ -n "$DEL_FLAG" ]; then

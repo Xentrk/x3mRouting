@@ -226,7 +226,8 @@ Update_Version() {
       load_DNSMASQ_ipset_iface.sh \
       load_AMAZON_ipset_iface.sh \
       openvpn-event \
-      route_all_vpnserver.sh; do
+      route_all_vpnserver.sh \
+      route_ipset_vpnserver.sh;do
       if [ -s "$DIR/$FILE" ]; then
         if [ -z "$1" ]; then
           if [ "$FILE" != "openvpn-event" ]; then

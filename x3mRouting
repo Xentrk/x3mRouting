@@ -610,7 +610,7 @@ Install_Route_All_VpnServer() {
   Welcome_Message
 }
 
-Install_Route_IPSET_VpnServer() {
+Install_Route_IPSET_Vpnserver() {
   Create_Project_Directory
   Download_File "$LOCAL_REPO" "route_ipset_vpnserver.sh"
   Check_OpenVPN_Event

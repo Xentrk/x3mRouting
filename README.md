@@ -20,7 +20,11 @@ Provides the ability to create and selectively route IPSET lists using shell scr
 
 #### 4. Route ALL VPN Server Traffic to a VPN Client
 
-Provides the ability to route all VPN Server traffic to one of the VPN Clients.   
+Provides the ability to route all VPN Server traffic to one of the VPN Clients.
+
+#### 5. Route VPN Server Traffic to a VPN Client via an IPSET List
+
+Provides the ability to selectively route VPN Server traffic to a VPN Client via an IPSET list.
 
 Detailed descriptions and usage examples of each method are listed in the **x3mRouting Methods** section below.
 
@@ -362,6 +366,29 @@ Delete rules to route VPN Server 1 traffic to VPN Client 5
 #### IMPORTANT!
 
 You must also delete the VPN Server entry from the OpenVPN Client Screen in the Policy Routing section or you will have problems accessing websites.
+
+### [5] ~ Install route_ipset_vpnserver.sh
+Provides the ability to route VPN Server traffic to one of the VPN Clients via an IPSET list. You must pass the VPN Server interface number as the first parameter and the IPSET list name as the second parameter. You can also specify an optional third parameter to delete the rule. You only have to run the script one time as the rules will automatically start at system boot.
+
+#### Prerequisit
+
+The **route_all_vpnserver** script requires that the **openvpn-event** script included in the x3mRouting project also be installed. The installation script will check if **openvpn-event** is installed and prompt you to install it if does not exist.
+
+Usage example:
+
+    sh /jffs/scripts/x3mRouting/route_ipset_vpnserver.sh   {[1|2]} [IPSET_LIST] [del]
+
+Route VPN Server 1 traffic to the VPN Client specified by the existing x3mRouting rule:
+
+    sh /jffs/scripts/x3mRouting/route_ipset_vpnserver.sh 1 PANDORA
+
+Delete rules to route VPN Server 1 traffic to VPN Client specified by the existing x3mRouting rule:
+
+    sh /jffs/scripts/x3mRouting/route_ipset_vpnserver.sh 1 PANDORA del
+
+#### Requirements
+1. The IPSET list must exist!
+2. A PREROUTING rule must currently exist so the script can determine the VPN Client to route to!
 
 ## Run Scripts at System Boot
 

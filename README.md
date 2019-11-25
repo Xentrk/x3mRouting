@@ -378,7 +378,7 @@ Usage example:
 
     sh /jffs/scripts/x3mRouting/route_ipset_vpnserver.sh   {[1|2]} [IPSET_LIST] [del]
 
-Route VPN Server 1 traffic to the VPN Client specified by the existing x3mRouting rule:
+Route VPN Server 1 traffic to the VPN Client specified by the existing x3mRouting rule for the PANDORA ipset list:
 
     sh /jffs/scripts/x3mRouting/route_ipset_vpnserver.sh 1 PANDORA
 

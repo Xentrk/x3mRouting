@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: route_ipset_vpnserver.sh
-# VERSION=1.0.0
+# VERSION=1.0.1
 # Author: Martineau, Xentrk
-# Date: 24-November-2019
+# Date: 26-November-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -31,7 +31,7 @@
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
-#set -x
+set -x
 
 # check if /jffs/scripts/x3mRouting/vpnserverX-down exists and has entry
 Routing_Rules() {
@@ -99,9 +99,8 @@ Routing_Rules() {
     fi
     sh "$VPNSERVER_UP_FILE"
   else # del option selected. delete entries
-    if [ -s "$VPNSERVER_DOWN_FILE" ]; then
-      sh "$VPNSERVER_DOWN_FILE"
-    fi
+    iptables -t mangle -D PREROUTING -i tun21 -m set --match-set "$IPSET_NAME" dst -j MARK --set-xmark "$TAG_MARK" 2>/dev/null
+    iptables -t nat -D POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
     if [ -s "$VPNSERVER_UP_FILE" ]; then
       sed -i "/$IPSET_NAME/d" "$VPNSERVER_UP_FILE"
       sed -i "/$IFACE/d" "$VPNSERVER_UP_FILE"
@@ -135,21 +134,21 @@ Error_Exit() {
 #====================> end of functions <====================#
 # Begin
 
-SERVER_INSTANCE="$1"
+VPN_SERVER_INSTANCE="$1"
 IPSET_NAME="$2"
 DEL_FLAG="$3"
 
 # Check for two parameters passesd
 
-if [ -z "$SERVER_INSTANCE" ] || [ -z "$IPSET_NAME" ]; then
+if [ -z "$VPN_SERVER_INSTANCE" ] || [ -z "$IPSET_NAME" ]; then
   Error_Exit 'Error! Expecting 2 parameters to be passed to script.\n'
 fi
 
 # Check for valid VPN Server parameter. Expecting a 1 or 2.
 
 while true; do
-  if [ -n "$SERVER_INSTANCE" ]; then
-    case "$SERVER_INSTANCE" in
+  if [ -n "$VPN_SERVER_INSTANCE" ]; then
+    case "$VPN_SERVER_INSTANCE" in
     [1-2])
       break
       ;;
@@ -211,9 +210,9 @@ esac
 
 # Delete mode?
 if [ "$(echo $@ | grep -cw 'del')" -gt 0 ]; then
-  Routing_Rules "$SERVER_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK" "del"
+  Routing_Rules "$VPN_SERVER_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK" "del"
 else
-  Routing_Rules "$SERVER_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK"
+  Routing_Rules "$VPN_SERVER_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK"
 fi
 
 logger -t "($(basename "$0"))" $$ "Ending Script Execution"

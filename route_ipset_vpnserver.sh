@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: route_ipset_vpnserver.sh
-# VERSION=1.0.1
+# VERSION=1.0.0
 # Author: Martineau, Xentrk
-# Date: 26-November-2019
+# Date: 24-November-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,

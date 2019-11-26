@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: route_ipset_vpnserver.sh
-# VERSION=1.0.0
+# VERSION=1.0.1
 # Author: Martineau, Xentrk
-# Date: 24-November-2019
+# Date: 26-November-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -50,8 +50,8 @@ Routing_Rules() {
   IPTABLES_POSTROUTING_APP_ENTRY="iptables -t nat -A POSTROUTING -s $VPN_SERVER_IP/24 -o $IFACE -j MASQUERADE"
 
   # PREROUTING CHAIN
-  IPTABLES_PREROUTING_DEL_ENTRY="iptables -t mangle -D PREROUTING -i tun21 -m set --match-set $IPSET_NAME dst -j MARK --set-xmark $TAG_MARK 2>/dev/null"
-  IPTABLES_PREROUTING_APP_ENTRY="iptables -t mangle -A PREROUTING -i tun21 -m set --match-set $IPSET_NAME dst -j MARK --set-xmark $TAG_MARK"
+  IPTABLES_PREROUTING_DEL_ENTRY="iptables -t mangle -D PREROUTING -i tun21 -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
+  IPTABLES_PREROUTING_APP_ENTRY="iptables -t mangle -A PREROUTING -i tun21 -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
 
   VPNSERVER_UP_FILE="/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-up"
   VPNSERVER_DOWN_FILE="/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-down"
@@ -99,7 +99,7 @@ Routing_Rules() {
     fi
     sh "$VPNSERVER_UP_FILE"
   else # del option selected. delete entries
-    iptables -t mangle -D PREROUTING -i tun21 -m set --match-set "$IPSET_NAME" dst -j MARK --set-xmark "$TAG_MARK" 2>/dev/null
+    iptables -t mangle -D PREROUTING -i tun21 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
     iptables -t nat -D POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
     if [ -s "$VPNSERVER_UP_FILE" ]; then
       sed -i "/$IPSET_NAME/d" "$VPNSERVER_UP_FILE"
@@ -141,7 +141,7 @@ DEL_FLAG="$3"
 # Check for two parameters passesd
 
 if [ -z "$VPN_SERVER_INSTANCE" ] || [ -z "$IPSET_NAME" ]; then
-  Error_Exit 'Error! Expecting 2 parameters to be passed to script.\n'
+  Error_Exit "Error! Expecting 2 parameters to be passed to script."
 fi
 
 # Check for valid VPN Server parameter. Expecting a 1 or 2.
@@ -153,7 +153,7 @@ while true; do
       break
       ;;
     *)
-      Error_Exit 'Error! Expecting a 1 or 2 for VPN Server\n'
+      Error_Exit "Error! Expecting a 1 or 2 for VPN Server."
       ;;
     esac
   fi
@@ -162,7 +162,7 @@ done
 # Check if IPSET list exists
 if [ -n "$IPSET_NAME" ]; then
   if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then
-    Error_Exit "IPSET name $IPSET_NAME does not exist"
+    Error_Exit "IPSET name $IPSET_NAME does not exist."
   fi
 fi
 
@@ -182,9 +182,9 @@ if [ -z "$FWMARK" ]; then
 fi
 
 TAG_MARK="$FWMARK/$FWMARK"
-CLIENT_INSTANCE="${FWMARK:2:6}"
+VPN_CLIENT_INSTANCE="${FWMARK:2:6}"
 
-case "$CLIENT_INSTANCE" in
+case "$VPN_CLIENT_INSTANCE" in
 8000)
   IFACE="br0"
   ;;

@@ -31,7 +31,7 @@
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
-set -x
+#set -x
 
 # check if /jffs/scripts/x3mRouting/vpnserverX-down exists and has entry
 Routing_Rules() {

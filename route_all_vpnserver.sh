@@ -38,7 +38,7 @@ Routing_Rules() {
   DEL_FLAG="$3"
 
   VPN_SERVER_SUBNET="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24"
-  IPTABLES_DEL_ENTRY="iptables -t nat -D POSTROUTING -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE >/dev/null 2>&1"
+  IPTABLES_DEL_ENTRY="iptables -t nat -D POSTROUTING -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE 2>/dev/null"
   IPTABLES_APP_ENTRY="iptables -t nat -A POSTROUTING -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE"
 
   VPNSERVER_UP_FILE="/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-up"
@@ -78,7 +78,7 @@ Routing_Rules() {
     sh "$VPNSERVER_UP_FILE"
   else
     # delete routing and routing rules in vpn server up down scripts
-    iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE >/dev/null 2>&1
+    iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE 2>/dev/null
     if [ -s "$VPNSERVER_UP_FILE" ]; then #file exists
       sed -i "/$VPN_CLIENT_INSTANCE/d" "$VPNSERVER_UP_FILE"
       logger -t "($(basename "$0"))" $$ "iptables entry deleted from $VPNSERVER_UP_FILE"

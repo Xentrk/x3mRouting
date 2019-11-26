@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: route_all_vpnserver.sh
-# VERSION=1.0.1
+# VERSION=1.0.2
 # Author: Martineau, Xentrk
-# Date: 24-November-2019
+# Date: 26-November-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -24,6 +24,8 @@
 #             Delete the routing rule for incoming VPN Server 1 traffic to be routed to the OpenVPN
 #             client 2 interface.
 #####################################################################################################
+# -- SC2068: I don't want to quote array!
+# shellcheck disable=SC2068
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 
 # Uncomment the line below for debugging
@@ -76,10 +78,9 @@ Routing_Rules() {
     sh "$VPNSERVER_UP_FILE"
   else
     # delete routing and routing rules in vpn server up down scripts
-    sh "$VPNSERVER_DOWN_FILE"
-    #iptables -t nat -D POSTROUTING -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE >/dev/null 2>&1
+    iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE >/dev/null 2>&1
     if [ -s "$VPNSERVER_UP_FILE" ]; then #file exists
-      sed -i "/$CLIENT_INSTANCE/d" "$VPNSERVER_UP_FILE"
+      sed -i "/$VPN_CLIENT_INSTANCE/d" "$VPNSERVER_UP_FILE"
       logger -t "($(basename "$0"))" $$ "iptables entry deleted from $VPNSERVER_UP_FILE"
       # check if she-bang is the only line that exists and remove file if it does.
       sed -i "/^$/d" "$VPNSERVER_UP_FILE"
@@ -88,7 +89,7 @@ Routing_Rules() {
       fi
     fi
     if [ -s "$VPNSERVER_DOWN_FILE" ]; then #file exists
-      sed -i "/$CLIENT_INSTANCE/d" "$VPNSERVER_DOWN_FILE"
+      sed -i "/$VPN_CLIENT_INSTANCE/d" "$VPNSERVER_DOWN_FILE"
       logger -t "($(basename "$0"))" $$ "iptables entry deleted from $VPNSERVER_DOWN_FILE"
       # check if she-bang is the only line that exists and remove file if it does.
       sed -i "/^$/d" "$VPNSERVER_DOWN_FILE"
@@ -108,23 +109,23 @@ Error_Exit() {
 
 #==================== end of functions
 # Begin
-SERVER_INSTANCE="$1"
-CLIENT_INSTANCE="$2"
+VPN_SERVER_INSTANCE="$1"
+VPN_CLIENT_INSTANCE="$2"
 DEL_FLAG="$3"
 
-if [ -z "$SERVER_INSTANCE" ] || [ -z "$CLIENT_INSTANCE" ]; then
-  Error_Exit 'Error! Expecting 2 parameters to be passed to script.\n'
+if [ -z "$VPN_SERVER_INSTANCE" ] || [ -z "$VPN_CLIENT_INSTANCE" ]; then
+  Error_Exit "Error! Expecting 2 parameters to be passed to script."
 fi
 
 # Check for valid VPN Server parameter. Expecting a 1 or 2.
 while true; do
-  if [ -n "$SERVER_INSTANCE" ]; then
-    case "$SERVER_INSTANCE" in
+  if [ -n "$VPN_SERVER_INSTANCE" ]; then
+    case "$VPN_SERVER_INSTANCE" in
     [1-2])
       break
       ;;
     *)
-      Error_Exit 'Error! Expecting a 1 or 2 for VPN Server\n'
+      Error_Exit "Error! Expecting a 1 or 2 for VPN Server"
       ;;
     esac
   fi
@@ -132,13 +133,13 @@ done
 
 # Check for valid VPN Client parameter. Expecting a 1, 2, 3, 4 or 5
 while true; do
-  if [ -n "$CLIENT_INSTANCE" ]; then
-    case "$CLIENT_INSTANCE" in
+  if [ -n "$VPN_CLIENT_INSTANCE" ]; then
+    case "$VPN_CLIENT_INSTANCE" in
     [1-5])
       break
       ;;
     *)
-      Error_Exit 'Error! Expecting a 1 thru 5 for VPN Client Instance\n'
+      Error_Exit "Error! Expecting a 1 thru 5 for VPN Client Instance"
       ;;
     esac
   fi
@@ -151,7 +152,7 @@ if [ -n "$DEL_FLAG" ]; then
   fi
 fi
 
-case "$CLIENT_INSTANCE" in
+case "$VPN_CLIENT_INSTANCE" in
 1)
   IFACE="tun11"
   ;;
@@ -173,10 +174,10 @@ case "$CLIENT_INSTANCE" in
 esac
 
 # Delete mode?
-if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
-  Routing_Rules "$SERVER_INSTANCE" "$IFACE" "del"
+if [ "$(echo $@ | grep -cw 'del')" -gt 0 ]; then
+  Routing_Rules "$VPN_SERVER_INSTANCE" "$IFACE" "del"
 else
-  Routing_Rules "$SERVER_INSTANCE" "$IFACE"
+  Routing_Rules "$VPN_SERVER_INSTANCE" "$IFACE"
 fi
 
 logger -t "($(basename "$0"))" $$ "Ending Script Execution"

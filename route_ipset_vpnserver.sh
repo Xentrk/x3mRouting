@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: route_ipset_vpnserver.sh
-# VERSION=1.0.1
+# VERSION=1.0.2
 # Author: Martineau, Xentrk
-# Date: 26-November-2019
+# Date: 27-November-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -40,7 +40,8 @@ Routing_Rules() {
   IFACE=$2
   IPSET_NAME=$3
   TAG_MARK=$4
-  DEL_FLAG=$5
+  VPN_SERVER_TUN=$5
+  DEL_FLAG=$6
 
   # Get VPN Server Subnet Mask
   VPN_SERVER_IP=$(nvram get vpn_server"$VPN_SERVER_INSTANCE"_sn)
@@ -50,8 +51,8 @@ Routing_Rules() {
   IPTABLES_POSTROUTING_APP_ENTRY="iptables -t nat -A POSTROUTING -s $VPN_SERVER_IP/24 -o $IFACE -j MASQUERADE"
 
   # PREROUTING CHAIN
-  IPTABLES_PREROUTING_DEL_ENTRY="iptables -t mangle -D PREROUTING -i tun21 -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
-  IPTABLES_PREROUTING_APP_ENTRY="iptables -t mangle -A PREROUTING -i tun21 -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
+  IPTABLES_PREROUTING_DEL_ENTRY="iptables -t mangle -D PREROUTING -i $VPN_SERVER_TUN -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
+  IPTABLES_PREROUTING_APP_ENTRY="iptables -t mangle -A PREROUTING -i $VPN_SERVER_TUN -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
 
   VPNSERVER_UP_FILE="/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-up"
   VPNSERVER_DOWN_FILE="/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-down"
@@ -99,7 +100,7 @@ Routing_Rules() {
     fi
     sh "$VPNSERVER_UP_FILE"
   else # del option selected. delete entries
-    iptables -t mangle -D PREROUTING -i tun21 -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
+    iptables -t mangle -D PREROUTING -i $VPN_SERVER_TUN -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
     iptables -t nat -D POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
     if [ -s "$VPNSERVER_UP_FILE" ]; then
       sed -i "/$IPSET_NAME/d" "$VPNSERVER_UP_FILE"
@@ -208,11 +209,23 @@ case "$VPN_CLIENT_INSTANCE" in
   ;;
 esac
 
+case "$VPN_SERVER_INSTANCE" in
+1)
+  VPN_SERVER_TUN="tun21"
+  ;;
+2)
+  VPN_SERVER_TUN="tun22"
+  ;;
+*)
+  Error_Exit "ERROR $VPN_SERVER_INSTANCE should be a 1 or 2"
+  ;;
+esac
+
 # Delete mode?
 if [ "$(echo $@ | grep -cw 'del')" -gt 0 ]; then
-  Routing_Rules "$VPN_SERVER_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK" "del"
+  Routing_Rules "$VPN_SERVER_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK" "$VPN_SERVER_TUN" "del"
 else
-  Routing_Rules "$VPN_SERVER_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK"
+  Routing_Rules "$VPN_SERVER_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK" "$VPN_SERVER_TUN"
 fi
 
 logger -t "($(basename "$0"))" $$ "Ending Script Execution"

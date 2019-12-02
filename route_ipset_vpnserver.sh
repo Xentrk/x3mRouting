@@ -3,7 +3,7 @@
 # Script: route_ipset_vpnserver.sh
 # VERSION=1.0.2
 # Author: Martineau, Xentrk
-# Date: 27-November-2019
+# Date: 2-December-2019
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -100,7 +100,7 @@ Routing_Rules() {
     fi
     sh "$VPNSERVER_UP_FILE"
   else # del option selected. delete entries
-    iptables -t mangle -D PREROUTING -i $VPN_SERVER_TUN -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
+    iptables -t mangle -D PREROUTING -i "$VPN_SERVER_TUN" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
     iptables -t nat -D POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
     if [ -s "$VPNSERVER_UP_FILE" ]; then
       sed -i "/$IPSET_NAME/d" "$VPNSERVER_UP_FILE"

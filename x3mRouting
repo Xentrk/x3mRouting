@@ -420,7 +420,7 @@ Download_File() {
 
 Exit_Message() {
 
-  printf '\n   %bhttps://github.com/Xentrk/Stubby-Installer-Asuswrt-Merlin%b\n' "$COLOR_GREEN" "$COLOR_WHITE\\n"
+  printf '\n              %bhttps://github.com/Xentrk/x3mRouting%b\n' "$COLOR_GREEN" "$COLOR_WHITE\\n"
   printf '                      Have a Grateful Day!\n\n'
   printf '           ____        _         _                           \n'
   printf '          |__  |      | |       | |                          \n'

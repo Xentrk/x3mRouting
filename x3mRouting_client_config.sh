@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting_client_config.sh
-# VERSION=1.0.1
+# VERSION=1.0.2
 # Author: Xentrk
-# 4-August-2019
+# 18-December-2019
 #
 #####################################################################################################
 # Description:
@@ -46,26 +46,34 @@ printf '|                                                             |\n'
 printf '|_____________________________________________________________|\n\n'
 
 # Retrieve Static DHCP assignments MAC and IP Address; remove < and > symbols and separate fields with a space.
-nvram get dhcp_staticlist | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/staticlist.$$
+if [ -s /jffs/nvram/dhcp_staticlist ]; then #HND Routers store dhcp_staticlist in a file
+  awk '{print $0}' /jffs/nvram/dhcp_staticlist | sed 's/<//;s/>undefined//;s/>/ /g;s/</ /g;s/  / /g' >/tmp/staticlist.$$
+else
+  nvram get dhcp_staticlist | sed 's/<//;s/>undefined//;s/>/ /g;s/</ /g;s/  / /g' >/tmp/staticlist.$$
+fi
 
 # Retrieve Static DHCP assignments MAC and hostname; remove < and > symbols and separate fields with a space.
-
 if [ -s /jffs/nvram/dhcp_hostnames ]; then #HND Routers store hostnames in a file
-  awk '{print $0}' /jffs/nvram/dhcp_hostnames | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/hostnames.$$
+  awk '{print $0}' /jffs/nvram/dhcp_hostnames | sed 's/<//;s/>undefined//;s/>/ /g;s/</ /g;s/  / /g' >/tmp/hostnames.$$
 else
-  nvram get dhcp_hostnames | sed 's/<//;s/>/ /g;s/</ /g' >/tmp/hostnames.$$
+  nvram get dhcp_hostnames | sed 's/<//;s/>undefined//;s/>/ /g;s/</ /g;s/  / /g' >/tmp/hostnames.$$
 fi
+
 # count number of fields in the file
 word_count_staticlist=$(head -1 /tmp/staticlist.$$ | wc -w)
 word_count_hostnames=$(head -1 /tmp/hostnames.$$ | wc -w)
 
 if [ "$word_count_staticlist" -ne "$word_count_hostnames" ]; then
-  echo "Unexpected error condition dhcp_staticlist and dhcp_hostnames don't match"
-else
-  # count number of static leases. This is the number of loops required to get IP address and client name
-  # divide word_count by 2 since client information is listed in groups of 2 fields: MAC_Address and IP_Address
-  static_leases_count=$((word_count_staticlist / 2))
+  echo "Warning: dhcp_staticlist and dhcp_hostnames word count do not match"
+  echo "This indicates you have not entered hostnames for some static IP reservations"
+  echo "Best practice is to enter descriptive hostnames"
+  echo " "
+  echo "Press enter to continue"
+  read -r
 fi
+
+static_leases_count=$((word_count_staticlist / 2))
+hostname_count=$((word_count_hostnames / 2))
 
 # write MAC and IP Addresses for Static DHCP LAN Clients to /tmp/MACIP.$$
 true >/tmp/MACIP.$$

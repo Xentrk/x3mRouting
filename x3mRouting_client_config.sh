@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting_client_config.sh
-# VERSION=1.0.2
+# VERSION=1.0.3
 # Author: Xentrk
-# 18-December-2019
+# 30-December-2019
 #
 #####################################################################################################
 # Description:
@@ -96,7 +96,7 @@ loop_count=1
 MAC=1
 HOSTNAME=2
 
-while [ "$loop_count" -le "$static_leases_count" ]; do
+while [ "$loop_count" -le "$hostname_count" ]; do
   cut -d' ' -f"$MAC","$HOSTNAME" </tmp/hostnames.$$ >>"/tmp/MACHOSTNAMES.$$"
   MAC=$((MAC + 2))
   HOSTNAME=$((HOSTNAME + 2))

@@ -1270,15 +1270,13 @@
 													</tr>
 													<tr>
 														<th>
-															<#2877#>
+															Import .ovpn file
 														</th>
 														<td>
 															<input id="ovpnfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
-															<input id="" class="button_gen" onclick="ImportOvpn();" type="button" value="<#1297#>" />
+															<input id="" class="button_gen" onclick="ImportOvpn();" type="button" value="Upload" />
 															<img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
-															<span id="importOvpnFile" style="display:none;">
-																<#264#>
-															</span>
+															<span id="importOvpnFile" style="display:none;">Complete</span>
 														</td>
 													</tr>
 												</table>

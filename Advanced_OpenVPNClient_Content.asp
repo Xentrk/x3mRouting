@@ -1125,8 +1125,8 @@
 						</tbody>
 					</table>
 					<div style="margin-top:5px;width:100%;text-align:center;">
-						<input class="button_gen" type="button" onclick="cancel_Keys();" value="<#150#>">
-						<input class="button_gen" type="button" onclick="save_Keys();" value="<#1288#>">
+						<input class="button_gen" type="button" onclick="cancel_Keys();" value="Cancel">
+						<input class="button_gen" type="button" onclick="save_Keys();" value="Save">
 					</div>
 				</td>
 			</tr>

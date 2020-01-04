@@ -79,7 +79,7 @@ By default, the script assigns each LAN client to the OVPNC1 interface.  After r
     2 192.168.1.153 iPad
     1 192.168.1.154 Lenovo-Laptop
 
-If an existing **/jffs/configs/x3mRouting_client_rules** file exists, a backup copy of the existing **x3mRouting_client_rules** file is made by appending the timestamp to the existing file.  You only need to run this script if you have made changes to DHCP static assignments or accidently deleted the **/jffs/configs/x3mRouting_client_rules** file.  
+If an existing **/jffs/configs/x3mRouting_client_rules** file exists, a backup copy of the existing **x3mRouting_client_rules** file is made by appending the timestamp to the existing file.  You only need to run this script if you have made changes to DHCP static assignments or accidentally deleted the **/jffs/configs/x3mRouting_client_rules** file.  
 
 #### x3mRouting_client_nvram.sh
 **x3mRouting_client_nvram.sh** is the second script to run. This script will create the nvram files

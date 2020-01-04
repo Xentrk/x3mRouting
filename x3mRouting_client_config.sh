@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting_client_config.sh
-# VERSION=1.0.3
+# VERSION=1.0.4
 # Author: Xentrk
-# 30-December-2019
+# 4-January-2019
 #
 #####################################################################################################
 # Description:
@@ -45,69 +45,54 @@ printf '|  /_/\_\|___ |_|_|_|\___|\___||_|\_\[] \___\\\____/|_|_|_|    |\n'
 printf '|                                                             |\n'
 printf '|_____________________________________________________________|\n\n'
 
-# Retrieve Static DHCP assignments MAC and IP Address; remove < and > symbols and separate fields with a space.
-if [ -s /jffs/nvram/dhcp_staticlist ]; then #HND Routers store dhcp_staticlist in a file
-  awk '{print $0}' /jffs/nvram/dhcp_staticlist | sed 's/<//;s/>undefined//;s/>/ /g;s/</ /g;s/  / /g' >/tmp/staticlist.$$
-else
-  nvram get dhcp_staticlist | sed 's/<//;s/>undefined//;s/>/ /g;s/</ /g;s/  / /g' >/tmp/staticlist.$$
-fi
+Parse_Hostnames() {
 
-# Retrieve Static DHCP assignments MAC and hostname; remove < and > symbols and separate fields with a space.
-if [ -s /jffs/nvram/dhcp_hostnames ]; then #HND Routers store hostnames in a file
-  awk '{print $0}' /jffs/nvram/dhcp_hostnames | sed 's/<//;s/>undefined//;s/>/ /g;s/</ /g;s/  / /g' >/tmp/hostnames.$$
-else
-  nvram get dhcp_hostnames | sed 's/<//;s/>undefined//;s/>/ /g;s/</ /g;s/  / /g' >/tmp/hostnames.$$
-fi
+  true >/tmp/hostnames.$$
+  OLDIFS=$IFS
+  IFS="<"
 
-# count number of fields in the file
-word_count_staticlist=$(head -1 /tmp/staticlist.$$ | wc -w)
-word_count_hostnames=$(head -1 /tmp/hostnames.$$ | wc -w)
+  for ENTRY in $HOSTNAME_LIST; do
+    if [ "$ENTRY" = "" ]; then
+      continue
+    fi
+    MACID=$(echo "$ENTRY" | cut -d ">" -f 1)
+    HOSTNAME=$(echo "$ENTRY" | cut -d ">" -f 2)
+    echo "$MACID $HOSTNAME" >>/tmp/hostnames.$$
+  done
 
-if [ "$word_count_staticlist" -ne "$word_count_hostnames" ]; then
-  echo "Warning: dhcp_staticlist and dhcp_hostnames word count do not match"
-  echo "This indicates you have not entered hostnames for some static IP reservations"
-  echo "Best practice is to enter descriptive hostnames"
-  echo " "
-  echo "Press enter to continue"
-  read -r
-fi
+  IFS=$OLDIFS
+}
 
-static_leases_count=$((word_count_staticlist / 2))
-hostname_count=$((word_count_hostnames / 2))
+Save_MacIpHostname_Format() {
 
-# write MAC and IP Addresses for Static DHCP LAN Clients to /tmp/MACIP.$$
-true >/tmp/MACIP.$$
+  # Obtain MAC and IP address from dhcp_staticlist and exclude DNS field by filtering using the first three octets of the lan_ipaddr
+  if [ -s /jffs/nvram/dhcp_staticlist ]; then #HND Routers store dhcp_staticlist in a file
+    awk '{print $0}' /jffs/nvram/dhcp_staticlist | grep -oE "((([0-9a-fA-F]{2})[ :-]){5}[0-9a-fA-F]{2})|(([0-9a-fA-F]){6}[:-]([0-9a-fA-F]){6})|([0-9a-fA-F]{12})" >/tmp/static_mac.$$
+    awk '{print $0}' /jffs/nvram/dhcp_staticlist | grep -oE "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" | grep "$(nvram get lan_ipaddr | grep -Eo '([0-9]{1,3}\.[0-9]{1,3}(\.[0-9]{1,3}))')" >/tmp/static_ip.$$
+  else # non-HND Routers store dhcp_staticlist in nvram
+    nvram get dhcp_staticlist | grep -oE "((([0-9a-fA-F]{2})[ :-]){5}[0-9a-fA-F]{2})|(([0-9a-fA-F]){6}[:-]([0-9a-fA-F]){6})|([0-9a-fA-F]{12})" >/tmp/static_mac.$$
+    nvram get dhcp_staticlist | grep -oE "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" | grep "$(nvram get lan_ipaddr | grep -Eo '([0-9]{1,3}\.[0-9]{1,3}(\.[0-9]{1,3}))')" >/tmp/static_ip.$$
+  fi
 
-loop_count=1
-MAC=1
-IP=2
+  # output /tmp/static_mac.$$ and /tmp/static_ip.$$ to /tmp/staticlist.$$ in two columns side by side
+  #https://www.unix.com/shell-programming-and-scripting/161826-how-combine-2-files-into-1-file-2-columns.html
+  awk 'NR==FNR{a[i++]=$0};{b[x++]=$0;};{k=x-i};END{for(j=0;j<i;) print a[j++],b[k++]}' /tmp/static_mac.$$ /tmp/static_ip.$$ >/tmp/staticlist.$$
 
-while [ "$loop_count" -le "$static_leases_count" ]; do
-  cut -d' ' -f"$MAC","$IP" </tmp/staticlist.$$ >>"/tmp/MACIP.$$"
-  MAC=$((MAC + 2))
-  IP=$((IP + 2))
-  loop_count=$((loop_count + 1))
-done
+  if [ -s /jffs/nvram/dhcp_hostnames ]; then #HND Routers store hostnames in a file
+    HOSTNAME_LIST=$(awk '{print $0}' /jffs/nvram/dhcp_hostnames | sed 's/>undefined//')
+  else
+    HOSTNAME_LIST=$(nvram get dhcp_hostnames | sed 's/>undefined//')
+  fi
 
-# write MAC and HOSTNAME for Static DHCP LAN Clients to /tmp/MACHOSTNAMES.$$
-true >/tmp/MACHOSTNAMES.$$
+  # Have to parse by internal field separator since hostnames are not required
+  Parse_Hostnames
 
-loop_count=1
-MAC=1
-HOSTNAME=2
-
-while [ "$loop_count" -le "$hostname_count" ]; do
-  cut -d' ' -f"$MAC","$HOSTNAME" </tmp/hostnames.$$ >>"/tmp/MACHOSTNAMES.$$"
-  MAC=$((MAC + 2))
-  HOSTNAME=$((HOSTNAME + 2))
-  loop_count=$((loop_count + 1))
-done
-
-# Join the two files together to form one file containing MAC, IP, HOSTNAME
-awk '
-  NR==FNR { k[$1]=$2; next }
-  { print $0, k[$1] }
-' /tmp/MACHOSTNAMES.$$ /tmp/MACIP.$$ >/tmp/MACIPHOSTNAMES.$$
+  # Join the /tmp/hostnames.$$ and /tmp/staticlist.$$ files together to form one file containing MAC, IP, HOSTNAME
+  awk '
+    NR==FNR { k[$1]=$2; next }
+    { print $0, k[$1] }
+  ' /tmp/hostnames.$$ /tmp/staticlist.$$ >/tmp/MACIPHOSTNAMES.$$
+}
 
 # Check to see if a prior x3mRouting_rules file exists. Make a backup if it does.
 if [ -s "$CONFIG_FILE" ]; then
@@ -120,6 +105,8 @@ if [ -s "$CONFIG_FILE" ]; then
   fi
 fi
 
+Save_MacIpHostname_Format
+
 # write a new x3mRouting_rules file
 true >"$CONFIG_FILE"
 
@@ -130,10 +117,10 @@ done </tmp/MACIPHOSTNAMES.$$
 
 sort "$CONFIG_FILE" -o "$CONFIG_FILE"
 
+rm -rf /tmp/static_mac.$$
+rm -rf /tmp/static_ip.$$
 rm -rf /tmp/staticlist.$$
 rm -rf /tmp/hostnames.$$
-rm -rf /tmp/MACIP.$$
-rm -rf /tmp/MACHOSTNAMES.$$
 rm -rf /tmp/MACIPHOSTNAMES.$$
 
 # Default all lan clients to OVPNC1 interface

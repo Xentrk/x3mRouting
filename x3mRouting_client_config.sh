@@ -63,7 +63,7 @@ Parse_Hostnames() {
   IFS=$OLDIFS
 }
 
-Save_MacIpHostname_Format() {
+Save_Dnsmasq_Format() {
 
   # Obtain MAC and IP address from dhcp_staticlist and exclude DNS field by filtering using the first three octets of the lan_ipaddr
   if [ -s /jffs/nvram/dhcp_staticlist ]; then #HND Routers store dhcp_staticlist in a file
@@ -105,13 +105,13 @@ if [ -s "$CONFIG_FILE" ]; then
   fi
 fi
 
-Save_MacIpHostname_Format
+Save_Dnsmasq_Format
 
 # write a new x3mRouting_rules file
 true >"$CONFIG_FILE"
 
-# write IP and HOSTNAME for Static DHCP LAN Clients to $CONFIG_FILE
-while read -r MAC IP HOSTNAME; do
+# ignore mac addr and write IP and HOSTNAME for Static DHCP LAN Clients to $CONFIG_FILE
+while read -r _ IP HOSTNAME; do
   echo "$IP $HOSTNAME" >>$CONFIG_FILE
 done </tmp/MACIPHOSTNAMES.$$
 

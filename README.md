@@ -12,7 +12,7 @@ An alternative approach to automate and easily assign LAN clients to a WAN or Op
 
 #### 2. x3mRouting OpenVPN Client Screen & IPSET Shell Script Method
 
-Provides the ability to create IPSET lists using shell scripts and selectively route the IPSET lists by entering the IPSET name in a modified OpenVPN Client Screen.  
+Provides the ability to create IPSET lists using shell scripts and selectively route the IPSET lists thru the OpenVPN Client by entering the IPSET name in a modified OpenVPN Client Screen. You can't use the screen to route IPSET lists to the WAN interface. Use method 3 below instead.
 
 #### 3. x3mRouting IPSET Shell Script Method
 
@@ -90,7 +90,7 @@ Similar to the firmware, the next step is to bounce the OpenVPN Client interface
 The routing rules for LAN Clients will automatically be applied upon a system boot.  You only need to rerun **x3mRouting_client_nvram.sh** and bounce the OpenVPN client if you have made LAN Client interface assignment changes in the **/jffs/configs/x3mRouting_client_rules** file.  
 
 ### [2] ~ x3mRouting OpenVPN Client Screen & IPSET Shell Scripts Method
-As part of this project, you can also choose to download and install a modified OpenVPN Client screen to selectively route IPSET lists thru an OpenVPN Client.
+As part of this project, you can also choose to download and install a modified OpenVPN Client screen to selectively route IPSET lists thru an OpenVPN Client. You can't use the screen to route IPSET lists to the WAN interface. Use method 3 instead.
 
 [@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. I greatly appreciate his generosity in providing the modified code and allowing me to include it in the project.
 
@@ -226,7 +226,7 @@ Following is an exammple of how to configure /**jffs/scripts/nat-start** to crea
 
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh HULU_WEB hulu.com,hulustream.com,akamaihd.net
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh CBS_WEB cbs.com,cbsnews.com,cbssports.com,cbsaavideo.com,omtrdc.net,akamaihd.net,irdeto.com,cbsi.com,cbsig.net
-    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh BBC_WEB bbc.co.uk,bbc.com,bbc.gscontxt.net,bbci.co.uk,bbctvapps.co.uk,ssl-bbcsmarttv.2cnt.net,llnwd.net
+    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh BBC www.bbc.co.uk,bbc.co.uk,bbc.com,bbc.gscontxt.net,bbci.co.uk,bbctvapps.co.uk,ssl-bbcsmarttv.2cnt.net,llnwd.net
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh MOVETV movetv.com
 
 ### [3] ~ x3mRouting using the IPSET Shell Scripts Method
@@ -409,7 +409,7 @@ Following is an example of how to configure /**jffs/scripts/nat-start** to creat
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 1 HULU_WEB hulu.com,hulustream.com,akamaihd.net
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh 2 MOVETV movetv.com
     sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 2 CBS_WEB cbs.com,cbsnews.com,cbssports.com,cbsaavideo.com,omtrdc.net,akamaihd.net,irdeto.com,cbsi.com,cbsig.net
-    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 3 BBC_WEB bbc.co.uk,bbc.com,bbc.gscontxt.net,bbci.co.uk,bbctvapps.co.uk,ssl-bbcsmarttv.2cnt.net,llnwd.net
+    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 3 BBC www.bbc.co.uk,bbc.co.uk,bbc.com,bbc.gscontxt.net,bbci.co.uk,bbctvapps.co.uk,ssl-bbcsmarttv.2cnt.net,llnwd.net
 
 2. If you use **Method 1 - x3mRouting for LAN Clients Method** combined with **Method 3 - x3mRouting IPSET Shell Script Method**, don't use the nat-start method. Instead, select **Option 6 - Install x3mRouting OpenVPN Event** from the installation menu. In the project directory **/jffs/scripts/x3mRouting**, create a corresponding script called **vpnclientX-route-up** for each OpenVPN Client used for x3mRouting, where the "X" is the OpenVPN Client number 1, 2, 3, 4 or 5. Then, add the required entry for each x3mRouting script that requires routing through the OpenVPN Client.
 
@@ -463,7 +463,7 @@ The IPSET shell scripts for Amazon and AS Numbers will download new data when th
 The install script will add a function to **/jffs/configs/profile.add** called **liststats** that will list the name of all IPSET lists and the number of IP address entries. To use the function, type **liststats** from the SSH command line (Note: For first time users, you must open up a new SSH session after running the installation script). Following is the sample output:
 
     AMAZON - 326
-    BBC_WEB - 128
+    BBC - 128
     CBS - 57
     CBS_WEB - 82
     HULU_WEB - 8
@@ -546,7 +546,7 @@ The output will also display the number of packets and bytes traversing the ipta
     9    33488 6945K MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set AMAZON dst MARK set 0x1000
     10    129K 9898K MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set MOVETV dst MARK set 0x3000
     11   27284 5635K MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set CBS_WEB dst MARK set 0x3000
-    12       0     0 MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set BBC_WEB dst MARK set 0x4000
+    12       0     0 MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set BBC dst MARK set 0x4000
 
 
 #### Ad Blockers

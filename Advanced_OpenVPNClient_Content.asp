@@ -10,7 +10,7 @@
 	<link rel="shortcut icon" href="images/favicon.png">
 	<link rel="icon" href="images/favicon.png">
 	<title>
-		<#709#> - OpenVPN Client Settings
+		<#Web_Title#> - OpenVPN Client Settings
 	</title>
 	<link rel="stylesheet" type="text/css" href="index_style.css">
 	<link rel="stylesheet" type="text/css" href="form_style.css">
@@ -937,7 +937,7 @@
 			} else
 				hideClients_Block();
 		}
-//		<!-- Martineau Hack 10 of 12 IPSET  processing ###################################################-->
+		//		<!-- Martineau Hack 10 of 12 IPSET  processing ###################################################-->
 		function pullIPSETLANIPList(obj) {
 			var element = document.getElementById('ClientList_Block_PC');
 			var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
@@ -1207,7 +1207,7 @@
 										<tr bgcolor="#4D595D">
 											<td valign="top">
 												<div>&nbsp;</div>
-												<div class="formfonttitle">OpenVPN Client Settings</div>
+												<div class="formfonttitle">x3mRouting OpenVPN Client Settings</div>
 												<div id="divSwitchMenu" style="margin-top:-40px;float:right;"></div>
 												<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 												<div class="formfontdesc">
@@ -1258,8 +1258,8 @@
 													<tr>
 														<th>Automatic start at boot time</th>
 														<td>
-                              <input type="radio" name="vpn_client_x_eas" class="input" value="1"><#156#>
-                              <input type="radio" name="vpn_client_x_eas" class="input" value="0"><#155#>
+															<input type="radio" name="vpn_client_x_eas" class="input" value="1">Yes
+															<input type="radio" name="vpn_client_x_eas" class="input" value="0">No
 														</td>
 													</tr>
 													<tr>
@@ -1335,11 +1335,11 @@
 													<tr id="client_nat">
 														<th>Create NAT on tunnel</th>
 														<td>
-															<input type="radio" name="vpn_client_nat" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "1", "checked"); %>>
-															<#156#>
-																<input type="radio" name="vpn_client_nat" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "0", "checked"); %>>
-																<#155#>
-																	<span id="client_nat_warn_text">Routes must be configured manually.</span>
+															<input type="radio" name="vpn_client_nat" class="input" value="1" onclick="update_visibility();" checked>
+															Yes
+															<input type="radio" name="vpn_client_nat" class="input" value="0" onclick="update_visibility();">
+															No
+															<span id="client_nat_warn_text">Routes must be configured manually.</span>
 														</td>
 													</tr>
 													<tr>
@@ -1383,10 +1383,10 @@
 													<tr id="client_userauth">
 														<th>Username/Password Authentication</th>
 														<td>
-															<input type="radio" name="vpn_client_userauth" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_userauth", "1", "checked"); %>>
-															<#156#>
-																<input type="radio" name="vpn_client_userauth" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_userauth", "0", "checked"); %>>
-																<#155#>
+															<input type="radio" name="vpn_client_userauth" class="input" value="1" onclick="update_visibility();" checked>
+															Yes
+															<input type="radio" name="vpn_client_userauth" class="input" value="0" onclick="update_visibility();">
+															No
 														</td>
 													</tr>
 													<tr id="client_username">
@@ -1407,11 +1407,11 @@
 															Username / Password Auth. Only
 														</th>
 														<td>
-															<input type="radio" name="vpn_client_useronly" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_useronly", "1", "checked"); %>>
-															<#156#>
-																<input type="radio" name="vpn_client_useronly" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_useronly", "0", "checked"); %>>
-																<#155#>
-																	<span id="client_ca_warn_text">Warning: You must define a Certificate Authority.</span>
+															<input type="radio" name="vpn_client_useronly" class="input" value="1" onclick="update_visibility();" checked>
+															Yes
+															<input type="radio" name="vpn_client_useronly" class="input" value="0" onclick="update_visibility();">
+															No
+															<span id="client_ca_warn_text">Warning: You must define a Certificate Authority.</span>
 														</td>
 													</tr>
 												</table>
@@ -1514,11 +1514,11 @@
 									<tr id="client_tlsremote">
 										<th>Verify Server Certificate</th>
 										<td>
-											<input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="1" <% nvram_match_x("", "vpn_client_tlsremote", "1", "checked"); %>>
-											<#156#>
-												<input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="0" <% nvram_match_x("", "vpn_client_tlsremote", "0", "checked"); %>>
-												<#155#>
-													<label style="padding-left:3em;" id="client_cn_label">Common name:</label><input type="text" maxlength="255" class="input_25_table" id="vpn_client_cn" name="vpn_client_cn" value="<% nvram_get("vpn_client_cn"); %>">
+											<input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="1">
+											Yes
+											<input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="0" checked>
+											No
+											<label style="padding-left:3em;" id="client_cn_label">Common name:</label><input type="text" maxlength="255" class="input_25_table" id="vpn_client_cn" name="vpn_client_cn" value="">
 										</td>
 									</tr>
 									<tr>
@@ -1533,10 +1533,10 @@
 									<tr id="client_enforce">
 										<th>Block routed clients if tunnel goes down</th>
 										<td>
-											<input type="radio" name="vpn_client_enforce" class="input" value="1" <% nvram_match_x("", "vpn_client_enforce", "1", "checked"); %>>
-											<#156#>
-												<input type="radio" name="vpn_client_enforce" class="input" value="0" <% nvram_match_x("", "vpn_client_enforce", "0", "checked"); %>>
-												<#155#>
+											<input type="radio" name="vpn_client_enforce" class="input" value="1">
+											Yes
+											<input type="radio" name="vpn_client_enforce" class="input" value="0" checked>
+											No
 										</td>
 									</tr>
 								</table>
@@ -1545,7 +1545,7 @@
 										<tr>
 											<!-- Martineau Hack 11 of 12 #####################################################################-->
 											<td colspan="5">Rules for routing client traffic through the tunnel (Max Limit : &nbsp;100) Patched by Martineau v2.01/Xentrk 384.12/14
-													<!-- Martineau Hack -->
+												<!-- Martineau Hack -->
 											</td>
 											<!-- Martineau Hack ############################################################################-->
 										</tr>

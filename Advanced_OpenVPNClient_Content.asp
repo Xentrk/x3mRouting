@@ -1533,10 +1533,8 @@
 									<tr id="client_enforce">
 										<th>Block routed clients if tunnel goes down</th>
 										<td>
-											<input type="radio" name="vpn_client_enforce" class="input" value="1">
-											Yes
-											<input type="radio" name="vpn_client_enforce" class="input" value="0" checked>
-											No
+											<input type="radio" name="vpn_client_enforce" class="input" value="1" <% nvram_match_x("", "vpn_client_enforce", "1", "checked"); %>>Yes
+							        <input type="radio" name="vpn_client_enforce" class="input" value="0" <% nvram_match_x("", "vpn_client_enforce", "0", "checked"); %>> No
 										</td>
 									</tr>
 								</table>

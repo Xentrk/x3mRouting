@@ -37,9 +37,9 @@ Routing_Rules() {
   IFACE="$2"
   DEL_FLAG="$3"
 
-  VPN_SERVER_SUBNET="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24"
-  IPTABLES_DEL_ENTRY="iptables -t nat -D POSTROUTING -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE 2>/dev/null"
-  IPTABLES_APP_ENTRY="iptables -t nat -A POSTROUTING -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE"
+  #VPN_SERVER_SUBNET="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24" #i think it's best practice to keep this var hardcoded on ope event script, so it can keep up if user changes IP range 
+  IPTABLES_DEL_ENTRY="iptables -t nat -D POSTROUTING -s $(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24 -o $IFACE -j MASQUERADE 2>/dev/null"
+  IPTABLES_APP_ENTRY="iptables -t nat -A POSTROUTING -s $(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24 -o $IFACE -j MASQUERADE"
 
   VPNSERVER_UP_FILE="/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-up"
   VPNSERVER_DOWN_FILE="/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-down"

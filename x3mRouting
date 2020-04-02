@@ -631,9 +631,6 @@ Install_Route_IPSET_Vpnserver() {
 
 Check_OpenVPN_Event() {
 
-  PROJECT_DIR="/jffs/scripts/x3mRouting"
-  OPENVPN_EVENT_FILE="openvpn-event"
-
     while true; do
       if [ -s /jffs/scripts/openvpn-event ]; then
         if [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" "/jffs/scripts/openvpn-event")" -eq 0 ]; then # see if line exists

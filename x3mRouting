@@ -628,6 +628,9 @@ Check_OpenVPN_Event() {
 
   if [ -s "$PROJECT_DIR/$OPENVPN_EVENT_FILE" ]; then
     # file exists
+    if [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" "/jffs/scripts/openvpn-event")" -eq 0 ]; then # exists, but if there isn't on scripts folder, do
+      printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
+    fi
     return
   else
     while true; do
@@ -643,6 +646,9 @@ Check_OpenVPN_Event() {
       case "$User_Option" in
       1)
         Download_File /jffs/scripts/x3mRouting openvpn-event
+        if [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" "/jffs/scripts/openvpn-event")" -eq 0 ]; then #
+          printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
+        fi
         printf '\nUpdate Complete!\n'
         break
         ;;

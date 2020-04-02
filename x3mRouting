@@ -244,6 +244,8 @@ Update_Version() {
                     printf 'No new version of %b%s%b to update - latest is %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
                   fi
                 fi
+                #if there's new openvpn file, push it to scripts folder
+                printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
               fi
             fi
           fi

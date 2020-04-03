@@ -35,14 +35,15 @@ Routing_Rules() {
 
   VPN_SERVER_INSTANCE="$1"
   IFACE="$2"
-  DEL_FLAG="$3"
+  VPN_CLIENT_INSTANCE="$3"
+  DEL_FLAG="$4"
 
   VPN_SERVER_SUBNET="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24"
   IPTABLES_DEL_ENTRY="iptables -t nat -D POSTROUTING -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE 2>/dev/null"
   IPTABLES_APP_ENTRY="iptables -t nat -A POSTROUTING -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE"
 
-  VPNSERVER_UP_FILE="/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-up"
-  VPNSERVER_DOWN_FILE="/jffs/scripts/x3mRouting/vpnserver$VPN_SERVER_INSTANCE-down"
+  VPNSERVER_UP_FILE="/jffs/scripts/x3mRouting/vpnclient$VPN_CLIENT_INSTANCE-route-up"
+  VPNSERVER_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient$VPN_CLIENT_INSTANCE-down"
 
   if [ "$DEL_FLAG" != "del" ]; then #add entry
     if [ -s "$VPNSERVER_UP_FILE" ]; then #file exists
@@ -175,9 +176,9 @@ esac
 
 # Delete mode?
 if [ "$(echo $@ | grep -cw 'del')" -gt 0 ]; then
-  Routing_Rules "$VPN_SERVER_INSTANCE" "$IFACE" "del"
+  Routing_Rules "$VPN_SERVER_INSTANCE" "$IFACE" "$VPN_CLIENT_INSTANCE" "del"
 else
-  Routing_Rules "$VPN_SERVER_INSTANCE" "$IFACE"
+  Routing_Rules "$VPN_SERVER_INSTANCE" "$IFACE" "$VPN_CLIENT_INSTANCE"
 fi
 
 logger -t "($(basename "$0"))" $$ "Ending Script Execution"

@@ -58,14 +58,13 @@ Main_Menu() {
   printf '%b[3]%b  Install OpenVPN Event & x3mRouting.sh Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[4]%b  Install getdomainnames.sh Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[5]%b  Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[6]%b  Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[7]%b  Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[6]%b  Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   localmd5="$(md5sum "/opt/bin/x3mRouting" | awk '{print $1}')"
   remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/x3mRouting" | md5sum | awk '{print $1}')"
   if [ "$localmd5" != "$remotemd5" ]; then
-    printf '%b[8]%b  Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[7]%b  Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   fi
-  if [ ! -f "LOCAL_REPO/x3mRouting.sh" ]; then
+  if [ ! -f "$LOCAL_REPO/x3mRouting.sh" ]; then
     printf '%b[u]%b  Update to new version of x3mRouting\n' "${COLOR_RED}" "${COLOR_WHITE}"
   fi
   printf '\n%b[e]%b  Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
@@ -98,14 +97,10 @@ Main_Menu() {
       return 1
       ;;
     6)
-      Confirm_Update force
-      return 1
-      ;;
-    7)
       Validate_Removal
       return 1
       ;;
-    8)
+    7)
       Update_Installer
       return 1
       ;;
@@ -154,55 +149,29 @@ Validate_Removal() {
 Confirm_Update() {
 
   while true; do
-    if [ -z "$1" ]; then
-      printf '\n\nThis option will check your current installation and update any files that have changed\n'
-      printf 'since you last installed the repository.  Updating is highly recommended to get the most recent.\n'
-      printf 'files. Chosing this option will not update missing files. Select the install option from the\n'
-      printf 'menu to reinstall missing files\n\n'
-      printf 'Would you like to check and download any files that have been updated?\n'
-      printf '%b[1]%b  --> Yes\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-      printf '%b[2]%b  --> No\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-      echo
-      printf '[1-2]: '
-      read -r "Confirm_Update_Option"
-      case "$Confirm_Update_Option" in
-      1)
-        Update_Version
-        break
-        ;;
-      2)
-        Welcome_Message
-        break
-        ;;
-      *)
-        echo "[*] $Confirm_Update_Option Isn't An Option!"
-        ;;
-      esac
-    else
-      printf '\n\nThis option will check your current installation and force update any files\n'
-      printf 'found installed in the x3mRouting repository.\n'
-      printf 'Chosing this option will not update missing files. Select the install option from the\n'
-      printf 'menu to reinstall missing files\n\n'
-      printf 'Would you like to check and download any files that have been updated?\n'
-      printf '%b[1]%b  --> Yes\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-      printf '%b[2]%b  --> No\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-      echo
-      printf '[1-2]: '
-      read -r "Confirm_Update_Option"
-      case "$Confirm_Update_Option" in
-      1)
-        Update_Version force
-        break
-        ;;
-      2)
-        Welcome_Message
-        break
-        ;;
-      *)
-        echo "[*] $Confirm_Update_Option Isn't An Option!"
-        ;;
-      esac
-    fi
+    printf '\n\nThis option will check your current installation and update any files that have changed\n'
+    printf 'since you last installed the repository.  Updating is highly recommended to get the most recent.\n'
+    printf 'files. Chosing this option will not update missing files. Select the install option from the\n'
+    printf 'menu to reinstall missing files\n\n'
+    printf 'Would you like to check and download any files that have been updated?\n'
+    printf '%b[1]%b  --> Yes\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[2]%b  --> No\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    echo
+    printf '[1-2]: '
+    read -r "Confirm_Update_Option"
+    case "$Confirm_Update_Option" in
+    1)
+      Update_Version
+      break
+      ;;
+    2)
+      Welcome_Message
+      break
+      ;;
+    *)
+      echo "[*] $Confirm_Update_Option Isn't An Option!"
+      ;;
+    esac
   done
 }
 
@@ -224,7 +193,7 @@ Update_Version() {
       openvpn-event \
       getdomainnames.sh; do
       if [ -s "$DIR/$FILE" ]; then
-        if [ -z "$1" ]; then
+        #if [ -z "$1" ]; then
           if [ "$FILE" != "vpnrouting.sh" ]; then
             if [ "$FILE" != "updown-client.sh" ]; then
               if [ "$FILE" != "Advanced_OpenVPNClient_Content.asp" ]; then
@@ -246,15 +215,7 @@ Update_Version() {
             printf 'MD5 hash of %b%s%b does not match - downloading %b%s%b\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$COLOR_GREEN" "$FILE" "$COLOR_WHITE"
             Download_File "$DIR" "$FILE"
           fi
-        fi
-
-        case "$1" in
-        force)
-          serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE 'v[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
-          echo "Downloading latest version $serverver of $FILE"
-          Download_File "$DIR" "$FILE"
-          ;;
-        esac
+        #fi
       fi
     done
   else

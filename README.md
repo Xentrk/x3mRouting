@@ -12,31 +12,31 @@ An alternative approach to automate and easily assign LAN clients to a WAN or Op
 
 #### 2. OpenVPN Client GUI, OpenVPN Event & x3mRouting Script Method
 
-Provides the ability to create IPSET lists using the **x3mRouting.sh** script and selectively routing the IPSET lists thru the OpenVPN Client by entering the IPSET name in a modified OpenVPN Client Screen. You can't use the screen to route IPSET lists to the WAN interface at this time. Use method 3 below instead.
+Provides the ability to create IPSET lists using the **x3mRouting.sh** script and selectively route the IPSET lists thru the OpenVPN Client by entering the IPSET name in a modified OpenVPN Client Screen. You can't use the screen to route IPSET lists to the WAN interface at this time. Use method 3 below instead.
 
 #### 3. x3mRouting Script Method
 
 Provides the ability to create and selectively route IPSET lists to the WAN or OpenVPN Client interfaces using the **x3mRouting.sh** script.
 
-#### x3mRouting.sh Additional Features
+### x3mRouting.sh Additional Features
 
 The x3mRouting.sh script also provides the ability to
 
   * Route all VPN Server traffic to one of the VPN Clients.
   * Selectively route VPN Server traffic to an existing LAN routing rule for an IPSET list.
 
-#### 4. openvpn-event Script
+### openvpn-event Script
 
-**openvpn-event** will call OpenVPN related scripts located in **/jffs/scripts/x3mRouting** based on OpenVPN Client or Server events such as
+**openvpn-event** will call OpenVPN related scripts such as:
 
   * vpnclient1-route-up
   * vpnclient1-route-pre-down
   * vpnserver2-up
   * vpnserver2-down
 
-(It supports up to 5 clients for the latest Merlin,
+located in **/jffs/scripts/x3mRouting** based on OpenVPN Client or Server events.
 
-Detailed descriptions and usage examples of each method are listed in the **x3mRouting Methods** section below.
+x3mRouting uses the **openvpn-event** script during an OpenVPN "up" event to create the IPSET list and routing rule and during an OpenVPN "down" event to remove the routing rule. **openvpn-event** is automatically installed when selecting options 2 and 3.
 
 ## Support
 For help and support, please visit the Asuswrt-Merlin x3mRouting support thread on [snbforums.com](https://www.snbforums.com/threads/x3mrouting-selective-routing-for-asuswrt-merlin-firmware.57793/#post-506675).

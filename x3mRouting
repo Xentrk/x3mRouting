@@ -56,14 +56,14 @@ Main_Menu() {
   printf '%b[1]%b  Install LAN Clients Method\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[2]%b  Install OpenVPN Client GUI, OpenVPN Event & x3mRouting Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[3]%b  Install OpenVPN Event & x3mRouting Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[4]%b  Install OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[5]%b  Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[6]%b  Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[7]%b  Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+#  printf '%b[4]%b  Install OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[4]%b  Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[4]%b  Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[6]%b  Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   localmd5="$(md5sum "/opt/bin/x3mRouting" | awk '{print $1}')"
   remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/x3mRouting" | md5sum | awk '{print $1}')"
   if [ "$localmd5" != "$remotemd5" ]; then
-    printf '%b[8]%b  Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[7]%b  Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   fi
   if [ ! -f "LOCAL_REPO/x3mRouting.sh" ]; then
     printf '%b[u]%b  Update to new version of x3mRouting\n' "${COLOR_RED}" "${COLOR_WHITE}"
@@ -90,22 +90,18 @@ Main_Menu() {
       return 1
       ;;
     4)
-      Install_x3mRouting_OpenVPN_Event
-      return 1
-      ;;
-    5)
       Confirm_Update
       return 1
       ;;
-    6)
+    5)
       Confirm_Update force
       return 1
       ;;
-    7)
+    6)
       Validate_Removal
       return 1
       ;;
-    8)
+    7)
       Update_Installer
       return 1
       ;;
@@ -115,6 +111,10 @@ Main_Menu() {
       ;;
     e)
       Exit_Message
+      ;;
+    o)
+      Install_x3mRouting_OpenVPN_Event
+      return 1
       ;;
     *)
       printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu1" "$COLOR_WHITE"

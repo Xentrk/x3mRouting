@@ -106,6 +106,7 @@ Main_Menu() {
       ;;
     u)
       Update_NewVersion
+      Update_Version
       return 1
       ;;
     e)

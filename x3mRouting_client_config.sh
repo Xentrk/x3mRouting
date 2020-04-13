@@ -1,20 +1,20 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting_client_config.sh
-# VERSION=1.0.4
+# VERSION=1.0.5
 # Author: Xentrk
-# 4-January-2019
+# 13-April-2020
 #
 #####################################################################################################
 # Description:
 #
-# Create the file /jffs/configs/x3mRouting_rules.  The file contains a separate line for each for each LAN
-# client with a static IP assignment.  Each record contains three fields separated by a space.  The first
+# Create the file x3mRouting_client_rules in the x3mRouting directory. The file contains a separate line for each for each LAN
+# client with a static IP assignment. Each record contains three fields separated by a space. The first
 # field is number representing the interface assignment, followed by the LAN client IP address and
 # description.  By default, each LAN client is assigned to the OVPNC1 interface.  The user must edit
-# /jffs/configs/x3mRouting_rules and assign the interface for each LAN client after running the script.  If
-# an existing /jffs/configs/x3mRouting_rules file exists, a backup copy of the existing x3mRouting_rules file will be
-# made by appending the timestamp to the existing /jffs/configs/x3mRouting_rules file.
+# x3mRouting_client_rules and assign the interface for each LAN client after running the script.  If
+# an existing x3mRouting_client_rules file exists, a backup copy of the existing x3mRouting_client_rules file will be
+# made by appending the timestamp to the existing x3mRouting_client_rules file.
 #
 #####################################################################################################
 logger -st "($(basename "$0"))" $$ Starting Script Execution
@@ -22,9 +22,9 @@ logger -st "($(basename "$0"))" $$ Starting Script Execution
 # Uncomment the line below for debugging
 #set -x
 
-VERSION="1.0.0"
+VERSION="1.0.5"
 GITHUB_URL="https://github.com/Xentrk/x3mRouting"
-CONFIG_FILE="/jffs/configs/x3mRouting_client_rules"
+CONFIG_FILE="/jffs/scripts/x3mRouting/x3mRouting_client_rules"
 COLOR_WHITE='\033[0m'
 COLOR_GREEN='\e[0;32m'
 
@@ -140,6 +140,7 @@ sed -i '1s/^/#########################################################\n/' "$CON
 
 printf '\nYou must now edit %b%s%b and\n' "$COLOR_GREEN" "$CONFIG_FILE" "$COLOR_WHITE"
 printf 'assign the interface for each LAN client.\n'
+printf 'When done, execute the %bx3mRouting_client_nvram.sh%b script and bounce the VPN Clients\n' "$COLOR_GREEN" "$COLOR_WHITE"
 printf '\n'
 
 logger -st "($(basename "$0"))" $$ Ending Script Execution

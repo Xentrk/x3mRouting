@@ -53,10 +53,10 @@ Welcome_Message() {
 }
 
 Main_Menu() {
-  printf '%b[1]%b  Install x3mRouting for LAN Clients\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[2]%b  Install x3mRouting OpenVPN Client GUI, OpenVPN Event & Routing Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[3]%b  Install x3mRouting OpenVPN Event & Routing Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[4]%b  Install x3mRouting OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[1]%b  Install LAN Clients\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[2]%b  Install OpenVPN Client GUI, OpenVPN Event & x3mRouting Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[3]%b  Install OpenVPN Event & x3mRouting Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[4]%b  Install OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[5]%b  Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[6]%b  Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[7]%b  Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"

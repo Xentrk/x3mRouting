@@ -6,25 +6,24 @@
 ## Introduction
 The features of **x3mRouting** include four selective routing methods to choose from:
 
-#### 1. x3mRouting for LAN Clients Method
+#### 1. LAN Clients Method
 
 An alternative approach to automate and easily assign LAN clients to a WAN or OpenVPN Client interface. This method eliminates the need to enter the LAN Client information and IP addresses in the OpenVPN Client Screen. The **x3mRouting for LAN Client Method** can be used by itself or with one of the two methods below.
 
-#### 2. x3mRouting OpenVPN Client Screen & IPSET Shell Script Method
+#### 2. OpenVPN Client GUI, OpenVPN Event & x3mRouting Script Method
 
-Provides the ability to create IPSET lists using shell scripts and selectively route the IPSET lists thru the OpenVPN Client by entering the IPSET name in a modified OpenVPN Client Screen. You can't use the screen to route IPSET lists to the WAN interface. Use method 3 below instead.
+Provides the ability to create IPSET lists using shell scripts and selectively routing the IPSET lists thru the OpenVPN Client by entering the IPSET name in a modified OpenVPN Client Screen. You can't use the screen to route IPSET lists to the WAN interface at this time. Use method 3 below instead.
 
-#### 3. x3mRouting IPSET Shell Script Method
+#### 3. x3mRouting Script Method
 
-Provides the ability to create and selectively route IPSET lists using shell scripts. If you're the person who likes to flash alpha and beta software releases and perform firmware updates once they become available, then this is the method for you. No modifications to the firmware source code are used in this method.
+Provides the ability to create and selectively route IPSET lists using the **x3mRouting.sh** shell script.
 
-#### 4. Route ALL VPN Server Traffic to a VPN Client
+#### x3mRouting Script Additional Features
 
-Provides the ability to route all VPN Server traffic to one of the VPN Clients.
+The x3mRouting.sh script also provides the ability to
 
-#### 5. Route VPN Server Traffic to a VPN Client via an IPSET List
-
-Provides the ability to selectively route VPN Server traffic to a VPN Client via an IPSET list.
+  * Route all VPN Server traffic to one of the VPN Clients.
+  * Selectively route VPN Server traffic to an existing LAN routing rule for an IPSET list.
 
 Detailed descriptions and usage examples of each method are listed in the **x3mRouting Methods** section below.
 
@@ -89,7 +88,7 @@ Similar to the firmware, the next step is to bounce the OpenVPN Client interface
 
 The routing rules for LAN Clients will automatically be applied upon a system boot.  You only need to rerun **x3mRouting_client_nvram.sh** and bounce the OpenVPN client if you have made LAN Client interface assignment changes in the **/jffs/configs/x3mRouting_client_rules** file.  
 
-### [2] ~ x3mRouting OpenVPN Client Screen & IPSET Shell Scripts Method
+### [2] ~ x3mRouting OpenVPN Client GUI, OpenVPN Event & Routing Script Method
 As part of this project, you can also choose to download and install a modified OpenVPN Client screen to selectively route IPSET lists thru an OpenVPN Client. You can't use the screen to route IPSET lists to the WAN interface. Use method 3 instead.
 
 [@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. I greatly appreciate his generosity in providing the modified code and allowing me to include it in the project.
@@ -107,14 +106,14 @@ The OpenVPN Client Screen accepts single and multiple dimension IPSET lists. See
 A video tutorial on how to allow the use of IPSET lists via the Selective routing VPN Client Policy Routing Screen can be viewed on [Vimeo](https://vimeo.com/287067217).
 
 #### DummyVPN
-In the screen picture above, you will notice an entry for **DummyVPN1**. For the Selective routing of Ports/MACs and IPSETs, [@Martineau](https://www.snbforums.com/members/martineau.13215/) recommends creating a “dummy” VPN Client entry if you require the ability to exploit the **Accept DNS Configuration=Exclusive** option that only creates the appropriate DNSVPN iptable chain if the table isn't empty. Use a valid IPv4 address for the DummyVPN entry that differs from your LAN IPv4 address range. I recommend using a [bogon IP addres](https://ipinfo.io/bogon) for this purpose.    
+In the screen picture above, you will notice an entry for **DummyVPN1**. For the Selective routing of Ports/MACs and IPSETs, [@Martineau](https://www.snbforums.com/members/martineau.13215/) recommends creating a “dummy” VPN Client entry if you require the ability to exploit the **Accept DNS Configuration=Exclusive** option that only creates the appropriate DNSVPN iptables chain if the table isn't empty. Use a valid IPv4 address for the DummyVPN entry that differs from your LAN IPv4 address range. I recommend using a [bogon IP addres](https://ipinfo.io/bogon) for this purpose.    
 
 #### IPSET Save/Restore File Location
 By default, all of the scripts will store backup copies of the IPSET lists in the **/opt/tmp** entware directory. This will allow the IPSET lists to be restored on system boot. If you prefer, you can specify another directory location by passing a directory parameter to the script. Usage examples are provided below.
 
 #### Shell Script Usage Examples for use with the modified OpenVPN Client Screen
 
-##### load_AMAZON_ipset.sh
+##### Valid Amazon AWS Regions
 This script will create an IPSET list called containing all IPv4 address for the Amazon AWS region specified. The source file used by the script is provided by Amazon at https://ip-ranges.amazonaws.com/ip-ranges.json. The AMAZON US region is required to route Amazon Prime traffic. You must specify one of the regions below when creating the IPSET list:
 
 * AP - Asia Pacific
@@ -212,22 +211,6 @@ Example:
     ipset=/akadns.net/edgekey.net/edgesuite.net/epgsky.com/sky.com/SKY from 'a674.hsar.cdn.sky.com.edgesuite.net/adm.sky.com/assets.sky.com/assets.sky.com-secure.edgekey.net/awk.epgsky.com' etc...
 
 In order to have the IPSET lists restored at boot, execute the scripts from **/jffs/scripts/nat-start**. Refer to the [Wiki](https://github.com/RMerl/asuswrt-merlin/wiki/User-scripts#creating-scripts ) for instructions on how to configure nat-start.
-
-#### /jffs/scripts/nat-start example
-Following is an exammple of how to configure /**jffs/scripts/nat-start** to create the IPSET lists for streaming media traffic at system boot.
-
-    #!/bin/sh
-    sh /jffs/scripts/x3mRouting/load_AMAZON_ipset.sh AMAZON-US US
-
-    sh /jffs/scripts/x3mRouting/load_MANUAL_ipset.sh BBC
-
-    sh /jffs/scripts/x3mRouting/load_ASN_ipset.sh HULU AS23286
-    sh /jffs/scripts/x3mRouting/load_ASN_ipset.sh NETFLIX AS2906
-
-    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh HULU_WEB hulu.com,hulustream.com,akamaihd.net
-    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh CBS_WEB cbs.com,cbsnews.com,cbssports.com,cbsaavideo.com,omtrdc.net,akamaihd.net,irdeto.com,cbsi.com,cbsig.net
-    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh BBC www.bbc.co.uk,bbc.co.uk,bbc.com,bbc.gscontxt.net,bbci.co.uk,bbctvapps.co.uk,ssl-bbcsmarttv.2cnt.net,llnwd.net
-    sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset.sh MOVETV movetv.com
 
 ### [3] ~ x3mRouting using the IPSET Shell Scripts Method
 This method is intended for users who want the ability to create and route traffic using IPSET lists, but prefer to use Asuswrt-Merlin firmware without the firmware modifications utilized by the method listed above.
@@ -576,14 +559,8 @@ The installation menu **x3mRouting** will display a menu with the options to ins
 |mount_files_lan.sh                 | X |   |   |
 |mount_files_gui.sh                 |   | X |   |
 |Advanced_OpenVPNClient_Content.asp |   | X |   |  
-|load_AMAZON_ipset.sh               |   | X |   |
-|load_ASN_ipset.sh                  |   | X |   |
-|load_DNSMASQ_ipset.sh              |   | X |   |
-|load_MANUAL_ipset.sh               |   | X |   |
-|load_AMAZON_ipset_iface.sh         |   |   | X |
-|load_ASN_ipset_iface.sh            |   |   | X |
-|load_DNSMASQ_ipset_iface_ipset.sh  |   |   | X |
-|load_MANUAL_ipset_iface_ipset.sh   |   |   | X |
+|x3mRouting.sh                      |   | X | X |
+|openvpn-event                      |   | X | X |
 
 ## Acknowledgements
 I want to acknowledge the following [snbforums](https://www.snbforums.com) members who helped make this project possible.
@@ -593,7 +570,7 @@ As part of the ongoing collaboration, Martineau had modified a selective routing
 
 Martineau also contributed the modified **OpenVPN Client screen**, the [Vimeo](https://vimeo.com/287067217) video and **Chk_Entware** function used in the project.
 
-* [Adamm](https://github.com/Adamm00) contributed the **Lock File** function that prevents the scripts from running concurrently. His method is much cleaner when compared to the previous method I had been using. The code for restoring the IPSET lists using the **awk** method and the **md5sum** check function to detect updated code on GitHub were also inspired by Adamm.
+* [Adamm](https://github.com/Adamm00) contributed the code for restoring the IPSET lists using the **awk** method and the **md5sum** check function to detect updated code on GitHub were also inspired by Adamm.
 
 * For the installation script, [Jack Yaz](https://github.com/jackyaz/spdMerlin) gave me permission to clone the code he used for the update code function (also inspired by Adamm) used on the [SpdMerlin](https://github.com/jackyaz/spdMerlin) project on GitHub.
 

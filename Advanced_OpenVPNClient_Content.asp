@@ -579,7 +579,7 @@
 				}
 			}
 			//<!-- Martineau Hack ############################################################################-->
-			if (tmp_value == "<" + "<#1851#>" || tmp_value == "<")
+			if (tmp_value == "<" + "Total Guest" || tmp_value == "<")
 				tmp_value = "";
 			if (isSupport("hnd")) {
 				split_clientlist(tmp_value);
@@ -640,7 +640,7 @@
 
 		function ovpnFileChecker() {
 			var missing;
-			document.getElementById("importOvpnFile").innerHTML = "<#264#>";
+			document.getElementById("importOvpnFile").innerHTML = ".If you can't get back setting page later, please renew IP configuration of your computer.";
 			$.ajax({
 				url: '/ajax_openvpn_server.asp',
 				dataType: 'script',
@@ -699,7 +699,7 @@
 			code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="clientlist_table">';
 			codeipset += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="IPSETlist_table">';
 			if (clientlist_row.length == 1)
-				code += '<tr><td style="color:#FFCC00;" colspan="6"><#1851#></td></tr>';
+				code += '<tr><td style="color:#FFCC00;" colspan="6">Total Guest</td></tr>';
 			else {
 				for (var i = 1; i < clientlist_row.length; i++) {
 
@@ -749,7 +749,7 @@
 			var rule_num = document.getElementById('clientlist_table').rows.length;
 			var item_num = document.getElementById('clientlist_table').rows[0].cells.length;
 			if (rule_num >= upper) {
-				alert("<#1909#> " + upper + " <#1910#>");
+				alert("Temporarily unable to get the latest firmware information. Please try again later. " + upper + " Band");
 				return false;
 			}
 			if (!validator.safeName(document.form.clientlist_deviceName))
@@ -772,7 +772,7 @@
 				for (i = 0; i < rule_num; i++) {
 					if (document.form.clientlist_ipAddr.value.toLowerCase() == document.getElementById('clientlist_table').rows[i].cells[1].innerHTML.toLowerCase() &&
 						document.form.clientlist_dstipAddr.value.toLowerCase() == document.getElementById('clientlist_table').rows[i].cells[2].innerHTML.toLowerCase()) {
-						alert("<#920#> " + "<#2836#> " + "<#2811#>"); //<!-- Martineau Hack 3 of 8 -->
+						alert("Successfully added <span class='amesh_device_info'></span> to your AiMesh system, it will take a while to show up as connected in the AiMesh router list. " + "Osaka, Sapporo, Tokyo " + "Abu Dhabi, Muscat"); //<!-- Martineau Hack 3 of 8 -->
 						document.form.clientlist_ipAddr.focus();
 						document.form.clientlist_ipAddr.select();
 						return false;
@@ -792,7 +792,7 @@
 			var item_num = document.getElementById('clientlist_table').rows[0].cells.length;
 			var dimx = ""
 			if (rule_num >= upper) {
-				alert("<#1891#> " + upper + " <#1892#>");
+				alert("Duplicate port number with HTTP and HTTPS WAN port setting. " + upper + " NAT (Network Address Translation) is a process used in routers to replace the address information of network packet with new address information. Typical applications for NAT is router which connect to LAN with the WAN. In LAN every network devices had a private IP(LAN IP) but there is only one public IP(WAN IP). To grant the network devices access to the Internet, the router replaces the private IP address of the sender with its own public IP address in all outgoing data packets. The router saves all necessary information in a table(NAT table) so that incoming data packets can then be assigned on the correct network device.");
 				return false;
 			}
 			if (document.form.clientlist_IPSETName.value == "")
@@ -1070,8 +1070,8 @@
 			<tr>
 				<div style="margin-left:30px; margin-top:10px;">
 					<p>
-						<#2856#> <span style="color:#FFCC00;">----- BEGIN xxx ----- </span>/<span style="color:#FFCC00;"> ----- END xxx -----</span>
-							<#2857#>
+						An online update is available <span style="color:#FFCC00;">----- BEGIN xxx ----- </span>/<span style="color:#FFCC00;"> ----- END xxx -----</span>
+							Updating...
 								<p>Limit: 7999 characters per field
 				</div>
 				<div style="margin:5px;*margin-left:-5px;width: 730px; height: 2px;" class="splitLine"></div>
@@ -1326,9 +1326,9 @@
 														<th>Server is on the same subnet</th>
 														<td>
 															<input type="radio" name="vpn_client_bridge" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_bridge", "1", "checked"); %>>
-															<#140#>
+															Static IP allows your PC to use a fixed IP address provided by your ISP.
 																<input type="radio" name="vpn_client_bridge" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_bridge", "0", "checked"); %>>
-																<#139#>
+																L2TP VPN connection requires username, password, some ISP require fixed IP address.
 																	<span id="client_bridge_warn_text">Warning: Cannot bridge distinct subnets. Will default to routed mode.</span>
 														</td>
 													</tr>
@@ -1566,7 +1566,7 @@
 										<td width="29%">
 											<input type="text" class="input_18_table" maxlength="18" name="clientlist_ipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" onClick="hideClients_Block();" autocomplete="off" autocorrect="off"
 												autocapitalize="off">
-											<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="<#2428#>">
+											<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="User in use:">
 											<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
 										</td>
 										<td width="25%">
@@ -1605,7 +1605,7 @@
 										</td>
 										<td width="29%">
 											<input type="text" class="input_18_table" maxlength="18" name="clientlist_IPSETipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
-											<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullIPSETLANIPList(this);" title="<#2410#>" onmouseover="over_var=1;"
+											<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullIPSETLANIPList(this);" title="Enable PPPoE relay allows devices in LAN to establish a individual PPPoE connections that passes through NAT." onmouseover="over_var=1;"
 												onmouseout="over_var=0;">
 											<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
 										</td>

@@ -56,14 +56,14 @@ Main_Menu() {
   printf '%b[1]%b  Install LAN Client Routing\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[2]%b  Install OpenVPN Client GUI, OpenVPN Event & x3mRouting.sh Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[3]%b  Install OpenVPN Event & x3mRouting.sh Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-#  printf '%b[4]%b  Install OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[4]%b  Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[5]%b  Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[6]%b  Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[4]%b  Install getdomainnames.sh Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[5]%b  Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[6]%b  Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[7]%b  Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   localmd5="$(md5sum "/opt/bin/x3mRouting" | awk '{print $1}')"
   remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/x3mRouting" | md5sum | awk '{print $1}')"
   if [ "$localmd5" != "$remotemd5" ]; then
-    printf '%b[7]%b  Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[8]%b  Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   fi
   if [ ! -f "LOCAL_REPO/x3mRouting.sh" ]; then
     printf '%b[u]%b  Update to new version of x3mRouting\n' "${COLOR_RED}" "${COLOR_WHITE}"
@@ -90,18 +90,22 @@ Main_Menu() {
       return 1
       ;;
     4)
-      Confirm_Update
+      Download_File "$LOCAL_REPO" "getdomainnames.sh"
       return 1
       ;;
     5)
-      Confirm_Update force
+      Confirm_Update
       return 1
       ;;
     6)
-      Validate_Removal
+      Confirm_Update force
       return 1
       ;;
     7)
+      Validate_Removal
+      return 1
+      ;;
+    8)
       Update_Installer
       return 1
       ;;
@@ -217,15 +221,16 @@ Update_Version() {
       x3mRouting_client_config.sh \
       mount_files_lan.sh \
       mount_files_gui.sh \
-      openvpn-event;do
+      openvpn-event \
+      getdomainnames.sh; do
       if [ -s "$DIR/$FILE" ]; then
         if [ -z "$1" ]; then
           if [ "$FILE" != "vpnrouting.sh" ]; then
             if [ "$FILE" != "updown-client.sh" ]; then
               if [ "$FILE" != "Advanced_OpenVPNClient_Content.asp" ]; then
-                  # force_update="false"
-                  localver=$(grep "VERSION=" "$DIR/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
-                  serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
+                # force_update="false"
+                localver=$(grep "VERSION=" "$DIR/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
+                serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
                 if [ "$localver" != "$serverver" ]; then
                   printf 'New version of %b%s%b available - updating to %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
                   Download_File "$DIR" "$FILE"
@@ -250,10 +255,6 @@ Update_Version() {
           Download_File "$DIR" "$FILE"
           ;;
         esac
-
-        #    else
-        #	    echo "Project Repository directory $DIR not found"
-        #	    echo "Select the install option from the main menu to install the respository"
       fi
     done
   else
@@ -409,214 +410,210 @@ Update_NewVersion() {
       done
     fi
 
-}
+  }
 
-Check_For_Shebang() {
+  Check_For_Shebang() {
 
-  CLIENTX_FILE=$1
-  SHEBANG_COUNT=0
-  EMPTY_LINE_COUNT=0
-  NOT_EMPTY_LINE_COUNT=0
-  COMMENT_LINE_COUNT=0
+    CLIENTX_FILE=$1
+    SHEBANG_COUNT=0
+    EMPTY_LINE_COUNT=0
+    NOT_EMPTY_LINE_COUNT=0
+    COMMENT_LINE_COUNT=0
 
-  if [ -f "$CLIENTX_FILE" ]; then # file exists
-    while read -r LINE || [ -n "$LINE" ]
-    do
-      if [ "$LINE" = "#!/bin/sh" ]; then
-        SHEBANG_COUNT=$((SHEBANG_COUNT + 1))
-        continue
-      fi
+    if [ -f "$CLIENTX_FILE" ]; then # file exists
+      while read -r LINE || [ -n "$LINE" ]; do
+        if [ "$LINE" = "#!/bin/sh" ]; then
+          SHEBANG_COUNT=$((SHEBANG_COUNT + 1))
+          continue
+        fi
 
-      linetype=$(echo "$LINE" | awk '{ string=substr($0, 1, 1); print string; }')
-      if [ "$linetype" = "#" ]; then
-        COMMENT_LINE_COUNT=$((COMMENT_LINE_COUNT + 1))
-        continue
-      fi
+        linetype=$(echo "$LINE" | awk '{ string=substr($0, 1, 1); print string; }')
+        if [ "$linetype" = "#" ]; then
+          COMMENT_LINE_COUNT=$((COMMENT_LINE_COUNT + 1))
+          continue
+        fi
 
-      if [ -z "$LINE" ]; then
-	      EMPTY_LINE_COUNT=$((EMPTY_LINE_COUNT + 1))
-        continue
-      fi
+        if [ -z "$LINE" ]; then
+	       EMPTY_LINE_COUNT=$((EMPTY_LINE_COUNT + 1))
+          continue
+        fi
 
-      if [ -n "$LINE" ]; then
-	      NOT_EMPTY_LINE_COUNT=$((NOT_EMPTY_LINE_COUNT + 1))
-        continue
-      fi
-    done < "$CLIENTX_FILE"
-  else
-    return
-  fi
-
-  if [ "$NOT_EMPTY_LINE_COUNT" -eq 0 ]; then
-    printf '\n\n%s\n' "$CLIENTX_FILE has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
-    printf '%s\n' "Would you like to remove $TESTMYFILE?"
-    printf '[1]  --> Yes\n'
-    printf '[2]  --> No\n'
-    echo
-    while true; do
-      printf '[1-2]: '
-      read -r "OPTION"
-      case "$OPTION" in
-      1)
-        rm "$CLIENTX_FILE"
-        echo "$CLIENTX_FILE file deleted"
-        return
-        ;;
-      2)
-        return
-        ;;
-      *)
-        echo "[*] $OPTION Isn't An Option!"
-        ;;
-      esac
-    done
-  else
-    printf '\n\n%s\n' "$CLIENTX_FILE has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
-    printf '%s\n' "Skipping removal of $CLIENTX_FILE."
-  fi
-
-}
-
-# Remove old version entries from nat-start
-Remove_From_nat_start() {
-
-  if [ -s "$NAT_START" ]; then
-    TIMESTAMP=$(date +"%Y-%m-%d-%H.%M.%S")
-    if ! cp "$NAT_START" "$NAT_START"."$TIMESTAMP"; then
-      printf '\nBackup of the prior %s file could not be made.\n' "$NAT_START"
-      printf 'Exiting...\n'
-      return
+        if [ -n "$LINE" ]; then
+	        NOT_EMPTY_LINE_COUNT=$((NOT_EMPTY_LINE_COUNT + 1))
+          continue
+        fi
+      done < "$CLIENTX_FILE"
     else
-      printf '\nExisting %s file found.\n' "$NAT_START"
-      printf 'Backup file saved to %s.\n' "$NAT_START.$TIMESTAMP"
+      return
     fi
 
-    for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
-      if [ "$(grep -c "$OLD_FILE" "$NAT_START")" -ge "1" ]; then # if true, then lines exist
-        sed -i "/$OLD_FILE/d" "$NAT_START" && echo "Deleted $OLD_FILE entry from $NAT_START"
-        Check_For_Shebang "$NAT_START"
+    if [ "$NOT_EMPTY_LINE_COUNT" -eq 0 ]; then
+      printf '\n\n%s\n' "$CLIENTX_FILE has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
+      printf '%s\n' "Would you like to remove $TESTMYFILE?"
+      printf '[1]  --> Yes\n'
+      printf '[2]  --> No\n'
+      echo
+      while true; do
+        printf '[1-2]: '
+        read -r "OPTION"
+        case "$OPTION" in
+          1)
+            rm "$CLIENTX_FILE"
+            echo "$CLIENTX_FILE file deleted"
+            return
+            ;;
+          2)
+            return
+            ;;
+          *)
+            echo "[*] $OPTION Isn't An Option!"
+            ;;
+        esac
+      done
+    else
+      printf '\n\n%s\n' "$CLIENTX_FILE has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
+      printf '%s\n' "Skipping removal of $CLIENTX_FILE."
+    fi
+
+  }
+
+  # Remove old version entries from nat-start
+  Remove_From_nat_start() {
+
+    if [ -s "$NAT_START" ]; then
+      TIMESTAMP=$(date +"%Y-%m-%d-%H.%M.%S")
+      if ! cp "$NAT_START" "$NAT_START"."$TIMESTAMP"; then
+        printf '\nBackup of the prior %s file could not be made.\n' "$NAT_START"
+        printf 'Exiting...\n'
+        return
+      else
+        printf '\nExisting %s file found.\n' "$NAT_START"
+        printf 'Backup file saved to %s.\n' "$NAT_START.$TIMESTAMP"
       fi
-    done
-  fi
 
-}
+      for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
+        if [ "$(grep -c "$OLD_FILE" "$NAT_START")" -ge "1" ]; then # if true, then lines exist
+          sed -i "/$OLD_FILE/d" "$NAT_START" && echo "Deleted $OLD_FILE entry from $NAT_START"
+          Check_For_Shebang "$NAT_START"
+        fi
+      done
+    fi
 
-# Remove old version entries from vpnclienX-route-up file
-Remove_From_UP_File() {
+  }
 
-  for VPNID in 1 2 3 4 5; do
-    UP_FILE=/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-up
-    if [ -s "$UP_FILE" ]; then # file exists
+  # Remove old version entries from vpnclienX-route-up file
+  Remove_From_UP_File() {
+
+    for VPNID in 1 2 3 4 5; do
+      UP_FILE=/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-up
+      if [ -s "$UP_FILE" ]; then # file exists
       for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
         if [ "$(grep -c "$OLD_FILE" "$UP_FILE")" -ge "1" ]; then # if true, then lines exist
           sed -i "/$OLD_FILE/d" "$UP_FILE"
           Check_For_Shebang "$UP_FILE"
         fi
       done
+      fi
+    done
+
+  }
+
+  Remove_Old_Files() {
+
+    for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
+    [ -f "$PROJECT_REPO/$OLD_FILE" ] && rm "$PROJECT_REPO/$OLD_FILE" echo "Obsolete $PROJECT_REPO/$OLD_FILE file deleted" || echo "Obsolete $PROJECT_REPO/$OLD_FILE file does not exist"
+    done
+
+  }
+
+  # Processing Options
+  # If a previous version of the conversion file exists, back it up to prevent overwrite as a second run may corrupt it
+  if [ -f "$PROJECT_REPO/x3mRouting_Conversion.sh" ]; then
+    TIMESTAMP=$(date +"%Y-%m-%d-%H.%M.%S")
+    if ! cp "$PROJECT_REPO/x3mRouting_Conversion.sh" "$PROJECT_REPO/x3mRouting_Conversion.sh.$TIMESTAMP"; then
+      printf '\nBackup of the prior %s file could not be made.\n' "$PROJECT_REPO/x3mRouting_Conversion.sh"
+      printf 'Exiting...\n'
+      exit 0
+    else
+      printf '\nExisting %s file found.\n' "$PROJECT_REPO/x3mRouting_Conversion.sh"
+      printf 'Backup file saved to %s.\n' "$PROJECT_REPO/x3mRouting_Conversion.sh.$TIMESTAMP"
+    fi
+  fi
+
+  # Process any vpnclientX-route-up files in x3mRouting directory
+  for VPNID in 1 2 3 4 5; do
+    UP_FILE=/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-up
+    if [ -s "$UP_FILE" ]; then # file exists
+      Process_File "$UP_FILE"
     fi
   done
 
-}
+  # Process nat-start
+  if [ -f "$NAT_START" ]; then
+    Process_File "$NAT_START"
+  fi
 
-Remove_Old_Files() {
+  # add shebang to the first line before exiting
+  if [ -s "$CONV_FILE" ]; then
+    sed -i '1s/^/#!\/bin\/sh\/\n/' "$CONV_FILE"
+    echo "Created $CONV_FILE script to assist with the conversion."
+    echo "Please review the script before running"
+  else
+    echo "$CONV_FILE script not created. No valid x3mRouting entries found in $NAT_START or vpnclientX- route-up files."
+    rm "$CONV_FILE"
+  fi
 
-  for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
-    [ -f "$PROJECT_REPO/$OLD_FILE" ] && rm "$PROJECT_REPO/$OLD_FILE" echo "Obsolete $PROJECT_REPO/$OLD_FILE file deleted" || echo "Obsolete $PROJECT_REPO/$OLD_FILE file does not exist"
+  # Give user the option to remove the prior verson of any x3mRouting entries found in $NAT_START or vpnclientX-route-up files"
+
+  printf '%s\n' "Would you like to check for and remove obsolete x3mRouting files from $PROJECT_REPO?"
+  printf '%s\n' "The recommondation is to select option 1 in order to maintain a clean project repository."
+  printf '%s\n\n' "x3mRouting backup files are stored in the $PROJECT_REPO/backup directory for easy recovery."
+  printf '[1]  --> Yes\n'
+  printf '[2]  --> No\n'
+  echo
+  while true; do
+    printf '[1-2]: '
+    read -r "OPTION"
+    case "$OPTION" in
+      1)
+        Remove_Old_Files
+        break
+        ;;
+      2)
+        break
+        ;;
+      *)
+        echo "[*] $OPTION Isn't An Option!"
+        ;;
+    esac
   done
 
-}
-
-## End of Functions
-
-## ============================== Begin
-
-# If a previous version of the conversion file exists, back it up to prevent overwrite as a second run may corrupt it
-if [ -f "$PROJECT_REPO/x3mRouting_Conversion.sh" ]; then
-  TIMESTAMP=$(date +"%Y-%m-%d-%H.%M.%S")
-  if ! cp "$PROJECT_REPO/x3mRouting_Conversion.sh" "$PROJECT_REPO/x3mRouting_Conversion.sh.$TIMESTAMP"; then
-    printf '\nBackup of the prior %s file could not be made.\n' "$PROJECT_REPO/x3mRouting_Conversion.sh"
-    printf 'Exiting...\n'
-    exit 0
-  else
-    printf '\nExisting %s file found.\n' "$PROJECT_REPO/x3mRouting_Conversion.sh"
-    printf 'Backup file saved to %s.\n' "$PROJECT_REPO/x3mRouting_Conversion.sh.$TIMESTAMP"
-  fi
-fi
-
-# Process any vpnclientX-route-up files in x3mRouting directory
-for VPNID in 1 2 3 4 5; do
-  UP_FILE=/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-up
-  if [ -s "$UP_FILE" ]; then # file exists
-    Process_File "$UP_FILE"
-  fi
-done
-
-# Process nat-start
-if [ -f "$NAT_START" ]; then
-  Process_File "$NAT_START"
-fi
-
-# add shebang to the first line before exiting
-if [ -s "$CONV_FILE" ]; then
-  sed -i '1s/^/#!\/bin\/sh\/\n/' "$CONV_FILE"
-  echo "Created $CONV_FILE script to assist with the conversion."
-  echo "Please review the script before running"
-else
-  echo "$CONV_FILE script not created. No valid x3mRouting entries found in $NAT_START or vpnclientX-route-up files."
-  rm "$CONV_FILE"
-fi
-
-# Give user the option to remove the prior verson of any x3mRouting entries found in $NAT_START or vpnclientX-route-up files"
-
-printf '%s\n' "Would you like to check for and remove obsolete x3mRouting files from $PROJECT_REPO?"
-printf '%s\n' "The recommondation is to select option 1 in order to maintain a clean project repository."
-printf '%s\n\n' "x3mRouting backup files are stored in the $PROJECT_REPO/backup directory for easy recovery."
-printf '[1]  --> Yes\n'
-printf '[2]  --> No\n'
-echo
-while true; do
-  printf '[1-2]: '
-  read -r "OPTION"
-  case "$OPTION" in
-  1)
-    Remove_Old_Files
-    break
-    ;;
-  2)
-    break
-    ;;
-  *)
-    echo "[*] $OPTION Isn't An Option!"
-    ;;
-    esac
-done
-
-printf '%s\n' "Would you like to check for and remove prior x3mRouting version entries found in $NAT_START or vpnclientX-route-up files?"
-printf '%s\n' "The recommondation is to select option 1 in order to remove prior x3mRouting version entries."
-printf '%s\n\n' "Backup files are stored in the $PROJECT_REPO/backup directory for easy recovery."
-printf '[1]  --> Yes\n'
-printf '[2]  --> No\n'
-echo
-while true; do
-  printf '[1-2]: '
-  read -r "OPTION"
-  case "$OPTION" in
-  1)
-    Remove_From_nat_start
-    Remove_From_UP_File
-    break
-    ;;
-  2)
-    break
-    ;;
-  *)
-    echo "[*] $OPTION Isn't An Option!"
-    ;;
-    esac
-done
+  printf '%s\n' "Would you like to check for and remove prior x3mRouting version entries found in $NAT_START or vpnclientX-route-up files?"
+  printf '%s\n' "The recommondation is to select option 1 in order to remove prior x3mRouting version entries."
+  printf '%s\n\n' "Backup files are stored in the $PROJECT_REPO/backup directory for easy recovery."
+  printf '[1]  --> Yes\n'
+  printf '[2]  --> No\n'
+  echo
+    while true; do
+      printf '[1-2]: '
+      read -r "OPTION"
+      case "$OPTION" in
+        1)
+          Remove_From_nat_start
+          Remove_From_UP_File
+          break
+          ;;
+        2)
+          break
+          ;;
+        *)
+          echo "[*] $OPTION Isn't An Option!"
+          ;;
+      esac
+    done
 
 }
-
+### End of Conversion Function
 
 Remove_Existing_Installation() {
   echo "Starting removal of x3mRouting Repository"
@@ -677,8 +674,8 @@ Remove_Existing_Installation() {
       printf '\n%b"/opt/bin/x3mRouting"%b menu file removed\n' "$COLOR_GREEN" "$COLOR_WHITE"
     fi
   fi
-
   Exit_Message
+
 }
 
 Chk_Entware() {

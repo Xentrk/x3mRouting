@@ -272,7 +272,7 @@ Update_NewVersion() {
   # This script will clean-up old files and create a conversion file
 
   PROJECT_REPO=/jffs/scripts/x3mRouting
-  NAT_START=/jffs/scripts/nat-start-bkup
+  NAT_START=/jffs/scripts/nat-start
   CONV_FILE=/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh
 
   # Only Backup the Old Project Repo Directory during the first run to prevent potential corruption

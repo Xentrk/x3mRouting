@@ -53,12 +53,12 @@ Welcome_Message() {
 }
 
 Main_Menu() {
-  printf '%b[1]%b  Install LAN Clients Method\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[2]%b  Install OpenVPN Client GUI, OpenVPN Event & x3mRouting Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[3]%b  Install OpenVPN Event & x3mRouting Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[1]%b  Install LAN Client Routing\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[2]%b  Install OpenVPN Client GUI, OpenVPN Event & x3mRouting.sh Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[3]%b  Install OpenVPN Event & x3mRouting.sh Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
 #  printf '%b[4]%b  Install OpenVPN Event\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[4]%b  Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-  printf '%b[4]%b  Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+  printf '%b[5]%b  Force update existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   printf '%b[6]%b  Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   localmd5="$(md5sum "/opt/bin/x3mRouting" | awk '{print $1}')"
   remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/x3mRouting" | md5sum | awk '{print $1}')"

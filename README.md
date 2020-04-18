@@ -26,6 +26,10 @@
     * one or more IPv4 address when creating an IPSET list.
     * one or more search criteria for domain names when using the 'autoscan' option.
     * that a routing rule to be applied to a single LAN IP addresses or IP address range.
+  * Added ability to display usage notes by passing the 'help' parameter
+````
+sh x3mRouting.sh help
+````
 
 #### LAN Client Routing Changes
   * The script **x3mRouting_client_config.sh** now stores the output file **x3mRouting_client_config** in **/jffs/scripts/x3mRouting** rather than **/jffs/configs**.

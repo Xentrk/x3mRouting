@@ -106,7 +106,6 @@ Main_Menu() {
       ;;
     u)
       Update_NewVersion
-      Update_Version
       return 1
       ;;
     e)
@@ -238,18 +237,7 @@ Update_NewVersion() {
   NAT_START=/jffs/scripts/nat-start
   CONV_FILE=/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh
 
-  # Only Backup the Old Project Repo Directory during the first run to prevent potential corruption
-  if [ -d "$PROJECT_REPO" ]; then
-    if [ ! -d "$PROJECT_REPO/backup" ]; then
-      mkdir "$PROJECT_REPO/backup"
-      cp -a "$PROJECT_REPO/." "$PROJECT_REPO/backup/ >/dev/null 2>&1"
-    else
-      echo "Existing backup directory found. Skipping backup step."
-    fi
-  fi
-
-  true > "$CONV_FILE" && chmod 755 "$CONV_FILE"
-
+  # START: Functions
   Conversion_Msg() {
     {
       echo "# Source File====> $FILE"
@@ -488,7 +476,22 @@ Update_NewVersion() {
 
   }
 
-  # Processing Options
+  # END: Conversion Functions
+
+  # START: Process Conversion
+
+  # Only Backup the Project Repo Directory during the first run to prevent potential corruption
+  if [ -d "$PROJECT_REPO" ]; then
+    if [ ! -d "$PROJECT_REPO/backup" ]; then
+      mkdir "$PROJECT_REPO/backup"
+      cp -a "$PROJECT_REPO/." "$PROJECT_REPO/backup/ >/dev/null 2>&1"
+    else
+      echo "Existing backup directory found. Skipping backup step."
+    fi
+  fi
+
+  true > "$CONV_FILE" && chmod 755 "$CONV_FILE"
+
   # If a previous version of the conversion file exists, back it up to prevent overwrite as a second run may corrupt it
   if [ -f "$PROJECT_REPO/x3mRouting_Conversion.sh" ]; then
     TIMESTAMP=$(date +"%Y-%m-%d-%H.%M.%S")
@@ -500,6 +503,20 @@ Update_NewVersion() {
       printf '\nExisting %s file found.\n' "$PROJECT_REPO/x3mRouting_Conversion.sh"
       printf 'Backup file saved to %s.\n' "$PROJECT_REPO/x3mRouting_Conversion.sh.$TIMESTAMP"
     fi
+  fi
+
+  # Migrate any ovpncX.nvram files in /jffs/configs
+  for VPNID in 1 2 3 4 5; do
+    CFG_FILE=/jffs/configs/ovpnc${VPNID}.nvram
+    if [ -s "$CFG_FILE" ]; then # file exists
+      mkdir -p /jffs/addons/x3mRouting
+      mv "$CFG_FILE" /jffs/addons/x3mRouting/ovpnc${VPNID}.nvram && printf '%s\n' "$CFG_FILE moved to /jffs/addons/x3mRouting/ovpnc${VPNID}.nvram"
+    fi
+  done
+
+  # Migrate /jffs/configs/x3mRouting_client_rules
+  if [ -s "/jffs/configs/x3mRouting_client_rules" ]; then # file exists
+    mv /jffs/configs/x3mRouting_client_rules /jffs/scripts/x3mRouting/x3mRouting_client_rules && printf '%s\n' "$/jffs/configs/x3mRouting_client_rules moved to /jffs/scripts/x3mRouting/x3mRouting_client_rules"
   fi
 
   # Process any vpnclientX-route-up files in x3mRouting directory

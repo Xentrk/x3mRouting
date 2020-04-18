@@ -32,9 +32,10 @@
   * The script **x3mRouting_client_nvram.sh** now stores the nvram files in **/jffs/addons/x3mRouting** rather than **/jffs/configs**.
 
 ## Version 2.0.0 Update process
+
   1)  Type 'x3mRouting' at the command line to access the Installation Menu
   2)  Select the '[10]  Update x3mRouting Menu' option
-  3)  After the update has completed, select the '[u]  Update to new version of x3mRouting'
+  3)  After the update has completed, select the '[u]  Update to new version of x3mRouting' option
   4)  A backup of the current x3mRouting directory will be stored in /jffs/scripts/x3mRouting/backup
   5)  Obsolete scripts will be removed
   6)  OpenVPN Client nvram rules used by LAN Client Routing will get moved from **/jffs/configs** to **/jffs/addons/x3mRouting_config** and the x3mRouting_client_rules file to **/jffs/scripts/x3mRouting** from the **/jffs/configs** directory.

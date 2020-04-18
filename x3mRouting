@@ -544,28 +544,28 @@ Update_NewVersion() {
 
   # Give user the option to remove the prior verson of any x3mRouting entries found in $NAT_START or vpnclientX-route-up files"
 
-  printf '%s\n' "Would you like to check for and remove obsolete x3mRouting files from $PROJECT_REPO?"
-  printf '%s\n' "The recommondation is to select option 1 in order to maintain a clean project repository."
-  printf '%s\n\n' "x3mRouting backup files are stored in the $PROJECT_REPO/backup directory for easy recovery."
-  printf '[1]  --> Yes\n'
-  printf '[2]  --> No\n'
-  echo
-  while true; do
-    printf '[1-2]: '
-    read -r "OPTION"
-    case "$OPTION" in
-      1)
+  #printf '%s\n' "Would you like to check for and remove obsolete x3mRouting #files from $PROJECT_REPO?"
+  #printf '%s\n' "The recommondation is to select option 1 in order to maintain #a clean project repository."
+  #printf '%s\n\n' "x3mRouting backup files are stored in the $PROJECT_REPO/backup directory for easy recovery."
+  #printf '[1]  --> Yes\n'
+  #printf '[2]  --> No\n'
+  #echo
+  #while true; do
+  #  printf '[1-2]: '
+  #  read -r "OPTION"
+  #  case "$OPTION" in
+  #    1)
         Remove_Old_Files
-        break
-        ;;
-      2)
-        break
-        ;;
-      *)
-        echo "[*] $OPTION Isn't An Option!"
-        ;;
-    esac
-  done
+  #      break
+  #      ;;
+  #    2)
+  #      break
+  #      ;;
+  #    *)
+  #      echo "[*] $OPTION Isn't An Option!"
+  #      ;;
+  #  esac
+  #done
 
   printf '%s\n' "Would you like to check for and remove prior x3mRouting version entries found in $NAT_START or vpnclientX-route-up files?"
   printf '%s\n' "The recommondation is to select option 1 in order to remove prior x3mRouting version entries."

@@ -3,56 +3,79 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/561d1570ed1f4d6aab76bba172f6b31f)](https://www.codacy.com/app/Xentrk/x3mRouting?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Xentrk/x3mRouting&amp;utm_campaign=Badge_Grade)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
+## Version 2.0.0 Changes
+
+#### VPN Server and Client Routing Script Changes
+  * The separate scripts for:
+    * IPSET list creation and routing using the ASN, Amazon AWS, dnsmasq and Manual methods
+    * VPN Server to VPN Client routing
+    * VPN Server to IPSET routing
+
+  have been removed and the features combined into one script called **x3mRouting.sh**.
+  * The method used to create the IPSET list is passed to **x3mRouting.sh** as a parameter. If the ASN, Amazon AWS or dnsmasq parameter is not specified, **x3mRouting.sh** will default to the manual method.
+  * Running **x3mRouting.sh** will automatically perform the set-up. The features of **openvpn-event** are used to run the script during a VPN Client up event and remove the routing rule during a VPN Client down event. The use of **/jffs/scripts/nat-start** to run the scripts at system boot is no longer recommended.
+  * IPSET lists are updated automatically during an VPN Client up event.
+  * Simplified the ability to delete an IPSET list and associated routing rules, openvpn-event files and cru jobs.
+  * The **VPN Server to VPN Client** routing feature of **x3mRouting.sh** will create the required VPN Server nvram entry, eliminating the need to manually enter the VPN Server IP address in the OpenVPN Client Screen. The VPN Client will be restarted for the update to take effect. Once the restart has completed, you can view the entry in the OpenVPN Client Screen.
+  * **VPN Server to VPN Client** and **VPN Server to IPSET List** feature updates include:
+    * Routing rules will now be applied during an VPN Client up event rather than a VPN Server up event. Based on user feedback, the routing from the VPN Server to the VPN Client would stop working after a VPN Client up/down event, even though the iptables rules were still in effect.
+    * The IP address of the VPN Server in the openvpn-event up/down scripts is no longer hard coded. Instead, the 'nvram get' command in the openvpn-event up/down scripts will be used to obtain the IP address of the VPN Server. This will eliminate the need to rerun the **x3mRouting.sh** script if the VPN Server IP address is changed.
+  * Added ability to specify
+    * more than one ASN when using the ASN method
+    * more than one AWS region when using the Amazon AWS method
+    * one or more IPv4 address when creating an IPSET list.
+    * one or more search criteria for domain names when using the 'autoscan' option.
+    * that a routing rule to be applied to a single LAN IP addresses or IP address range.
+
+#### LAN Client Routing Changes
+  * The script **x3mRouting_client_config.sh** now stores the output file **x3mRouting_client_config** in **/jffs/scripts/x3mRouting** rather than **/jffs/configs**.
+  * The script **x3mRouting_client_nvram.sh** now stores the nvram files in **/jffs/addons/x3mRouting** rather than **/jffs/configs**.
+
+## Version 2.0.0 Update process
+  1)  Type 'x3mRouting' at the command line to access the Installation Menu
+  2)  Select the '[10]  Update x3mRouting Menu' option
+  3)  After the update has completed, select the '[u]  Update to new version of x3mRouting'
+  4)  A backup of the current x3mRouting directory will be stored in /jffs/scripts/x3mRouting/backup
+  5)  Obsolete scripts will be removed
+  6)  OpenVPN Client nvram rules used by LAN Client Routing will get moved from **/jffs/configs** to **/jffs/addons/x3mRouting_config** and the x3mRouting_client_rules file to **/jffs/scripts/x3mRouting** from the **/jffs/configs** directory.
+  7)  **/jffs/scripts/nat-start** and openvpn-event files in the **/jffs/scripts/x3mRouting** directory will be scanned for references to the old scripts. A conversion file will get created in **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh**.
+  8)  Existing scripts will get updated
+  9)  Check for and remove prior x3mRouting version entries found in **nat-start** or vpnclientX-route-up files
+  10) View the conversion script and validate. A line showing the prior entry and file source will be shown with the new entry. Follow the instructions in the file and make any necessary changes. When done, save the conversion script and execute. After execution, the required entries will be created in the appropriate openvpn-event script.
+  11) Run the commands below to validate VPN Server POSTROUTING and VPN Client PREROUTING rules.
+
+````
+  iptables -nvL POSTROUTING -t nat --line
+  iptables -nvL PREROUTING -t mangle --line
+````
+  12) Run the 'ip rule' command to validate RPDB rules
+
 ## Introduction
-The features of **x3mRouting** include selective routing features for LAN Clients and IPSET Lists.
+The options of **x3mRouting** include selective routing features for LAN Clients and IPSET Lists.
 
 #### 1. LAN Client Routing
 
-An alternative approach to automate and easily assign LAN clients to a WAN or OpenVPN Client interface. This option eliminates the need to enter the LAN Client information and IP addresses in the OpenVPN Client Screen. The **LAN Clients** option can be used by itself or with one of the two options below.
+An alternative approach to automate and easily assign LAN clients to a WAN or VPN Client interface. This option eliminates the need to enter the LAN Client information and IP addresses in the OpenVPN Client Screen. The **LAN Clients** option can be used by itself or with one of the two options below.
 
-#### 2. OpenVPN Client GUI, OpenVPN Event & x3mRouting.sh Script
+#### 2. OpenVPN Client Screen, OpenVPN Event & x3mRouting.sh Script
 
-Provides the ability to create IPSET lists using the **x3mRouting.sh** script and selectively route the IPSET lists thru the OpenVPN Client by entering the IPSET name in a modified OpenVPN Client Screen. You can't use the screen to route IPSET lists to the WAN interface at this time. Use option 3 below instead.
+Provides the ability to create IPSET lists using the **x3mRouting.sh** script and selectively route the IPSET lists thru the VPN Client by entering the IPSET name in a modified OpenVPN Client Screen. The customized OpenVPN Client Screen is still a work in progress. You can't use the screen to route IPSET lists to bypass the VPN Client and route to the WAN interface at this time. Use option 3 instead.
 
-#### 3. x3mRouting.sh Script
+#### 3. OpenVPN Event & x3mRouting.sh Script
 
-Provides the ability to create and selectively route IPSET lists to the WAN or OpenVPN Client interfaces using the **x3mRouting.sh** script.
+Provides the ability to
 
-#### x3mRouting.sh Additional Features
-
-The x3mRouting.sh script also provides the ability to:
-
+  * Create and selectively create and route IPSET lists to the WAN or VPN Client interfaces using the **x3mRouting.sh** script.
   * Route all VPN Server traffic to one of the VPN Clients.
   * Selectively route VPN Server traffic to an existing LAN routing rule for an IPSET list.
-
-#### openvpn-event Script
-
-x3mRouting uses the **openvpn-event** script during an OpenVPN "up" event to create the IPSET list and routing rule and during an OpenVPN "down" event to remove the routing rule. **openvpn-event** is automatically installed when selecting options 2 and 3.
-
-**openvpn-event** will call OpenVPN related scripts such as:
-
-  * vpnclient1-route-up
-  * vpnclient1-route-pre-down
-  * vpnserver2-up
-  * vpnserver2-down
-
-located in **/jffs/scripts/x3mRouting** based on OpenVPN Client or Server events.
-#### /jffs/scripts/x3mRouting/vpnclient1-route-up example
-
-````
-#!/bin/sh
-sh /jffs/scripts/x3mRouting/load_AMAZON_ipset_iface.sh 1 AMAZON-US US
-sh /jffs/scripts/x3mRouting/load_ASN_ipset_iface.sh 1 NETFLIX AS2906
-sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 1 HULU_WEB hulu.com,hulustream.com,akamaihd.net
-````
 
 ## Support
 For help and support, please visit the Asuswrt-Merlin x3mRouting support thread on [snbforums.com](https://www.snbforums.com/threads/x3mrouting-selective-routing-for-asuswrt-merlin-firmware.57793/#post-506675).
 
 ## Requirements
-1.  An Asus router with  [Asuswrt-Merlin](http://asuswrt.lostrealm.ca/) firmware installed.
-2.  A USB drive with [entware](https://github.com/RMerl/asuswrt-merlin/wiki/Entware) installed. Entware can be installed using [amtm - the SNBForum Asuswrt-Merlin Terminal Menu](https://www.snbforums.com/threads/amtm-the-snbforum-asuswrt-merlin-terminal-menu.42415/)
-3.  Policy Rules (Strict) or Policy Rules enabled on the OpenVPN Client screen.
+1. An Asus router with  [Asuswrt-Merlin](http://asuswrt.lostrealm.ca/) firmware installed.
+2. A USB drive with [entware](https://github.com/RMerl/asuswrt-merlin/wiki/Entware) installed. Entware can be installed using [amtm - the SNBForum Asuswrt-Merlin Terminal Menu](https://www.snbforums.com/threads/amtm-the-snbforum-asuswrt-merlin-terminal-menu.42415/)
+3. Policy Rules (Strict) or Policy Rules enabled on the OpenVPN Client Screen.
 
 ## Project Development
 I used Amazon Prime, BBC, CBS All Access, Hulu, Netflix and Sling streaming media services in developing the project and include them in the usage examples below.
@@ -71,15 +94,15 @@ This command will download and install the installation menu **x3mRouting** to t
 
 ## x3mRouting Options
 
-### [1] ~ LAN Client Routing
-In the Asuswrt-Merlin firmware, one must type the IP address of each LAN client into the Policy Routing section of the OpenVPN Client screen in order to assign the LAN client to the OpenVPN Client interface.  If you have many LAN clients, the process of entering the IP address and other required information can be time consuming - especially after performing a factory reset.
+### [1] LAN Client Routing
+In the Asuswrt-Merlin firmware, one must type the IP address of each LAN client into the Policy Routing section of the OpenVPN Client Screen in order to assign the LAN client to the VPN Client interface. If you have many LAN clients, the process of entering the IP address and other required information can be time consuming - especially after performing a factory reset.
 
-The x3mRouting LAN Client method is an alternative approach to assigning LAN clients to a WAN or OpenVPN Client interface.  If you have many LAN clients to assign to the interface, the scripts will eliminate the manual effort involved in typing the DHCP IP address of each LAN client in the Policy Routing section of the OpenVPN Client screen.  You can still use the OpenVPN screen to assign LAN clients in addition to the scripts. The two methods can coexist.  
+The x3mRouting LAN Client method is an alternative approach to assigning LAN clients to a WAN or VPN Client interface. If you have many LAN clients to assign to the interface, the scripts will eliminate the manual effort involved in typing the DHCP IP address of each LAN client in the Policy Routing section of the OpenVPN Client Screen. You can still use the OpenVPN Client Screen to assign LAN clients in addition to using this feature. The two methods can coexist.
 
 #### x3mRouting_client_config.sh
-**x3mRouting_client_config.sh** is the first script to run.  The script will create the file **/jffs/configs/x3mRouting_client_rules** which contains a separate line for each LAN client with a static DHCP IP address assignment.  Each line contains three fields separated by a space.  The first field is a number representing the interface assignment (0=WAN, 1=OVPNC1 to 5=OVPNC5) followed by the LAN client IP address and LAN client description.  
+**x3mRouting_client_config.sh** is the first script to run. The script will create the file **/jffs/scripts/x3mRouting/x3mRouting_client_rules** which contains a separate line for each LAN client with a static DHCP IP address assignment. Each line contains three fields separated by a space. The first field is a number representing the interface assignment (0=WAN, 1=OVPNC1 to 5=OVPNC5) followed by the LAN client IP address and LAN client description.
 
-By default, the script assigns each LAN client to the OVPNC1 interface.  After running the script, edit the **/jffs/configs/x3mRouting_client_rules** file and assign the interface to each LAN client.  Instructions on how to assign the interface to each LAN client are located at the top of the file.  
+By default, the script assigns each LAN client to the OVPNC1 interface. After running the script, edit the **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file and assign the interface to each LAN client. Instructions on how to assign the interface to each LAN client are located at the top of the file.
 
     #########################################################
     # Assign the interface for each LAN client by entering  #
@@ -97,20 +120,19 @@ By default, the script assigns each LAN client to the OVPNC1 interface.  After r
     2 192.168.1.153 iPad
     1 192.168.1.154 Lenovo-Laptop
 
-If an existing **/jffs/configs/x3mRouting_client_rules** file exists, a backup copy of the existing **x3mRouting_client_rules** file is made by appending the timestamp to the existing file.  You only need to run this script if you have made changes to DHCP static assignments or accidentally deleted the **/jffs/configs/x3mRouting_client_rules** file.  
+If an existing **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file exists, a backup copy of the existing **x3mRouting_client_rules** file is made by appending the timestamp to the existing file. You only need to run this script if you have made changes to DHCP static assignments or accidentally deleted the **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file.
 
 #### x3mRouting_client_nvram.sh
-**x3mRouting_client_nvram.sh** is the second script to run. This script will create the nvram files
-(e.g. **/jffs/configs/ovpnc1.nvram**) for OpenVPN clients in the **/jffs/configs** directory based on the interface assignments in **/jffs/configs/x3mRouting_client_rules**. An nvram file will not be created in the **/jffs/configs/** directory for LAN clients assigned to use the WAN interface.
+**x3mRouting_client_nvram.sh** is the second script to run. This script will create the nvram files for VPN Clients in the **/jffs/addons/x3mRouting** directory based on the interface assignments in **/jffs/scripts/x3mRouting/x3mRouting_client_rules**. An nvram file will not be created in the **/jffs/addons/x3mRouting/** directory for LAN clients assigned to use the WAN interface.
 
-Similar to the firmware, the next step is to bounce the OpenVPN Client interface to have the routing assignments take effect.  This is accomplished by selecting the **“Apply”** button on the OpenVPN Client screen you assigned the LAN client to.  Alternatively, you can bounce the WAN interface by selecting the **“Apply”** button on the WAN screen. Restarting the WAN will also restart any active OpenVPN clients. There is a slight delay before the OpenVPN Client becomes active. Check the OpenVPN Client status using the OpenVPN Status page.
+Similar to the firmware, the next step is to bounce the VPN Client interface to have the routing assignments take effect. This is accomplished by selecting the **“Apply”** button on the OpenVPN Client Screen you assigned the LAN client to. Alternatively, you can bounce the WAN interface by selecting the **“Apply”** button on the WAN screen. Restarting the WAN will also restart any active VPN clients. There is a slight delay before the VPN Client becomes active. Check the status of each VPN Clent using the OpenVPN Status Screen.
 
-The routing rules for LAN Clients will automatically be applied upon a system boot.  You only need to rerun **x3mRouting_client_nvram.sh** and bounce the OpenVPN client if you have made LAN Client interface assignment changes in the **/jffs/configs/x3mRouting_client_rules** file.  
+The routing rules for LAN Clients will automatically be applied upon a system boot. You only need to rerun **x3mRouting_client_nvram.sh** and bounce the VPN Client if you have made LAN Client interface assignment changes in the **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file.
 
-### [2] ~ OpenVPN Client GUI, OpenVPN Event & Routing Script
-As part of this project, you can also choose to download and install a modified OpenVPN Client screen to selectively route IPSET lists thru an OpenVPN Client. You can't use the screen to route IPSET lists to the WAN interface. Use method 3 instead.
+### [2] OpenVPN Client GUI, OpenVPN Event & x3mRouting.sh Script
+As part of this project, you can also choose to download and install a modified OpenVPN Client Screen to selectively route IPSET lists thru a VPN Client. You can't use the screen to route IPSET lists to bypass the VPN Client and route to the WAN interface. Use option 3 instead. See the **[3] OpenVPN Event & x3mRouting.sh Script** section below for information about the OpenVPN Event and x3mRouting.sh script.
 
-[@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. I greatly appreciate his generosity in providing the modified code and allowing me to include it in the project.
+[@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client Screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. I greatly appreciate his generosity in providing the modified code and allowing me to include it in the project.
 
 #### OpenVPN Client Screen ~ Policy Routing Section
 ![Policy Routing Screen](https://github.com/Xentrk/x3mRouting/blob/master/Policy_Routing_Screen.PNG "Policy Routing Screen")
@@ -125,66 +147,33 @@ The OpenVPN Client Screen accepts single and multiple dimension IPSET lists. See
 A video tutorial on how to allow the use of IPSET lists via the Selective routing VPN Client Policy Routing Screen can be viewed on [Vimeo](https://vimeo.com/287067217).
 
 #### DummyVPN
-In the screen picture above, you will notice an entry for **DummyVPN1**. For the Selective routing of Ports/MACs and IPSETs, [@Martineau](https://www.snbforums.com/members/martineau.13215/) recommends creating a “dummy” VPN Client entry if you require the ability to exploit the **Accept DNS Configuration=Exclusive** option that only creates the appropriate DNSVPN iptables chain if the table isn't empty. Use a valid IPv4 address for the DummyVPN entry that differs from your LAN IPv4 address range. I recommend using a [bogon IP addres](https://ipinfo.io/bogon) for this purpose.    
+In the screen picture above, you will notice an entry for **DummyVPN1**. For the Selective routing of Ports/MACs and IPSETs, [@Martineau](https://www.snbforums.com/members/martineau.13215/) recommends creating a “dummy” VPN Client entry if you require the ability to exploit the **Accept DNS Configuration=Exclusive** option that only creates the appropriate DNSVPN iptables chain if the routing table isn't empty in the OpenVPN Client Screen. Use a valid IPv4 address for the DummyVPN entry that differs from your LAN IPv4 address range. I recommend using a [bogon IP addres](https://ipinfo.io/bogon) for this purpose.   
+
+### [3] OpenVPN Event & x3mRouting.sh Script
+
+#### openvpn-event Script
+
+3mRouting uses the **openvpn-event** script during an VPN Client up event to create the IPSET list and routing rule and during a VPN Client "down" event to remove the routing rule. **openvpn-event** is automatically installed when selecting options 2 and 3.
+
+**openvpn-event** will call VPN related scripts such as:
+
+  * vpnclient1-route-up
+  * vpnclient1-route-pre-down
+  * vpnserver2-up
+  * vpnserver2-down
+
+located in **/jffs/scripts/x3mRouting** based on VPN Client or Server up/down events.
+##### /jffs/scripts/x3mRouting/vpnclient1-route-up example
+
+````
+#!/bin/sh
+sh /jffs/scripts/x3mRouting/load_AMAZON_ipset_iface.sh 1 AMAZON-US US
+sh /jffs/scripts/x3mRouting/load_ASN_ipset_iface.sh 1 NETFLIX AS2906
+sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 1 HULU_WEB hulu.com,hulustream.com,akamaihd.net
+````
 
 #### IPSET Save/Restore File Location
-By default, all of the scripts will store backup copies of the IPSET lists in the **/opt/tmp** entware directory. This will allow the IPSET lists to be restored on system boot. If you prefer, you can specify another directory location by passing a directory parameter to the script. Usage examples are provided below.
-
-## x3mRouting Usage Notes
-
-* Required parameters are listed inside the braces { }
-* Optional parameters are listed inside of the brackets [ ]
-* Valid parameter values are listed in parenthesis ( )
-
-Create IPSET List with Routing Rules
-````
-x3mRouting.sh {src iface} (ALL|1|2|3|4|5)
-              {dst iface} (0|1|2|3|4|5)
-               **src/dst NOTES Start**
-                 Valid SRC and DST Combinations
-                 1) VPN Client Routing
-                    - Use this SRC and DST combination to route all IPSET list traffic to a VPN Client:
-                      ALL 1, ALL 2, ALL 3, ALL 4, ALL 5
-                 2) VPN Bypass Routing
-                    - Use this SRC and DST combination to bypass the VPN Client for an IPSET list and
-                      route to the WAN interface:
-                      1 0, 2 0, 3 0, 4 0, 5 0
-               **src/dst NOTES End**
-               {ipset_name}
-               ['autoscan='keyword1[,keyword2]...] # Scans for keywords and creates IPSET list using the dnsmasq method
-               ['asnum='asnum[,asnum]...] # ASN method
-               ['aws_region='US[,EU]...]  # Amazon method
-               ['dnsmasq='domain[,domain]...] # dnsmasq method
-               ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
-               ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
-               ['ip='ip[,ip][,cidr]...]
-               ['src='src_ip]
-               ['src_range='from_ip-to_ip]
-               ['dir='save_restore_location]
-               ['del']
-````
-Create IPSET List with no Routing Rules
-````
- x3mRouting.sh {ipset_name=}
-               ['autoscan='keyword1[,keyword2]...] # Scans for keywords and creates IPSET list using the dnsmasq method
-               ['asnum='asnum[,asnum]...] # ASN method
-               ['aws_region='US[,EU]...]  # Amazon method
-               ['dnsmasq='domain[,domain]...] # dnsmasq method
-               ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
-               ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
-               ['del']
-````
-VPN Server to VPN Client Routing
-
-````
-x3mRouting.sh {'server='1|2|both} {'client='1|2|3|4|5} ['del']
-````
-
-VPN Server to existing LAN routing rules for an IPSET list
-
-````
-x3mRouting.sh {'server='1|2|both} {'ipset_name='} ['del']
-````
+By default, the **/opt/tmp** entware directory is used as the IPSET save/restore file location. If you prefer, you can specify another directory location by passing a directory parameter to the script (e.g. dir=/tmp/mnt/ASUS/mylists).
 
 #### Valid Amazon AWS Regions
 **x3mRouting.sh** script will create an IPSET list containing all IPv4 address for the Amazon AWS region(s) specified. The source file used by the script is provided by Amazon at https://ip-ranges.amazonaws.com/ip-ranges.json. You must specify one or more of the regions below when creating the IPSET list:
@@ -198,7 +187,67 @@ x3mRouting.sh {'server='1|2|both} {'ipset_name='} ['del']
 * GV - USA Government
 * GLOBAL - Global
 
-## x3mRouting Usage Examples
+#### x3mRouting.sh Usage Notes
+
+* Required parameters are listed inside the braces { }
+* Optional parameters are listed inside of the brackets [ ]
+* Valid parameter values are listed in parenthesis ( )
+
+##### Create IPSET List with no Routing Rules
+Use this option if you intend to route an IPSET list using the OpenVPN Client Screen.
+````
+sh x3mRouting.sh {ipset_name=}
+                 ['autoscan='keyword1[,keyword2]...] # Scans for keywords and creates IPSET list using the dnsmasq method
+                 ['asnum='asnum[,asnum]...] # ASN method
+                 ['aws_region='US[,EU]...]  # Amazon method
+                 ['dnsmasq='domain[,domain]...] # dnsmasq method
+                 ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
+                 ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
+                 ['del']
+````
+##### Create IPSET List with Routing Rules
+````
+sh x3mRouting.sh {src iface} (ALL|1|2|3|4|5)
+                 {dst iface} (0|1|2|3|4|5)
+                 **START: src/dst usage notes**
+                  Valid SRC and DST Combinations
+                  1) VPN Client Routing
+                     - Use this SRC and DST combination to route all IPSET list traffic to a VPN Client:
+                       ALL 1, ALL 2, ALL 3, ALL 4, ALL 5
+                  2) VPN Bypass Routing
+                     - Use this SRC and DST combination to bypass the VPN Client for an IPSET list and route to the WAN interface:
+                       1 0, 2 0, 3 0, 4 0, 5 0
+                  **END: src/dst usage notes**
+                  {ipset_name}
+                  ['autoscan='keyword1[,keyword2]...] # Scans for keywords and creates IPSET list using the dnsmasq method
+                  ['asnum='asnum[,asnum]...] # ASN method
+                  ['aws_region='US[,EU]...]  # Amazon method
+                  ['dnsmasq='domain[,domain]...] # dnsmasq method
+                  ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
+                  ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
+                  ['ip='ip[,ip][,cidr]...]
+                  ['src='src_ip]
+                  ['src_range='from_ip-to_ip]
+                  ['dir='save_restore_location]
+                  ['del']
+````
+
+##### VPN Server to VPN Client Routing
+
+````
+sh x3mRouting.sh {'server='1|2|both} {'client='1|2|3|4|5} ['del']
+````
+
+##### VPN Server to existing LAN routing rules for an IPSET list
+
+````
+sh x3mRouting.sh {'server='1|2|both} {'ipset_name='} ['del']
+````
+
+## x3mRouting.sh Usage Examples
+
+### VPN Client Routing
+Use this approach to route traffic to a VPN Client.
 
 #### ASN Method
 
@@ -206,7 +255,11 @@ Route all traffic matching IPSET list NETFLIX created from AS2906 to VPN Client1
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX asnum=AS2906
 
-Route all traffic matching IPSET list NETFLIX created from AS2906 to VPN Client1 from LAN device 192.168.22.152.    
+Route all traffic matching IPSET list BBC created from AS2818 and AS31459 to VPN Client1.
+
+    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 BBC asnum=AS2818,AS31459
+
+Route all traffic matching IPSET list NETFLIX created from AS2906 to VPN Client1 from LAN device 192.168.22.152.   
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX asnum=AS2906 src=192.168.22.152
 
@@ -214,6 +267,10 @@ Route all traffic matching IPSET list NETFLIX created from AS2906 to VPN Client1
 Route all traffic matching IPSET list AMAZON_US created from the AWS US region to VPN Client 1.
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON_US aws_region=US
+
+Route all traffic matching IPSET list AMAZON created from the AWS US and CA region to VPN Client 1.
+
+    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON aws_region=US,CA
 
 Route IP address ranges 192.168.22.152-192.168.22.157 traffic matching IPSET list AMAZON_US created from the Amazon US region to VPN Client 1.
 
@@ -233,22 +290,27 @@ Search dnsmasq.log file for domains that contain the keyword "amazon" and create
 sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON autoscan=amazon
 ````
 
-Search dnsmasq.log file for domains that contain the keywords "amazonaws,netflix,nflx" and create the IPSET list AMZ_NFLX using the dnsmasq method
+Search dnsmasq.log file for domains that contain the keywords "amazonaws", "netflix" and "nflx" and create the IPSET list AMZ_NFLX using the dnsmasq method
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMZ_NFLX autoscan=amazonaws,netflix,nflx
 
 #### Manual Method
-The Manual Method is used for IPSET lists from a file in the save/restore directory containing IPv4 addresses and/or IPv4 CIDR format.
+The Manual Method is used for IPSET lists created from a file in the save/restore directory containing IPv4 addresses and/or IPv4 CIDR format.
 
-Route all traffic matching IPSET list WIMIPCOM to VPN Client.
+Route all traffic matching IPSET list WIMIPCOM to VPN Client 1.
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 WIMIPCOM
+
+Route all traffic matching IPSET list WIMIPCOM to VPN Client 1 using the /mnt/ASUS/mylists directory as the save/restore location.
+
+    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 WIMIPCOM dir=/mnt/ASUS/mylists
 
 Route all VPN Client 1 traffic matching IPSET list WIMIPCOM created from the IPv4 addresses provided.
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 WIMIPCOM ip=104.27.198.90,104.27.199.90
 
-### VPN Client Bypass Routing #####
+### VPN Client Bypass Routing
+Use this approach to bypass the VPN Client for traffic matching an IPSET list and route to the WAN interface. This approach is often used when a rule to route the entire LAN (e.g. 192.168.1.0/24) thru a VPN Client exists in the Policy Routing section of the OpenVPN Client Screen and an exception needs to be made to bypass the VPN Client for a service that blocks known VPN Servers.
 
 #### ASN Method
 Route VPN Client 1 traffic matching IPSET list NETFLIX to WAN.
@@ -277,7 +339,7 @@ Route all VPN Client 1 traffic matching IPSET list WIMIPCOM to the WAN.
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM dnsmasq=whatismyip.com
 
-Route all VPN Client 1 traffic matching IPSET list NETFLIX to the WAN.        
+Route all VPN Client 1 traffic matching IPSET list NETFLIX to the WAN.       
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 
@@ -298,7 +360,7 @@ Route VPN Client 1 traffic from 192.168.22.152 matching IPSET list WIMIPCOM to t
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM src=192.168.22.152
 
-Route VPN Client 1 traffic from 192.168.22.152-192.168.22.157 matching IPSET list WIMIPCOM to WAN.        
+Route VPN Client 1 traffic from 192.168.22.152-192.168.22.157 matching IPSET list WIMIPCOM to WAN.       
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM src_range=192.168.22.152-192.168.22.157
 
@@ -308,7 +370,8 @@ Either option listed below will work. There is no requirement to specify the met
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=MYIPSET del
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX del
 
-### IPSET list creation only - no routing rules
+### Create IPSET List - No Routing Rules
+Use this method if you want to create an IPSET list with no routing rules. You must specify the 'ipset_name=' parameter when no routing rules are specified.
 
 #### ASN Method
 Create IPSET list NETFLIX from AS2906
@@ -330,15 +393,15 @@ Create IPSET list BBC using manual method
 Create IPSET list BBC using manual method. Use 'dir' location as the backup/restore location
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=BBC dir=/tmp/mnt/RT-AC88U/mylists
 
-#### VPN Server to VPN Client Routing:
-Route from server 1,2 or both to VPN client 1,2,3,4 or 5.
+### VPN Server to VPN Client Routing
+Route from VPN Server 1,2 or both to VPN Client 1,2,3,4 or 5.
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 client=1
     sh /jffs/scripts/x3mRouting/x3mRouting.sh server=2 client=1
     sh /jffs/scripts/x3mRouting/x3mRouting.sh server=both client=1
 
-#### VPN Server to existing LAN routing rules for an IPSET list
-Route from server 1,2 or both to use same LAN rules for IPSET list PANDORA.
+### VPN Server to existing routing rules for an IPSET list
+Route from VPN Server 1,2 or both to use same routing rules for IPSET list PANDORA.
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 ipset_name=PANDORA
     sh /jffs/scripts/x3mRouting/x3mRouting.sh server=2 ipset_name=PANDORA
@@ -427,7 +490,7 @@ Display information about an IPSET list, type the command **ipset -L ipset_name*
 
 #### IPSET List not Populating
 ##### Duplicate Host Entires
-Beware of duplicate hosts entries when using the DNSMASQ script method to populate an IPSET list. In the example below, the nslookup commmand will only populate the first IPSET list in **/jffs/configs/dnsmasq.conf.add**.  
+Beware of duplicate hosts entries when using the DNSMASQ script method to populate an IPSET list. In the example below, the nslookup commmand will only populate the first IPSET list in **/jffs/configs/dnsmasq.conf.add**.
 ````
 ipset=/pandora.com/PANDORA
 ipset=/pandora.com/US_VPN
@@ -439,12 +502,12 @@ The router will now use ISP-provided resolvers instead of local dnsmasq when att
 
 To resolve the issue, the installation script changes the default value to **"Yes"**.
 
-#### OpenVPN and LAN Client RPDB Routing and Priorities Rules
+#### VPN and LAN Client RPDB Routing and Priorities Rules
 Type the command
 
     ip rule
 
-to display the RPDB routing priority database rules for the OpenVPN and LAN Clients:
+to display the RPDB routing priority database rules for the VPN Server, VPN Server and LAN Clients:
 
     0:      from all lookup local
     9990:   from all fwmark 0x8000/0x8000 lookup main
@@ -488,7 +551,7 @@ The output will also display the number of packets and bytes traversing the ipta
 
 
 #### Ad Blockers
-If you use an ad blocker, some domains may require whitelisting for the streaming service to properly playback video.       
+If you use an ad blocker, some domains may require whitelisting for the streaming service to properly playback video.      
 
 ##### CBS All Access
 
@@ -505,7 +568,7 @@ If you use an ad blocker, some domains may require whitelisting for the streamin
 ## x3mRouting Project Code Files
 The installation menu **x3mRouting** will display a menu with the options to install, update the current installation or remove the project from the router. The following table lists the files that will be downloaded for each method.
 
-| Script Name   | LAN Clients   |  OpenVPN Client + IPSET Shell Scripts | IPSET Shell Scripts |
+| Script Name   | Option [1] |  Option [2] | Option [3] |
 | --- | :---: | :---: | :---: |
 |x3mRouting_client_nvram.sh         | X |   |   |
 |x3mRouting_config.sh               | X |   |   |
@@ -519,11 +582,11 @@ The installation menu **x3mRouting** will display a menu with the options to ins
 
 ## Acknowledgements
 I want to acknowledge the following [snbforums](https://www.snbforums.com) members who helped make this project possible.
-* [Martineau](https://www.snbforums.com/members/martineau.13215/) has, and continues to be, very generous in sharing his OpenVPN and Selective Routing expertise with me over the past several years. This project was only made possible through his support and collaboration. Through his guidance, I was able to navigate through the maze of of the firmware's **vpnrouting.sh** script and enhance it to create a much cleaner implementation of my selective routing requirements when compared to the method I had been using previously.
+* [Martineau](https://www.snbforums.com/members/martineau.13215/) has, and continues to be, very generous in sharing his VPN and Selective Routing expertise with me over the past several years. This project was only made possible through his support and collaboration. Through his guidance, I was able to navigate through the maze of of the firmware's **vpnrouting.sh** script and enhance it to create a much cleaner implementation of my selective routing requirements when compared to the method I had been using previously.
 
 As part of the ongoing collaboration, Martineau had modified a selective routing script I wrote for routing Netflix traffic and enhanced it by enabling the passing of parameters. The enhancements made the script more user friendly by eliminating the need for users to edit scripts to meet their use case requirements. The enhancements have been applied to all of the IPSET scripts.
 
-Martineau also contributed the modified **OpenVPN Client screen**, the [Vimeo](https://vimeo.com/287067217) video and **Chk_Entware** function used in the project.
+Martineau also contributed the modified **OpenVPN Client Screen**, the [Vimeo](https://vimeo.com/287067217) video and **Chk_Entware** function used in the project.
 
 * [Adamm](https://github.com/Adamm00) contributed the code for restoring the IPSET lists using the **awk** method and the **md5sum** check function to detect updated code on GitHub were also inspired by Adamm.
 

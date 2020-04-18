@@ -16,9 +16,10 @@
   * Running **x3mRouting.sh** will automatically perform the set-up. The features of **openvpn-event** are used to run the script during a VPN Client up event and remove the routing rule during a VPN Client down event. The use of **/jffs/scripts/nat-start** to run the scripts at system boot is no longer recommended.
   * IPSET lists are updated automatically during an VPN Client up event.
   * Simplified the ability to delete an IPSET list and associated routing rules, openvpn-event files and cru jobs.
-  * The **VPN Server to VPN Client** routing feature of **x3mRouting.sh** will create the required VPN Server nvram entry, eliminating the need to manually enter the VPN Server IP address in the OpenVPN Client Screen. The VPN Client will be restarted for the update to take effect. Once the restart has completed, you can view the entry in the OpenVPN Client Screen.
-  * **VPN Server to VPN Client** and **VPN Server to IPSET List** feature updates include:
+  * **VPN Server to VPN Client** routing feature of **x3mRouting.sh**
+    * The **x3mRouting.sh** script will create the required VPN Server nvram entry, eliminating the need to manually enter the VPN Server IP address in the OpenVPN Client Screen. The VPN Client will be restarted for the update to take effect. Once the restart has completed, you can view the entry in the OpenVPN Client Screen.
     * Routing rules will now be applied during an VPN Client up event rather than a VPN Server up event. Based on user feedback, the routing from the VPN Server to the VPN Client would stop working after a VPN Client up/down event, even though the iptables rules were still in effect.
+  * **VPN Server to VPN Client** and **VPN Server to IPSET List**
     * The IP address of the VPN Server in the openvpn-event up/down scripts is no longer hard coded. Instead, the 'nvram get' command in the openvpn-event up/down scripts will be used to obtain the IP address of the VPN Server. This will eliminate the need to rerun the **x3mRouting.sh** script if the VPN Server IP address is changed.
   * Added ability to specify
     * more than one ASN when using the ASN method

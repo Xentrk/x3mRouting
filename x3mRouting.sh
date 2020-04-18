@@ -750,48 +750,51 @@ VPN_Server_to_VPN_Client() {
   VPN_CLIENT_INSTANCE=$3
   DEL_FLAG=$4
 
-  VPN_SERVER_IP="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)"
+  #VPN_SERVER_IP="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)"
   VPN_SERVER_SUBNET="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24"
-  IPTABLES_DEL_ENTRY="iptables -t nat -D POSTROUTING -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE 2>/dev/null"
-  IPTABLES_ADD_ENTRY="iptables -t nat -A POSTROUTING -s $VPN_SERVER_SUBNET -o $IFACE -j MASQUERADE"
-  VPNSERVER_UP_FILE="/jffs/scripts/x3mRouting/vpnserver${VPN_SERVER_INSTANCE}-up"
-  VPNSERVER_DOWN_FILE="/jffs/scripts/x3mRouting/vpnserver${VPN_SERVER_INSTANCE}-down"
+  IPTABLES_DEL_ENTRY="iptables -t nat -D POSTROUTING -s \"\$\(nvram get vpn_server\"\$VPN_SERVER_INSTANCE\"_sn\)\/24\" -o $IFACE -j MASQUERADE 2>/dev/null"
+  IPTABLES_ADD_ENTRY="iptables -t nat -A POSTROUTING -s \"\$\(nvram get vpn_server\"\$VPN_SERVER_INSTANCE\"_sn\)\/24\" -o $IFACE -j MASQUERADE"
+  VPNCLIENT_UP_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-up"
+  VPNCLIENT_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-predown"
   POLICY_RULE="<vpnserver${VPN_CLIENT_INSTANCE}>${VPN_SERVER_SUBNET}>0.0.0.0>VPN"
   VPN_IP_LIST=$(nvram get vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist)
 
-  if [ "$DEL_FLAG" != "del" ]; then #add entry
-    if [ -s "$VPNSERVER_UP_FILE" ]; then #file exists
+  if [ "$DEL_FLAG" != "del" ]; then # add entry
+    if [ -s "$VPNCLIENT_UP_FILE" ]; then
       #Check if an existing entry exists
       for IPTABLES_ENTRY in "$IPTABLES_DEL_ENTRY" "$IPTABLES_ADD_ENTRY"; do
         if [ "$(grep -c "$IPTABLES_ENTRY" "$VPNSERVER_UP_FILE")" -ge "1" ]; then # if true, then one or more lines exist
           logger -t "($(basename "$0"))" $$ "Entry for iptables rule already exists"
         else
           # add entry
-          echo "$IPTABLES_ENTRY" >>"$VPNSERVER_UP_FILE"
+          echo "$IPTABLES_ENTRY" >>"$VPNCLIENT_UP_FILE"
         fi
       done
     else #file does not exist
-      echo "#!/bin/sh" >"$VPNSERVER_UP_FILE"
-      echo "$IPTABLES_DEL_ENTRY" >>"$VPNSERVER_UP_FILE"
-      echo "$IPTABLES_ADD_ENTRY" >>"$VPNSERVER_UP_FILE"
-      chmod 755 "$VPNSERVER_UP_FILE"
+      touch > "$VPNCLIENT_UP_FILE"
+      {
+        echo "#!/bin/sh"
+        echo "$IPTABLES_DEL_ENTRY"
+        echo "$IPTABLES_ADD_ENTRY"
+      } >>"$VPNCLIENT_UP_FILE"
+      chmod 755 "$VPNCLIENT_UP_FILE"
     fi
 
-    if [ -s "$VPNSERVER_DOWN_FILE" ]; then #file exists
+    if [ -s "$VPNCLIENT_DOWN_FILE" ]; then
       #Check if an existing entry exists
-      if [ "$(grep -c "$IPTABLES_DEL_ENTRY" "$VPNSERVER_DOWN_FILE")" -eq "0" ]; then # if true, then one or more lines exist
+      if [ "$(grep -c "$IPTABLES_DEL_ENTRY" "$VPNCLIENT_DOWN_FILE")" -eq "0" ]; then # if true, then one or more lines exist
         #logger -t "($(basename "$0"))" $$ "Entry for iptables rule already exists"
         #else
         # add entry
-        echo "$IPTABLES_DEL_ENTRY" >>"$VPNSERVER_DOWN_FILE"
+        echo "$IPTABLES_DEL_ENTRY" >>"$VPNCLIENT_DOWN_FILE"
       fi
     else #file does not exist
-      echo "#!/bin/sh" >"$VPNSERVER_DOWN_FILE"
-      echo "$IPTABLES_DEL_ENTRY" >>"$VPNSERVER_DOWN_FILE"
-      chmod 755 "$VPNSERVER_DOWN_FILE"
+      echo "#!/bin/sh" >"$VPNCLIENT_DOWN_FILE"
+      echo "$IPTABLES_DEL_ENTRY" >>"$VPNCLIENT_DOWN_FILE"
+      chmod 755 "$VPNCLIENT_DOWN_FILE"
     fi
     # Implement routing rules
-    sh "$VPNSERVER_UP_FILE"
+    sh "$VPNCLIENT_UP_FILE"
 
     if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE")" -eq "0" ]; then
       VPN_IP_LIST="${VPN_IP_LIST}${POLICY_RULE}"
@@ -803,16 +806,16 @@ VPN_Server_to_VPN_Client() {
   else # delete routing and routing rules in vpn server up down scripts
     iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE 2>/dev/null
     # vpnserverX-up file
-    if [ -s "$VPNSERVER_UP_FILE" ]; then #file exists
-      sed -i "/$IFACE/d" "$VPNSERVER_UP_FILE"
-      logger -st "($(basename "$0"))" $$ "iptables entry for VPN Client ${VPN_CLIENT_INSTANCE} deleted from $VPNSERVER_UP_FILE"
-      Check_For_Shebang "$VPNSERVER_UP_FILE"
+    if [ -s "$VPNCLIENT_UP_FILE" ]; then #file exists
+      sed -i "/$IFACE/d" "$VPNCLIENT_UP_FILE"
+      logger -st "($(basename "$0"))" $$ "iptables entry for VPN Client ${VPN_CLIENT_INSTANCE} deleted from $VPNCLIENT_UP_FILE"
+      Check_For_Shebang "$VPNCLIENT_UP_FILE"
     fi
     # vpnserverX-down file
-    if [ -s "$VPNSERVER_DOWN_FILE" ]; then #file exists
-      sed -i "/$IFACE/d" "$VPNSERVER_DOWN_FILE"
-      logger -st "($(basename "$0"))" $$ "iptables entry deleted VPN Client ${VPN_CLIENT_INSTANCE} from $VPNSERVER_DOWN_FILE"
-      Check_For_Shebang "$VPNSERVER_DOWN_FILE"
+    if [ -s "$VPNCLIENT_DOWN_FILE" ]; then #file exists
+      sed -i "/$IFACE/d" "$VPNCLIENT_DOWN_FILE"
+      logger -st "($(basename "$0"))" $$ "iptables entry deleted VPN Client ${VPN_CLIENT_INSTANCE} from $VPNCLIENT_DOWN_FILE"
+      Check_For_Shebang "$VPNCLIENT_DOWN_FILE"
     fi
     # nvram get vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist
     if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE")" -eq "1" ]; then

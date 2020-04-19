@@ -18,9 +18,9 @@
   * Simplified the ability to delete an IPSET list and associated routing rules, openvpn-event files and cru jobs.
   * **VPN Server to VPN Client** routing feature of **x3mRouting.sh**
     * The **x3mRouting.sh** script will create the required VPN Server nvram entry, eliminating the need to manually enter the VPN Server IP address in the OpenVPN Client Screen. The VPN Client will be restarted for the update to take effect. Once the restart has completed, you can view the entry in the OpenVPN Client Screen.
-    * Routing rules will now be applied during an VPN Client up event rather than a VPN Server up event. Based on user feedback, the routing from the VPN Server to the VPN Client would stop working after a VPN Client up/down event, even though the iptables rules were still in effect.
   * **VPN Server to VPN Client** and **VPN Server to IPSET List**
     * The IP address of the VPN Server in the openvpn-event up/down scripts is no longer hard coded. Instead, the 'nvram get' command in the openvpn-event up/down scripts will be used to obtain the IP address of the VPN Server. This will eliminate the need to rerun the **x3mRouting.sh** script if the VPN Server IP address is changed.
+    * Routing rules will now be applied during an VPN Client up event rather than a VPN Server up event. Based on user feedback, the routing from the VPN Server to the VPN Client would stop working after a VPN Client up/down event, even though the iptables rules were still in effect.
   * Added ability to specify
     * more than one ASN when using the ASN method
     * more than one AWS region when using the Amazon AWS method
@@ -46,15 +46,16 @@ sh x3mRouting.sh help
   6.  If the exist, any VPN Client nvram rules used by **LAN Client Routing** will get moved to **/jffs/addons/x3mRouting** and the x3mRouting_client_rules file to **/jffs/scripts/x3mRouting** from the **/jffs/configs** directory.
   7.  Existing scripts will get updated.
   8.  **/jffs/scripts/nat-start** and openvpn-event files in the **/jffs/scripts/x3mRouting** directory will be scanned for references to the old scripts. A conversion file will get created in **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh**.
-  9.  Check for and remove prior x3mRouting version entries found in **nat-start** or vpnclientX-route-up files. After removal of prior x3mRouting version entries, the file will be scanned for other entries. If only a "#!/bin/sh" and comment lines exist, the user will be prompted to remove the file. The recommendation is to select the option to remove the file.    
-  10. View the conversion script and validate. A line showing the prior entry and file source will be shown with the new entry. Follow the instructions in the file and make any necessary changes. When done, save the conversion script and execute it (e.g. sh x3mRouting_Conversion.sh). After execution, the required entries will be created in the appropriate VPN Client up file.
-  11. Run the commands below to validate VPN Server POSTROUTING and VPN Client PREROUTING rules.
+  9. Migrate any **VPN Server to VPN Client** and **VPN Server to IPSET** routing rules from vpnserverX-up and vpnserverX-down scripts to the appropriate vpnclientX-route-up and vpnclientX-route-pre-down scripts.
+  10.  Check for and remove prior x3mRouting version entries found in **nat-start** or vpnclientX-route-up files. After removal of prior x3mRouting version entries, the file will be scanned for other entries. If only a "#!/bin/sh" and comment lines exist, the user will be prompted to remove the file. The recommendation is to select the option to remove the file.  
+  11. View the conversion script and validate. A line showing the prior entry and file source will be shown with the new entry. Follow the instructions in the file and make any necessary changes. When done, save the conversion script and execute it (e.g. sh x3mRouting_Conversion.sh). After execution, the IPSET list and associated routing rules, if specified, will be created alongg with the required entries in the appropriate VPN Client up file.
+  12. Run the commands below to validate VPN Server POSTROUTING and VPN Client PREROUTING rules.
 
 ````
   iptables -nvL POSTROUTING -t nat --line
   iptables -nvL PREROUTING -t mangle --line
 ````
-  12. Run the **ip rule** command to validate RPDB rules.
+  13. Run the **ip rule** command to validate RPDB rules.
 
 ## Introduction
 The options of **x3mRouting** include selective routing features for LAN Clients and IPSET Lists.

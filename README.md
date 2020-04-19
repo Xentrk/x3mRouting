@@ -7,7 +7,7 @@
 
 #### VPN Server and Client Routing Script Changes
   * The separate scripts for:
-    * IPSET list creation and routing using the ASN, Amazon AWS, dnsmasq and Manual methods
+    * IPSET list creation and routing using the ASN, Amazon AWS, dnsmasq and manual methods
     * VPN Server to VPN Client routing
     * VPN Server to IPSET routing
 
@@ -311,7 +311,7 @@ Search dnsmasq.log file for domains that contain the keywords "amazonaws", "netf
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMZ_NFLX autoscan=amazonaws,netflix,nflx
 
 #### Manual Method
-The Manual Method is used for IPSET lists created from a file in the save/restore directory containing IPv4 addresses and/or IPv4 CIDR format.
+The manual method is used for IPSET lists created from a file in the save/restore directory containing IPv4 addresses and/or IPv4 CIDR format.
 
 Route all traffic matching IPSET list WIMIPCOM to VPN Client 1.
 
@@ -390,23 +390,23 @@ Either option listed below will work. There is no requirement to specify the met
 Use this method if you want to create an IPSET list with no routing rules. You must specify the 'ipset_name=' parameter when no routing rules are specified.
 
 #### ASN Method
-Create IPSET list NETFLIX from AS2906
+Create IPSET list NETFLIX using AS2906 as the source
 
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh/x3mRouting.sh ipset_name=NETFLIX asnum=AS2906  create IPSET list using AS2906 as the source
+    sh /jffs/scripts/x3mRouting/x3mRouting.sh/x3mRouting.sh ipset_name=NETFLIX asnum=AS2906  
 
 ####  Amazon AWS Region Method
 Create IPSET list AMAZON_US created from Amazon US region
     sh /jffs/scripts/x3mRouting/x3mRouting.sh/x3mRouting.sh ipset_name=AMAZON_US aws_region=US
 
 #### dnsmasq Method
-Create IPSET list NETFLIX using dnsmasq method
+Create IPSET list NETFLIX using the dnsmasq method
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 
 #### Manual Method
-Create IPSET list BBC using manual method
+Create IPSET list BBC using the manual method
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=BBC
 
-Create IPSET list BBC using manual method. Use 'dir' location as the backup/restore location
+Create IPSET list BBC using the manual method. Use the 'dir=' location as the backup/restore location
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=BBC dir=/tmp/mnt/RT-AC88U/mylists
 
 ### VPN Server to VPN Client Routing

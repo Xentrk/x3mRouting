@@ -261,7 +261,7 @@ sh x3mRouting.sh {'server='1|2|both} {'ipset_name='} ['del']
 ````
 
 ## x3mRouting.sh Usage Examples
-Usage examples are provided for the following routing functions supported by x3mRouting:  
+Usage examples are provided for the following routing functions:  
   * VPN Client Routing
   * VPN Client Bypass Routing
   * Create IPSET List - No Routing Rules

@@ -386,12 +386,6 @@ Route VPN Client 1 traffic from 192.168.22.152-192.168.22.157 matching IPSET lis
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM src_range=192.168.22.152-192.168.22.157
 
-#### Delete an IPSET list and all routing rules and cru jobs
-Either option listed below will work. There is no requirement to specify the method.
-
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=MYIPSET del
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX del
-
 ### Create IPSET List - No Routing Rules
 Use this method if you want to create an IPSET list with no routing rules. You must specify the 'ipset_name=' parameter when no routing rules are specified.
 
@@ -433,7 +427,18 @@ Route from VPN Server 1,2 or both the same routing rules for the IPSET list PAND
 1. The IPSET list must exist!
 2. A PREROUTING rule must currently exist so the script can determine the VPN Client to route to!
 
-Refer to the [Wiki](https://github.com/RMerl/asuswrt-merlin/wiki/User-scripts#creating-scripts ) for instructions on how to configure nat-start and other user scripts.
+### Delete an IPSET list, All Routing Rules and cru jobs
+Either option listed below will work. There is no requirement to specify the method.
+
+    sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=MYIPSET del
+    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX del
+
+### Delete a VPN Server to VPN Client Routing Rule
+
+    sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 client=1 del
+
+### Delete a VPN Server to IPSET list Routing Rule
+    sh x3mRouting.sh {'server='1|2|both} {'ipset_name='} del
 
 ## Helpful Tips, Validation and Troubleshooting
 

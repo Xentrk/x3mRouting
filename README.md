@@ -160,7 +160,7 @@ In the screen picture above, you will notice an entry for **DummyVPN1**. For the
 
 #### openvpn-event Script
 
-3mRouting uses the **openvpn-event** script during an VPN Client up event to create the IPSET list and routing rule and during a VPN Client "down" event to remove the routing rule. **openvpn-event** is automatically installed when selecting options 2 and 3.
+x3mRouting uses the **openvpn-event** script during an VPN Client up event to create the IPSET list and routing rule and during a VPN Client "down" event to remove the routing rule. **openvpn-event** is automatically installed when selecting options 2 and 3.
 
 **openvpn-event** will call VPN related scripts such as:
 
@@ -171,12 +171,21 @@ In the screen picture above, you will notice an entry for **DummyVPN1**. For the
 
 located in **/jffs/scripts/x3mRouting** based on VPN Client or Server up/down events.
 ##### /jffs/scripts/x3mRouting/vpnclient1-route-up example
-
 ````
 #!/bin/sh
-sh /jffs/scripts/x3mRouting/load_AMAZON_ipset_iface.sh 1 AMAZON-US US
-sh /jffs/scripts/x3mRouting/load_ASN_ipset_iface.sh 1 NETFLIX AS2906
-sh /jffs/scripts/x3mRouting/load_DNSMASQ_ipset_iface.sh 1 HULU_WEB hulu.com,hulustream.com,akamaihd.net
+sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON_US aws_region=US
+sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX asnum=AS2906
+sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 HULU_WEB dnsmasq=hulu.com,hulustream.com,akamaihd.net
+iptables -t nat -D POSTROUTING -s "$(nvram get vpn_server_sn)"/24 -o tun11 -j MASQUERADE 2>/dev/null
+iptables -t nat -A POSTROUTING -s "$(nvram get vpn_server_sn)"/24 -o tun11 -j MASQUERADE
+````
+##### /jffs/scripts/x3mRouting/vpnclient1-route-pre-down example
+````
+#!/bin/sh
+iptables -t mangle -D PREROUTING -i br0 -m set --match-set HULU_WEB dst -j MARK --set-mark 0x1000/0x1000
+iptables -t mangle -D PREROUTING -i br0 -m set --match-set AMAZON_US dst -j MARK --set-mark 0x1000/0x1000
+iptables -t mangle -D PREROUTING -i br0 -m set --match-set NETFLIX dst -j MARK --set-mark 0x1000/0x1000
+iptables -t nat -D POSTROUTING -s "$(nvram get vpn_server_sn)"/24 -o tun11 -j MASQUERADE 2>/dev/null
 ````
 
 #### IPSET Save/Restore File Location

@@ -48,7 +48,7 @@ During the update process, the script will:
   * Any LAN Client Routing nvram files that exist will get moved to **/jffs/addons/x3mRouting** and the x3mRouting_client_rules file to **/jffs/scripts/x3mRouting** from the **/jffs/configs** directory.
   * Update existing scripts to the new version.
   * Migrate any **VPN Server to VPN Client** and **VPN Server to IPSET** routing rules from vpnserverX-up and vpnserverX-down scripts to the appropriate vpnclientX-route-up and vpnclientX-route-pre-down scripts.
-  * Check for and remove prior x3mRouting version entries found in **/jffs/scripts/nat-start** or vpnclientX-route-up files. After removal of prior x3mRouting version entries, the file will be scanned for other entries. If only a "#!/bin/sh" and comment lines exist, the user will be prompted to remove the file. The recommendation is to select the option to remove the file.  
+  * Check for and remove prior x3mRouting version entries found in **/jffs/scripts/nat-start** or vpnclientX-route-up files. After removal of prior x3mRouting version entries, the file will be scanned for other entries. If only a **#!/bin/sh** and comment lines exist, the user will be prompted to remove the file. The recommendation is to select the option to remove the file.  
   * **/jffs/scripts/nat-start** and openvpn-event files in the **/jffs/scripts/x3mRouting** directory will be scanned for references to the old scripts. A conversion file will get created in **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh**.
 
 4.  View the **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** script and validate. A line showing the prior entry and file source will be shown with the new entry. Follow the instructions in the file and make any necessary changes. When done, save the conversion script and execute it (e.g. sh x3mRouting_Conversion.sh). After execution, the IPSET list and associated routing rules, if specified, will be created along with the required entries in the appropriate VPN Client up file.
@@ -78,6 +78,9 @@ Provides the ability to
   * Create and selectively create and route IPSET lists to the WAN or VPN Client interfaces using the **x3mRouting.sh** script.
   * Route all VPN Server traffic to one of the VPN Clients.
   * Selectively route VPN Server traffic to an existing LAN routing rule for an IPSET list.
+
+#### 4. getdomainnames.sh Script
+This script will create a uniquely sorted list of domain names from dnsmasq.log that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service.
 
 ## Support
 For help and support, please visit the Asuswrt-Merlin x3mRouting support thread on [snbforums.com](https://www.snbforums.com/threads/x3mrouting-selective-routing-for-asuswrt-merlin-firmware.57793/#post-506675).
@@ -476,7 +479,7 @@ Alternatively, you can use the **nslookup** command to find the IP address of a 
     AS-Org-Name: Netflix Streaming Services Inc.
 
 ### [4] getdomainnames.sh Script
-This script will create a uniquely sorted list of domain names from dnsmasq.log that you collected by accessing a website or streaming service. The script requires that the dnsmasq.log file exists in the **/opt/var/log** directory. You must first enable dnsmasq logging if it's not enabled.
+This script will create a uniquely sorted list of domain names from dnsmasq.log that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service.  The script requires that the dnsmasq.log file exists in the **/opt/var/log** directory. You must first enable dnsmasq logging if it's not enabled.
 
 #### Enable dnsamsq Logging
 1. Navigate to the **/jffs/configs** directory **cd /jffs/config**

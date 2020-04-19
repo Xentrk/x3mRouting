@@ -43,7 +43,7 @@ sh x3mRouting.sh help
   3.  After the update has completed, select the **[u]  Update to new version of x3mRouting** option.
   4.  A backup of the current x3mRouting directory will be stored in **/jffs/scripts/x3mRouting/backup**.
   5.  Obsolete scripts will be removed.
-  6.  If the exist, any VPN Client nvram rules used by **LAN Client Routing** will get moved to **/jffs/addons/x3mRouting** and the x3mRouting_client_rules file to **/jffs/scripts/x3mRouting** from the **/jffs/configs** directory.
+  6.  Any LAN Client Routing nvram files that exist will get moved to **/jffs/addons/x3mRouting** and the x3mRouting_client_rules file to **/jffs/scripts/x3mRouting** from the **/jffs/configs** directory.
   7.  Existing scripts will get updated.
   8.  **/jffs/scripts/nat-start** and openvpn-event files in the **/jffs/scripts/x3mRouting** directory will be scanned for references to the old scripts. A conversion file will get created in **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh**.
   9. Migrate any **VPN Server to VPN Client** and **VPN Server to IPSET** routing rules from vpnserverX-up and vpnserverX-down scripts to the appropriate vpnclientX-route-up and vpnclientX-route-pre-down scripts.

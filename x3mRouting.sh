@@ -755,7 +755,7 @@ VPN_Server_to_VPN_Client() {
   IPTABLES_DEL_ENTRY="iptables -t nat -D POSTROUTING -s \"\$\(nvram get vpn_server\"\$VPN_SERVER_INSTANCE\"_sn\)\/24\" -o $IFACE -j MASQUERADE 2>/dev/null"
   IPTABLES_ADD_ENTRY="iptables -t nat -A POSTROUTING -s \"\$\(nvram get vpn_server\"\$VPN_SERVER_INSTANCE\"_sn\)\/24\" -o $IFACE -j MASQUERADE"
   VPNCLIENT_UP_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-up"
-  VPNCLIENT_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-predown"
+  VPNCLIENT_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-pre-down"
   POLICY_RULE="<vpnserver${VPN_CLIENT_INSTANCE}>${VPN_SERVER_SUBNET}>0.0.0.0>VPN"
   VPN_IP_LIST=$(nvram get vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist)
 

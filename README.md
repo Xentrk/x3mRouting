@@ -7,11 +7,12 @@
 
 #### VPN Server and Client Routing Script Changes
   * The separate scripts for:
+
     * IPSET list creation and routing using the ASN, Amazon AWS, dnsmasq and manual methods
     * VPN Server to VPN Client routing
     * VPN Server to IPSET routing
 
-  have been removed and the features combined into one script called **x3mRouting.sh**.
+    have been removed and the features combined into one script called **x3mRouting.sh**.
   * The method used to create the IPSET list is passed to **x3mRouting.sh** as a parameter. If the ASN, Amazon AWS or dnsmasq parameter is not specified, **x3mRouting.sh** will default to the manual method.
   * Running **x3mRouting.sh** will automatically perform the set-up. The features of **openvpn-event** are used to run the script during a VPN Client up event and remove the routing rule during a VPN Client down event. The use of **/jffs/scripts/nat-start** to run the scripts at system boot is no longer recommended.
   * IPSET lists are updated automatically during an VPN Client up event.

@@ -19,7 +19,8 @@ export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
 logger -t "($(basename "$0"))" "$$ Starting Script Execution ($(if [ -n "$1" ]; then echo "$1"; else echo "menu"; fi))"
 VERSION="2.0.0"
 GIT_REPO="x3mRouting"
-GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/master"
+#GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/master"
+GITHUB_DIR=https://raw.githubusercontent.com/Xentrk/$GIT_REPO/x3mRouting-NG
 LOCAL_REPO="/jffs/scripts/x3mRouting"
 
 # Uncomment the line below for debugging

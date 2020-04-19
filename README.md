@@ -267,6 +267,9 @@ Usage examples are provided for the following routing functions:
   * Create IPSET List - No Routing Rules
   * VPN Server to VPN Client Routing
   * VPN Server to IPSET List Routing
+  * Delete an IPSET list, All Routing Rules and cru Jobs
+  * Delete a VPN Server to VPN Client Routing Rule
+  * Delete a VPN Server to IPSET list Routing Rule
 
 ### VPN Client Routing
 Use this approach to route traffic to a VPN Client.

@@ -771,7 +771,7 @@ VPN_Server_to_VPN_Client() {
         fi
       done
     else #file does not exist
-      touch > "$VPNCLIENT_UP_FILE"
+      touch >"$VPNCLIENT_UP_FILE"
       {
         echo "#!/bin/sh"
         echo "$IPTABLES_DEL_ENTRY"
@@ -835,9 +835,9 @@ VPN_Server_to_IPSET() {
   DEL_FLAG=$6
 
   case "$VPN_SERVER_INSTANCE" in
-    1) VPN_SERVER_TUN="tun21" ;;
-    2) VPN_SERVER_TUN="tun22" ;;
-    *) Error_Exit "ERROR $VPN_SERVER_INSTANCE should be a 1 or 2" ;;
+  1) VPN_SERVER_TUN="tun21" ;;
+  2) VPN_SERVER_TUN="tun22" ;;
+  *) Error_Exit "ERROR $VPN_SERVER_INSTANCE should be a 1 or 2" ;;
   esac
   # Get VPN Server Subnet Mask
   VPN_SERVER_IP=$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)
@@ -877,7 +877,6 @@ VPN_Server_to_IPSET() {
       iptables -t nat -A POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE
       iptables -t mangle -A PREROUTING -i "$VPN_SERVER_TUN" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
     fi
-
 
     if [ -s "$VPNCLIENT_DOWN_FILE" ]; then #file exists
       #Check if an existing entry exists
@@ -1052,21 +1051,21 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
     FWMARK_SUBSTR=$(echo "$FWMARK" | awk '{ string=substr($0, 3, 6); print string; }')
 
     case "$FWMARK_SUBSTR" in
-      8000) IFACE="br0"   ;;
-      1000) IFACE="tun11" ;;
-      2000) IFACE="tun12" ;;
-      4000) IFACE="tun13" ;;
-      7000) IFACE="tun14" ;;
-      3000) IFACE="tun15" ;;
-      *) Error_Exit "ERROR $1 should be a 1-5=VPN" ;;
+    8000) IFACE="br0" ;;
+    1000) IFACE="tun11" ;;
+    2000) IFACE="tun12" ;;
+    4000) IFACE="tun13" ;;
+    7000) IFACE="tun14" ;;
+    3000) IFACE="tun15" ;;
+    *) Error_Exit "ERROR $1 should be a 1-5=VPN" ;;
     esac
 
     case "$IFACE" in
-      tun11) VPN_CLIENT_INSTANCE=1;;
-      tun12) VPN_CLIENT_INSTANCE=2;;
-      tun13) VPN_CLIENT_INSTANCE=3;;
-      tun14) VPN_CLIENT_INSTANCE=4;;
-      tun15) VPN_CLIENT_INSTANCE=5;;
+    tun11) VPN_CLIENT_INSTANCE=1 ;;
+    tun12) VPN_CLIENT_INSTANCE=2 ;;
+    tun13) VPN_CLIENT_INSTANCE=3 ;;
+    tun14) VPN_CLIENT_INSTANCE=4 ;;
+    tun15) VPN_CLIENT_INSTANCE=5 ;;
     esac
 
     if [ "$(echo $@ | grep -cw 'del')" -gt 0 ]; then

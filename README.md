@@ -93,7 +93,7 @@ Please beware that Amazon Prime, BBC, Hulu and Netflix block known VPN servers. 
 
 Copy and paste the command below into an SSH session:
 
-      /usr/sbin/curl --retry 3 "https://raw.githubusercontent.com/Xentrk/x3mRouting/master/x3mRouting" -o "/opt/bin/x3mRouting" && chmod 755 /opt/bin/x3mRouting && x3mRouting
+      /usr/sbin/curl --retry 3 "https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/x3mRouting" -o "/opt/bin/x3mRouting" && chmod 755 /opt/bin/x3mRouting && x3mRouting
 
 This command will download and install the installation menu **x3mRouting** to the **/opt/bin** directory. The installation script is a menu with options to install the three options described below, and options to update or remove the repository. To access the installation menu, type the command **x3mRouting**.
 

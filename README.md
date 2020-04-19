@@ -472,8 +472,16 @@ Alternatively, you can use the **nslookup** command to find the IP address of a 
     AS-Path: 34224 3356 2906
     AS-Org-Name: Netflix Streaming Services Inc.
 
-#### getdomainnames.sh Script
-This script will create a uniquely sorted list of domain names from dnsmasq.log that you collected by accessing a website or streaming service.
+### [4] getdomainnames.sh Script
+This script will create a uniquely sorted list of domain names from dnsmasq.log that you collected by accessing a website or streaming service. The script requires that the dnsmasq.log file exists in the **/opt/var/log** directory. If you don't have dnsmasq logging enabled, you must first enable logging.
+
+#### Enable dnsamsq Logging
+1. Navigate to the **/jffs/configs** directory **cd /jffs/config**
+2. Use your SFTP or SSH client to create the **dnsmasq.conf.log** file
+3. Add the following entry
+
+
+#### getdomannames.sh Usage Instructions
 1. Download the script **getdomainnames.sh**
 2. Navigate to the log file directory **/opt/var/log**
 3. Enter the command: **tail -f dnsmasq.log > myfile** where 'myfile' is any file name you choose.

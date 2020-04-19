@@ -563,7 +563,7 @@ Load_AWS_Ipset_List() {
   # example: for REGION in us-east-1 us-east-2 us-west-1 us-west-2; do
   # don't quote the parameter so it is treated like an array!
   for REGION in $REGION; do
-    jq '.prefixes[] | select(.region=='\""$REGION"\"') | .ip_prefix' <"$DIR/ipranges.json" | sed 's/"//g' >>"$DIR/$IPSET_NAME"
+    jq '.prefixes[] | select(.region=='\""$REGION"\"') | .ip_prefix' <"$DIR/ip-ranges.json" | sed 's/"//g' >>"$DIR/$IPSET_NAME"
   done
   sort -gt '/' -k 1 "$DIR/$IPSET_NAME" | sort -ut '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4n >"$DIR/${IPSET_NAME}_tmp"
   mv "$DIR/${IPSET_NAME}_tmp" "$DIR/$IPSET_NAME"

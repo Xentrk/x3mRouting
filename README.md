@@ -38,23 +38,23 @@ sh x3mRouting.sh help
 
 ## Version 2.0.0 Update process
 
-  1)  Type 'x3mRouting' at the command line to access the Installation Menu
-  2)  Select the '[10]  Update x3mRouting Menu' option
-  3)  After the update has completed, select the '[u]  Update to new version of x3mRouting' option
-  4)  A backup of the current x3mRouting directory will be stored in /jffs/scripts/x3mRouting/backup
-  5)  Obsolete scripts will be removed
-  6)  OpenVPN Client nvram rules used by LAN Client Routing will get moved from **/jffs/configs** to **/jffs/addons/x3mRouting_config** and the x3mRouting_client_rules file to **/jffs/scripts/x3mRouting** from the **/jffs/configs** directory.
-  7)  **/jffs/scripts/nat-start** and openvpn-event files in the **/jffs/scripts/x3mRouting** directory will be scanned for references to the old scripts. A conversion file will get created in **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh**.
-  8)  Existing scripts will get updated
-  9)  Check for and remove prior x3mRouting version entries found in **nat-start** or vpnclientX-route-up files
-  10) View the conversion script and validate. A line showing the prior entry and file source will be shown with the new entry. Follow the instructions in the file and make any necessary changes. When done, save the conversion script and execute. After execution, the required entries will be created in the appropriate openvpn-event script.
-  11) Run the commands below to validate VPN Server POSTROUTING and VPN Client PREROUTING rules.
+  1.  Type **x3mRouting** at the command line to access the Installation Menu.
+  2.  Select the **[10]  Update x3mRouting Menu** option.
+  3.  After the update has completed, select the **[u]  Update to new version of x3mRouting** option.
+  4.  A backup of the current x3mRouting directory will be stored in **/jffs/scripts/x3mRouting/backup**.
+  5.  Obsolete scripts will be removed.
+  6.  If the exist, any VPN Client nvram rules used by **LAN Client Routing** will get moved to **/jffs/addons/x3mRouting** and the x3mRouting_client_rules file to **/jffs/scripts/x3mRouting** from the **/jffs/configs** directory.
+  7.  Existing scripts will get updated.
+  8.  **/jffs/scripts/nat-start** and openvpn-event files in the **/jffs/scripts/x3mRouting** directory will be scanned for references to the old scripts. A conversion file will get created in **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh**.
+  9.  Check for and remove prior x3mRouting version entries found in **nat-start** or vpnclientX-route-up files. After removal of prior x3mRouting version entries, the file will be scanned for other entries. If only a "#!/bin/sh" and comment lines exist, the user will be prompted to remove the file. The recommendation is to select the option to remove the file.    
+  10. View the conversion script and validate. A line showing the prior entry and file source will be shown with the new entry. Follow the instructions in the file and make any necessary changes. When done, save the conversion script and execute it (e.g. sh x3mRouting_Conversion.sh). After execution, the required entries will be created in the appropriate VPN Client up file.
+  11. Run the commands below to validate VPN Server POSTROUTING and VPN Client PREROUTING rules.
 
 ````
   iptables -nvL POSTROUTING -t nat --line
   iptables -nvL PREROUTING -t mangle --line
 ````
-  12) Run the 'ip rule' command to validate RPDB rules
+  12. Run the **ip rule** command to validate RPDB rules.
 
 ## Introduction
 The options of **x3mRouting** include selective routing features for LAN Clients and IPSET Lists.

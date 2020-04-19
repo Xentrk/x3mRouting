@@ -476,6 +476,102 @@ Update_NewVersion() {
 
   }
 
+
+Convert_Server_Routing_Entries() {
+
+  Migrate_To_VPN_Client_Files() {
+    if [ -s "$VPNCLIENT_UP_FILE" ]; then
+      #Check if an existing entry exists
+      for IPTABLES_ENTRY in "$IPTABLES_DEL_ENTRY" "$IPTABLES_ADD_ENTRY"; do
+        if [ "$(grep -c "$IPTABLES_ENTRY" "$VPNCLIENT_UP_FILE")" -eq "0" ]; then  # does not exist, add entry
+          echo "$IPTABLES_ENTRY" >>"$VPNCLIENT_UP_FILE"
+        fi
+      done
+    else #file does not exist
+      touch > "$VPNCLIENT_UP_FILE"
+      {
+        echo "#!/bin/sh"
+        echo "$IPTABLES_DEL_ENTRY"
+        echo "$IPTABLES_ADD_ENTRY"
+      } >>"$VPNCLIENT_UP_FILE"
+      chmod 755 "$VPNCLIENT_UP_FILE"
+    fi
+
+    if [ -s "$VPNCLIENT_DOWN_FILE" ]; then
+    #Check if an existing entry exists
+      if [ "$(grep -c "$IPTABLES_DEL_ENTRY" "$VPNCLIENT_DOWN_FILE")" -eq "0" ]; then # does not exist, add entry
+         echo "$IPTABLES_DEL_ENTRY" >>"$VPNCLIENT_DOWN_FILE"
+      fi
+    else #file does not exist
+      echo "#!/bin/sh" >"$VPNCLIENT_DOWN_FILE"
+      echo "$IPTABLES_DEL_ENTRY" >>"$VPNCLIENT_DOWN_FILE"
+      chmod 755 "$VPNCLIENT_DOWN_FILE"
+    fi
+  }
+
+  # Migrate VPN Server to VPN Client Entries from vpnserverX-up and vpnserverX-down to vpnclientX-route-up and vpnclientX-route-pre-down respectively
+  for VPNSERVER in 1 2; do
+    if [ -s "$PROJECT_REPO/vpnserver${VPNSERVER}-up" ]; then
+      # Process any MASQUERADE rules
+      if [ "$(grep -c "MASQUERADE" "$PROJECT_REPO/vpnserver${VPNSERVER}-up")" -ge "1" ]; then
+        for IFACE in tun11 tun12 tun13 tun14 tun15; do
+          if [ "$(grep -c "$IFACE" "$PROJECT_REPO/vpnserver${VPNSERVER}-up")" -ge "1" ]; then
+            IPTABLES_DEL_ENTRY="iptables -t nat -D POSTROUTING -s \"\$(nvram get vpn_server${VPN_SERVER_INSTANCE}_sn)\"/24 -o $IFACE -j MASQUERADE 2>/dev/null"
+            IPTABLES_ADD_ENTRY="iptables -t nat -A POSTROUTING -s \"\$(nvram get vpn_server${VPN_SERVER_INSTANCE}_sn)\"/24 -o $IFACE -j MASQUERADE"
+            case "$IFACE" in
+              tun11) VPN_CLIENT_INSTANCE=1;;
+              tun12) VPN_CLIENT_INSTANCE=2;;
+              tun13) VPN_CLIENT_INSTANCE=3;;
+              tun14) VPN_CLIENT_INSTANCE=4;;
+              tun15) VPN_CLIENT_INSTANCE=5;;
+            esac
+            VPNCLIENT_UP_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-up"
+            VPNCLIENT_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-pre-down"
+            Migrate_To_VPN_Client_Files
+            # Implement routing rules
+            iptables -t nat -A POSTROUTING -s "$(nvram get vpn_server${VPNSERVER}_sn)"/24 -o $IFACE -j MASQUERADE
+            # remove old entries from vpnserverX-up file
+            sed -i "/$IFACE/d" "$PROJECT_REPO/vpnserver${VPNSERVER}-up" && echo "Deleted iptables entry for VPN Server $VPNSERVER to VPN Client $VPN_CLIENT_INSTANCE routing entry from $PROJECT_REPO/vpnserver${VPNSERVER}-up"
+            Check_For_Shebang "$PROJECT_REPO/vpnserver${VPNSERVER}-up"
+            sed -i "/$IFACE/d" "$PROJECT_REPO/vpnserver${VPNSERVER}-down" && echo "Deleted iptables entry for VPN Server $VPNSERVER to VPN Client $VPN_CLIENT_INSTANCE routng entry from $PROJECT_REPO/vpnserver${VPNSERVER}-down"
+            Check_For_Shebang "$PROJECT_REPO/vpnserver${VPNSERVER}-down"
+          fi
+        done
+      fi
+
+      # Process any VPN Server to IPSET routing rules
+      if [ "$(grep -c "set-mark" "$PROJECT_REPO/vpnserver${VPNSERVER}-up")" -ge "1" ]; then
+        for IFACE in tun21 tun22; do
+          if [ "$(grep -c -m 1 "$IFACE" "$PROJECT_REPO/vpnserver${VPNSERVER}-up")" -ge "1" ]; then
+            FWMARK=$(grep -m 1 "$IFACE" "$PROJECT_REPO/vpnserver${VPNSERVER}-up" | awk '{print $16}')
+            IPSET=$(grep -m 1 "$IFACE" "$PROJECT_REPO/vpnserver${VPNSERVER}-up" | awk '{print $11}')
+            #OLD_IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i $IFACE -m set --match-set $IPSET dst -j MARK --set-mark $FWMARK 2>/dev/null"
+            #OLD_IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i $IFACE -m set --match-set $IPSET dst -j MARK --set-mark $FWMARK"
+            IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i $IFACE -m set --match-set $IPSET dst -j MARK --set-mark $FWMARK 2>/dev/null"
+            IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i $IFACE -m set --match-set $IPSET dst -j MARK --set-mark $FWMARK"
+            FWMARK_SUBSTR=$(echo "$FWMARK" | awk '{ string=substr($0, 3, 4); print string; }')
+            case "$FWMARK_SUBSTR" in
+              1000) VPN_CLIENT_INSTANCE=1;;
+              2000) VPN_CLIENT_INSTANCE=2;;
+              4000) VPN_CLIENT_INSTANCE=3;;
+              7000) VPN_CLIENT_INSTANCE=4;;
+              3000) VPN_CLIENT_INSTANCE=5;;
+            esac
+            VPNCLIENT_UP_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-up"
+            VPNCLIENT_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-pre-down"
+            Migrate_To_VPN_Client_Files
+
+            # Remove old entris in vpnserverX-up and vpnserverX-down
+            sed -i "/$IFACE/d" "$PROJECT_REPO/vpnserver${VPNSERVER}-up" && echo "Deleted iptables entry for VPN Server $VPNSERVER to IPSET routing entry from $PROJECT_REPO/vpnserver${VPNSERVER}-up"
+            Check_For_Shebang "$PROJECT_REPO/vpnserver${VPNSERVER}-up"
+            sed -i "/$IFACE/d" "$PROJECT_REPO/vpnserver${VPNSERVER}-down" && echo "Deleted iptables entry for VPN Server $VPNSERVER to IPSET routing rule from $PROJECT_REPO/vpnserver${VPNSERVER}-down"
+            Check_For_Shebang "$PROJECT_REPO/vpnserver${VPNSERVER}-down"
+          fi
+        done
+      fi
+    fi
+  done
+}
   # END: Conversion Functions
 
   # START: Process Conversion
@@ -518,6 +614,9 @@ Update_NewVersion() {
   if [ -s "/jffs/configs/x3mRouting_client_rules" ]; then # file exists
     mv /jffs/configs/x3mRouting_client_rules /jffs/scripts/x3mRouting/x3mRouting_client_rules && printf '%s\n' "$/jffs/configs/x3mRouting_client_rules moved to /jffs/scripts/x3mRouting/x3mRouting_client_rules"
   fi
+
+  # Process any VPN Server to VPN Client or VPN Server to VPN IPSET rules
+  Convert_Server_Routing_Entries
 
   # Process any vpnclientX-route-up files in x3mRouting directory
   for VPNID in 1 2 3 4 5; do

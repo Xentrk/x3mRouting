@@ -62,7 +62,7 @@ During the update process, the script will:
   13. Run the **ip rule** command to validate RPDB rules.
 
 ## Introduction
-The options of **x3mRouting** include selective routing features for LAN Clients and IPSET Lists.
+The options of **x3mRouting** include selective routing features for LAN Clients, VPN Servers and Clients.
 
 #### 1. LAN Client Routing
 
@@ -74,9 +74,9 @@ Provides the ability to create IPSET lists using the **x3mRouting.sh** script an
 
 #### 3. OpenVPN Event & x3mRouting.sh Script
 
-Provides the ability to
+The **x3mRouing.sh** script provides the ability to
 
-  * Create and selectively create and route IPSET lists to the WAN or VPN Client interfaces using the **x3mRouting.sh** script.
+  * Create and selectively create and route IPSET lists to the WAN or VPN Client interfaces.
   * Route all VPN Server traffic to one of the VPN Clients.
   * Selectively route VPN Server traffic to an existing LAN routing rule for an IPSET list.
 

@@ -261,6 +261,12 @@ sh x3mRouting.sh {'server='1|2|both} {'ipset_name='} ['del']
 ````
 
 ## x3mRouting.sh Usage Examples
+Usage examples are provided for the following routing functions supported by x3mRouting:  
+  * VPN Client Routing
+  * VPN Client Bypass Routing
+  * Create IPSET List - No Routing Rules
+  * VPN Server to VPN Client Routing
+  * VPN Server to IPSET List Routing
 
 ### VPN Client Routing
 Use this approach to route traffic to a VPN Client.
@@ -416,8 +422,8 @@ Route from VPN Server 1,2 or both to VPN Client 1,2,3,4 or 5.
     sh /jffs/scripts/x3mRouting/x3mRouting.sh server=2 client=1
     sh /jffs/scripts/x3mRouting/x3mRouting.sh server=both client=1
 
-### VPN Server to existing routing rules for an IPSET list
-Route from VPN Server 1,2 or both to use same routing rules for IPSET list PANDORA.
+### VPN Server to IPSET List Routing
+Route from VPN Server 1,2 or both the same routing rules for the IPSET list PANDORA.
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 ipset_name=PANDORA
     sh /jffs/scripts/x3mRouting/x3mRouting.sh server=2 ipset_name=PANDORA

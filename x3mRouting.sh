@@ -956,7 +956,7 @@ Dnsmasq_Log_File() {
 #==================== End of Functions  =====================================
 SCR_NAME=$(basename "$0" | sed 's/.sh//')
 # Uncomment the line below for debugging
-set -x
+#set -x
 
 ## Begin ##
 

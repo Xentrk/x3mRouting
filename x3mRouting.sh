@@ -578,7 +578,7 @@ Delete_Ipset_List() {
   if [ -s /jffs/configs/dnsmasq.conf.add ]; then # dnsmasq.conf.add file exists
     if [ "$(grep -c "$IPSET_NAME" "/jffs/configs/dnsmasq.conf.add")" -ge "1" ]; then # if true, then one or more lines exist in dnsmasq.conf.add
       sed -i "/^ipset.*${IPSET_NAME}$/d" /jffs/configs/dnsmasq.conf.add
-      logger -st "($(basename "$0"))" $$ ipset="$DNSMASQ_ENTRY" deleted from "/jffs/configs/dnsmasq.conf.add"
+      logger -st "($(basename "$0"))" $$ IPSET "$IPSET_NAME" deleted from "/jffs/configs/dnsmasq.conf.add"
       service restart_dnsmasq >/dev/null 2>&1
     fi
   fi
@@ -843,8 +843,8 @@ VPN_Server_to_IPSET() {
   VPN_SERVER_IP=$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)
 
   # POSTROUTING CHAIN
-  IPTABLES_POSTROUTING_DEL_ENTRY="iptables -t nat -D POSTROUTING -s \"\$(nvram get vpn_server\${VPN_SERVER_INSTANCE}_sn)\"/24 -o $IFACE -j MASQUERADE 2>/dev/null"
-  IPTABLES_POSTROUTING_ADD_ENTRY="iptables -t nat -A POSTROUTING -s \"\$(nvram get vpn_server\${VPN_SERVER_INSTANCE}_sn)\"/24 -o $IFACE -j MASQUERADE"
+  IPTABLES_POSTROUTING_DEL_ENTRY="iptables -t nat -D POSTROUTING -s \"\$(nvram get vpn_server${VPN_SERVER_INSTANCE}_sn)\"/24 -o $IFACE -j MASQUERADE 2>/dev/null"
+  IPTABLES_POSTROUTING_ADD_ENTRY="iptables -t nat -A POSTROUTING -s \"\$(nvram get vpn_server${VPN_SERVER_INSTANCE}_sn)\"/24 -o $IFACE -j MASQUERADE"
 
   # PREROUTING CHAIN
   IPTABLES_PREROUTING_DEL_ENTRY="iptables -t mangle -D PREROUTING -i $VPN_SERVER_TUN -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
@@ -900,13 +900,23 @@ VPN_Server_to_IPSET() {
     iptables -t mangle -D PREROUTING -i "$VPN_SERVER_TUN" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
     iptables -t nat -D POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
     if [ -s "$VPNCLIENT_UP_FILE" ]; then
-      sed -i "/$IPSET_NAME/d" "$VPNCLIENT_UP_FILE"
-      sed -i "/$IFACE/d" "$VPNCLIENT_UP_FILE"
+      sed -i "/$IPSET_NAME/d" "$VPNCLIENT_UP_FILE"]
+      sed -i "/$IFACE/d" "$VPNCLIENT_UP_FILE"]
+
+      # Delete PREROUTING entry
+      ###sed -i "/PREROUTING\|$VPN_SERVER_TUN/d" "$VPNCLIENT_UP_FILE"
+      # Delete POSTROUTING entry
+      ####sed -i "/POSTOUTING\|$IFACE/d" "$VPNCLIENT_UP_FILE"
       logger -t "($(basename "$0"))" $$ "iptables entry deleted from $VPNCLIENT_UP_FILE"
       Check_For_Shebang "$VPNCLIENT_UP_FILE"
     fi
     if [ -s "$VPNCLIENT_DOWN_FILE" ]; then
       sed -i "/$IPSET_NAME/d" "$VPNCLIENT_DOWN_FILE"
+      # Delete PREROUTING entry
+      #sed -i "/PREROUTING\|$VPN_SERVER_TUN/d" "$VPNCLIENT_UP_FILE"
+      # Delete POSTROUTING entry
+      #sed -i "/POSTROUTING\|$IFACE/d" "$VPNCLIENT_DOWN_FILE"
+
       sed -i "/$IFACE/d" "$VPNCLIENT_DOWN_FILE"
       logger -t "($(basename "$0"))" $$ "iptables entry deleted from $VPNCLIENT_DOWN_FILE"
       Check_For_Shebang "$VPNCLIENT_DOWN_FILE"
@@ -1011,7 +1021,7 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
       ;;
     esac
 
-    if [ "$(echo $@ | grep -cw 'del')" -gt 0 ]; then
+    if [ "$(echo $@ | grep -cw 'del')" -ge "1" ]; then
       if [ "$SERVER" = "both" ]; then
         for SERVER in 1 2; do
           VPN_Server_to_VPN_Client "$SERVER" "$IFACE" "$VPN_CLIENT_INSTANCE" "del"
@@ -1032,7 +1042,7 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
   fi
 
   #### Process server when 'ipset_name=' specified
-  if [ "$(echo "$@" | grep -c 'ipset_name=')" -gt 0 ]; then
+  if [ "$(echo "$@" | grep -c 'ipset_name=')" -ge "1" ]; then
     IPSET_NAME=$(echo "$@" | sed -n "s/^.*ipset_name=//p" | awk '{print $1}') # ipset name
     # Check if IPSET list exists
     if [ -n "$IPSET_NAME" ]; then
@@ -1068,7 +1078,7 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
     tun15) VPN_CLIENT_INSTANCE=5 ;;
     esac
 
-    if [ "$(echo $@ | grep -cw 'del')" -gt 0 ]; then
+    if [ "$(echo $@ | grep -cw 'del')" -ge "1" ]; then
       if [ "$SERVER" = "both" ]; then
         for SERVER in 1 2; do
           VPN_Server_to_IPSET "$SERVER" "$VPN_CLIENT_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK" "del"

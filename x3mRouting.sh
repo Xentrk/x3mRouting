@@ -744,7 +744,7 @@ Manual_Method() {
 }
 
 VPN_Server_to_VPN_Client() {
-
+#set -x
   VPN_SERVER_INSTANCE=$1
   IFACE=$2
   VPN_CLIENT_INSTANCE=$3
@@ -753,11 +753,13 @@ VPN_Server_to_VPN_Client() {
   #VPN_SERVER_IP="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)"
   VPN_SERVER_SUBNET="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24"
   # \"\$(nvram get vpn_server\"\${VPN_SERVER_INSTANCE}\"_sn)/24\"
+  IPTABLES_DEL_ENTRY="iptables -t nat -D POSTROUTING -s \$(nvram get vpn_server"$VPN_SERVER_INSTANCE"_sn)/24 -o $IFACE -j MASQUERADE 2>/dev/null"
   IPTABLES_DEL_ENTRY="iptables -t nat -D POSTROUTING -s \"\$(nvram get vpn_server${VPN_SERVER_INSTANCE}_sn)\"/24 -o $IFACE -j MASQUERADE 2>/dev/null"
   IPTABLES_ADD_ENTRY="iptables -t nat -A POSTROUTING -s \"\$(nvram get vpn_server${VPN_SERVER_INSTANCE}_sn)\"/24 -o $IFACE -j MASQUERADE"
   VPNCLIENT_UP_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-up"
   VPNCLIENT_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-pre-down"
-  POLICY_RULE="<vpnserver${VPN_CLIENT_INSTANCE}>${VPN_SERVER_SUBNET}>0.0.0.0>VPN"
+  POLICY_RULE_WITHOUT_NAME="${VPN_SERVER_SUBNET}>0.0.0.0>VPN"
+  POLICY_RULE="<VPN Server ${VPN_SERVER_INSTANCE}>${POLICY_RULE_WITHOUT_NAME}"
   VPN_IP_LIST=$(nvram get vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist)
 
   if [ "$DEL_FLAG" != "del" ]; then # add entry
@@ -767,7 +769,7 @@ VPN_Server_to_VPN_Client() {
         if [ "$(grep -c "$IPTABLES_ENTRY" "$VPNCLIENT_UP_FILE")" -eq "0" ]; then # if true, add entry
           echo "$IPTABLES_ENTRY" >>"$VPNCLIENT_UP_FILE"
           # Implement routing rules
-          iptables -t nat -A POSTROUTING -s "$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)"/24 -o "$IFACE" -j MASQUERADE
+          iptables -t nat -A POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE
         fi
       done
     else #file does not exist
@@ -779,7 +781,7 @@ VPN_Server_to_VPN_Client() {
       } >>"$VPNCLIENT_UP_FILE"
       chmod 755 "$VPNCLIENT_UP_FILE"
       # Implement routing rules
-      iptables -t nat -A POSTROUTING -s "$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)"/24 -o "$IFACE" -j MASQUERADE
+      iptables -t nat -A POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE
     fi
 
     if [ -s "$VPNCLIENT_DOWN_FILE" ]; then
@@ -793,8 +795,8 @@ VPN_Server_to_VPN_Client() {
       chmod 755 "$VPNCLIENT_DOWN_FILE"
     fi
 
-    if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE")" -eq "0" ]; then
-      VPN_IP_LIST="${VPN_IP_LIST}${POLICY_RULE}"
+    if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE_WITHOUT_NAME")" -eq "0" ]; then
+      VPN_IP_LIST="${POLICY_RULE}${VPN_IP_LIST}"
       nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist="$VPN_IP_LIST"
       nvram commit
       logger -st "($(basename "$0"))" $$ "Restarting VPN Client ${VPN_CLIENT_INSTANCE} to add policy rule for VPN Server ${VPN_SERVER_INSTANCE}"
@@ -816,7 +818,7 @@ VPN_Server_to_VPN_Client() {
     fi
     # nvram get vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist
     if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE")" -eq "1" ]; then
-      VPN_IP_LIST=$(echo "$VPN_IP_LIST" | sed "s/<vpnserver${VPN_CLIENT_INSTANCE}>${VPN_SERVER_IP}\/24>0.0.0.0>VPN//")
+      VPN_IP_LIST=$(echo "$VPN_IP_LIST" | sed "s,<VPN Server ${VPN_SERVER_INSTANCE}>${VPN_SERVER_SUBNET}>0.0.0.0>VPN,,")
       nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist="$VPN_IP_LIST"
       nvram commit
       logger -st "($(basename "$0"))" $$ "Restarting vpnclient ${VPN_CLIENT_INSTANCE} to remove policy rule for VPN Server ${VPN_SERVER_INSTANCE}"
@@ -900,8 +902,8 @@ VPN_Server_to_IPSET() {
     iptables -t mangle -D PREROUTING -i "$VPN_SERVER_TUN" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
     iptables -t nat -D POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
     if [ -s "$VPNCLIENT_UP_FILE" ]; then
-      sed -i "/$IPSET_NAME/d" "$VPNCLIENT_UP_FILE"]
-      sed -i "/$IFACE/d" "$VPNCLIENT_UP_FILE"]
+      sed -i "/$IPSET_NAME/d" "$VPNCLIENT_UP_FILE"
+      sed -i "/$IFACE/d" "$VPNCLIENT_UP_FILE"
 
       # Delete PREROUTING entry
       ###sed -i "/PREROUTING\|$VPN_SERVER_TUN/d" "$VPNCLIENT_UP_FILE"

@@ -14,9 +14,10 @@
 
     have been removed and the features combined into one script called **x3mRouting.sh**.
   * The method used to create the IPSET list is passed to **x3mRouting.sh** as a parameter. If the ASN, Amazon AWS or dnsmasq parameter is not specified, **x3mRouting.sh** will default to the manual method.
-  * Running **x3mRouting.sh** will automatically perform the set-up. The features of **openvpn-event** are used to run the script during a VPN Client up event and remove the routing rule during a VPN Client down event. The use of **/jffs/scripts/nat-start** to run the scripts at system boot is no longer recommended.
-  * IPSET lists are updated automatically during an VPN Client up event.
-  * Simplified the ability to delete an IPSET list and associated routing rules, openvpn-event files and cru jobs.
+  * Running **x3mRouting.sh** will automatically perform the set-up.
+    * **/jffs/scripts/nat-start** is used to execute the scripts at system boot or during a firewall restart event.
+    * The features of **openvpn-event** are used to create the routing rule during a VPN Client up event and remove the routing rule during a VPN Client down event.
+  * Simplified the ability to delete an IPSET list and associated routing rules, nat-start and openvpn-event files, and cru jobs.
   * **VPN Server to VPN Client** routing feature of **x3mRouting.sh**
     * The **x3mRouting.sh** script will create the required VPN Server nvram entry, eliminating the need to manually enter the VPN Server IP address in the OpenVPN Client Screen. The VPN Client will be restarted for the update to take effect. Once the restart has completed, you can view the entry in the OpenVPN Client Screen.
   * **VPN Server to VPN Client** and **VPN Server to IPSET List**
@@ -43,16 +44,16 @@ sh x3mRouting.sh help
   2.  Select the **[10]  Update x3mRouting Menu** option.
   3.  After the update has completed, select the **[u]  Update to new version of x3mRouting** option.
 
-During the update process, the script will:
+During the update process, the x3mRouting Installation Menu will:
   * Backup the current x3mRouting directory contents to **/jffs/scripts/x3mRouting/backup**.
-  * Remove obsolete scripts.
+  * Remove obsolete x3mRouting scripts.
   * Any LAN Client Routing nvram files that exist will get moved to **/jffs/addons/x3mRouting** and the x3mRouting_client_rules file to **/jffs/scripts/x3mRouting** from the **/jffs/configs** directory.
   * Update existing scripts to the new version.
   * Migrate any **VPN Server to VPN Client** and **VPN Server to IPSET** routing rules from vpnserverX-up and vpnserverX-down scripts to the appropriate vpnclientX-route-up and vpnclientX-route-pre-down scripts.
   * Check for and remove prior x3mRouting version entries found in **/jffs/scripts/nat-start** or vpnclientX-route-up files. After removal of prior x3mRouting version entries, the file will be scanned for other entries. If only a **#!/bin/sh** and comment lines exist, the user will be prompted to remove the file. The recommendation is to select the option to remove the file.  
   * **/jffs/scripts/nat-start** and openvpn-event files in the **/jffs/scripts/x3mRouting** directory will be scanned for references to the old scripts. A conversion file will get created in **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh**.
 
-4.  View the **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** script and validate. A line showing the prior entry and file source will be shown with the new entry. Follow the instructions in the file and make any necessary changes. When done, save the conversion script and execute it (e.g. sh x3mRouting_Conversion.sh). After execution, the IPSET list and associated routing rules, if specified, will be created along with the required entries in the appropriate VPN Client up file.
+4.  View the **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** script and validate. A line showing the prior entry and file source will be shown with the new entry. Follow the instructions in the file and make any necessary changes. When done, save the conversion script and execute it (e.g. sh x3mRouting_Conversion.sh). After execution, the IPSET list and associated routing rules, if specified, will be created along with the required entries in the nat-start and appropriate VPN Client up/down files.
 5. Run the commands below to validate VPN Server POSTROUTING and VPN Client PREROUTING rules.
 
 ````
@@ -77,7 +78,7 @@ Provides the ability to create IPSET lists using the **x3mRouting.sh** script an
 The **x3mRouing.sh** script provides the ability to
 
   * Create and selectively create and route IPSET lists to the WAN or VPN Client interfaces.
-  * Route all VPN Server traffic to one of the VPN Clients.
+  * Route VPN Server traffic to one of the VPN Clients.
   * Selectively route VPN Server traffic to an existing LAN routing rule for an IPSET list.
 
 #### 4. getdomainnames.sh Script
@@ -102,7 +103,7 @@ Copy and paste the command below into an SSH session:
 
       /usr/sbin/curl --retry 3 "https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/x3mRouting" -o "/opt/bin/x3mRouting" && chmod 755 /opt/bin/x3mRouting && x3mRouting
 
-This command will download and install the installation menu **x3mRouting** to the **/opt/bin** directory. The installation script is a menu with options to install the three options described below, and options to update or remove the repository. To access the installation menu, type the command **x3mRouting**. Option **[7]  Update x3mRouting Menu** will only appear when a new installation menu is detected on the GitHub respository. 
+This command will download and install the installation menu **x3mRouting** to the **/opt/bin** directory. The installation script is a menu with options to install the three options described below, and options to update or remove the repository. To access the installation menu, type the command **x3mRouting**. Option **[7]  Update x3mRouting Menu** will only appear when a new installation menu is detected on the GitHub repository.
 
 <img src="https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG/InstallationMenu.PNG" alt="drawing" width="600" height="600"/>
 
@@ -139,7 +140,7 @@ If an existing **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file exists,
 #### x3mRouting_client_nvram.sh
 **x3mRouting_client_nvram.sh** is the second script to run. This script will create the nvram files for VPN Clients in the **/jffs/addons/x3mRouting** directory based on the interface assignments in **/jffs/scripts/x3mRouting/x3mRouting_client_rules**. An nvram file will not be created in the **/jffs/addons/x3mRouting/** directory for LAN clients assigned to use the WAN interface.
 
-Similar to the firmware, the next step is to bounce the VPN Client interface to have the routing assignments take effect. This is accomplished by selecting the **“Apply”** button on the OpenVPN Client Screen you assigned the LAN client to. Alternatively, you can bounce the WAN interface by selecting the **“Apply”** button on the WAN screen. Restarting the WAN will also restart any active VPN clients. There is a slight delay before the VPN Client becomes active. Check the status of each VPN Clent using the OpenVPN Status Screen.
+Similar to the firmware, the next step is to bounce the VPN Client interface to have the routing assignments take effect. This is accomplished by selecting the **“Apply”** button on the OpenVPN Client Screen you assigned the LAN client to. Alternatively, you can bounce the WAN interface by selecting the **“Apply”** button on the WAN screen. Restarting the WAN will also restart any active VPN clients. There is a slight delay before the VPN Client becomes active. Check the status of each VPN Client using the OpenVPN Status Screen.
 
 The routing rules for LAN Clients will automatically be applied upon a system boot. You only need to rerun **x3mRouting_client_nvram.sh** and bounce the VPN Client if you have made LAN Client interface assignment changes in the **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file.
 
@@ -165,9 +166,28 @@ In the screen picture above, you will notice an entry for **DummyVPN1**. For the
 
 ### [3] OpenVPN Event & x3mRouting.sh Script
 
+#### nat-start script
+When you execute **x3mRouting.sh** from the command line, **x3mRouting.sh** will add the entry to **/jffs/scripts/nat-start**. **nat-start** will run at system boot and create the IPSET list and routing rules, or after a firewwall restart event to restore the routing rules.
+
+##### /jffs/scripts/nat-start example
+````
+#!/bin/sh
+sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX asnum=AS2906
+sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 HULU_WEB dnsmasq=hulu.com,hulustream.com,akamaihd.net
+sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON_US aws_region=US
+sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 2 MOVETV dnsmasq=movetv.com
+sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 2 CBS_IPv4
+sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 2 PANDORA dnsmasq=pandora.com
+sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 3 BBC
+sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 3 BBC_WEB dnsmasq=bbc.co.uk,bbc.com,bbc.gscontxt.net,bbci.co.uk,bbctvapps.co.uk,ssl-bbcsmarttv.2cnt.net
+sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 client=5
+sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 ipset_name=PANDORA
+sh /jffs/scripts/x3mRouting/x3mRouting.sh 2 0 WIMIPADDR dnsmasq=whatismyipaddress.com
+````
+
 #### openvpn-event Script
 
-x3mRouting uses the **openvpn-event** script during an VPN Client up event to create the IPSET list and routing rule and during a VPN Client "down" event to remove the routing rule. **openvpn-event** is automatically installed when selecting options 2 and 3.
+x3mRouting uses the **openvpn-event** script during an VPN Client up event to restore the routing rule and during a VPN Client "down" event to remove the routing rule. **openvpn-event** is automatically installed when selecting options 2 and 3. When you execute **x3mRouting.sh** from the command line, **x3mRouting.sh** will add the routing rule entries to the appropriate **vpnclientX-route-up** and **vpnclientX-route-pre-down** files, where the X is the VPN Client instance.
 
 **openvpn-event** will call VPN related scripts such as:
 
@@ -180,9 +200,12 @@ located in **/jffs/scripts/x3mRouting** based on VPN Client or Server up/down ev
 ##### /jffs/scripts/x3mRouting/vpnclient1-route-up example
 ````
 #!/bin/sh
-sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON_US aws_region=US
-sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX asnum=AS2906
-sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 HULU_WEB dnsmasq=hulu.com,hulustream.com,akamaihd.net
+iptables -t mangle -D PREROUTING -i br0 -m set --match-set HULU_WEB dst -j MARK --set-mark 0x1000/0x1000 2>/dev/null
+iptables -t mangle -A PREROUTING -i br0 -m set --match-set HULU_WEB dst -j MARK --set-mark 0x1000/0x1000
+iptables -t mangle -D PREROUTING -i br0 -m set --match-set AMAZON_US dst -j MARK --set-mark 0x1000/0x1000 2>/dev/null
+iptables -t mangle -A PREROUTING -i br0 -m set --match-set AMAZON_US dst -j MARK --set-mark 0x1000/0x1000
+iptables -t mangle -D PREROUTING -i br0 -m set --match-set NETFLIX dst -j MARK --set-mark 0x1000/0x1000 2>/dev/null
+iptables -t mangle -A PREROUTING -i br0 -m set --match-set NETFLIX dst -j MARK --set-mark 0x1000/0x1000
 iptables -t nat -D POSTROUTING -s "$(nvram get vpn_server_sn)"/24 -o tun11 -j MASQUERADE 2>/dev/null
 iptables -t nat -A POSTROUTING -s "$(nvram get vpn_server_sn)"/24 -o tun11 -j MASQUERADE
 ````
@@ -482,16 +505,16 @@ Alternatively, you can use the **nslookup** command to find the IP address of a 
 ### [4] getdomainnames.sh Script
 This script will create a uniquely sorted list of domain names from dnsmasq.log that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service.  The script requires that the dnsmasq.log file exists in the **/opt/var/log** directory. You must first enable dnsmasq logging if it's not enabled.
 
-#### Enable dnsamsq Logging
+#### Enable dnsmasq Logging
 1. Navigate to the **/jffs/configs** directory **cd /jffs/config**
 2. Use your SFTP or SSH client to create the **dnsmasq.conf.log** file
 3. Add the following entry to dnsmasq.conf.log:
     log-facility=/opt/var/log/dnsmasq.log
 4. Save and exit **dnsmasq.conf.log**
-5. Restart DNSMASQ
+5. Restart dnsmasq
     service restart_dnsmasq.log
 
-#### getdomannames.sh Usage Instructions
+#### getdomainnames.sh Usage Instructions
 1. Download the script **getdomainnames.sh**
 2. Navigate to the log file directory **/opt/var/log**
 3. Enter the command: **tail -f dnsmasq.log > myfile** where 'myfile' is any file name you choose.
@@ -505,7 +528,7 @@ Usage Example:
 
 The domains collected will be stored in the **/opt/var/log/** directory using the same name as the output file with '_domains' concatenated at the end of the file name (e.g myfile_domains)
 
-The next step is to check the file for domains not related to the streaming service. These are domains generated by other applications on the LAN client you streamed from. You don't have to use the fully qualified domain name. For example, the domain **occ-0-1077-1062.1.nflxso.net** would be entered as **nflxso.net**. Likewise, www.netflix.com would be entered as **netflix.com**.
+The next step is to check the file for domains not related to the streaming service. These are domains generated by other applications on the LAN client you streamed from that may not be related to the streaming service. You don't have to use the fully qualified domain name. For example, the domain **occ-0-1077-1062.1.nflxso.net** would be entered as **nflxso.net**. Likewise, www.netflix.com would be entered as **netflix.com**.
 
 ### Validation and Troubleshooting
 #### IPSET lists
@@ -544,11 +567,9 @@ ipset=/pandora.com/PANDORA
 ipset=/pandora.com/US_VPN
 ````
 ##### Local Caching DNS
-There was an update made to the firmware in 384.12 that prevents IPSET lists from being populated when doing an **nslookup** on a domain name.
+There was an update made to the firmware in 384.12 that appears to prevent IPSET lists from being populated when doing an **nslookup** on a domain name.
 
 The router will now use ISP-provided resolvers instead of local dnsmasq when attempting to resolve addresses, for improved reliability. This reproduces how stock firmware behaves. This only affects name resolution done by the router itself, not by the LAN clients. The behavior can still be changed on the **Tools** -> **Other Settings page** -> **Wan: Use local caching DNS server as system resolver (default: No)**.
-
-To resolve the issue, the installation script changes the default value to **"Yes"**.
 
 #### VPN and LAN Client RPDB Routing and Priorities Rules
 Type the command

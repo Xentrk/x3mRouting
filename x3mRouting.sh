@@ -400,44 +400,52 @@ Process_Src_Option() {
   OPT1=$4
   OPT2=$5
   SRC=$(echo "$@" | sed -n "s/^.*src=//p" | awk '{print $1}')
-  SRC_RANGE=$(echo "$@" | sed -n "s/^.*src-range=//p" | awk '{print $1}')
+  SRC_RANGE=$(echo "$@" | sed -n "s/^.*src_range=//p" | awk '{print $1}')
 
-  # Process when OPT1 contains 'src=' or 'src-range='
-  if [ "$(echo "$OPT1" | grep -c 'src=')" -gt 0 ] || [ "$(echo "$OPT1" | grep -c 'src-range=')" -gt 0 ]; then # must be manual method
-    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$0") ipset_name=$IPSET_NAME"
+  # Process when OPT1 contains 'src=' or 'src_range='
+  if [ "$(echo "$OPT1" | grep -c 'src=')" -gt 0 ] || [ "$(echo "$OPT1" | grep -c 'src_range=')" -gt 0 ]; then # must be manual method
+    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$0") $SRC_IFACE $DST_IFACE ipset_name=$IPSET_NAME $OPT1"
     Manual_Method $@
     if [ "$(echo "$OPT1" | grep -c 'src=')" -gt 0 ]; then
       IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
       IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
       # Create routing rules
-      iptables -t mangle -D PREROUTING -i br0 --src "$SRC" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
-      iptables -t mangle -A PREROUTING -i br0 --src "$SRC" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
-    else # default to src-range
-      IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -t mangle -i br0 -m --iprange -m iprange --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
-      IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 --iprange --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
-      iptables -t mangle -D PREROUTING -i br0 -m iprange --src-range "$SRC_RANGE" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
-      iptables -t mangle -A PREROUTING -i br0 -m iprange --src-range "$SRC_RANGE" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
+      #iptables -t mangle -D PREROUTING -i br0 --src "$SRC" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
+      #iptables -t mangle -A PREROUTING -i br0 --src "$SRC" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
+      eval "$IPTABLES_DEL_ENTRY"
+      eval "$IPTABLES_ADD_ENTRY"
+    else # default to src_range
+      IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 -m iprange --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
+      IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 -m iprange --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
+      eval "$IPTABLES_DEL_ENTRY"
+      eval "$IPTABLES_ADD_ENTRY"
+      #iptables -t mangle -D PREROUTING -i br0 -m iprange --src-range "$SRC_RANGE" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
+      #iptables -t mangle -A PREROUTING -i br0 -m iprange --src-range "$SRC_RANGE" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
     fi
   fi
 
-  # Process when OPT2 contains 'src=' or 'src-range='
-  if [ "$(echo "$OPT2" | grep -c 'src=')" -gt 0 ] || [ "$(echo "$OPT2" | grep -c 'src-range=')" -gt 0 ]; then #must be asnum, amazon or dnsmasq method
-    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$0") ipset_name=$IPSET_NAME $OPT1"
+  # Process when OPT2 contains 'src=' or 'src_range='
+  if [ "$(echo "$OPT2" | grep -c 'src=')" -gt 0 ] || [ "$(echo "$OPT2" | grep -c 'src_range=')" -gt 0 ]; then #must be asnum, amazon or dnsmasq method
+    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$0") $SRC_IFACE $DST_IFACE ipset_name=$IPSET_NAME $OPT1 $OPT2"
     # HANDLE Better?
     cp /jffs/scripts/x3mRouting/x3mRouting.sh /tmp/tmp_x3mRouting.sh
     sh /tmp/tmp_x3mRouting.sh ipset_name="$IPSET_NAME" "$OPT1" #this creates ipset list and gets around lock issue on current script
     rm /tmp/tmp_x3mRouting.sh
-    if [ "$(echo "$5" | grep -c 'src=')" -gt 0 ]; then
+    if [ "$(echo "$OPT2" | grep -c 'src=')" -gt 0 ]; then
       IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
       IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
       # Create routing rules
-      iptables -t mangle -D PREROUTING -i br0 --src "$SRC" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
-      iptables -t mangle -A PREROUTING -i br0 --src "$SRC" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
+      eval "$IPTABLES_DEL_ENTRY"
+      eval "$IPTABLES_ADD_ENTRY"
+      #iptables -t mangle -D PREROUTING -i br0 --src "$SRC" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
+      #iptables -t mangle -A PREROUTING -i br0 --src "$SRC" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
     else # default to 'src-range'
-      IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 -m iprange $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
-      IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 -m iprange $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
-      iptables -t mangle -D PREROUTING -i br0 -m iprange --src-range "$SRC_RANGE" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
-      iptables -t mangle -A PREROUTING -i br0 -m iprange --src-range "$SRC_RANGE" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
+      IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 -m iprange  --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
+      IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 -m iprange  --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
+      eval "$IPTABLES_DEL_ENTRY"
+      eval "$IPTABLES_ADD_ENTRY"
+      #iptables -t mangle -D PREROUTING -i br0 -m iprange --src-range "$SRC_RANGE" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
+      #iptables -t mangle -A PREROUTING -i br0 -m iprange --src-range "$SRC_RANGE" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
     fi
   fi
 
@@ -449,12 +457,29 @@ Process_Src_Option() {
 
   VPNC_UP_FILE="/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-up"
   VPNC_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-pre-down"
+  NAT_START="/jffs/scripts/nat-start"
+
+  # nat-start File
+  if [ -s "$NAT_START" ]; then # file exists
+    if [ "$(grep -c "$SCRIPT_ENTRY" "$NAT_START")" -eq "0" ]; then # if true, then no lines exist
+      echo "$SCRIPT_ENTRY" >>"$NAT_START" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
+      logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
+    fi
+  else
+    true >"$NAT_START"
+    {
+      printf '%s\n' "#!/bin/sh"
+      printf '%s\n' "$SCRIPT_ENTRY" # file does not exist, create VPNC_UP_FILE
+    } >"$NAT_START"
+    chmod 755 "$NAT_START"
+    logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
+  fi
 
   # VPN Client route-up File
   for IPTABLES_ENTRY in "$IPTABLES_DEL_ENTRY" "$IPTABLES_ADD_ENTRY"; do
     if [ -s "$VPNC_UP_FILE" ]; then # file exists
       if [ "$(grep -c "$IPTABLES_ENTRY" "$VPNC_UP_FILE")" -eq "0" ]; then # if true, then no lines exist
-        echo "$IPTABLES" >>"$VPNC_UP_FILE" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
+        echo "$IPTABLES_ENTRY" >>"$VPNC_UP_FILE" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
         logger -st "($(basename "$0"))" $$ "$IPTABLES_ENTRY added to $VPNC_UP_FILE"
       fi
     else
@@ -596,7 +621,7 @@ Delete_Ipset_List() {
   if [ -s /jffs/configs/dnsmasq.conf.add ]; then # dnsmasq.conf.add file exists
     if [ "$(grep -c "$IPSET_NAME" "/jffs/configs/dnsmasq.conf.add")" -ge "1" ]; then # if true, then one or more lines exist in dnsmasq.conf.add
       sed -i "/^ipset.*${IPSET_NAME}$/d" /jffs/configs/dnsmasq.conf.add
-      logger -st "($(basename "$0"))" $$ IPSET "$IPSET_NAME" deleted from "/jffs/configs/dnsmasq.conf.add"
+      logger -st "($(basename "$0"))" $$ IPSET "$IPSET_NAME deleted from /jffs/configs/dnsmasq.conf.add"
       service restart_dnsmasq 2>/dev/null
     fi
   fi
@@ -606,7 +631,7 @@ Delete_Ipset_List() {
   if [ -s "$NAT_START" ]; then # file exists
     if [ "$(grep -c "$IPSET_NAME" "$NAT_START")" -ge "1" ]; then # if true, then one or more lines exist
       sed -i "/$IPSET_NAME/d" "$NAT_START"
-      logger -st "($(basename "$0"))" $$ "$IPSET deleted from $NAT_START"
+      logger -st "($(basename "$0"))" $$ "Script entry for $IPSET_NAME deleted from $NAT_START"
       Check_For_Shebang "$NAT_START"
     fi
   fi
@@ -619,14 +644,14 @@ Delete_Ipset_List() {
       # Note: not passing del entry
       if [ "$(grep -c "$IPSET_NAME" "$VPNC_UP_FILE")" -ge "1" ]; then # if true, then one or more lines exist
         sed -i "/$IPSET_NAME/d" "$VPNC_UP_FILE"
-        logger -st "($(basename "$0"))" $$ "ipset $IPSET entry deleted from $VPNC_DOWN_FILE"
+        logger -st "($(basename "$0"))" $$ "ipset $IPSET_NAME entry deleted from $VPNC_DOWN_FILE"
         Check_For_Shebang "$VPNC_UP_FILE"
       fi
     fi
     if [ -s "$VPNC_DOWN_FILE" ]; then # file exists
       if [ "$(grep -c "$IPSET_NAME" "$VPNC_DOWN_FILE")" -ge "1" ]; then # if true, then one or more lines exist
         sed -i "/$IPSET_NAME/d" "$VPNC_DOWN_FILE"
-        logger -st "($(basename "$0"))" $$ "ipset $IPSET entry deleted from $VPNC_DOWN_FILE"
+        logger -st "($(basename "$0"))" $$ "ipset $IPSET_NAME entry deleted from $VPNC_DOWN_FILE"
         Check_For_Shebang "$VPNC_DOWN_FILE"
       fi
     fi
@@ -1061,7 +1086,7 @@ Dnsmasq_Log_File() {
 #==================== End of Functions  =====================================
 SCR_NAME=$(basename "$0" | sed 's/.sh//')
 # Uncomment the line below for debugging
-# set -x
+#set -x
 ## Begin ##
 
 # Prevent duplicate processing
@@ -1334,8 +1359,8 @@ if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Exit_Routine
 fi
 
-# 'src=' or 'src-range=' parms require exception processing
-if [ "$(echo "$@" | grep -c 'src=')" -gt 0 ] || [ "$(echo "$@" | grep -c 'src-range=')" -gt 0 ]; then
+# 'src=' or 'src_range=' parms require exception processing
+if [ "$(echo "$@" | grep -c 'src=')" -gt 0 ] || [ "$(echo "$@" | grep -c 'src_range=')" -gt 0 ]; then
   Process_Src_Option "$@"
   Exit_Routine
 fi

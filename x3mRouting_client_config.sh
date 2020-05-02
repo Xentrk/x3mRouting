@@ -1,7 +1,7 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting_client_config.sh
-# VERSION=1.0.5
+# VERSION=2.0.0
 # Author: Xentrk
 # 13-April-2020
 #

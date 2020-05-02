@@ -235,7 +235,6 @@ Update_Version() {
 Update_NewVersion() {
   # This script will clean-up old files and create a conversion file
 
-  PROJECT_REPO=/jffs/scripts/x3mRouting
   NAT_START=/jffs/scripts/nat-start
   CONV_FILE=/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh
 
@@ -473,7 +472,7 @@ Update_NewVersion() {
   Remove_Old_Files_Repo() {
 
     for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
-      [ -f "$PROJECT_REPO/$OLD_FILE" ] && rm "$PROJECT_REPO/$OLD_FILE" echo "Obsolete $PROJECT_REPO/$OLD_FILE file deleted" || echo "Obsolete $PROJECT_REPO/$OLD_FILE file does not exist"
+      [ -f "$LOCAL_REPO/$OLD_FILE" ] && rm "$LOCAL_REPO/$OLD_FILE" echo "Obsolete $LOCAL_REPO/$OLD_FILE file deleted" || echo "Obsolete $LOCAL_REPO/$OLD_FILE file does not exist"
     done
 
   }
@@ -483,7 +482,7 @@ Convert_Server_Routing_Entries() {
 
   for VPNSERVER in 1 2; do
     VPN_SERVER_SN=$(nvram get vpn_server${VPNSERVER}_sn)/24
-    for SERVER_FILE in "$PROJECT_REPO/vpnserver${VPNSERVER}-up" "$PROJECT_REPO/vpnserver${VPNSERVER}-down"; do
+    for SERVER_FILE in "$LOCAL_REPO/vpnserver${VPNSERVER}-up" "$LOCAL_REPO/vpnserver${VPNSERVER}-down"; do
       while [ -s "$SERVER_FILE" ]; do
         while [ "$(grep -c "$VPN_SERVER_SN" "$SERVER_FILE")" -ge "1" ]; do
         #if [ "$(grep -c "$VPN_SERVER_SN" "$SERVER_FILE")" -ge "1" ]; then
@@ -545,25 +544,25 @@ Convert_Server_Routing_Entries() {
   # START: Process Conversion
 
   # Only Backup the Project Repo Directory during the first run to prevent potential corruption
-  if [ -d "$PROJECT_REPO" ]; then
-    if [ ! -d "$PROJECT_REPO/backup" ]; then
-      mkdir "$PROJECT_REPO/backup"
-      cp -a "$PROJECT_REPO/." "$PROJECT_REPO/backup/ >/dev/null 2>&1"
+  if [ -d "$LOCAL_REPO" ]; then
+    if [ ! -d "$LOCAL_REPO/backup" ]; then
+      mkdir "$LOCAL_REPO/backup"
+      cp -a "$LOCAL_REPO/." "$LOCAL_REPO/backup/ >/dev/null 2>&1"
     else
       echo "Existing backup directory found. Skipping backup step."
     fi
   fi
 
   # If a previous version of the conversion file exists, back it up to prevent overwrite as a second run may corrupt it
-  if [ -s "$PROJECT_REPO/x3mRouting_Conversion.sh" ]; then
+  if [ -s "$LOCAL_REPO/x3mRouting_Conversion.sh" ]; then
     TIMESTAMP=$(date +"%Y-%m-%d-%H.%M.%S")
-    if ! cp "$PROJECT_REPO/x3mRouting_Conversion.sh" "$PROJECT_REPO/x3mRouting_Conversion.sh.$TIMESTAMP"; then
-      printf '\nBackup of the prior %s file could not be made.\n' "$PROJECT_REPO/x3mRouting_Conversion.sh"
+    if ! cp "$LOCAL_REPO/x3mRouting_Conversion.sh" "$LOCAL_REPO/x3mRouting_Conversion.sh.$TIMESTAMP"; then
+      printf '\nBackup of the prior %s file could not be made.\n' "$LOCAL_REPO/x3mRouting_Conversion.sh"
       printf 'Exiting...\n'
       exit 0
     else
-      printf '\nExisting %s file found.\n' "$PROJECT_REPO/x3mRouting_Conversion.sh"
-      printf 'Backup file saved to %s.\n' "$PROJECT_REPO/x3mRouting_Conversion.sh.$TIMESTAMP"
+      printf '\nExisting %s file found.\n' "$LOCAL_REPO/x3mRouting_Conversion.sh"
+      printf 'Backup file saved to %s.\n' "$LOCAL_REPO/x3mRouting_Conversion.sh.$TIMESTAMP"
       true > "$CONV_FILE" && chmod 755 "$CONV_FILE"
     fi
   else

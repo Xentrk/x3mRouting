@@ -65,7 +65,7 @@ Main_Menu() {
   if [ "$localmd5" != "$remotemd5" ]; then
     printf '%b[7]%b  Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   fi
-  if [ ! -f "$LOCAL_REPO/x3mRouting.sh" ]; then
+  if [ ! -f "$LOCAL_REPO/x3mRouting.sh" ] || [ ! -d "/jffs/addons/x3mRouting"  ]; then
     printf '%b[u]%b  Update to new version of x3mRouting\n' "${COLOR_RED}" "${COLOR_WHITE}"
   fi
   printf '\n%b[e]%b  Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
@@ -107,6 +107,7 @@ Main_Menu() {
       ;;
     u)
       Update_NewVersion
+      Update_Version
       return 1
       ;;
     e)
@@ -610,7 +611,6 @@ Convert_Server_Routing_Entries() {
   fi
 
   # DO NOT Give user the option to remove the prior verson of any x3mRouting entries found in $NAT_START or vpnclientX-route-up files"
-
   Remove_Old_Files_Repo
   Remove_From_nat_start
   Remove_From_UP_File

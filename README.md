@@ -244,7 +244,7 @@ Usage examples are provided for the following routing functions:
   * VPN Client Bypass Routing
   * VPN Server to VPN Client Routing
   * VPN Server to IPSET List Routing
-  * Delete an IPSET list, All Routing Rules and cru Jobs
+  * Delete an IPSET List, all Routing Rules and cru Jobs
   * Delete a VPN Server to VPN Client Routing Rule
   * Delete a VPN Server to IPSET list Routing Rule
 
@@ -277,7 +277,7 @@ sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=BBC dir=/tmp/mnt/RT-AC88U/m
 ````
 
 ### VPN Client Routing
-Use this approach to route traffic to a VPN Client.
+Use this approach to route IPSET traffic to a VPN Client.
 
 #### ASN Method
 
@@ -289,22 +289,22 @@ Route all traffic matching IPSET list BBC created from AS2818 and AS31459 to VPN
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 BBC asnum=AS2818,AS31459
 
-Route all traffic matching IPSET list NETFLIX created from AS2906 to VPN Client1 from LAN device 192.168.22.152.   
+Route all traffic matching IPSET list NETFLIX created from AS2906 to VPN Client1 from LAN device 192.168.1.152.   
 
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX asnum=AS2906 src=192.168.22.152
+    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX asnum=AS2906 src=192.168.1.152
 
 #### Amazon AWS Region Method
 Route all traffic matching IPSET list AMAZON_US created from the AWS US region to VPN Client 1.
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON_US aws_region=US
 
-Route all traffic matching IPSET list AMAZON created from the AWS US and CA region to VPN Client 1.
+Route all traffic matching IPSET list AMAZON created from the AWS US and CA regions to VPN Client 1.
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON aws_region=US,CA
 
-Route IP address ranges 192.168.22.152-192.168.22.157 traffic matching IPSET list AMAZON_US created from the Amazon US region to VPN Client 1.
+Route IP address ranges 192.168.1.152-192.168.1.157 traffic matching IPSET list AMAZON_US created from the Amazon US region to VPN Client 1.
 
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON_US aws_region=US src_range=192.168.22.152-192.168.22.157
+    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON_US aws_region=US src_range=192.168.1.152-192.168.1.157
 
 #### dnsmasq Method
 Route all traffic matching IPSET list NETFLIX created from domain names to VPN Client1.
@@ -349,10 +349,10 @@ Route VPN Client 1 traffic matching IPSET list NETFLIX to WAN.
 sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 NETFLIX asnum=AS2906
 ````
 
-Route VPN Client 1 traffic from 192.168.22.152 matching IPSET list NETFLIX to WAN.
+Route VPN Client 1 traffic from 192.168.1.152 matching IPSET list NETFLIX to WAN.
 
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 NETFLIX asnum=AS2906 src=192.168.22.152
+sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 NETFLIX asnum=AS2906 src=192.168.1.152
 ````
 
 #### Amazon AWS Region Method
@@ -360,9 +360,9 @@ Route VPN Client 1 traffic matching IPSET list AMAZON_US to WAN.
 ````
 sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 AMAZON_US aws_region=US
 ````
-Route VPN Client 1 traffic from 192.168.22.152-192.168.22.157 matching IPSET list AMAZON_US to WAN.
+Route VPN Client 1 traffic from 192.168.1.152-192.168.1.157 matching IPSET list AMAZON_US to WAN.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 AMAZON_US aws_region=US src_range=192.168.22.152-192.168.22.157
+sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 AMAZON_US aws_region=US src_range=192.168.1.152-192.168.1.157
 ````
 #### dnsmasq Method
 Route all VPN Client 1 traffic matching IPSET list WIMIPCOM to the WAN.
@@ -373,9 +373,9 @@ Route all VPN Client 1 traffic matching IPSET list NETFLIX to the WAN.
 ````
 sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 ````
-Route VPN Client 1 traffic from 192.168.22.152 matching IPSET list NETFLIX to WAN.
+Route VPN Client 1 traffic from 192.168.1.152 matching IPSET list NETFLIX to WAN.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 NETFLIX domain=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net src=192.168.22.152
+sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 NETFLIX domain=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net src=192.168.1.152
 ````
 #### Manual Method
 Route all VPN Client 1 traffic matching IPSET list WIMIPCOM to the WAN.
@@ -386,13 +386,13 @@ Route all VPN Client 1 traffic matching IPSET list WIMIPCOM created from the IPv
 ````
 sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM ip=104.27.198.90,104.27.199.90
 ````
-Route VPN Client 1 traffic from 192.168.22.152 matching IPSET list WIMIPCOM to the WAN.
+Route VPN Client 1 traffic from 192.168.1.152 matching IPSET list WIMIPCOM to the WAN.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM src=192.168.22.152
+sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM src=192.168.1.152
 ````
-Route VPN Client 1 traffic from 192.168.22.152-192.168.22.157 matching IPSET list WIMIPCOM to WAN.       
+Route VPN Client 1 traffic from 192.168.1.152-192.168.1.157 matching IPSET list WIMIPCOM to WAN.       
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM src_range=192.168.22.152-192.168.22.157
+sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM src_range=192.168.1.152-192.168.1.157
 ````
 ### VPN Server to VPN Client Routing
 Route from VPN Server 1,2 or both to VPN Client 1,2,3,4 or 5.
@@ -412,18 +412,20 @@ sh /jffs/scripts/x3mRouting/x3mRouting.shserver=both ipset_name=PANDORA
 1. The IPSET list must exist!
 2. A PREROUTING rule must currently exist so the script can determine the VPN Client to route to!
 
-### Delete an IPSET list, All Routing Rules and cru jobs
-Either option listed below will work. There is no requirement to specify the method.
+### Delete an IPSET List, all Routing Rules and cru jobs
+Either option listed below will work. The first example is the easiest as there is no requirement to specify the interfaces or method.
 ````
 sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=MYIPSET del
 sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX del
 ````
 ### Delete a VPN Server to VPN Client Routing Rule
+VPN Server to VPN Client routing rules require the VPN Server and Client to properly remove the iptables rules.
 ````
 sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 client=1 del
 ````
 
 ### Delete a VPN Server to IPSET list Routing Rule
+VPN Server to IPSET list routing rules require the VPN Server and IPSET name to properly remove the iptables rules.
 ````
 sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 ipset_name=PANDORA del
 ````
@@ -662,14 +664,14 @@ sh x3mRouting.sh help
   3.  After the update has completed, select the **[u]  Update to new version of x3mRouting** option.
 
 During the update process, the x3mRouting Installation Menu will:
-  * Backup the current x3mRouting directory contents to **/jffs/scripts/x3mRouting/backup**.
+  * Backup **/jffs/scripts/nat-start** and copy the x3mRouting directory contents to **/jffs/scripts/x3mRouting/backup**.
   * Remove obsolete x3mRouting scripts.
-  * Any LAN Client Routing nvram files that exist will get moved to **/jffs/addons/x3mRouting** and the x3mRouting_client_rules file to **/jffs/scripts/x3mRouting** from the **/jffs/configs** directory.
-  * Update existing scripts to the new version.
-  * Check for and remove prior x3mRouting version entries found in **/jffs/scripts/nat-start** or vpnclientX-route-up files. After removal of prior x3mRouting version entries, the file will be scanned for other entries. If only a **#!/bin/sh** and comment lines exist, the user will be prompted to remove the file. The recommendation is to select the option to remove the file.  
-  * **/jffs/scripts/nat-start** and openvpn-event files in the **/jffs/scripts/x3mRouting** directory will be scanned for references to the old scripts or routing rules. A conversion file will get created in **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** containing the new script entries. After the conversion file has been created, the old entries will be removed from **/jffs/scripts/nat-start** and openvpn-event files.
+  * Any LAN Client Routing nvram files that exist will get moved to **/jffs/addons/x3mRouting** and the **x3mRouting_client_rules** file from **/jffs/configs** to **/jffs/scripts/x3mRouting** directory.
+  * **/jffs/scripts/nat-start** and openvpn-event files in the **/jffs/scripts/x3mRouting** directory will be scanned for references to the old scripts or routing rules. A conversion file will get created in **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** containing the new script entries using the new usage syntax.
+  * Remove prior x3mRouting version entries found in **/jffs/scripts/nat-start** or **vpnclientX-route-up** files. If only a **#!/bin/sh** or comment lines exist, the user will be prompted to remove the file. The recommendation is to select the option to remove the file. A backup of **nat-start** and the local x3mRouing repository exists in case you need to recover.
+  * Update the remaining x3mRouting scripts to the new version.
 
-4.  View the **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** script and validate. A line showing the prior entry and file source will be shown with the new entry. Only entries involving routing to the WAN interface may require an edit. The new version requires that the VPN Client to bypass be specified. The conversion utility will assume the VPN Client you want to bypass is '1'. If necessary, edit the '1' to be the VPN Client number '1-5' you want to bypass. When done, save the conversion script and execute it (e.g. sh x3mRouting_Conversion.sh). After execution, the IPSET list and associated routing rules, if specified, will be created along with the required entries in **/jffs/scripts/nat-start** and appropriate VPN Client up/down files.
+4.  View the **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** script and validate. A line showing the prior entry and file source will be shown with the new entry. Only entries involving routing to the WAN interface may require an edit. The new version requires that the VPN Client to bypass be specified. The conversion utility will assume the VPN Client you want to bypass is '1'. If necessary, edit the '1' to be the VPN Client number '1-5' you want to bypass. When done, save the conversion script and execute it (e.g. **sh x3mRouting_Conversion.sh**). After execution, the IPSET list and associated routing rules, if specified, will be created along with the required entries in **/jffs/scripts/nat-start** and appropriate openvpn-event up/down files.
 5. Run the commands below to validate VPN Server POSTROUTING and VPN Client PREROUTING rules. POSTROUTING rules only get created for **VPN Server to VPN Client** and **VPN Server to IPSET List** rules.
 
 ````

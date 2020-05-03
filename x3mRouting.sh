@@ -387,10 +387,10 @@ Check_Files_For_Entries() {
     logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
   fi
 
-#set permissions for each file
-[ -s "$VPNC_UP_FILE" ] && chmod 755 "$VPNC_UP_FILE"
-[ -s "$VPNC_DOWN_FILE" ] && chmod 755 "$VPNC_DOWN_FILE"
-[ -s "$NAT_START" ] && chmod 755 "$NAT_START"
+  #set permissions for each file
+  [ -s "$VPNC_UP_FILE" ] && chmod 755 "$VPNC_UP_FILE"
+  [ -s "$VPNC_DOWN_FILE" ] && chmod 755 "$VPNC_DOWN_FILE"
+  [ -s "$NAT_START" ] && chmod 755 "$NAT_START"
 
 }
 

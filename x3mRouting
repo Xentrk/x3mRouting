@@ -696,6 +696,22 @@ Remove_Existing_Installation() {
       printf '\n%b"/opt/bin/x3mRouting"%b menu file removed\n' "$COLOR_GREEN" "$COLOR_WHITE"
     fi
   fi
+
+  for DIR in "/jffs/addons/x3mRouting"; do
+    if [ -d "$DIR" ]; then
+      if ! rm -rf "${DIR:?}/"* 2>/dev/null; then
+        printf '\nNo files found to remove in %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+      fi
+      if ! rmdir "$DIR" 2>/dev/null; then
+        printf '\nError trying to remove %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+      else
+        printf '\n%b%s%b folder and all files removed\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+      fi
+    else
+      printf '\n%b%s%b folder does not exist. No directory to remove\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+    fi
+  done
+
   Exit_Message
 
 }
@@ -989,15 +1005,16 @@ Update_Installer() {
     case "$menu_Update_Installer" in
     1)
       mkdir -p /jffs/addons/x3mRouting
-      Download_File /jffs/addons x3mRouting
-      mv /jffs/addons/x3mRouting /jffs/addons/x3mRouting.sh
+      Download_File /jffs/addons/x3mRouting x3mRouting
+      mv /jffs/addons/x3mRouting/x3mRouting /jffs/addons/x3mRouting/x3mRouting_Menu.sh
+      chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh
       rm -rf "/opt/bin/x3mRouting" 2>/dev/null
       if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/x3mRouting" ]; then
         echo "Creating 'x3mRouting' alias" 2>&1
-        ln -s /jffs/addons/x3mRouting/x3mRouting.sh /opt/bin/x3mRouting
+        ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting
       fi
       printf '\nUpdate Complete! %s\n' "$remotemd5"
-      #/opt/bin/x3mRouting
+      sh /jffs/addons/x3mRouting/x3mRouting_Menu.sh
       break
       ;;
     2)

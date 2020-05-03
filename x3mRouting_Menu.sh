@@ -76,21 +76,25 @@ Main_Menu() {
     case "$menu1" in
       1)
         Install_x3mRouting_LAN_Clients
+        Install_done "for LAN Clients"
         return 1
         ;;
       2)
         Install_x3mRouting_GUI
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
+        Install_done "GUI, OpenVPN Event and Shell Scripts"
         return 1
         ;;
       3)
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
+        Install_done "OpenVPN Event and Shell Scripts"
         return 1
         ;;
       4)
         Download_File "$LOCAL_REPO" "getdomainnames.sh"
+        Install_done "getdomainnames.sh"
         return 1
         ;;
       5)
@@ -123,6 +127,14 @@ Main_Menu() {
         ;;
     esac
   done
+}
+
+Install_done() {
+  echo
+  echo "Installation of $GIT_REPO $1 completed"
+  echo "Press enter to continue"
+  read -r
+  Welcome_Message
 }
 
 Validate_Removal() {

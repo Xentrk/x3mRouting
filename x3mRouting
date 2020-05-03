@@ -487,6 +487,14 @@ Update_NewVersion() {
 
   }
 
+Remove_Prerouting_Rules () {
+
+  iptables -nvL PREROUTING -t mangle --line | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
+    logger -st "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
+    iptables -t mangle -D PREROUTING "$CHAIN_NUM"
+  done
+
+}
 
 Convert_Server_Routing_Entries() {
 
@@ -624,6 +632,7 @@ Convert_Server_Routing_Entries() {
   Remove_Old_Files_Repo
   Remove_From_nat_start
   Remove_From_UP_File
+  Remove_Prerouting_Rules
 
 }
 ### End of Conversion Function

@@ -406,7 +406,7 @@ Route from VPN Server 1,2 or both the same routing rules for the IPSET list PAND
 ````
 sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 ipset_name=PANDORA
 sh /jffs/scripts/x3mRouting/x3mRouting.sh server=2 ipset_name=PANDORA
-sh /jffs/scripts/x3mRouting/x3mRouting.shserver=both ipset_name=PANDORA
+sh /jffs/scripts/x3mRouting/x3mRouting.sh server=both ipset_name=PANDORA
 ````
 ##### Requirements
 1. The IPSET list must exist!

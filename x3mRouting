@@ -988,9 +988,16 @@ Update_Installer() {
     echo
     case "$menu_Update_Installer" in
     1)
-      Download_File /opt/bin x3mRouting
+      mkdir -p /jffs/addons/x3mRouting
+      Download_File /jffs/addons x3mRouting
+      mv /jffs/addons/x3mRouting /jffs/addons/x3mRouting.sh
+      rm -rf "/opt/bin/x3mRouting" 2>/dev/null
+      if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/x3mRouting" ]; then
+        echo "Creating 'x3mRouting' alias" 2>&1
+        ln -s /jffs/addons/x3mRouting/x3mRouting.sh /opt/bin/x3mRouting
+      fi
       printf '\nUpdate Complete! %s\n' "$remotemd5"
-      /opt/bin/x3mRouting
+      #/opt/bin/x3mRouting
       break
       ;;
     2)

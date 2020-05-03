@@ -242,9 +242,9 @@ Pre_Install_OpenVPN_Event_x3mRouting () {
   fi
 }
 
-
 Update_NewVersion() {
   # This script will clean-up old files and create a conversion file
+
   NAT_START=/jffs/scripts/nat-start
   CONV_FILE=/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh
 
@@ -410,7 +410,7 @@ Update_NewVersion() {
 
     if [ "$NOT_EMPTY_LINE_COUNT" -eq 0 ]; then
       printf '\n\n%s\n' "$CLIENTX_FILE has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
-      printf '%s\n' "Would you like to remove $TESTMYFILE?"
+      printf '%s\n' "Would you like to remove $CLIENTX_FILE?"
       printf '[1]  --> Yes\n'
       printf '[2]  --> No\n'
       echo
@@ -421,10 +421,10 @@ Update_NewVersion() {
           1)
             rm "$CLIENTX_FILE"
             echo "$CLIENTX_FILE file deleted"
-            return
+            break
             ;;
           2)
-            return
+            break
             ;;
           *)
             echo "[*] $OPTION Isn't An Option!"
@@ -524,6 +524,7 @@ Convert_Server_Routing_Entries() {
             eval "$CMD" > "$SERVER_FILE.tmp" && mv "$SERVER_FILE.tmp" "$SERVER_FILE"
           else # Default to VPN Server to IPSET List
             IPSET_NAME=$(grep -m 1 "tun2${VPNSERVER}" "$SERVER_FILE" | awk '{print $11}')
+            TAG_MARK=$(grep -m 1 "tun2${VPNSERVER}" "$SERVER_FILE" | awk '{print $16}')
             if [ "$(echo "$SERVER_FILE" | grep -c "up")" -gt "0" ]; then # only create script for vpnserverX-up file
               SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh server=$VPNSERVER ipset_name=$IPSET_NAME" >> "$CONV_FILE"
               {

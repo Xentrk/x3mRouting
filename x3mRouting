@@ -236,7 +236,7 @@ Update_Version() {
 Pre_Install_OpenVPN_Event_x3mRouting () {
   # checking for existance of any "load" scripts. Their presence indicates x3mRouting.sh & openvpn need to be first installed
   # before removing the "load" scripts
-  if [ $(ls /jffs/scripts/x3mRouting | grep -c "load_") -ge "1" ]; then
+  if [ "$(ls /jffs/scripts/x3mRouting | grep -c "load_")" -ge "1" ]; then
     Download_File "$LOCAL_REPO" "x3mRouting.sh"
     Download_File "$LOCAL_REPO" "openvpn-event"
   fi
@@ -697,20 +697,19 @@ Remove_Existing_Installation() {
     fi
   fi
 
-  for DIR in "/jffs/addons/x3mRouting"; do
-    if [ -d "$DIR" ]; then
-      if ! rm -rf "${DIR:?}/"* 2>/dev/null; then
-        printf '\nNo files found to remove in %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
-      fi
-      if ! rmdir "$DIR" 2>/dev/null; then
-        printf '\nError trying to remove %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
-      else
-        printf '\n%b%s%b folder and all files removed\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
-      fi
-    else
+  DIR="/jffs/addons/x3mRouting"
+  if [ -d "$DIR" ]; then
+	   if ! rm -rf "${DIR:?}/"* 2>/dev/null; then
+		   printf '\nNo files found to remove in %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+	   fi
+	   if ! rmdir "$DIR" 2>/dev/null; then
+		   printf '\nError trying to remove %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+	   else
+		   printf '\n%b%s%b folder and all files removed\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+	   fi
+  else
       printf '\n%b%s%b folder does not exist. No directory to remove\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
-    fi
-  done
+  fi
 
   Exit_Message
 

@@ -642,15 +642,15 @@ Martineau also contributed the modified **OpenVPN Client Screen**, the [Vimeo](h
   * **VPN Server to VPN Client** and **VPN Server to IPSET List**
     * The IP address of the VPN Server in the openvpn-event up/down scripts is no longer hard coded. Instead, the 'nvram get' command in the openvpn-event up/down scripts will be used to obtain the IP address of the VPN Server. This will eliminate the need to rerun the **x3mRouting.sh** script if the VPN Server IP address is changed.
     * Routing rules will now be applied during an VPN Client up event rather than a VPN Server up event. Based on user feedback, the routing from the VPN Server to the VPN Client would stop working after a VPN Client up/down event, even though the iptables rules were still in effect.
-  * Added ability to specify
-    * more than one ASN when using the ASN method
-    * more than one AWS region when using the Amazon AWS method
-    * one or more IPv4 address when creating an IPSET list.
-    * one or more search criteria for domain names when using the 'autoscan' option.
-    * that a routing rule to be applied to a single LAN IP addresses or IP address range.
-  * Added ability to display usage notes by passing the 'help' parameter
+    * Added ability to specify
+      * more than one ASN when using the ASN method
+      * more than one AWS region when using the Amazon AWS method
+      * one or more IPv4 address when creating an IPSET list.
+      * one or more search criteria for domain names when using the 'autoscan' option.
+      * that a routing rule to be applied to a single LAN IP addresses or IP address range.
+    * Added ability to display usage notes by passing the 'help' parameter
 ````
-sh x3mRouting.sh help
+      sh x3mRouting.sh help
 ````
 
 #### LAN Client Routing Changes

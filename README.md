@@ -6,7 +6,7 @@
 ## Introduction
 **x3mRouting** includes selective routing features for LAN Clients, OpenVPN Clients and OpenVPN Servers.
 
-If coming from the first generation of x3mRouting, please read the updated instructions in the README.md to become familiar with the new features and usage instructions. Refer to the [Version 2.0.0 Changes](https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG#Version-2.0.0-Changes) section for a complete description of the changes and the update process.
+If coming from the first generation of x3mRouting, please read the updated instructions in the README.md to become familiar with the new features and usage instructions. Refer to the [Version 2.0.0 Changes](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#version-200-changes) section for a complete description of the changes and the update process.
 
 #### 1. LAN Client Routing
 

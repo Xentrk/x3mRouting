@@ -76,21 +76,25 @@ Main_Menu() {
     case "$menu1" in
       1)
         Install_x3mRouting_LAN_Clients
+        Install_done "for LAN Clients"
         return 1
         ;;
       2)
         Install_x3mRouting_GUI
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
+        Install_done "GUI, OpenVPN Event and Shell Scripts"
         return 1
         ;;
       3)
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
+        Install_done "OpenVPN Event and Shell Scripts"
         return 1
         ;;
       4)
         Download_File "$LOCAL_REPO" "getdomainnames.sh"
+        Install_done "getdomainnames.sh"
         return 1
         ;;
       5)
@@ -116,6 +120,7 @@ Main_Menu() {
         ;;
       o)
         Install_x3mRouting_OpenVPN_Event
+        Install_done "OpenVPN Event"
         return 1
         ;;
       *)
@@ -123,6 +128,14 @@ Main_Menu() {
         ;;
     esac
   done
+}
+
+Install_done() {
+  echo
+  echo "Installation of $GIT_REPO $1 completed"
+  echo "Press enter to continue"
+  read -r
+  Welcome_Message
 }
 
 Validate_Removal() {
@@ -825,12 +838,6 @@ Install_x3mRouting_LAN_Clients() {
   Download_File "$LOCAL_REPO" "mount_files_lan.sh"
   Init_Start_Update "mount_files_lan.sh"
   sh /jffs/scripts/init-start
-  echo
-  echo "Installation of x3mRouting for LAN Clients completed"
-  echo
-  echo "Press enter to continue"
-  read -r
-  Welcome_Message
 }
 
 Install_x3mRouting_OpenVPN_Event() {
@@ -847,11 +854,6 @@ Install_x3mRouting_OpenVPN_Event() {
     printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
     chmod 0755 /jffs/scripts/openvpn-event
   fi
-  echo
-  echo "Installation of x3mRouting OpenVPN Event completed"
-  echo "Press enter to continue"
-  read -r
-  Welcome_Message
 }
 
 Check_Requirements() {
@@ -935,11 +937,6 @@ Install_x3mRouting_GUI() {
   Init_Start_Update "mount_files_gui.sh"
   sh /jffs/scripts/init-start
   Check_Profile_Add
-  echo
-  echo "Installation of x3mRouting completed"
-  echo "Press enter to continue"
-  read -r
-  Welcome_Message
 }
 
 Install_x3mRouting_Shell_Scripts() {
@@ -948,12 +945,6 @@ Install_x3mRouting_Shell_Scripts() {
   Create_Project_Directory
   Download_File "$LOCAL_REPO" "x3mRouting.sh"
   Check_Profile_Add
-  echo
-  echo "Installation of x3mRouting completed"
-  echo "Press enter to continue"
-  read -r
-  Welcome_Message
-
 }
 
 Check_OpenVPN_Event() {

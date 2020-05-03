@@ -131,7 +131,7 @@ sh /jffs/scripts/x3mRouting/x3mRouting.sh 2 0 WIMIPADDR dnsmasq=whatismyipaddres
 
 #### openvpn-event Script
 
-x3mRouting uses the **openvpn-event** script during an VPN Client up event to restore the routing rule and during a VPN Client "down" event to remove the routing rule. **openvpn-event** is automatically installed when selecting options 2 and 3. When you execute **x3mRouting.sh** from the command line, **x3mRouting.sh** will add the routing rule entries to the appropriate **vpnclientX-route-up** and **vpnclientX-route-pre-down** files, where the X is the VPN Client instance.
+x3mRouting uses the **openvpn-event** script during an VPN Client up event to restore the routing rule and during a VPN Client down event to remove the routing rule. **openvpn-event** is automatically installed when selecting options 2 and 3. When you execute **x3mRouting.sh** from the command line, **x3mRouting.sh** will add the routing rule entries to the appropriate **vpnclientX-route-up** and **vpnclientX-route-pre-down** files, where the X is the VPN Client instance.
 
 **openvpn-event** will call VPN related scripts such as:
 
@@ -314,18 +314,18 @@ sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX  dnsmasq=netflix.com,nfl
 ````
 
 #### dnsmasq Method with autoscan
-Search dnsmasq.log file for domains that contain the keyword "amazon" and create the IPSET list AMAZON using the dnsmasq method
+Search dnsmasq.log file for domains that contain the keyword "amazon" and create the IPSET list AMAZON from the domains collected using the dnsmasq method. You can view the domains collected by looking at the corresponding entry in **/jffs/configs/dnsmasq.conf.add** or by looking at the script entry in **/jffs/scripts/nat-start**
 
 ````
 sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON autoscan=amazon
 ````
 
-Search dnsmasq.log file for domains that contain the keywords "amazonaws", "netflix" and "nflx" and create the IPSET list AMZ_NFLX using the dnsmasq method
+Search dnsmasq.log file for domains that contain the keywords "amazonaws", "netflix" and "nflx" and create the IPSET list AMZ_NFLX using the dnsmasq method.
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMZ_NFLX autoscan=amazonaws,netflix,nflx
 
 #### Manual Method
-The manual method is used for IPSET lists created from a file in the save/restore directory containing IPv4 addresses and/or IPv4 CIDR format.
+The manual method is used to create IPSET lists from files in **/opt/tmp** containing the IPv4 addresses and/or IPv4 CIDR format.
 
 Route all traffic matching IPSET list WIMIPCOM to VPN Client 1.
 

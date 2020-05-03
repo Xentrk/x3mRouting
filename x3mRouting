@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting
 # Author: Xentrk
-# Last Updated Date: 1-May-2020
+# Last Updated Date: 3-May-2020
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -17,7 +17,6 @@
 # shellcheck disable=SC2028
 # shellcheck disable=SC2010 # need to us ls with a grep
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
-logger -t "($(basename "$0"))" "$$ Starting Script Execution ($(if [ -n "$1" ]; then echo "$1"; else echo "menu"; fi))"
 VERSION="2.0.0"
 GIT_REPO="x3mRouting"
 #GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/master"
@@ -67,7 +66,7 @@ Main_Menu() {
     printf '%b[7]%b  Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   fi
   if [ ! -f "$LOCAL_REPO/x3mRouting.sh" ] || [ ! -d "/jffs/addons/x3mRouting"  ]; then
-    printf '%b[u]%b  Update to new version of x3mRouting\n' "${COLOR_RED}" "${COLOR_WHITE}"
+    printf '%b[u]%b  Update to version 2.0.0 of x3mRouting\n' "${COLOR_RED}" "${COLOR_WHITE}"
   fi
   printf '\n%b[e]%b  Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
   while true; do
@@ -237,7 +236,7 @@ Update_Version() {
 Pre_Install_OpenVPN_Event_x3mRouting () {
   # checking for existance of any "load" scripts. Their presence indicates x3mRouting.sh & openvpn need to be first installed
   # before removing the "load" scripts
-  if [ "$(ls /jffs/scripts/x3mRouting | grep -c "load_")" -ge "0" ]; then
+  if [ $(ls /jffs/scripts/x3mRouting | grep -c "load_") -ge "1" ]; then
     Download_File "$LOCAL_REPO" "x3mRouting.sh"
     Download_File "$LOCAL_REPO" "openvpn-event"
   fi

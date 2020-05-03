@@ -865,12 +865,6 @@ Install_x3mRouting_LAN_Clients() {
   Download_File "$LOCAL_REPO" "mount_files_lan.sh"
   Init_Start_Update "mount_files_lan.sh"
   sh /jffs/scripts/init-start
-  echo
-  echo "Installation of x3mRouting for LAN Clients completed"
-  echo
-  echo "Press enter to continue"
-  read -r
-  Welcome_Message
 }
 
 Install_x3mRouting_OpenVPN_Event() {
@@ -887,11 +881,6 @@ Install_x3mRouting_OpenVPN_Event() {
     printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
     chmod 0755 /jffs/scripts/openvpn-event
   fi
-  echo
-  echo "Installation of x3mRouting OpenVPN Event completed"
-  echo "Press enter to continue"
-  read -r
-  Welcome_Message
 }
 
 Check_Requirements() {
@@ -961,6 +950,7 @@ Check_Profile_Add() {
     true >"$CONFIG_DIR/$PROFILE_FILE"
     Update_Profile_Add "$CONFIG_DIR" "$PROFILE_FILE"
   fi
+
 }
 
 Install_x3mRouting_GUI() {
@@ -980,6 +970,7 @@ Install_x3mRouting_GUI() {
   echo "Press enter to continue"
   read -r
   Welcome_Message
+
 }
 
 Install_x3mRouting_Shell_Scripts() {
@@ -988,11 +979,6 @@ Install_x3mRouting_Shell_Scripts() {
   Create_Project_Directory
   Download_File "$LOCAL_REPO" "x3mRouting.sh"
   Check_Profile_Add
-  echo
-  echo "Installation of x3mRouting completed"
-  echo "Press enter to continue"
-  read -r
-  Welcome_Message
 
 }
 

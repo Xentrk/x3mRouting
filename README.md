@@ -99,7 +99,7 @@ As part of this project, you can also choose to download and install a modified 
 #### IPSET Dimensions
 The OpenVPN Client Screen accepts single and multiple dimension IPSET lists. See the [IPSET Man Page](http://ipset.netfilter.org/ipset.man.html) for information.
 
-![IPSET Dimensions](https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG/OpenVPN_Client_Screen.png "OpenVPN Client Screen")
+![IPSET Dimensions](https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG/OpenVPN_Client_GUI.png "OpenVPN Client Screen")
 
 #### Video Tutorial
 

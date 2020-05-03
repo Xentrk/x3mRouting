@@ -353,7 +353,6 @@ Check_Files_For_Entries() {
         printf '%s\n' "#!/bin/sh"
         printf '%s\n' "$IPTABLES_ENTRY" # file does not exist, create VPNC_UP_FILE
       } >"$VPNC_UP_FILE"
-      chmod 755 "$VPNC_UP_FILE"
       logger -st "($(basename "$0"))" $$ "$IPTABLES_ENTRY added to $VPNC_UP_FILE"
     fi
   done
@@ -370,7 +369,6 @@ Check_Files_For_Entries() {
       printf '%s\n' "#!/bin/sh"
       printf '%s\n' "$IPTABLES_DEL_ENTRY" # file does not exist, create VPNC_UP_FILE
     } >"$VPNC_DOWN_FILE"
-    chmod 755 "$VPNC_DOWN_FILE"
     logger -st "($(basename "$0"))" $$ "$IPTABLES_DEL_ENTRY added to $VPNC_DOWN_FILE"
   fi
 
@@ -386,9 +384,13 @@ Check_Files_For_Entries() {
       printf '%s\n' "#!/bin/sh"
       printf '%s\n' "$SCRIPT_ENTRY" # file does not exist, create VPNC_UP_FILE
     } >"$NAT_START"
-    chmod 755 "$NAT_START"
     logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
   fi
+
+  #set permissions for each file
+  [ -s "$VPNC_UP_FILE" ] && chmod 755 "$VPNC_UP_FILE"
+  [ -s "$VPNC_DOWN_FILE" ] && chmod 755 "$VPNC_DOWN_FILE"
+  [ -s "$NAT_START" ] && chmod 755 "$NAT_START"
 
 }
 

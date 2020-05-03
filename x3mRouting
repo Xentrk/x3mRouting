@@ -245,7 +245,6 @@ Pre_Install_OpenVPN_Event_x3mRouting () {
 
 Update_NewVersion() {
   # This script will clean-up old files and create a conversion file
-
   NAT_START=/jffs/scripts/nat-start
   CONV_FILE=/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh
 
@@ -558,7 +557,7 @@ Convert_Server_Routing_Entries() {
   if [ -d "$LOCAL_REPO" ]; then
     if [ ! -d "$LOCAL_REPO/backup" ]; then
       mkdir "$LOCAL_REPO/backup"
-      cp -a "$LOCAL_REPO/." "$LOCAL_REPO/backup/ >/dev/null 2>&1"
+      cp -a "$LOCAL_REPO/." "$LOCAL_REPO/backup/" >/dev/null 2>&1
     else
       echo "Existing backup directory found. Skipping backup step."
     fi

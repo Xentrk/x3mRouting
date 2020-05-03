@@ -1,6 +1,6 @@
 #!/bin/sh
 ####################################################################################################
-# Script: x3mRouting
+# Script: x3mRouting_Menu.sh
 # Author: Xentrk
 # Last Updated Date: 3-May-2020
 #
@@ -409,8 +409,9 @@ Update_NewVersion() {
     fi
 
     if [ "$NOT_EMPTY_LINE_COUNT" -eq 0 ]; then
+      printf '\n\n%s\n' "$CLIENTX_FILE has been analyzed for entries"
       printf '\n\n%s\n' "$CLIENTX_FILE has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
-      printf '%s\n' "Would you like to remove $CLIENTX_FILE?"
+      printf '%s\n' "Would you like to remove $CLIENTX_FILE? (Yes is recommended)"
       printf '[1]  --> Yes\n'
       printf '[2]  --> No\n'
       echo
@@ -432,6 +433,7 @@ Update_NewVersion() {
         esac
       done
     else
+      printf '\n\n%s\n' "$CLIENTX_FILE has been analyzed for entries"
       printf '\n\n%s\n' "$CLIENTX_FILE has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
       printf '%s\n' "Skipping removal of $CLIENTX_FILE."
     fi
@@ -489,8 +491,9 @@ Update_NewVersion() {
 
 Remove_Prerouting_Rules () {
 
+  echo "Checking for any PREROUTING rules for IPSET Lists"
   iptables -nvL PREROUTING -t mangle --line | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
-    logger -st "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
+    echo "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
     iptables -t mangle -D PREROUTING "$CHAIN_NUM"
   done
 
@@ -1004,8 +1007,7 @@ Update_Installer() {
     case "$menu_Update_Installer" in
     1)
       mkdir -p /jffs/addons/x3mRouting
-      Download_File /jffs/addons/x3mRouting x3mRouting
-      mv /jffs/addons/x3mRouting/x3mRouting /jffs/addons/x3mRouting/x3mRouting_Menu.sh
+      Download_File /jffs/addons/x3mRouting x3mRouting_Menu.sh
       chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh
       rm -rf "/opt/bin/x3mRouting" 2>/dev/null
       if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/x3mRouting" ]; then

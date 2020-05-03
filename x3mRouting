@@ -777,15 +777,15 @@ Download_File() {
 
 Exit_Message() {
 
-  printf '\n              %bhttps://github.com/Xentrk/x3mRouting%b\n' "$COLOR_GREEN" "$COLOR_WHITE\\n"
-  printf '                      Have a Grateful Day!\n\n'
-  printf '           ____        _         _                           \n'
-  printf '          |__  |      | |       | |                          \n'
-  printf '    __  __  _| |_ _ _ | |_  ___ | | __    ____ ____  _ _ _   \n'
-  printf '    \ \/ / |_  | %b %b \  __|/ _ \| |/ /   /  _//    \| %b %b \ \n' "\`" "\`" "\`" "\`"
-  printf '     /  /  __| | | | |  |_ | __/|   <   (  (_ | [] || | | |  \n'
-  printf '    /_/\_\|___ |_|_|_|\___|\___||_|\_\[] \___\\\____/|_|_|_| \n\n\n'
-  exit 0
+  #printf '\n              %bhttps://github.com/Xentrk/x3mRouting%b\n' "$COLOR_GREEN" "$COLOR_WHITE\\n"
+  #printf '                      Have a Grateful Day!\n\n'
+  #printf '           ____        _         _                           \n'
+  #printf '          |__  |      | |       | |                          \n'
+  #printf '    __  __  _| |_ _ _ | |_  ___ | | __    ____ ____  _ _ _   \n'
+  #printf '    \ \/ / |_  | %b %b \  __|/ _ \| |/ /   /  _//    \| %b %b \ \n' "\`" "\`" "\`" "\`"
+  #printf '     /  /  __| | | | |  |_ | __/|   <   (  (_ | [] || | | |  \n'
+  #printf '    /_/\_\|___ |_|_|_|\___|\___||_|\_\[] \___\\\____/|_|_|_| \n\n\n'
+  exit 0 2>/dev/null
 }
 
 Init_Start_Update() {

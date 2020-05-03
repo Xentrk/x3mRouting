@@ -15,6 +15,7 @@
 # and https://github.com/jackyaz/spdMerlin - credit to Jack Yaz
 ####################################################################################################
 # shellcheck disable=SC2028
+# shellcheck disable=SC2010 # need to us ls with a grep
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
 logger -t "($(basename "$0"))" "$$ Starting Script Execution ($(if [ -n "$1" ]; then echo "$1"; else echo "menu"; fi))"
 VERSION="2.0.0"
@@ -106,6 +107,7 @@ Main_Menu() {
       return 1
       ;;
     u)
+      Pre_Install_OpenVPN_Event_x3mRouting
       Update_NewVersion
       Update_Version
       return 1
@@ -231,6 +233,16 @@ Update_Version() {
   read -r
   Welcome_Message
 }
+
+Pre_Install_OpenVPN_Event_x3mRouting () {
+  # checking for existance of any "load" scripts. Their presence indicates x3mRouting.sh & openvpn need to be first installed
+  # before removing the "load" scripts
+  if [ "$(ls /jffs/scripts/x3mRouting | grep -c "load_")" -ge "0" ]; then
+    Download_File "$LOCAL_REPO" "x3mRouting.sh"
+    Download_File "$LOCAL_REPO" "openvpn-event"
+  fi
+}
+
 
 Update_NewVersion() {
   # This script will clean-up old files and create a conversion file

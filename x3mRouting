@@ -482,7 +482,7 @@ Update_NewVersion() {
   Remove_Old_Files_Repo() {
 
     for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
-      [ -f "$LOCAL_REPO/$OLD_FILE" ] && rm "$LOCAL_REPO/$OLD_FILE" echo "Obsolete $LOCAL_REPO/$OLD_FILE file deleted" || echo "Obsolete $LOCAL_REPO/$OLD_FILE file does not exist"
+      [ -f "$LOCAL_REPO/$OLD_FILE" ] && rm "$LOCAL_REPO/$OLD_FILE" && echo "Obsolete $LOCAL_REPO/$OLD_FILE file deleted" || echo "Obsolete $LOCAL_REPO/$OLD_FILE file does not exist"
     done
 
   }

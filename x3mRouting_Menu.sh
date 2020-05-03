@@ -499,6 +499,15 @@ Remove_Prerouting_Rules () {
 
 }
 
+Remove_IPSET_dnsmasqconfadd () {
+
+  if [ -s "/jffs/configs/dnsmasq.conf.add" ]; then
+    mv "/jffs/configs/dnsmasq.conf.add" "/jffs/configs/dnsmasq.conf.add.$TIMESTAMP"
+    sed -i "\\~ipset~d" "/jffs/configs/dnsmasq.conf.add"
+    Check_For_Shebang "/jffs/configs/dnsmasq.conf.add"
+  fi
+}
+
 Convert_Server_Routing_Entries() {
 
   for VPNSERVER in 1 2; do
@@ -636,6 +645,7 @@ Convert_Server_Routing_Entries() {
   Remove_From_nat_start
   Remove_From_UP_File
   Remove_Prerouting_Rules
+  Remove_IPSET_dnsmasqconfadd
 
 }
 ### End of Conversion Function

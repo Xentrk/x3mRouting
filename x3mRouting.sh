@@ -388,9 +388,10 @@ Check_Files_For_Entries() {
   fi
 
 #set permissions for each file
-if [ -s "$VPNC_UP_FILE" ] && chmod 755 "$VPNC_UP_FILE"
-if [ -s "$VPNC_DOWN_FILE" ] && chmod 755 "$VPNC_DOWN_FILE"
-if [ -s "$NAT_START" ] && chmod 755 "$NAT_START"
+[ -s "$VPNC_UP_FILE" ] && chmod 755 "$VPNC_UP_FILE"
+[ -s "$VPNC_DOWN_FILE" ] && chmod 755 "$VPNC_DOWN_FILE"
+[ -s "$NAT_START" ] && chmod 755 "$NAT_START"
+
 }
 
 Process_Src_Option() {

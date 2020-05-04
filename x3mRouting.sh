@@ -1129,6 +1129,7 @@ fi
 #######################################################################
 # Check if special case, parm 'server=' specified
 #######################################################################
+
 if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
   SERVER=$(echo "$@" | sed -n "s/^.*server=//p" | awk '{print $1}')
   case "$SERVER" in
@@ -1136,7 +1137,7 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
   *) Error_Exit "ERROR: Invalid Server '$SERVER' specified." ;;
   esac
 
-  if [ "$(echo "$@" | grep -c 'client=')" -eq 0 ] || [ "$(echo "$@" | grep -c 'ipset_name=')" -eq 0 ]; then
+  if [ "$(echo "$@" | grep -c 'client=')" -eq 0 ] && [ "$(echo "$@" | grep -c 'ipset_name=')" -eq 0 ]; then
     Error_Exit "ERROR Expecting second parameter to be either 'client=' or 'ipset_name='"
   fi
 

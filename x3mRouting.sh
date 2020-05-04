@@ -941,9 +941,9 @@ VPN_Server_to_IPSET() {
   SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$0") $SERVER $IPSET"
 
   case "$VPN_SERVER_INSTANCE" in
-    1) VPN_SERVER_TUN="tun21" ;;
-    2) VPN_SERVER_TUN="tun22" ;;
-    *) Error_Exit "ERROR VPN Server instance $VPN_SERVER_INSTANCE should be a 1 or 2" ;;
+  1) VPN_SERVER_TUN="tun21" ;;
+  2) VPN_SERVER_TUN="tun22" ;;
+  *) Error_Exit "ERROR VPN Server instance $VPN_SERVER_INSTANCE should be a 1 or 2" ;;
   esac
   # Get VPN Server Subnet Mask
   VPN_SERVER_IP=$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)
@@ -1126,10 +1126,7 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
   SERVER=$(echo "$@" | sed -n "s/^.*server=//p" | awk '{print $1}')
   case "$SERVER" in
   1 | 2 | both) ;;
-
-  *)
-    Error_Exit "ERROR: Invalid Server '$SERVER' specified."
-    ;;
+  *) Error_Exit "ERROR: Invalid Server '$SERVER' specified." ;;
   esac
 
   if [ "$(echo "$@" | grep -c 'client=')" -eq 0 ] || [ "$(echo "$@" | grep -c 'ipset_name=')" -eq 0 ]; then
@@ -1140,12 +1137,12 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
   if [ "$(echo "$@" | grep -c 'client=')" -gt 0 ]; then
     VPN_CLIENT_INSTANCE=$(echo "$@" | sed -n "s/^.*client=//p" | awk '{print $1}')
     case "$VPN_CLIENT_INSTANCE" in
-      1) IFACE="tun11";;
-      2) IFACE="tun12";;
-      3) IFACE="tun13";;
-      4) IFACE="tun14";;
-      5) IFACE="tun15";;
-      *) Error_Exit "ERROR 'client=$VPN_CLIENT_INSTANCE' reference should be a 1-5";;
+    1) IFACE="tun11" ;;
+    2) IFACE="tun12" ;;
+    3) IFACE="tun13" ;;
+    4) IFACE="tun14" ;;
+    5) IFACE="tun15" ;;
+    *) Error_Exit "ERROR 'client=$VPN_CLIENT_INSTANCE' reference should be a 1-5" ;;
     esac
 
     if [ "$(echo $@ | grep -cw 'del')" -ge "1" ]; then
@@ -1188,21 +1185,21 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
     FWMARK_SUBSTR=$(echo "$FWMARK" | awk '{ string=substr($0, 3, 6); print string; }')
 
     case "$FWMARK_SUBSTR" in
-      8000) IFACE="br0" ;;
-      1000) IFACE="tun11" ;;
-      2000) IFACE="tun12" ;;
-      4000) IFACE="tun13" ;;
-      7000) IFACE="tun14" ;;
-      3000) IFACE="tun15" ;;
-         *) Error_Exit "ERROR $1 should be a 1-5=VPN" ;;
+    8000) IFACE="br0" ;;
+    1000) IFACE="tun11" ;;
+    2000) IFACE="tun12" ;;
+    4000) IFACE="tun13" ;;
+    7000) IFACE="tun14" ;;
+    3000) IFACE="tun15" ;;
+    *) Error_Exit "ERROR $1 should be a 1-5=VPN" ;;
     esac
 
     case "$IFACE" in
-      tun11) VPN_CLIENT_INSTANCE=1 ;;
-      tun12) VPN_CLIENT_INSTANCE=2 ;;
-      tun13) VPN_CLIENT_INSTANCE=3 ;;
-      tun14) VPN_CLIENT_INSTANCE=4 ;;
-      tun15) VPN_CLIENT_INSTANCE=5 ;;
+    tun11) VPN_CLIENT_INSTANCE=1 ;;
+    tun12) VPN_CLIENT_INSTANCE=2 ;;
+    tun13) VPN_CLIENT_INSTANCE=3 ;;
+    tun14) VPN_CLIENT_INSTANCE=4 ;;
+    tun15) VPN_CLIENT_INSTANCE=5 ;;
     esac
 
     if [ "$(echo $@ | grep -cw 'del')" -ge "1" ]; then
@@ -1288,8 +1285,9 @@ fi
 # Validate SRC_IFACE
 SRC_IFACE="$1"
 case "$SRC_IFACE" in
-  ALL | 1 | 2 | 3 | 4 | 5) ;;
-                        *) Error_Exit "ERROR Source Interface '$SRC_IFACE' should be 'ALL' or '1,2,3,4 or 5' VPN Client number";;
+ALL | 1 | 2 | 3 | 4 | 5) ;;
+
+*) Error_Exit "ERROR Source Interface '$SRC_IFACE' should be 'ALL' or '1,2,3,4 or 5' VPN Client number" ;;
 esac
 
 # Check for DST_IFACE
@@ -1297,14 +1295,14 @@ if [ -n "$2" ]; then
   DST_IFACE=$2
   if [ "$SRC_IFACE" = "ALL" ]; then
     case "$DST_IFACE" in
-      1 | 2 | 3 | 4 | 5) ;;
-                      *) Error_Exit "ERROR: Invalid Source '$SRC_IFACE' and Destination ($DST_IFACE) combination.";;
+    1 | 2 | 3 | 4 | 5) ;;
+    *) Error_Exit "ERROR: Invalid Source '$SRC_IFACE' and Destination ($DST_IFACE) combination." ;;
     esac
   fi
   if [ "$SRC_IFACE" = "1" ] || [ "$SRC_IFACE" = "2" ] || [ "$SRC_IFACE" = "3" ] || [ "$SRC_IFACE" = "4" ] || [ "$SRC_IFACE" = "5" ]; then
     case "$DST_IFACE" in
-      0) ;;
-      *) Error_Exit "ERROR: Invalid Source '$SRC_IFACE' and Destination ($DST_IFACE) combination.";;
+    0) ;;
+    *) Error_Exit "ERROR: Invalid Source '$SRC_IFACE' and Destination ($DST_IFACE) combination." ;;
     esac
   fi
   Set_Fwmark_Parms
@@ -1321,33 +1319,33 @@ fi
 
 # Validate DST_IFACE and set destination TAG_MARK
 case "$DST_IFACE" in
-  0)
-    TAG_MARK="$FWMARK_WAN" # Which Target WAN or VPN? Martineau Hack
-    TARGET_DESC="WAN"
-    ;;
-  1)
-    TAG_MARK="$FWMARK_OVPNC1"
-    TARGET_DESC="VPN Client 1"
-    ;;
-  2)
-    TAG_MARK="$FWMARK_OVPNC2"
-    TARGET_DESC="VPN Client 2"
-    ;;
-  3)
-    TAG_MARK="$FWMARK_OVPNC3"
-    TARGET_DESC="VPN Client 3"
-    ;;
-  4)
-    TAG_MARK="$FWMARK_OVPNC4"
-    TARGET_DESC="VPN Client 4"
-    ;;
-  5)
-    TAG_MARK="$FWMARK_OVPNC5"
-    TARGET_DESC="VPN Client 5"
-    ;;
-  *)
-    Error_Exit "ERROR $DST_IFACE should be 0-WAN or 1,2,3,4,5 VPN Client number"
-    ;;
+0)
+  TAG_MARK="$FWMARK_WAN" # Which Target WAN or VPN? Martineau Hack
+  TARGET_DESC="WAN"
+  ;;
+1)
+  TAG_MARK="$FWMARK_OVPNC1"
+  TARGET_DESC="VPN Client 1"
+  ;;
+2)
+  TAG_MARK="$FWMARK_OVPNC2"
+  TARGET_DESC="VPN Client 2"
+  ;;
+3)
+  TAG_MARK="$FWMARK_OVPNC3"
+  TARGET_DESC="VPN Client 3"
+  ;;
+4)
+  TAG_MARK="$FWMARK_OVPNC4"
+  TARGET_DESC="VPN Client 4"
+  ;;
+5)
+  TAG_MARK="$FWMARK_OVPNC5"
+  TARGET_DESC="VPN Client 5"
+  ;;
+*)
+  Error_Exit "ERROR $DST_IFACE should be 0-WAN or 1,2,3,4,5 VPN Client number"
+  ;;
 esac
 
 Set_IP_Rule "$DST_IFACE"

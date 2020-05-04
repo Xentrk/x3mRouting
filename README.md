@@ -670,8 +670,7 @@ The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now st
 ````
 mkdir -p /jffs/addons/x3mRouting && /usr/sbin/curl --retry 3 https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/x3mRouting_Menu.sh -o /jffs/addons/x3mRouting/x3mRouting_Menu.sh && chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh && rm /opt/bin/x3mRouting 2>/dev/null && ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRoutingg/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRouting
 ````
-  2.  Select the **[10]  Update x3mRouting Menu** option.
-  3.  After the update has completed, select the **[u]  Update to new version of x3mRouting** option.
+  2.  After the update has completed, select the **[u]  Update to new version of x3mRouting** option.
 
 During the update process, the x3mRouting Installation Menu will:
   * Backup **/jffs/scripts/nat-start** and copy the x3mRouting directory contents to **/jffs/scripts/x3mRouting/backup**.
@@ -681,7 +680,7 @@ During the update process, the x3mRouting Installation Menu will:
   * Remove prior x3mRouting version entries found in **/jffs/scripts/nat-start** or **vpnclientX-route-up** files. If only a **#!/bin/sh** or comment lines exist, the user will be prompted to remove the file. The recommendation is to select the option to remove the file. A backup of **nat-start** and the local x3mRouing repository exists in case you need to recover.
   * Update the remaining x3mRouting scripts to the new version.
 
-4.  View the **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** script and validate. A line showing the prior entry and file source will be shown with the new entry. Only entries involving routing to the WAN interface may require an edit. The new version requires that the VPN Client to bypass be specified. The conversion utility will assume the VPN Client you want to bypass is '1'. If necessary, edit the '1' to be the VPN Client number '1-5' you want to bypass. When done, save the conversion script and execute it (e.g. **sh x3mRouting_Conversion.sh**). After execution, the IPSET list and associated routing rules, if specified, will be created along with the required entries in **/jffs/scripts/nat-start** and appropriate openvpn-event up/down files. An example of the conversion file is shown below:
+  3.  View the **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** script and validate. A line showing the prior entry and file source will be shown with the new entry. Only entries involving routing to the WAN interface may require an edit. The new version requires that the VPN Client to bypass be specified. The conversion utility will assume the VPN Client you want to bypass is '1'. If necessary, edit the '1' to be the VPN Client number '1-5' you want to bypass. When done, save the conversion script and execute it (e.g. **sh x3mRouting_Conversion.sh**). After execution, the IPSET list and associated routing rules, if specified, will be created along with the required entries in **/jffs/scripts/nat-start** and appropriate openvpn-event up/down files. An example of the conversion file is shown below:
 ````
 #!/bin/sh
 # Source File====> /jffs/scripts/nat-start
@@ -704,10 +703,10 @@ sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 ipset_name=PANDORA
 # Found VPN Server to VPN Client iptables entries in /jffs/scripts/x3mRouting/vpnserver1-up
 sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 client=1
 ````
-5. Run the commands below to validate VPN Server POSTROUTING and VPN Client PREROUTING rules. POSTROUTING rules only get created for **VPN Server to VPN Client** and **VPN Server to IPSET List** rules.
+  4. Run the commands below to validate VPN Server POSTROUTING and VPN Client PREROUTING rules. POSTROUTING rules only get created for **VPN Server to VPN Client** and **VPN Server to IPSET List** rules.
 
 ````
   iptables -nvL POSTROUTING -t nat --line
   iptables -nvL PREROUTING -t mangle --line
 ````
-  13. Run the **ip rule** command to validate RPDB rules.
+5. Run the **ip rule** command to validate RPDB rules.

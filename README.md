@@ -7,7 +7,7 @@ Update x3mRouting to Version 2.0.0# x3mRouting ~ Selective Routing for Asuswrt-M
 ## Introduction
 **x3mRouting** includes selective routing features for LAN Clients, OpenVPN Clients and OpenVPN Servers.
 
-If coming from the first generation of x3mRouting, please read the updated instructions in the README.md to become familiar with the new features and usage instructions. Refer to the [Version 2.0.0 Changes](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#version-200-changes) section for a complete description of the changes and the update process.
+If coming from the first generation of x3mRouting, please read the updated instructions below to become familiar with the new features and usage instructions. Refer to the [Version 2.0.0 Changes](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#version-200-changes) section for a description of the changes and update process.
 
 #### 1. LAN Client Routing
 
@@ -22,9 +22,10 @@ Provides the ability to create IPSET lists using the **x3mRouting.sh** script an
 The **x3mRouing.sh** script provides the ability to
 
   * Create IPSET lists with no routing rules. The feature is for those who prefer to use the custom OpenVPN Client Screen.
-  * Create and selectively route IPSET lists to the VPN Client interface or bypass a VPN Client interface for all traffic or specific devices.
-  * Route VPN Server traffic to one of the VPN Clients.
-  * Selectively route VPN Server traffic to an existing IPSET list routing rule.
+  * Create and selectively route IPSET lists to the VPN Client interface for all traffic or specific devices.
+  * Bypass a VPN Client interface for all traffic or specific devices.
+  * Route VPN Server 1, 2 or both traffic to one of the VPN Clients.
+  * Selectively route VPN Server 1, 2 or both traffic to the same routing rules as an IPSET.
 
 #### 4. getdomainnames.sh Script
 This script will create a uniquely sorted list of domain names from dnsmasq.log that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service.

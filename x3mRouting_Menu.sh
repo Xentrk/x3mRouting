@@ -421,8 +421,9 @@ Update_NewVersion() {
     fi
 
     if [ "$NOT_EMPTY_LINE_COUNT" -eq 0 ]; then
-      printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has been analyzed for entries"
-      printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
+
+      printf '\n%b%s%b%s\n\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has been analyzed for entries"
+      printf '%b%s%b%s\n\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
       printf '%s%b%s%b%b%s\n' "Would you like to remove " "$COLOR_GREEN" "$CLIENTX_FILE"  "$COLOR_WHITE" "? " "(Yes is recommended)"
       printf '[1]  --> Yes\n'
       printf '[2]  --> No\n'
@@ -468,10 +469,10 @@ Update_NewVersion() {
       fi
       # remove obsolete entries in nat-start
       echo
-      printf '%s%b%s%b%s\n' "Checking " "$COLOR_GREEN" "$NAT_START" "$COLOR_WHITE" " for obsolete x3mRuting scripts."
+      printf '%s%b%s%b%s\n' "Checking " "$COLOR_GREEN" "$NAT_START" "$COLOR_WHITE" " for obsolete x3mRouting scripts."
       for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
         if [ "$(grep -c "$OLD_FILE" "$NAT_START")" -ge "1" ]; then # if true, then lines exist
-          sed -i "/$OLD_FILE/d" "$NAT_START" && printf '\n%s%b%s%b%s\n' "Obsolete " "$COLOR_GREEN" "$OLD_FILE" "$COLOR_GREEN" "file deleted from $NAT_START"
+          sed -i "/$OLD_FILE/d" "$NAT_START" && printf '\n%s%b%s%b%s\n' "Obsolete " "$COLOR_GREEN" "$OLD_FILE" "$COLOR_GREEN" " file deleted from $NAT_START"
         fi
       done
       Check_For_Shebang "$NAT_START"
@@ -505,7 +506,7 @@ Update_NewVersion() {
     echo "Check for and remove any obsolete files..."
     echo
     for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
-      [ -f "$LOCAL_REPO/$OLD_FILE" ] && rm "$LOCAL_REPO/$OLD_FILE" && printf '%s%b%s%b%s\n' "Obsolete " "$COLOR_GREEN" "$LOCAL_REPO/$OLD_FILE" "$COLOR_GREEN" "file deleted" || printf '%s%b%s%b%s' "Obsolete " "$COLOR_GREEN" "$LOCAL_REPO/$OLD_FILE" "$COLOR_WHITE" "  file does not exist"
+      [ -f "$LOCAL_REPO/$OLD_FILE" ] && rm "$LOCAL_REPO/$OLD_FILE" && printf '%s%b%s%b%s\n' "Obsolete " "$COLOR_GREEN" "$LOCAL_REPO/$OLD_FILE" "$COLOR_GREEN" " file deleted" || printf '%s%b%s%b%s' "Obsolete " "$COLOR_GREEN" "$LOCAL_REPO/$OLD_FILE" "$COLOR_WHITE" "  file does not exist"
     done
 
   }

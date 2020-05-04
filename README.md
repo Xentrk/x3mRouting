@@ -48,7 +48,7 @@ Copy and paste the command below into an SSH session:
 
       mkdir -p /jffs/addons/x3mRouting && /usr/sbin/curl --retry 3 https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/x3mRouting_Menu.sh -o /jffs/addons/x3mRouting/x3mRouting_Menu.sh && chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh && rm /opt/bin/x3mRouting 2>/dev/null && ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRouting
 
-This command will download and install the installation menu **x3mRouting** to the **/opt/bin** directory. The installation script is a menu with options to install the three options described below, and options to update or remove the repository. To access the installation menu, type the command **x3mRouting**. Option **[7]  Update x3mRouting Menu** will only appear when a new installation menu is detected on the GitHub repository. Option **[u]  Update to new version of x3mRouting** will only appear if you have the prior version of x3mRouting installed.
+This command will download and install the installation menu **x3mRouting_Menu.sh** to the **/jffs/addons/x3mRouting** directory and creates a symbolic link to **/opt/bin/x3mRouting**. The installation script is a menu with options to install the three options described below, and options to update or remove the repository. To access the installation menu, type the command **x3mRouting**. Option **[7]  Update x3mRouting Menu** will only appear when a new installation menu is detected on the GitHub repository. Option **[u]  Update to new version of x3mRouting** will only appear if you have the prior version of x3mRouting installed.
 
 <img src="https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG/InstallationMenu.PNG" alt="drawing" width="600" height="600"/>
 
@@ -627,6 +627,9 @@ Martineau also contributed the modified **OpenVPN Client Screen**, the [Vimeo](h
 
 ## Version 2.0.0 Changes
 
+#### x3mRouting Menu
+The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now stored in **/jffs/addons/x3mRouting**. A symbolic link to **/opt/bin/x3mRouting** is created to support the ability to access the menu by typing **x3mRouting** at the command line. The x3mRouting menu update fixes the issue of non-harmful code output appearing when exiting the menu after performing a menu update.
+
 #### VPN Server and VPN Client Routing Script Changes
   * The separate scripts for:
 
@@ -662,7 +665,10 @@ Martineau also contributed the modified **OpenVPN Client Screen**, the [Vimeo](h
 
 ## Version 2.0.0 Update Process
 
-  1.  Type **x3mRouting** at the command line to access the Installation Menu.
+  1.  Copy and paste the command below into an SSH session to download the new x3mRouting menu to **/jffs/addons/x3mRouting** and create a symbolic link to **/opt/bin/x3mRouting** which provides the ability to access the menu by typing **x3mRouting** at the command line.
+
+        mkdir -p /jffs/addons/x3mRouting && /usr/sbin/curl --retry 3 https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/x3mRouting_Menu.sh -o /jffs/addons/x3mRouting/x3mRouting_Menu.sh && chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh && rm /opt/bin/x3mRouting 2>/dev/null && ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRouting
+
   2.  Select the **[10]  Update x3mRouting Menu** option.
   3.  After the update has completed, select the **[u]  Update to new version of x3mRouting** option.
 

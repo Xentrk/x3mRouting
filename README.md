@@ -439,7 +439,7 @@ This script will create a uniquely sorted list of domain names from dnsmasq.log 
 1. Navigate to the **/jffs/configs** directory e.g **cd /jffs/config**
 2. Use your SFTP or SSH client to create the **dnsmasq.conf.add** file
 3. Add the following entry to **/jffs/configs/dnsmasq.conf.add**:
-    log-facility=/opt/var/log/dnsmasq.log**
+    **log-facility=/opt/var/log/dnsmasq.log**
 4. Save and exit **dnsmasq.conf.log**
 5. Restart dnsmasq
     service restart_dnsmasq

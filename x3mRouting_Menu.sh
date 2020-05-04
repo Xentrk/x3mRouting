@@ -532,6 +532,19 @@ Remove_IPSET_dnsmasqconfadd () {
   fi
 }
 
+Remove_Mounts () {
+
+  if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ]; then
+    umount /usr/sbin/vpnrouting.sh
+  fi
+  if [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ]; then
+    umount /usr/sbin/updown-client.sh
+  fi
+  if [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ]; then
+    umount /www/Advanced_OpenVPNClient_Content.asp
+  fi
+}
+
 Convert_Server_Routing_Entries() {
 
   for VPNSERVER in 1 2; do
@@ -674,6 +687,7 @@ Convert_Server_Routing_Entries() {
   Remove_From_UP_File
   Remove_Prerouting_Rules
   Remove_IPSET_dnsmasqconfadd
+  Remove_Mounts
 
 }
 ### End of Conversion Function

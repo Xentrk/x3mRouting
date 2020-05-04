@@ -1,4 +1,4 @@
-# x3mRouting ~ Selective Routing for Asuswrt-Merlin Firmware
+Update x3mRouting to Version 2.0.0# x3mRouting ~ Selective Routing for Asuswrt-Merlin Firmware
 # TESTING IN PROGRESS - DO NOT USE
 [![Build Status](https://travis-ci.com/Xentrk/x3mRouting.svg?branch=master)](https://travis-ci.com/Xentrk/x3mRouting)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/561d1570ed1f4d6aab76bba172f6b31f)](https://www.codacy.com/app/Xentrk/x3mRouting?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Xentrk/x3mRouting&amp;utm_campaign=Badge_Grade)
@@ -48,7 +48,7 @@ Copy and paste the command below into an SSH session:
 
       mkdir -p /jffs/addons/x3mRouting && /usr/sbin/curl --retry 3 https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/x3mRouting_Menu.sh -o /jffs/addons/x3mRouting/x3mRouting_Menu.sh && chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh && rm /opt/bin/x3mRouting 2>/dev/null && ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRouting
 
-This command will download and install the installation menu **x3mRouting_Menu.sh** to the **/jffs/addons/x3mRouting** directory and creates a symbolic link to **/opt/bin/x3mRouting**. The installation script is a menu with options to install the three options described below, and options to update or remove the repository. To access the installation menu, type the command **x3mRouting**. Option **[7]  Update x3mRouting Menu** will only appear when a new installation menu is detected on the GitHub repository. Option **[u]  Update to new version of x3mRouting** will only appear if you have the prior version of x3mRouting installed.
+This command will download and install the installation menu **x3mRouting_Menu.sh** to the **/jffs/addons/x3mRouting** directory and creates a symbolic link to **/opt/bin/x3mRouting**. The installation script is a menu with options to install the three options described below, and options to update or remove the repository. To access the installation menu, type the command **x3mRouting**. Option **[7]  Update x3mRouting Menu** will only appear when a new installation menu is detected on the GitHub repository. Option **[u]  Update x3mRouting to Version 2.0.0** will only appear if you have the prior version of x3mRouting installed.
 
 <img src="https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG/InstallationMenu.PNG" alt="drawing" width="600" height="600"/>
 
@@ -670,7 +670,7 @@ The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now st
 ````
 mkdir -p /jffs/addons/x3mRouting && /usr/sbin/curl --retry 3 https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/x3mRouting_Menu.sh -o /jffs/addons/x3mRouting/x3mRouting_Menu.sh && chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh && rm /opt/bin/x3mRouting 2>/dev/null && ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRoutingg/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRouting
 ````
-  2.  After the update has completed, select the **[u]  Update to new version of x3mRouting** option.
+  2.  After the update has completed, select the **[u]  Update x3mRouting to Version 2.0.0** option.
 
 During the update process, the x3mRouting Installation Menu will:
   * Backup **/jffs/scripts/nat-start** and copy the x3mRouting directory contents to **/jffs/scripts/x3mRouting/backup**.

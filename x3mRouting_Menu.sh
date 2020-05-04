@@ -66,7 +66,7 @@ Main_Menu() {
     if [ "$localmd5" != "$remotemd5" ]; then
       printf '%b[7]%b  Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     fi
-    if [ ! -f "$LOCAL_REPO/x3mRouting.sh" ] || [ ! -d "/jffs/addons/x3mRouting"  ]; then
+    if [ ! -f "$LOCAL_REPO/x3mRouting.sh" ] || [ "$(ls /jffs/configs/* | grep -c "nvram")" -ge "1" ]; then
       printf '%b[u]%b  Update x3mRouting to Version 2.0.0\n' "${COLOR_RED}" "${COLOR_WHITE}"
     fi
     printf '\n%b[e]%b  Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"

@@ -838,7 +838,6 @@ VPN_Server_to_VPN_Client() {
         echo "$IPTABLES_DEL_ENTRY"
         echo "$IPTABLES_ADD_ENTRY"
       } >>"$VPNC_UP_FILE"
-      chmod 755 "$VPNC_UP_FILE"
       # Implement routing rules
       iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE 2>/dev/null
       iptables -t nat -A POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE
@@ -852,7 +851,6 @@ VPN_Server_to_VPN_Client() {
     else #file does not exist
       echo "#!/bin/sh" >"$VPNC_DOWN_FILE"
       echo "$IPTABLES_DEL_ENTRY" >>"$VPNC_DOWN_FILE"
-      chmod 755 "$VPNC_DOWN_FILE"
     fi
 
     # nat-start File
@@ -867,7 +865,6 @@ VPN_Server_to_VPN_Client() {
         printf '%s\n' "#!/bin/sh"
         printf '%s\n' "$SCRIPT_ENTRY" # file does not exist, create VPNC_UP_FILE
       } >"$NAT_START"
-      chmod 755 "$NAT_START"
       logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
     fi
 
@@ -926,6 +923,11 @@ VPN_Server_to_VPN_Client() {
     fi
   fi
 
+  #set permissions for each file
+  [ -s "$VPNC_UP_FILE" ] && chmod 755 "$VPNC_UP_FILE"
+  [ -s "$VPNC_DOWN_FILE" ] && chmod 755 "$VPNC_DOWN_FILE"
+  [ -s "$NAT_START" ] && chmod 755 "$NAT_START"
+
 }
 
 VPN_Server_to_IPSET() {
@@ -982,7 +984,6 @@ VPN_Server_to_IPSET() {
         echo "$IPTABLES_PREROUTING_DEL_ENTRY"
         echo "$IPTABLES_PREROUTING_ADD_ENTRY"
       } >>"$VPNC_UP_FILE"
-      chmod 755 "$VPNC_UP_FILE"
       iptables -t nat -D POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
       iptables -t nat -A POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE
       iptables -t mangle -D PREROUTING -i "$VPN_SERVER_TUN" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
@@ -1003,7 +1004,6 @@ VPN_Server_to_IPSET() {
         echo "$IPTABLES_POSTROUTING_DEL_ENTRY"
         echo "$IPTABLES_PREROUTING_DEL_ENTRY"
       } >>"$VPNC_DOWN_FILE"
-      chmod 755 "$VPNC_DOWN_FILE"
       logger -t "($(basename "$0"))" $$ "iptables entry added to $VPNC_DOWN_FILE"
     fi
 
@@ -1019,7 +1019,6 @@ VPN_Server_to_IPSET() {
         printf '%s\n' "#!/bin/sh"
         printf '%s\n' "$SCRIPT_ENTRY" # file does not exist, create VPNC_UP_FILE
       } >"$NAT_START"
-      chmod 755 "$NAT_START"
       logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
     fi
 
@@ -1058,6 +1057,12 @@ VPN_Server_to_IPSET() {
       Check_For_Shebang "$NAT_START"
     fi
   fi
+
+  #set permissions for each file
+  [ -s "$VPNC_UP_FILE" ] && chmod 755 "$VPNC_UP_FILE"
+  [ -s "$VPNC_DOWN_FILE" ] && chmod 755 "$VPNC_DOWN_FILE"
+  [ -s "$NAT_START" ] && chmod 755 "$NAT_START"
+
 }
 
 Harvest_Domains() {

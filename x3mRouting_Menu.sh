@@ -113,16 +113,8 @@ Main_Menu() {
       u)
         Pre_Install_OpenVPN_Event_x3mRouting
         Update_NewVersion
-        set -x
         Update_Version
-        if [ -s "/jffs/scripts/init-start" ]; then
-          if [ "$(grep -c "sh /jffs/scripts/x3mRouting/mount_files_gui.sh" "/jffs/scripts/init-start")" -ge 1 ]; then
-            sh /jffs/scripts/x3mRouting/mount_files_gui.sh
-          fi
-          if [ "$(grep -c "sh /jffs/scripts/x3mRouting/mount_files_lan.sh" "/jffs/scripts/init-start")" -ge 1 ]; then
-            sh /jffs/scripts/x3mRouting/mount_files_lan.sh
-          fi
-        fi
+        Welcome_Message
         return 1
         ;;
       e)
@@ -200,11 +192,24 @@ Confirm_Update() {
   done
 }
 
+Remove_Mounts () {
+
+  if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ]; then
+    umount /usr/sbin/vpnrouting.sh
+  fi
+  if [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ]; then
+    umount /usr/sbin/updown-client.sh
+  fi
+  if [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ]; then
+    umount /www/Advanced_OpenVPNClient_Content.asp
+  fi
+}
 ### Code for update code functions inspired by https://github.com/Adamm00 - credit to @Adamm
 ### and https://github.com/jackyaz/spdMerlin - credit to Jack Yaz
 Update_Version() {
 
   DIR="$LOCAL_REPO"
+  Remove_Mounts
 
   if [ -d "$DIR" ]; then
     for FILE in vpnrouting.sh \
@@ -248,6 +253,14 @@ Update_Version() {
     echo "Select the install option from the main menu to install the respository"
   fi
 
+  if [ -s "/jffs/scripts/init-start" ]; then
+    if [ "$(grep -c "sh /jffs/scripts/x3mRouting/mount_files_gui.sh" "/jffs/scripts/init-start")" -ge 1 ]; then
+      sh /jffs/scripts/x3mRouting/mount_files_gui.sh
+    fi
+    if [ "$(grep -c "sh /jffs/scripts/x3mRouting/mount_files_lan.sh" "/jffs/scripts/init-start")" -ge 1 ]; then
+      sh /jffs/scripts/x3mRouting/mount_files_lan.sh
+    fi
+  fi
   echo
   echo "Update of x3mRouting completed"
   echo "Press enter to continue"
@@ -541,19 +554,6 @@ Remove_IPSET_dnsmasqconfadd () {
   fi
 }
 
-Remove_Mounts () {
-
-  if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ]; then
-    umount /usr/sbin/vpnrouting.sh
-  fi
-  if [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ]; then
-    umount /usr/sbin/updown-client.sh
-  fi
-  if [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ]; then
-    umount /www/Advanced_OpenVPNClient_Content.asp
-  fi
-}
-
 Convert_Server_Routing_Entries() {
 
   for VPNSERVER in 1 2; do
@@ -696,7 +696,6 @@ Convert_Server_Routing_Entries() {
   Remove_From_UP_File
   Remove_Prerouting_Rules
   Remove_IPSET_dnsmasqconfadd
-  Remove_Mounts
 
 }
 ### End of Conversion Function
@@ -727,15 +726,8 @@ Remove_Existing_Installation() {
   fi
   # TBD - ckeck if only the she-bang exists and del file it it does
 
-  if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ]; then
-    umount /usr/sbin/vpnrouting.sh
-  fi
-  if [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ]; then
-    umount /usr/sbin/updown-client.sh
-  fi
-  if [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ]; then
-    umount /www/Advanced_OpenVPNClient_Content.asp
-  fi
+  # unmount vpnrouting, vpn gui and updown-client
+  Remove_Mounts
 
   # Purge /jffs/scripts/x3mRouting directory
   for DIR in $LOCAL_REPO; do

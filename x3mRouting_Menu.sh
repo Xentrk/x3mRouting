@@ -113,6 +113,14 @@ Main_Menu() {
         Pre_Install_OpenVPN_Event_x3mRouting
         Update_NewVersion
         Update_Version
+        if [ -s "/jffs/scripts/init-start" ]; then
+          if [ "$(grep -c "sh /jffs/scripts/x3mRouting/mount_files_gui.sh" "/jffs/scripts/init-start")" -ge 1 ]; then
+            sh /jffs/scripts/x3mRouting/mount_files_gui.sh
+          fi
+          if [ "$(grep -c "sh /jffs/scripts/x3mRouting/mount_files_lan.sh" "/jffs/scripts/init-start")" -ge 1 ]; then
+            sh /jffs/scripts/x3mRouting/mount_files_lan.sh
+          fi
+        fi
         return 1
         ;;
       e)

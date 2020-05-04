@@ -1,4 +1,4 @@
-# x3mRouting ~ Selective Routing for Asuswrt-Merlin Firmware
+Update x3mRouting to Version 2.0.0# x3mRouting ~ Selective Routing for Asuswrt-Merlin Firmware
 # TESTING IN PROGRESS - DO NOT USE
 [![Build Status](https://travis-ci.com/Xentrk/x3mRouting.svg?branch=master)](https://travis-ci.com/Xentrk/x3mRouting)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/561d1570ed1f4d6aab76bba172f6b31f)](https://www.codacy.com/app/Xentrk/x3mRouting?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Xentrk/x3mRouting&amp;utm_campaign=Badge_Grade)
@@ -7,7 +7,7 @@
 ## Introduction
 **x3mRouting** includes selective routing features for LAN Clients, OpenVPN Clients and OpenVPN Servers.
 
-If coming from the first generation of x3mRouting, please read the updated instructions in the README.md to become familiar with the new features and usage instructions. Refer to the [Version 2.0.0 Changes](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#version-200-changes) section for a complete description of the changes and the update process.
+If coming from the first generation of x3mRouting, please read the updated instructions below to become familiar with the new features and usage instructions. Refer to the [Version 2.0.0 Changes](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#version-200-changes) section for a description of the changes and update process.
 
 #### 1. LAN Client Routing
 
@@ -22,9 +22,10 @@ Provides the ability to create IPSET lists using the **x3mRouting.sh** script an
 The **x3mRouing.sh** script provides the ability to
 
   * Create IPSET lists with no routing rules. The feature is for those who prefer to use the custom OpenVPN Client Screen.
-  * Create and selectively route IPSET lists to the VPN Client interface or bypass a VPN Client interface for all traffic or specific devices.
-  * Route VPN Server traffic to one of the VPN Clients.
-  * Selectively route VPN Server traffic to an existing IPSET list routing rule.
+  * Create and selectively route IPSET lists to the VPN Client interface for all traffic or specific devices.
+  * Bypass a VPN Client interface for all traffic or specific devices.
+  * Route VPN Server 1, 2 or both traffic to one of the VPN Clients.
+  * Selectively route VPN Server 1, 2 or both traffic to the same routing rules as an IPSET.
 
 #### 4. getdomainnames.sh Script
 This script will create a uniquely sorted list of domain names from dnsmasq.log that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service.
@@ -48,7 +49,7 @@ Copy and paste the command below into an SSH session:
 
       mkdir -p /jffs/addons/x3mRouting && /usr/sbin/curl --retry 3 https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/x3mRouting_Menu.sh -o /jffs/addons/x3mRouting/x3mRouting_Menu.sh && chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh && rm /opt/bin/x3mRouting 2>/dev/null && ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRouting
 
-This command will download and install the installation menu **x3mRouting** to the **/opt/bin** directory. The installation script is a menu with options to install the three options described below, and options to update or remove the repository. To access the installation menu, type the command **x3mRouting**. Option **[7]  Update x3mRouting Menu** will only appear when a new installation menu is detected on the GitHub repository. Option **[u]  Update to new version of x3mRouting** will only appear if you have the prior version of x3mRouting installed.
+This command will download and install the installation menu **x3mRouting_Menu.sh** to the **/jffs/addons/x3mRouting** directory and creates a symbolic link to **/opt/bin/x3mRouting**. The installation script is a menu with options to install the three options described below, and options to update or remove the repository. To access the installation menu, type the command **x3mRouting**. Option **[7]  Update x3mRouting Menu** will only appear when a new installation menu is detected on the GitHub repository. Option **[u]  Update x3mRouting to Version 2.0.0** will only appear if you have the prior version of x3mRouting installed.
 
 <img src="https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG/InstallationMenu.PNG" alt="drawing" width="600" height="600"/>
 
@@ -155,9 +156,9 @@ iptables -t nat -A POSTROUTING -s "$(nvram get vpn_server_sn)"/24 -o tun11 -j MA
 ##### /jffs/scripts/x3mRouting/vpnclient1-route-pre-down example
 ````
 #!/bin/sh
-iptables -t mangle -D PREROUTING -i br0 -m set --match-set HULU_WEB dst -j MARK --set-mark 0x1000/0x1000
-iptables -t mangle -D PREROUTING -i br0 -m set --match-set AMAZON_US dst -j MARK --set-mark 0x1000/0x1000
-iptables -t mangle -D PREROUTING -i br0 -m set --match-set NETFLIX dst -j MARK --set-mark 0x1000/0x1000
+iptables -t mangle -D PREROUTING -i br0 -m set --match-set HULU_WEB dst -j MARK --set-mark 0x1000/0x1000 2>/dev/null
+iptables -t mangle -D PREROUTING -i br0 -m set --match-set AMAZON_US dst -j MARK --set-mark 0x1000/0x1000 2>/dev/null
+iptables -t mangle -D PREROUTING -i br0 -m set --match-set NETFLIX dst -j MARK --set-mark 0x1000/0x1000 2>/dev/null
 iptables -t nat -D POSTROUTING -s "$(nvram get vpn_server_sn)"/24 -o tun11 -j MASQUERADE 2>/dev/null
 ````
 
@@ -435,13 +436,13 @@ sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 ipset_name=PANDORA del
 This script will create a uniquely sorted list of domain names from dnsmasq.log that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service.  The script requires that the dnsmasq.log file exists in the **/opt/var/log** directory. You must first enable dnsmasq logging if it's not enabled.
 
 #### Enable dnsmasq Logging
-1. Navigate to the **/jffs/configs** directory **cd /jffs/config**
-2. Use your SFTP or SSH client to create the **dnsmasq.conf.log** file
-3. Add the following entry to dnsmasq.conf.log:
-    log-facility=/opt/var/log/dnsmasq.log
+1. Navigate to the **/jffs/configs** directory e.g **cd /jffs/config**
+2. Use your SFTP or SSH client to create the **dnsmasq.conf.add** file
+3. Add the following entry to **/jffs/configs/dnsmasq.conf.add**:
+    **log-facility=/opt/var/log/dnsmasq.log**
 4. Save and exit **dnsmasq.conf.log**
 5. Restart dnsmasq
-    service restart_dnsmasq.log
+    service restart_dnsmasq
 
 #### getdomainnames.sh Usage Instructions
 1. Download the script **getdomainnames.sh**
@@ -520,7 +521,7 @@ Display information about an IPSET list, type the command **ipset -L ipset_name*
 
 #### IPSET List not Populating
 ##### Duplicate Host Entires
-Beware of duplicate hosts entries when using the DNSMASQ script method to populate an IPSET list. In the example below, the nslookup commmand will only populate the first IPSET list in **/jffs/configs/dnsmasq.conf.add**.
+Beware of duplicate hosts entries when using the dnsmasq method to populate an IPSET list. In the example below, the nslookup command will only populate the first IPSET list matched in **/jffs/configs/dnsmasq.conf.add**.
 ````
 ipset=/pandora.com/PANDORA
 ipset=/pandora.com/US_VPN
@@ -627,6 +628,9 @@ Martineau also contributed the modified **OpenVPN Client Screen**, the [Vimeo](h
 
 ## Version 2.0.0 Changes
 
+#### x3mRouting Menu
+The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now stored in **/jffs/addons/x3mRouting**. A symbolic link to **/opt/bin/x3mRouting** is created to support the ability to access the menu by typing **x3mRouting** at the command line. The x3mRouting menu update fixes the issue of non-harmful code output appearing when exiting the menu after performing a menu update.
+
 #### VPN Server and VPN Client Routing Script Changes
   * The separate scripts for:
 
@@ -661,20 +665,25 @@ Martineau also contributed the modified **OpenVPN Client Screen**, the [Vimeo](h
   * The script **x3mRouting_client_nvram.sh** now stores the nvram files in **/jffs/addons/x3mRouting** rather than **/jffs/configs**.
 
 ## Version 2.0.0 Update Process
+You won't be able to update to Version 2.0.0 using the existing x3mRouting Installation Menu due to the file name and implementation changes described above.  
 
-  1.  Type **x3mRouting** at the command line to access the Installation Menu.
-  2.  Select the **[10]  Update x3mRouting Menu** option.
-  3.  After the update has completed, select the **[u]  Update to new version of x3mRouting** option.
+  1.  Copy and paste the command below into an SSH session to download the new x3mRouting menu to **/jffs/addons/x3mRouting** and create a symbolic link to **/opt/bin/x3mRouting** which provides the ability to access the menu by typing **x3mRouting** at the command line.
+
+````
+mkdir -p /jffs/addons/x3mRouting && /usr/sbin/curl --retry 3 https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/x3mRouting_Menu.sh -o /jffs/addons/x3mRouting/x3mRouting_Menu.sh && chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh && rm /opt/bin/x3mRouting 2>/dev/null && ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRouting
+````
+  2.  After the update has completed, select the **[u]  Update x3mRouting to Version 2.0.0** option.
 
 During the update process, the x3mRouting Installation Menu will:
   * Backup **/jffs/scripts/nat-start** and copy the x3mRouting directory contents to **/jffs/scripts/x3mRouting/backup**.
   * Remove obsolete x3mRouting scripts.
   * Any LAN Client Routing nvram files that exist will get moved to **/jffs/addons/x3mRouting** and the **x3mRouting_client_rules** file from **/jffs/configs** to **/jffs/scripts/x3mRouting** directory.
   * **/jffs/scripts/nat-start** and openvpn-event files in the **/jffs/scripts/x3mRouting** directory will be scanned for references to the old scripts or routing rules. A conversion file will get created in **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** containing the new script entries using the new usage syntax.
+  * Backup **/jffs/configs/dnsmasq.conf.add** if it exists and delete any 'ipset=' entries. 'ipset=' entries will get recreated when you run the conversion script.
   * Remove prior x3mRouting version entries found in **/jffs/scripts/nat-start** or **vpnclientX-route-up** files. If only a **#!/bin/sh** or comment lines exist, the user will be prompted to remove the file. The recommendation is to select the option to remove the file. A backup of **nat-start** and the local x3mRouing repository exists in case you need to recover.
   * Update the remaining x3mRouting scripts to the new version.
 
-4.  View the **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** script and validate. A line showing the prior entry and file source will be shown with the new entry. Only entries involving routing to the WAN interface may require an edit. The new version requires that the VPN Client to bypass be specified. The conversion utility will assume the VPN Client you want to bypass is '1'. If necessary, edit the '1' to be the VPN Client number '1-5' you want to bypass. When done, save the conversion script and execute it (e.g. **sh x3mRouting_Conversion.sh**). After execution, the IPSET list and associated routing rules, if specified, will be created along with the required entries in **/jffs/scripts/nat-start** and appropriate openvpn-event up/down files. An example of the conversion file is shown below:
+  3.  View the **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** script and validate. A line showing the prior entry and file source will be shown with the new entry. Only entries involving routing to the WAN interface may require an edit. The new version requires that the VPN Client to bypass be specified. The conversion utility will assume the VPN Client you want to bypass is '1'. If necessary, edit the '1' to be the VPN Client number '1-5' you want to bypass. When done, save the conversion script and execute it (e.g. **sh x3mRouting_Conversion.sh**). After execution, the IPSET list and associated routing rules, if specified, will be created along with the required entries in **/jffs/scripts/nat-start** and appropriate openvpn-event up/down files. An example of the conversion file is shown below:
 ````
 #!/bin/sh
 # Source File====> /jffs/scripts/nat-start
@@ -697,10 +706,10 @@ sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 ipset_name=PANDORA
 # Found VPN Server to VPN Client iptables entries in /jffs/scripts/x3mRouting/vpnserver1-up
 sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 client=1
 ````
-5. Run the commands below to validate VPN Server POSTROUTING and VPN Client PREROUTING rules. POSTROUTING rules only get created for **VPN Server to VPN Client** and **VPN Server to IPSET List** rules.
+  4. Run the commands below to validate VPN Server POSTROUTING and VPN Client PREROUTING rules. POSTROUTING rules only get created for **VPN Server to VPN Client** and **VPN Server to IPSET List** rules.
 
 ````
   iptables -nvL POSTROUTING -t nat --line
   iptables -nvL PREROUTING -t mangle --line
 ````
-  13. Run the **ip rule** command to validate RPDB rules.
+5. Run the **ip rule** command to validate RPDB rules.

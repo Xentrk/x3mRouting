@@ -4,9 +4,9 @@
 # shellcheck disable=SC2030 # Modification of IPSET_NAME is local (to subshell caused by pipeline).
 ####################################################################################################
 # Script: x3mRouting.sh
-# VERSION=1.0.0
+# VERSION=2.0.0
 # Author: Xentrk
-# Date: 6-April-2020
+# Date: 4-May-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -236,7 +236,7 @@ Check_Cron_Job() {
 
   IPSET_NAME=$1
 
-  cru l | grep "$IPSET_NAME" || cru a "$IPSET_NAME" "0 2 * * * ipset save $IPSET_NAME > $DIR/$IPSET_NAME" 2>/dev/null && logger -st "($(basename "$0"))" $$ CRON schedule created: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
+  cru l | grep "$IPSET_NAME" || cru a "$IPSET_NAME" "0 2 * * * ipset save $IPSET_NAME > $DIR/$IPSET_NAME" >/dev/null 2>&1 && logger -st "($(basename "$0"))" $$ CRON schedule created: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
 
 }
 
@@ -508,10 +508,11 @@ Process_Src_Option() {
     logger -st "($(basename "$0"))" $$ "$IPTABLES_DEL_ENTRY added to $VPNC_DOWN_FILE"
   fi
 
-#set permissions for each file
+  #set permissions for each file
   [ -s "$VPNC_UP_FILE" ] && chmod 755 "$VPNC_UP_FILE"
   [ -s "$VPNC_DOWN_FILE" ] && chmod 755 "$VPNC_DOWN_FILE"
   [ -s "$NAT_START" ] && chmod 755 "$NAT_START"
+
 }
 
 Process_DNSMASQ() {
@@ -813,7 +814,7 @@ VPN_Server_to_VPN_Client() {
   VPNC_UP_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-up"
   VPNC_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-pre-down"
   NAT_START="/jffs/scripts/nat-start"
-  #POLICY_RULE_WITHOUT_NAME="${VPN_SERVER_SUBNET}>0.0.0.0>VPN"
+  POLICY_RULE_WITHOUT_NAME="${VPN_SERVER_SUBNET}>0.0.0.0>VPN"
   POLICY_RULE="<VPN Server ${VPN_SERVER_INSTANCE}>${VPN_SERVER_SUBNET}>0.0.0.0>VPN"
   VPN_IP_LIST=$(nvram get vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist)
 
@@ -826,6 +827,7 @@ VPN_Server_to_VPN_Client() {
         if [ "$(grep -c "$IPTABLES_ENTRY" "$VPNC_UP_FILE")" -eq "0" ]; then # if true, add entry
           echo "$IPTABLES_ENTRY" >>"$VPNC_UP_FILE"
           # Implement routing rules
+          iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE 2>/dev/null
           iptables -t nat -A POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE
         fi
       done
@@ -837,6 +839,7 @@ VPN_Server_to_VPN_Client() {
         echo "$IPTABLES_ADD_ENTRY"
       } >>"$VPNC_UP_FILE"
       # Implement routing rules
+      iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE 2>/dev/null
       iptables -t nat -A POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE
     fi
 
@@ -865,12 +868,22 @@ VPN_Server_to_VPN_Client() {
       logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
     fi
 
-    if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE")" -eq "0" ]; then
+    # Add nvram entry to vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist
+    if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE_WITHOUT_NAME")" -eq "0" ]; then
       VPN_IP_LIST="${VPN_IP_LIST}${POLICY_RULE}"
       nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist="$VPN_IP_LIST"
       nvram commit
       logger -st "($(basename "$0"))" $$ "Restarting VPN Client ${VPN_CLIENT_INSTANCE} to add policy rule for VPN Server ${VPN_SERVER_INSTANCE}"
       service restart_vpnclient"${VPN_CLIENT_INSTANCE}"
+    else #if the former version name entry found in nvram, convert it to the new name
+      if [ "$(echo "$VPN_IP_LIST" | grep -c "vpnserver${VPN_SERVER_INSTANCE}")" -ge "1" ]; then
+        logger -st "($(basename "$0"))" $$ "Renamed 'vpnserver${VPN_SERVER_INSTANCE}' reference to 'VPN Server ${VPN_SERVER_INSTANCE}'"
+        VPN_IP_LIST="$(echo "$VPN_IP_LIST" | sed "s/<vpnserver${VPN_SERVER_INSTANCE}>/<VPN Server ${VPN_SERVER_INSTANCE}>/")"
+        nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist="$VPN_IP_LIST"
+        nvram commit
+        logger -st "($(basename "$0"))" $$ "Restarting vpnclient ${VPN_CLIENT_INSTANCE} for policy rule for VPN Server ${VPN_SERVER_INSTANCE} to take effect"
+        service restart_vpnclient"${VPN_CLIENT_INSTANCE}"
+      fi
     fi
   else # delete routing and routing rules in vpn server up down scripts
     iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE 2>/dev/null
@@ -932,7 +945,7 @@ VPN_Server_to_IPSET() {
   case "$VPN_SERVER_INSTANCE" in
   1) VPN_SERVER_TUN="tun21" ;;
   2) VPN_SERVER_TUN="tun22" ;;
-  *) Error_Exit "ERROR $VPN_SERVER_INSTANCE should be a 1 or 2" ;;
+  *) Error_Exit "ERROR VPN Server instance $VPN_SERVER_INSTANCE should be a 1 or 2" ;;
   esac
   # Get VPN Server Subnet Mask
   VPN_SERVER_IP=$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)
@@ -958,9 +971,9 @@ VPN_Server_to_IPSET() {
           echo "$IPTABLES_ENTRY" >>"$VPNC_UP_FILE" && logger -t "($(basename "$0"))" $$ "iptables entry added to $VPNC_UP_FILE"
         fi
       done
-      iptables -t nat -D POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE
+      iptables -t nat -D POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
       iptables -t nat -A POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE
-      iptables -t mangle -D PREROUTING -i "$VPN_SERVER_TUN" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
+      iptables -t mangle -D PREROUTING -i "$VPN_SERVER_TUN" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
       iptables -t mangle -A PREROUTING -i "$VPN_SERVER_TUN" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
     else #file does not exist
       true >"$VPNC_UP_FILE"
@@ -971,9 +984,9 @@ VPN_Server_to_IPSET() {
         echo "$IPTABLES_PREROUTING_DEL_ENTRY"
         echo "$IPTABLES_PREROUTING_ADD_ENTRY"
       } >>"$VPNC_UP_FILE"
-      iptables -t nat -D POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE
+      iptables -t nat -D POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
       iptables -t nat -A POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE
-      iptables -t mangle -D PREROUTING -i "$VPN_SERVER_TUN" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
+      iptables -t mangle -D PREROUTING -i "$VPN_SERVER_TUN" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
       iptables -t mangle -A PREROUTING -i "$VPN_SERVER_TUN" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
     fi
 
@@ -1091,6 +1104,13 @@ Dnsmasq_Log_File() {
   fi
 }
 
+Check_Second_Parm() {
+
+  if [ "$(echo "$2" | grep -c 'client=')" -eq 0 ] || [ "$(echo "$2" | grep -c 'ipset_name=')" -eq 0 ]; then
+    Error_Exit "ERROR Expecting first parameter to be 'server='"
+  fi
+}
+
 #==================== End of Functions  =====================================
 SCR_NAME=$(basename "$0" | sed 's/.sh//')
 # Uncomment the line below for debugging
@@ -1114,38 +1134,28 @@ fi
 #######################################################################
 # Check if special case, parm 'server=' specified
 #######################################################################
+
 if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
   SERVER=$(echo "$@" | sed -n "s/^.*server=//p" | awk '{print $1}')
   case "$SERVER" in
   1 | 2 | both) ;;
-
-  *)
-    Error_Exit "ERROR: Invalid Server ($SERVER) specified."
-    ;;
+  *) Error_Exit "ERROR: Invalid Server '$SERVER' specified." ;;
   esac
+
+  if [ "$(echo "$@" | grep -c 'client=')" -eq 0 ] && [ "$(echo "$@" | grep -c 'ipset_name=')" -eq 0 ]; then
+    Error_Exit "ERROR Expecting second parameter to be either 'client=' or 'ipset_name='"
+  fi
 
   ### Process server when 'client=' specified
   if [ "$(echo "$@" | grep -c 'client=')" -gt 0 ]; then
     VPN_CLIENT_INSTANCE=$(echo "$@" | sed -n "s/^.*client=//p" | awk '{print $1}')
     case "$VPN_CLIENT_INSTANCE" in
-    1)
-      IFACE="tun11"
-      ;;
-    2)
-      IFACE="tun12"
-      ;;
-    3)
-      IFACE="tun13"
-      ;;
-    4)
-      IFACE="tun14"
-      ;;
-    5)
-      IFACE="tun15"
-      ;;
-    *)
-      Error_Exit "ERROR $1 should be a 1-5=VPN"
-      ;;
+    1) IFACE="tun11" ;;
+    2) IFACE="tun12" ;;
+    3) IFACE="tun13" ;;
+    4) IFACE="tun14" ;;
+    5) IFACE="tun15" ;;
+    *) Error_Exit "ERROR 'client=$VPN_CLIENT_INSTANCE' reference should be a 1-5" ;;
     esac
 
     if [ "$(echo $@ | grep -cw 'del')" -ge "1" ]; then
@@ -1289,10 +1299,8 @@ fi
 SRC_IFACE="$1"
 case "$SRC_IFACE" in
 ALL | 1 | 2 | 3 | 4 | 5) ;;
-
-*)
-  Error_Exit "ERROR Source Interface ($SRC_IFACE) should be 'ALL' or '1,2,3,4 or 5' VPN Client number"
-  ;;
+*) Check_Second_Parm $@ ;;
+  # Error_Exit "ERROR Source Interface '$SRC_IFACE' should be 'ALL' or '1,2,3,4 or 5' VPN Client number";;
 esac
 
 # Check for DST_IFACE
@@ -1301,19 +1309,13 @@ if [ -n "$2" ]; then
   if [ "$SRC_IFACE" = "ALL" ]; then
     case "$DST_IFACE" in
     1 | 2 | 3 | 4 | 5) ;;
-
-    *)
-      Error_Exit "ERROR: Invalid Source ($SRC_IFACE) and Destination ($DST_IFACE) combination."
-      ;;
+    *) Error_Exit "ERROR: Invalid Source '$SRC_IFACE' and Destination ($DST_IFACE) combination." ;;
     esac
   fi
   if [ "$SRC_IFACE" = "1" ] || [ "$SRC_IFACE" = "2" ] || [ "$SRC_IFACE" = "3" ] || [ "$SRC_IFACE" = "4" ] || [ "$SRC_IFACE" = "5" ]; then
     case "$DST_IFACE" in
     0) ;;
-
-    *)
-      Error_Exit "ERROR: Invalid Source ($SRC_IFACE) and Destination ($DST_IFACE) combination."
-      ;;
+    *) Error_Exit "ERROR: Invalid Source '$SRC_IFACE' and Destination ($DST_IFACE) combination." ;;
     esac
   fi
   Set_Fwmark_Parms

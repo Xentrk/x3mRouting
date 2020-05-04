@@ -472,7 +472,7 @@ Update_NewVersion() {
       printf '%s%b%s%b%s\n\n' "Checking " "$COLOR_GREEN" "$NAT_START" "$COLOR_WHITE" " for obsolete x3mRouting scripts."
       for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
         if [ "$(grep -c "$OLD_FILE" "$NAT_START")" -ge "1" ]; then # if true, then lines exist
-          sed -i "/$OLD_FILE/d" "$NAT_START" && printf '%s%b%s%b%s\n' "Obsolete " "$COLOR_GREEN" "$OLD_FILE" "$COLOR_GREEN" " file deleted from $NAT_START"
+          sed -i "/$OLD_FILE/d" "$NAT_START" && printf '%s%b%s%b%s%b%s%b\n' "Obsolete " "$COLOR_GREEN" "$OLD_FILE" "$COLOR_WHITE" file deleted from " "$COLOR_GREEN" "$NAT_START" "$COLOR_WHITE"
         fi
       done
       Check_For_Shebang "$NAT_START"

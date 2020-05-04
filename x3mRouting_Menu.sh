@@ -514,7 +514,7 @@ Remove_Prerouting_Rules () {
 Remove_IPSET_dnsmasqconfadd () {
 
   if [ -s "/jffs/configs/dnsmasq.conf.add" ]; then
-    mv "/jffs/configs/dnsmasq.conf.add" "/jffs/configs/dnsmasq.conf.add.$TIMESTAMP"
+    cp "/jffs/configs/dnsmasq.conf.add" "/jffs/configs/dnsmasq.conf.add.$TIMESTAMP"
     sed -i "\\~ipset~d" "/jffs/configs/dnsmasq.conf.add"
     Check_For_Shebang "/jffs/configs/dnsmasq.conf.add"
   fi

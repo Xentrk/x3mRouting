@@ -34,7 +34,7 @@ Welcome_Message() {
   clear
   printf '\n_______________________________________________________________________\n'
   printf '|                                                                     |\n'
-  printf '|  Welcome to the %bx3mRouting%b installation script                      |\n' "$COLOR_GREEN" "$COLOR_WHITE"
+  printf '|  Welcome to the %bx3mRouting%b installation Menu                        |\n' "$COLOR_GREEN" "$COLOR_WHITE"
   printf '|  Version %s by Xentrk                                            |\n' "$VERSION"
   printf '|         ____        _         _                                     |\n'
   printf '|        |__  |      | |       | |                                    |\n'

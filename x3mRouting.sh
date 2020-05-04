@@ -1099,6 +1099,13 @@ Dnsmasq_Log_File() {
   fi
 }
 
+Check_Second_Parm() {
+
+  if [ "$(echo "$2" | grep -c 'client=')" -eq 0 ] || [ "$(echo "$2" | grep -c 'ipset_name=')" -eq 0 ]; then
+    Error_Exit "ERROR Expecting first parameter to be 'server='"
+  fi
+}
+
 #==================== End of Functions  =====================================
 SCR_NAME=$(basename "$0" | sed 's/.sh//')
 # Uncomment the line below for debugging
@@ -1286,8 +1293,8 @@ fi
 SRC_IFACE="$1"
 case "$SRC_IFACE" in
 ALL | 1 | 2 | 3 | 4 | 5) ;;
-
-*) Error_Exit "ERROR Source Interface '$SRC_IFACE' should be 'ALL' or '1,2,3,4 or 5' VPN Client number" ;;
+*) Check_Second_Parm $@ ;;
+  # Error_Exit "ERROR Source Interface '$SRC_IFACE' should be 'ALL' or '1,2,3,4 or 5' VPN Client number";;
 esac
 
 # Check for DST_IFACE

@@ -4,9 +4,9 @@
 # shellcheck disable=SC2030 # Modification of IPSET_NAME is local (to subshell caused by pipeline).
 ####################################################################################################
 # Script: x3mRouting.sh
-# VERSION=1.0.0
+# VERSION=2.0.0
 # Author: Xentrk
-# Date: 6-April-2020
+# Date: 4-May-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,

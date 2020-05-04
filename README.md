@@ -156,9 +156,9 @@ iptables -t nat -A POSTROUTING -s "$(nvram get vpn_server_sn)"/24 -o tun11 -j MA
 ##### /jffs/scripts/x3mRouting/vpnclient1-route-pre-down example
 ````
 #!/bin/sh
-iptables -t mangle -D PREROUTING -i br0 -m set --match-set HULU_WEB dst -j MARK --set-mark 0x1000/0x1000
-iptables -t mangle -D PREROUTING -i br0 -m set --match-set AMAZON_US dst -j MARK --set-mark 0x1000/0x1000
-iptables -t mangle -D PREROUTING -i br0 -m set --match-set NETFLIX dst -j MARK --set-mark 0x1000/0x1000
+iptables -t mangle -D PREROUTING -i br0 -m set --match-set HULU_WEB dst -j MARK --set-mark 0x1000/0x1000 2>/dev/null
+iptables -t mangle -D PREROUTING -i br0 -m set --match-set AMAZON_US dst -j MARK --set-mark 0x1000/0x1000 2>/dev/null
+iptables -t mangle -D PREROUTING -i br0 -m set --match-set NETFLIX dst -j MARK --set-mark 0x1000/0x1000 2>/dev/null
 iptables -t nat -D POSTROUTING -s "$(nvram get vpn_server_sn)"/24 -o tun11 -j MASQUERADE 2>/dev/null
 ````
 

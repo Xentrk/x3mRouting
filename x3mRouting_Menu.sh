@@ -99,6 +99,7 @@ Main_Menu() {
         ;;
       5)
         Confirm_Update
+        Welcome_Message
         return 1
         ;;
       6)
@@ -250,7 +251,6 @@ Update_Version() {
   echo "Update of x3mRouting completed"
   echo "Press enter to continue"
   read -r
-  Welcome_Message
 }
 
 Pre_Install_OpenVPN_Event_x3mRouting () {

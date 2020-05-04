@@ -435,13 +435,13 @@ sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 ipset_name=PANDORA del
 This script will create a uniquely sorted list of domain names from dnsmasq.log that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service.  The script requires that the dnsmasq.log file exists in the **/opt/var/log** directory. You must first enable dnsmasq logging if it's not enabled.
 
 #### Enable dnsmasq Logging
-1. Navigate to the **/jffs/configs** directory **cd /jffs/config**
-2. Use your SFTP or SSH client to create the **dnsmasq.conf.log** file
-3. Add the following entry to dnsmasq.conf.log:
-    log-facility=/opt/var/log/dnsmasq.log
+1. Navigate to the **/jffs/configs** directory e.g **cd /jffs/config**
+2. Use your SFTP or SSH client to create the **dnsmasq.conf.add** file
+3. Add the following entry to **/jffs/configs/dnsmasq.conf.add**:
+    log-facility=/opt/var/log/dnsmasq.log**
 4. Save and exit **dnsmasq.conf.log**
 5. Restart dnsmasq
-    service restart_dnsmasq.log
+    service restart_dnsmasq
 
 #### getdomainnames.sh Usage Instructions
 1. Download the script **getdomainnames.sh**
@@ -520,7 +520,7 @@ Display information about an IPSET list, type the command **ipset -L ipset_name*
 
 #### IPSET List not Populating
 ##### Duplicate Host Entires
-Beware of duplicate hosts entries when using the DNSMASQ script method to populate an IPSET list. In the example below, the nslookup commmand will only populate the first IPSET list in **/jffs/configs/dnsmasq.conf.add**.
+Beware of duplicate hosts entries when using the dnsmasq method to populate an IPSET list. In the example below, the nslookup command will only populate the first IPSET list matched in **/jffs/configs/dnsmasq.conf.add**.
 ````
 ipset=/pandora.com/PANDORA
 ipset=/pandora.com/US_VPN

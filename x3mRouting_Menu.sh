@@ -131,7 +131,7 @@ Main_Menu() {
 
 Install_done() {
   echo
-  echo "Installation of $GIT_REPO $1 completed"
+  printf '%s%b%s%b%s\n' "Installation of " "$COLOR_GREEN" "$1" "$COLOR_GREEN" " completed"
   echo "Press enter to continue"
   read -r
   Welcome_Message
@@ -234,7 +234,7 @@ Update_Version() {
       fi
     done
   else
-    echo "Project Repository directory $DIR not found"
+    printf '%s%b%s%b%s\n' "Project Repository directory " "$COLOR_GREEN" "$DIR" "$COLOR_WHITE" " not found"
     echo "Select the install option from the main menu to install the respository"
   fi
 
@@ -421,9 +421,9 @@ Update_NewVersion() {
     fi
 
     if [ "$NOT_EMPTY_LINE_COUNT" -eq 0 ]; then
-      printf '\n\n%s\n' "$CLIENTX_FILE has been analyzed for entries"
-      printf '\n\n%s\n' "$CLIENTX_FILE has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
-      printf '%s\n' "Would you like to remove $CLIENTX_FILE? (Yes is recommended)"
+      printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has been analyzed for entries"
+      printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
+      printf '%s%b%s%b%b%s\n' "Would you like to remove " "$COLOR_GREEN" "$CLIENTX_FILE"  "$COLOR_WHITE" "? " "(Yes is recommended)"
       printf '[1]  --> Yes\n'
       printf '[2]  --> No\n'
       echo
@@ -433,7 +433,7 @@ Update_NewVersion() {
         case "$OPTION" in
           1)
             rm "$CLIENTX_FILE"
-            echo "$CLIENTX_FILE file deleted"
+            printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " file deleted"
             break
             ;;
           2)
@@ -445,9 +445,9 @@ Update_NewVersion() {
         esac
       done
     else
-      printf '\n\n%s\n' "$CLIENTX_FILE has been analyzed for entries"
-      printf '\n\n%s\n' "$CLIENTX_FILE has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
-      printf '%s\n' "Skipping removal of $CLIENTX_FILE."
+      printf '\n%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has been analyzed for entries"
+      printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" "has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
+      printf '%s%b%s%b%s\n' "Skipping removal of " "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" "."
     fi
 
   }
@@ -462,13 +462,16 @@ Update_NewVersion() {
         printf 'Exiting...\n'
         return
       else
-        printf '\nExisting %s file found.\n' "$NAT_START"
-        printf 'Backup file saved to %s.\n' "$NAT_START.$TIMESTAMP"
+        echo
+        printf '%s%b%s%b%s\n' "Existing " "$COLOR_GREEN" "$NAT_START" "$COLOR_WHITE" " file found."
+        printf '%s%b%s%b%s\n' "Backup file saved to " "$COLOR_GREEN" "$NAT_START.$TIMESTAMP" "$COLOR_WHITE" "."
       fi
-
+      # remove obsolete entries in nat-start
+      echo
+      printf '%s%b%s%b%s\n' "Checking " "$COLOR_GREEN" "$NAT_START" "$COLOR_WHITE" " for obsolete x3mRuting scripts."
       for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
         if [ "$(grep -c "$OLD_FILE" "$NAT_START")" -ge "1" ]; then # if true, then lines exist
-          sed -i "/$OLD_FILE/d" "$NAT_START" && echo "Deleted $OLD_FILE entry from $NAT_START"
+          sed -i "/$OLD_FILE/d" "$NAT_START" && printf '\n%s%b%s%b%s\n' "Obsolete " "$COLOR_GREEN" "$OLD_FILE" "$COLOR_GREEN" "file deleted from $NAT_START"
         fi
       done
       Check_For_Shebang "$NAT_START"
@@ -482,6 +485,9 @@ Update_NewVersion() {
     for VPNID in 1 2 3 4 5; do
       UP_FILE=/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-up
       if [ -s "$UP_FILE" ]; then # file exists
+        echo
+        echo "Check for and removing any obsolete files references in the vpnclient${VPNID}-route-up files"
+        echo
         for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
           if [ "$(grep -c "$OLD_FILE" "$UP_FILE")" -ge "1" ]; then # if true, then lines exist
             sed -i "/$OLD_FILE/d" "$UP_FILE"
@@ -495,15 +501,20 @@ Update_NewVersion() {
 
   Remove_Old_Files_Repo() {
 
+    echo
+    echo "Check for and remove any obsolete files..."
+    echo
     for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
-      [ -f "$LOCAL_REPO/$OLD_FILE" ] && rm "$LOCAL_REPO/$OLD_FILE" && echo "Obsolete $LOCAL_REPO/$OLD_FILE file deleted" || echo "Obsolete $LOCAL_REPO/$OLD_FILE file does not exist"
+      [ -f "$LOCAL_REPO/$OLD_FILE" ] && rm "$LOCAL_REPO/$OLD_FILE" && printf '%s%b%s%b%s\n' "Obsolete " "$COLOR_GREEN" "$LOCAL_REPO/$OLD_FILE" "$COLOR_GREEN" "file deleted" || printf '%s%b%s%b%s' "Obsolete " "$COLOR_GREEN" "$LOCAL_REPO/$OLD_FILE" "$COLOR_WHITE" "  file does not exist"
     done
 
   }
 
 Remove_Prerouting_Rules () {
 
-  echo "Checking for any PREROUTING rules for IPSET Lists"
+  echo
+  echo "Delete any existing PREROUTING rules for IPSET lists"
+  echo
   iptables -nvL PREROUTING -t mangle --line | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
     echo "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
     iptables -t mangle -D PREROUTING "$CHAIN_NUM"
@@ -592,6 +603,7 @@ Convert_Server_Routing_Entries() {
       mkdir "$LOCAL_REPO/backup"
       cp -a "$LOCAL_REPO/." "$LOCAL_REPO/backup/" >/dev/null 2>&1
     else
+      echo
       echo "Existing backup directory found. Skipping backup step."
     fi
   fi
@@ -600,12 +612,14 @@ Convert_Server_Routing_Entries() {
   if [ -s "$LOCAL_REPO/x3mRouting_Conversion.sh" ]; then
     TIMESTAMP=$(date +"%Y-%m-%d-%H.%M.%S")
     if ! cp "$LOCAL_REPO/x3mRouting_Conversion.sh" "$LOCAL_REPO/x3mRouting_Conversion.sh.$TIMESTAMP"; then
+      echo
       printf '\nBackup of the prior %s file could not be made.\n' "$LOCAL_REPO/x3mRouting_Conversion.sh"
       printf 'Exiting...\n'
       exit 0
     else
-      printf '\nExisting %s file found.\n' "$LOCAL_REPO/x3mRouting_Conversion.sh"
-      printf 'Backup file saved to %s.\n' "$LOCAL_REPO/x3mRouting_Conversion.sh.$TIMESTAMP"
+      echo
+      printf '%s%b%s%b%s\n' "Existing " "$COLOR_GREEN" "$LOCAL_REPO/x3mRouting_Conversion.sh" "$COLOR_WHITE" " file found."
+      printf '%s%b%s%b\n' "Backup file saved to " "$COLOR_GREEN" "$LOCAL_REPO/x3mRouting_Conversion.sh.$TIMESTAMP" "$COLOR_WHITE"
       true > "$CONV_FILE" && chmod 755 "$CONV_FILE"
     fi
   else
@@ -645,10 +659,11 @@ Convert_Server_Routing_Entries() {
   # add shebang to the first line before exiting
   if [ -s "$CONV_FILE" ]; then
     sed -i '1s~^~#!/bin/sh\n~' "$CONV_FILE"
-    echo "Created $CONV_FILE script to assist with the conversion."
-    echo "Please review the script before running"
+    echo
+    printf '%s%b%s%b%s\n' "Created " "$COLOR_GREEN" "$CONV_FILE" "$COLOR_WHITE" " script to assist with the conversion."
+    printf '%s%b%s%b%s\n' "Please review the "  "$COLOR_GREEN" "$CONV_FILE" "$COLOR_WHITE" " script before running"
   else
-    echo "$CONV_FILE script not created. No valid x3mRouting entries found in $NAT_START or vpnclientX- route-up files."
+    printf '%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$CONV_FILE" "$COLOR_WHITE" " script not created. No valid x3mRouting entries found in" "$COLOR_GREEN" "$NAT_START"  "$COLOR_WHITE" " or vpnclientX- route-up files."
     rm "$CONV_FILE"
   fi
 
@@ -681,8 +696,8 @@ Remove_Existing_Installation() {
     for PARM in "sh $LOCAL_REPO/mount_files_lan.sh" "sh $LOCAL_REPO/mount_files_gui.sh"; do
       if grep -q "$PARM" "/jffs/scripts/init-start"; then # see if line exists
         sed -i "\\~$PARM~d" "/jffs/scripts/init-start"
-        echo "$PARM entry removed from /jffs/scripts/init-start"
-        echo "You can manaully delete /jffs/scripts/init-start if you no longer require it"
+        printf '%b%s%b%s%b%s%b\n' "$COLOR_GREEN" "$PARM" "$COLOR_WHITE" " entry removed from " "$COLOR_GREEN" "/jffs/scripts/init-start" "$COLOR_WHITE"
+        printf '%s%b%s%b%s\n' "You can manaully delete " "$COLOR_GREEN" "/jffs/scripts/init-start" "$COLOR_WHITE" " if you no longer require it"
       fi
     done
   fi
@@ -804,6 +819,7 @@ Download_File() {
 
   STATUS="$(curl --retry 3 -sL -w '%{http_code}' "$GITHUB_DIR/$FILE" -o "$DIR/$FILE")"
   if [ "$STATUS" -eq "200" ]; then
+    echo
     printf '%b%s%b downloaded successfully\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE"
     if [ "$(echo "$FILE" | grep -c '.sh')" -gt 0 ]; then
       chmod 0755 "$DIR/$FILE"

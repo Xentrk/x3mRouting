@@ -67,7 +67,7 @@ Main_Menu() {
       printf '%b[7]%b  Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     fi
     if [ ! -f "$LOCAL_REPO/x3mRouting.sh" ] || [ ! -d "/jffs/addons/x3mRouting"  ]; then
-      printf '%b[u]%b  Update to version 2.0.0 of x3mRouting\n' "${COLOR_RED}" "${COLOR_WHITE}"
+      printf '%b[u]%b  Update x3mRouting to Version 2.0.0\n' "${COLOR_RED}" "${COLOR_WHITE}"
     fi
     printf '\n%b[e]%b  Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '\n%bOption ==>%b ' "${COLOR_GREEN}" "${COLOR_WHITE}"
@@ -76,7 +76,7 @@ Main_Menu() {
     case "$menu1" in
       1)
         Install_x3mRouting_LAN_Clients
-        Install_done "for LAN Clients"
+        Install_done "x3mRouting for LAN Clients"
         return 1
         ;;
       2)

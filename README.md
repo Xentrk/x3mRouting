@@ -665,7 +665,7 @@ The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now st
   * The script **x3mRouting_client_nvram.sh** now stores the nvram files in **/jffs/addons/x3mRouting** rather than **/jffs/configs**.
 
 ## Version 2.0.0 Update Process
-You won't be able to update to Version 2.0.0 using the existing x3mRouting Installation Menu due to the file name and implementation changes described above.  
+You won't be able to update to Version 2.0.0 using the existing x3mRouting Installation Menu due to the installation menu changes described above.  
 
   1.  Copy and paste the command below into an SSH session to download the new x3mRouting menu to **/jffs/addons/x3mRouting** and create a symbolic link to **/opt/bin/x3mRouting** which provides the ability to access the menu by typing **x3mRouting** at the command line.
 

@@ -1,6 +1,6 @@
 #!/bin/sh
 ####################################################################################################
-# Script: x3mRouting
+# Script: x3mRouting_Menu.sh
 # Author: Xentrk
 # Last Updated Date: 3-May-2020
 #
@@ -34,7 +34,7 @@ Welcome_Message() {
   clear
   printf '\n_______________________________________________________________________\n'
   printf '|                                                                     |\n'
-  printf '|  Welcome to the %bx3mRouting%b installation script                      |\n' "$COLOR_GREEN" "$COLOR_WHITE"
+  printf '|  Welcome to the %bx3mRouting%b Installation Menu                        |\n' "$COLOR_GREEN" "$COLOR_WHITE"
   printf '|  Version %s by Xentrk                                            |\n' "$VERSION"
   printf '|         ____        _         _                                     |\n'
   printf '|        |__  |      | |       | |                                    |\n'
@@ -61,13 +61,13 @@ Main_Menu() {
     printf '%b[4]%b  Install getdomainnames.sh Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '%b[5]%b  Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '%b[6]%b  Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    localmd5="$(md5sum "/opt/bin/x3mRouting" | awk '{print $1}')"
-    remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/x3mRouting" | md5sum | awk '{print $1}')"
+    localmd5="$(md5sum "/jffs/addons/x3mRouting/x3mRouting_Menu.sh" | awk '{print $1}')"
+    remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/x3mRouting_Menu.sh" | md5sum | awk '{print $1}')"
     if [ "$localmd5" != "$remotemd5" ]; then
       printf '%b[7]%b  Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     fi
-    if [ ! -f "$LOCAL_REPO/x3mRouting.sh" ] || [ ! -d "/jffs/addons/x3mRouting"  ]; then
-      printf '%b[u]%b  Update to version 2.0.0 of x3mRouting\n' "${COLOR_RED}" "${COLOR_WHITE}"
+    if [ ! -f "$LOCAL_REPO/x3mRouting.sh" ] || [ "$(ls /jffs/configs/* | grep -c ".nvram")" -ge "1" ]; then
+      printf '%b[u]%b  Update x3mRouting to Version 2.0.0\n' "${COLOR_RED}" "${COLOR_WHITE}"
     fi
     printf '\n%b[e]%b  Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '\n%bOption ==>%b ' "${COLOR_GREEN}" "${COLOR_WHITE}"
@@ -76,25 +76,30 @@ Main_Menu() {
     case "$menu1" in
       1)
         Install_x3mRouting_LAN_Clients
+        Install_done "x3mRouting for LAN Clients"
         return 1
         ;;
       2)
         Install_x3mRouting_GUI
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
+        Install_done "GUI, OpenVPN Event and Shell Scripts"
         return 1
         ;;
       3)
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
+        Install_done "OpenVPN Event and Shell Scripts"
         return 1
         ;;
       4)
         Download_File "$LOCAL_REPO" "getdomainnames.sh"
+        Install_done "getdomainnames.sh"
         return 1
         ;;
       5)
         Confirm_Update
+        Welcome_Message
         return 1
         ;;
       6)
@@ -109,6 +114,7 @@ Main_Menu() {
         Pre_Install_OpenVPN_Event_x3mRouting
         Update_NewVersion
         Update_Version
+        Welcome_Message
         return 1
         ;;
       e)
@@ -123,6 +129,14 @@ Main_Menu() {
         ;;
     esac
   done
+}
+
+Install_done() {
+  echo
+  printf '%s%b%s%b%s\n' "Installation of " "$COLOR_GREEN" "$1" "$COLOR_GREEN" " completed"
+  echo "Press enter to continue"
+  read -r
+  Welcome_Message
 }
 
 Validate_Removal() {
@@ -178,11 +192,24 @@ Confirm_Update() {
   done
 }
 
+Remove_Mounts () {
+
+  if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ]; then
+    umount /usr/sbin/vpnrouting.sh
+  fi
+  if [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ]; then
+    umount /usr/sbin/updown-client.sh
+  fi
+  if [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ]; then
+    umount /www/Advanced_OpenVPNClient_Content.asp
+  fi
+}
 ### Code for update code functions inspired by https://github.com/Adamm00 - credit to @Adamm
 ### and https://github.com/jackyaz/spdMerlin - credit to Jack Yaz
 Update_Version() {
 
   DIR="$LOCAL_REPO"
+  Remove_Mounts
 
   if [ -d "$DIR" ]; then
     for FILE in vpnrouting.sh \
@@ -215,28 +242,35 @@ Update_Version() {
           localmd5="$(md5sum "$DIR/$FILE" | awk '{print $1}')"
           remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
           if [ "$localmd5" != "$remotemd5" ]; then
-            printf 'MD5 hash of %b%s%b does not match - downloading %b%s%b\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$COLOR_GREEN" "$FILE" "$COLOR_WHITE"
+            printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " does not match - downloading"
             Download_File "$DIR" "$FILE"
           fi
         #fi
       fi
     done
   else
-    echo "Project Repository directory $DIR not found"
+    printf '%s%b%s%b%s\n' "Project Repository directory " "$COLOR_GREEN" "$DIR" "$COLOR_WHITE" " not found"
     echo "Select the install option from the main menu to install the respository"
   fi
 
+  if [ -s "/jffs/scripts/init-start" ]; then
+    if [ "$(grep -c "sh /jffs/scripts/x3mRouting/mount_files_gui.sh" "/jffs/scripts/init-start")" -ge 1 ]; then
+      sh /jffs/scripts/x3mRouting/mount_files_gui.sh
+    fi
+    if [ "$(grep -c "sh /jffs/scripts/x3mRouting/mount_files_lan.sh" "/jffs/scripts/init-start")" -ge 1 ]; then
+      sh /jffs/scripts/x3mRouting/mount_files_lan.sh
+    fi
+  fi
   echo
   echo "Update of x3mRouting completed"
   echo "Press enter to continue"
   read -r
-  Welcome_Message
 }
 
 Pre_Install_OpenVPN_Event_x3mRouting () {
   # checking for existance of any "load" scripts. Their presence indicates x3mRouting.sh & openvpn need to be first installed
   # before removing the "load" scripts
-  if [ $(ls /jffs/scripts/x3mRouting | grep -c "load_") -ge "1" ]; then
+  if [ "$(ls /jffs/scripts/x3mRouting | grep -c "load_")" -ge "1" ]; then
     Download_File "$LOCAL_REPO" "x3mRouting.sh"
     Download_File "$LOCAL_REPO" "openvpn-event"
   fi
@@ -254,7 +288,7 @@ Update_NewVersion() {
       echo "# Source File====> $FILE"
       echo "# Original Entry=> $LINE"
       echo "$LINE4"
-      echo ""
+      echo
     } >> "$CONV_FILE"
   }
 
@@ -409,8 +443,10 @@ Update_NewVersion() {
     fi
 
     if [ "$NOT_EMPTY_LINE_COUNT" -eq 0 ]; then
-      printf '\n\n%s\n' "$CLIENTX_FILE has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
-      printf '%s\n' "Would you like to remove $CLIENTX_FILE?"
+
+      printf '\n%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has been analyzed for entries"
+      printf '%b%s%b%s\n\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
+      printf '%s%b%s%b%b%s\n' "Would you like to remove " "$COLOR_GREEN" "$CLIENTX_FILE"  "$COLOR_WHITE" "? " "(Yes is recommended)"
       printf '[1]  --> Yes\n'
       printf '[2]  --> No\n'
       echo
@@ -420,7 +456,7 @@ Update_NewVersion() {
         case "$OPTION" in
           1)
             rm "$CLIENTX_FILE"
-            echo "$CLIENTX_FILE file deleted"
+            printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " file deleted"
             break
             ;;
           2)
@@ -432,8 +468,9 @@ Update_NewVersion() {
         esac
       done
     else
-      printf '\n\n%s\n' "$CLIENTX_FILE has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
-      printf '%s\n' "Skipping removal of $CLIENTX_FILE."
+      printf '\n%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has been analyzed for entries"
+      printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" "has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
+      printf '%s%b%s%b%s\n' "Skipping removal of " "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" "."
     fi
 
   }
@@ -448,13 +485,16 @@ Update_NewVersion() {
         printf 'Exiting...\n'
         return
       else
-        printf '\nExisting %s file found.\n' "$NAT_START"
-        printf 'Backup file saved to %s.\n' "$NAT_START.$TIMESTAMP"
+        echo
+        printf '%s%b%s%b%s\n' "Existing " "$COLOR_GREEN" "$NAT_START" "$COLOR_WHITE" " file found."
+        printf '%s%b%s%b%s\n' "Backup file saved to " "$COLOR_GREEN" "$NAT_START.$TIMESTAMP" "$COLOR_WHITE" "."
       fi
-
+      # remove obsolete entries in nat-start
+      echo
+      printf '%s%b%s%b%s\n\n' "Checking " "$COLOR_GREEN" "$NAT_START" "$COLOR_WHITE" " for obsolete x3mRouting scripts."
       for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
         if [ "$(grep -c "$OLD_FILE" "$NAT_START")" -ge "1" ]; then # if true, then lines exist
-          sed -i "/$OLD_FILE/d" "$NAT_START" && echo "Deleted $OLD_FILE entry from $NAT_START"
+          sed -i "/$OLD_FILE/d" "$NAT_START" && printf '%s%b%s%b%s%b%s%b\n' "Obsolete " "$COLOR_GREEN" "$OLD_FILE" "$COLOR_WHITE" " file deleted from " "$COLOR_GREEN" "$NAT_START" "$COLOR_WHITE"
         fi
       done
       Check_For_Shebang "$NAT_START"
@@ -468,6 +508,9 @@ Update_NewVersion() {
     for VPNID in 1 2 3 4 5; do
       UP_FILE=/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-up
       if [ -s "$UP_FILE" ]; then # file exists
+        echo
+        echo "Check for and removing any obsolete files references in the vpnclient${VPNID}-route-up files"
+        echo
         for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
           if [ "$(grep -c "$OLD_FILE" "$UP_FILE")" -ge "1" ]; then # if true, then lines exist
             sed -i "/$OLD_FILE/d" "$UP_FILE"
@@ -481,19 +524,34 @@ Update_NewVersion() {
 
   Remove_Old_Files_Repo() {
 
+    echo
+    echo "Check for and remove any obsolete files..."
+    echo
     for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
-      [ -f "$LOCAL_REPO/$OLD_FILE" ] && rm "$LOCAL_REPO/$OLD_FILE" && echo "Obsolete $LOCAL_REPO/$OLD_FILE file deleted" || echo "Obsolete $LOCAL_REPO/$OLD_FILE file does not exist"
+      [ -f "$LOCAL_REPO/$OLD_FILE" ] && rm "$LOCAL_REPO/$OLD_FILE" && printf '%s%b%s%b%s\n' "Obsolete " "$COLOR_GREEN" "$LOCAL_REPO/$OLD_FILE" "$COLOR_WHITE" " file deleted" || printf '%s%b%s%b%s' "Obsolete " "$COLOR_GREEN" "$LOCAL_REPO/$OLD_FILE" "$COLOR_WHITE" "  file does not exist"
     done
 
   }
 
 Remove_Prerouting_Rules () {
 
+  echo
+  echo "Delete any existing PREROUTING rules for IPSET lists"
+  echo
   iptables -nvL PREROUTING -t mangle --line | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
-    logger -st "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
+    echo "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
     iptables -t mangle -D PREROUTING "$CHAIN_NUM"
   done
 
+}
+
+Remove_IPSET_dnsmasqconfadd () {
+
+  if [ -s "/jffs/configs/dnsmasq.conf.add" ]; then
+    cp "/jffs/configs/dnsmasq.conf.add" "/jffs/configs/dnsmasq.conf.add.$TIMESTAMP"
+    sed -i "\\~ipset~d" "/jffs/configs/dnsmasq.conf.add"
+    Check_For_Shebang "/jffs/configs/dnsmasq.conf.add"
+  fi
 }
 
 Convert_Server_Routing_Entries() {
@@ -568,6 +626,7 @@ Convert_Server_Routing_Entries() {
       mkdir "$LOCAL_REPO/backup"
       cp -a "$LOCAL_REPO/." "$LOCAL_REPO/backup/" >/dev/null 2>&1
     else
+      echo
       echo "Existing backup directory found. Skipping backup step."
     fi
   fi
@@ -576,12 +635,14 @@ Convert_Server_Routing_Entries() {
   if [ -s "$LOCAL_REPO/x3mRouting_Conversion.sh" ]; then
     TIMESTAMP=$(date +"%Y-%m-%d-%H.%M.%S")
     if ! cp "$LOCAL_REPO/x3mRouting_Conversion.sh" "$LOCAL_REPO/x3mRouting_Conversion.sh.$TIMESTAMP"; then
+      echo
       printf '\nBackup of the prior %s file could not be made.\n' "$LOCAL_REPO/x3mRouting_Conversion.sh"
       printf 'Exiting...\n'
       exit 0
     else
-      printf '\nExisting %s file found.\n' "$LOCAL_REPO/x3mRouting_Conversion.sh"
-      printf 'Backup file saved to %s.\n' "$LOCAL_REPO/x3mRouting_Conversion.sh.$TIMESTAMP"
+      echo
+      printf '%s%b%s%b%s\n' "Existing " "$COLOR_GREEN" "$LOCAL_REPO/x3mRouting_Conversion.sh" "$COLOR_WHITE" " file found."
+      printf '%s%b%s%b\n' "Backup file saved to " "$COLOR_GREEN" "$LOCAL_REPO/x3mRouting_Conversion.sh.$TIMESTAMP" "$COLOR_WHITE"
       true > "$CONV_FILE" && chmod 755 "$CONV_FILE"
     fi
   else
@@ -621,10 +682,11 @@ Convert_Server_Routing_Entries() {
   # add shebang to the first line before exiting
   if [ -s "$CONV_FILE" ]; then
     sed -i '1s~^~#!/bin/sh\n~' "$CONV_FILE"
-    echo "Created $CONV_FILE script to assist with the conversion."
-    echo "Please review the script before running"
+    echo
+    printf '%s%b%s%b%s\n' "Created " "$COLOR_GREEN" "$CONV_FILE" "$COLOR_WHITE" " script to assist with the conversion."
+    printf '%s%b%s%b%s\n' "Please review the "  "$COLOR_GREEN" "$CONV_FILE" "$COLOR_WHITE" " script before running"
   else
-    echo "$CONV_FILE script not created. No valid x3mRouting entries found in $NAT_START or vpnclientX- route-up files."
+    printf '%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$CONV_FILE" "$COLOR_WHITE" " script not created. No valid x3mRouting entries found in" "$COLOR_GREEN" "$NAT_START"  "$COLOR_WHITE" " or vpnclientX- route-up files."
     rm "$CONV_FILE"
   fi
 
@@ -633,6 +695,7 @@ Convert_Server_Routing_Entries() {
   Remove_From_nat_start
   Remove_From_UP_File
   Remove_Prerouting_Rules
+  Remove_IPSET_dnsmasqconfadd
 
 }
 ### End of Conversion Function
@@ -656,22 +719,15 @@ Remove_Existing_Installation() {
     for PARM in "sh $LOCAL_REPO/mount_files_lan.sh" "sh $LOCAL_REPO/mount_files_gui.sh"; do
       if grep -q "$PARM" "/jffs/scripts/init-start"; then # see if line exists
         sed -i "\\~$PARM~d" "/jffs/scripts/init-start"
-        echo "$PARM entry removed from /jffs/scripts/init-start"
-        echo "You can manaully delete /jffs/scripts/init-start if you no longer require it"
+        printf '%b%s%b%s%b%s%b\n' "$COLOR_GREEN" "$PARM" "$COLOR_WHITE" " entry removed from " "$COLOR_GREEN" "/jffs/scripts/init-start" "$COLOR_WHITE"
+        printf '%s%b%s%b%s\n' "You can manaully delete " "$COLOR_GREEN" "/jffs/scripts/init-start" "$COLOR_WHITE" " if you no longer require it"
       fi
     done
   fi
   # TBD - ckeck if only the she-bang exists and del file it it does
 
-  if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ]; then
-    umount /usr/sbin/vpnrouting.sh
-  fi
-  if [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ]; then
-    umount /usr/sbin/updown-client.sh
-  fi
-  if [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ]; then
-    umount /www/Advanced_OpenVPNClient_Content.asp
-  fi
+  # unmount vpnrouting, vpn gui and updown-client
+  Remove_Mounts
 
   # Purge /jffs/scripts/x3mRouting directory
   for DIR in $LOCAL_REPO; do
@@ -696,6 +752,21 @@ Remove_Existing_Installation() {
       printf '\n%b"/opt/bin/x3mRouting"%b menu file removed\n' "$COLOR_GREEN" "$COLOR_WHITE"
     fi
   fi
+
+  DIR="/jffs/addons/x3mRouting"
+  if [ -d "$DIR" ]; then
+	   if ! rm -rf "${DIR:?}/"* 2>/dev/null; then
+		   printf '\nNo files found to remove in %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+	   fi
+	   if ! rmdir "$DIR" 2>/dev/null; then
+		   printf '\nError trying to remove %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+	   else
+		   printf '\n%b%s%b folder and all files removed\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+	   fi
+  else
+      printf '\n%b%s%b folder does not exist. No directory to remove\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+  fi
+
   Exit_Message
 
 }
@@ -764,6 +835,7 @@ Download_File() {
 
   STATUS="$(curl --retry 3 -sL -w '%{http_code}' "$GITHUB_DIR/$FILE" -o "$DIR/$FILE")"
   if [ "$STATUS" -eq "200" ]; then
+    echo
     printf '%b%s%b downloaded successfully\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE"
     if [ "$(echo "$FILE" | grep -c '.sh')" -gt 0 ]; then
       chmod 0755 "$DIR/$FILE"
@@ -777,15 +849,15 @@ Download_File() {
 
 Exit_Message() {
 
-  #printf '\n              %bhttps://github.com/Xentrk/x3mRouting%b\n' "$COLOR_GREEN" "$COLOR_WHITE\\n"
-  #printf '                      Have a Grateful Day!\n\n'
-  #printf '           ____        _         _                           \n'
-  #printf '          |__  |      | |       | |                          \n'
-  #printf '    __  __  _| |_ _ _ | |_  ___ | | __    ____ ____  _ _ _   \n'
-  #printf '    \ \/ / |_  | %b %b \  __|/ _ \| |/ /   /  _//    \| %b %b \ \n' "\`" "\`" "\`" "\`"
-  #printf '     /  /  __| | | | |  |_ | __/|   <   (  (_ | [] || | | |  \n'
-  #printf '    /_/\_\|___ |_|_|_|\___|\___||_|\_\[] \___\\\____/|_|_|_| \n\n\n'
-  exit 0 2>/dev/null
+  printf '\n              %bhttps://github.com/Xentrk/x3mRouting%b\n' "$COLOR_GREEN" "$COLOR_WHITE\\n"
+  printf '                      Have a Grateful Day!\n\n'
+  printf '           ____        _         _                           \n'
+  printf '          |__  |      | |       | |                          \n'
+  printf '    __  __  _| |_ _ _ | |_  ___ | | __    ____ ____  _ _ _   \n'
+  printf '    \ \/ / |_  | %b %b \  __|/ _ \| |/ /   /  _//    \| %b %b \ \n' "\`" "\`" "\`" "\`"
+  printf '     /  /  __| | | | |  |_ | __/|   <   (  (_ | [] || | | |  \n'
+  printf '    /_/\_\|___ |_|_|_|\___|\___||_|\_\[] \___\\\____/|_|_|_| \n\n\n'
+  exit 0
 }
 
 Init_Start_Update() {
@@ -825,12 +897,6 @@ Install_x3mRouting_LAN_Clients() {
   Download_File "$LOCAL_REPO" "mount_files_lan.sh"
   Init_Start_Update "mount_files_lan.sh"
   sh /jffs/scripts/init-start
-  echo
-  echo "Installation of x3mRouting for LAN Clients completed"
-  echo
-  echo "Press enter to continue"
-  read -r
-  Welcome_Message
 }
 
 Install_x3mRouting_OpenVPN_Event() {
@@ -847,11 +913,6 @@ Install_x3mRouting_OpenVPN_Event() {
     printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
     chmod 0755 /jffs/scripts/openvpn-event
   fi
-  echo
-  echo "Installation of x3mRouting OpenVPN Event completed"
-  echo "Press enter to continue"
-  read -r
-  Welcome_Message
 }
 
 Check_Requirements() {
@@ -921,6 +982,7 @@ Check_Profile_Add() {
     true >"$CONFIG_DIR/$PROFILE_FILE"
     Update_Profile_Add "$CONFIG_DIR" "$PROFILE_FILE"
   fi
+
 }
 
 Install_x3mRouting_GUI() {
@@ -940,6 +1002,7 @@ Install_x3mRouting_GUI() {
   echo "Press enter to continue"
   read -r
   Welcome_Message
+
 }
 
 Install_x3mRouting_Shell_Scripts() {
@@ -948,11 +1011,6 @@ Install_x3mRouting_Shell_Scripts() {
   Create_Project_Directory
   Download_File "$LOCAL_REPO" "x3mRouting.sh"
   Check_Profile_Add
-  echo
-  echo "Installation of x3mRouting completed"
-  echo "Press enter to continue"
-  read -r
-  Welcome_Message
 
 }
 
@@ -989,15 +1047,15 @@ Update_Installer() {
     case "$menu_Update_Installer" in
     1)
       mkdir -p /jffs/addons/x3mRouting
-      Download_File /jffs/addons x3mRouting
-      mv /jffs/addons/x3mRouting /jffs/addons/x3mRouting.sh
+      Download_File /jffs/addons/x3mRouting x3mRouting_Menu.sh
+      chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh
       rm -rf "/opt/bin/x3mRouting" 2>/dev/null
       if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/x3mRouting" ]; then
         echo "Creating 'x3mRouting' alias" 2>&1
-        ln -s /jffs/addons/x3mRouting/x3mRouting.sh /opt/bin/x3mRouting
+        ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting
       fi
       printf '\nUpdate Complete! %s\n' "$remotemd5"
-      #/opt/bin/x3mRouting
+      sh /jffs/addons/x3mRouting/x3mRouting_Menu.sh
       break
       ;;
     2)

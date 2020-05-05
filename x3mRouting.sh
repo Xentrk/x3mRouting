@@ -6,7 +6,7 @@
 # Script: x3mRouting.sh
 # VERSION=2.0.0
 # Author: Xentrk
-# Date: 4-May-2020
+# Date: 5-May-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -71,7 +71,7 @@
 # x3mRouting.sh {'server='1|2|both} {'ipset_name='} ['del']
 #_____________________________________________________________________________________________________________
 
-# Print between line beginning with '#__' to first blank line inclusive
+# Print between line beginning with '#__' to first blank line inclusive (source: Martineau)
 ShowHelp() {
   awk '/^#__/{f=1} f{print; if (!NF) exit}' "$0" | more
 }
@@ -199,10 +199,11 @@ Create_Ipset_List() {
 
   IPSET_NAME=$1
   METHOD=$2
+
   Chk_Entware 120
   if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
   if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
-    if [ -s "$DIR/$IPSET_NAME" ]; then # does $1 ipset restore file exist?
+    if [ -s "$DIR/$IPSET_NAME" ]; then # does ipset restore file exist?
       if [ "$METHOD" = "DNSMASQ" ]; then
         ipset restore -! <"$DIR/$IPSET_NAME" # Restore ipset list if restore file exists at $DIR/$1
         logger -st "($(basename "$0"))" $$ IPSET restored: "$IPSET_NAME" from "$DIR/$IPSET_NAME"
@@ -324,7 +325,7 @@ Check_Files_For_Entries() {
 
   if [ -z "$OPT1" ]; then # 3 parms passed
     SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$0") $SRC_IFACE $DST_IFACE $IPSET_NAME"
-  elif [ -n "$OPT1" ]; then # OPT1 parm passed e.g. dnsmasq=, aws_region=, asnum=
+  elif [ -n "$OPT1" ]; then # OPT1 parm passed e.g. dnsmasq=, aws_region=, asnum=, ip=
     SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$0") $SRC_IFACE $DST_IFACE $IPSET_NAME $OPT1"
   fi
 
@@ -342,47 +343,47 @@ Check_Files_For_Entries() {
 
   # VPN Client route-up File
   for IPTABLES_ENTRY in "$IPTABLES_DEL_ENTRY" "$IPTABLES_ADD_ENTRY"; do
-    if [ -s "$VPNC_UP_FILE" ]; then # file exists
+    if [ -s "$VPNC_UP_FILE" ]; then
       if [ "$(grep -c "$IPTABLES_ENTRY" "$VPNC_UP_FILE")" -eq "0" ]; then # if true, then no lines exist
         echo "$IPTABLES_ENTRY" >>"$VPNC_UP_FILE" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
         logger -st "($(basename "$0"))" $$ "$IPTABLES_ENTRY added to $VPNC_UP_FILE"
       fi
-    else
+    else  # file does not exist, create VPNC_UP_FILE
       true >"$VPNC_UP_FILE"
       {
         printf '%s\n' "#!/bin/sh"
-        printf '%s\n' "$IPTABLES_ENTRY" # file does not exist, create VPNC_UP_FILE
+        printf '%s\n' "$IPTABLES_ENTRY"
       } >"$VPNC_UP_FILE"
       logger -st "($(basename "$0"))" $$ "$IPTABLES_ENTRY added to $VPNC_UP_FILE"
     fi
   done
 
   # VPN Client route-pre-down File
-  if [ -s "$VPNC_DOWN_FILE" ]; then # file exists
+  if [ -s "$VPNC_DOWN_FILE" ]; then
     if [ "$(grep -c "$IPTABLES_DEL_ENTRY" "$VPNC_DOWN_FILE")" -eq "0" ]; then # if true, then no lines exist
       echo "$IPTABLES_DEL_ENTRY" >>"$VPNC_DOWN_FILE" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
       logger -st "($(basename "$0"))" $$ "$IPTABLES_DEL_ENTRY added to $VPNC_DOWN_FILE"
     fi
-  else
+  else # file does not exist, create VPNC_UP_FILE
     true >"$VPNC_DOWN_FILE"
     {
       printf '%s\n' "#!/bin/sh"
-      printf '%s\n' "$IPTABLES_DEL_ENTRY" # file does not exist, create VPNC_UP_FILE
+      printf '%s\n' "$IPTABLES_DEL_ENTRY"
     } >"$VPNC_DOWN_FILE"
     logger -st "($(basename "$0"))" $$ "$IPTABLES_DEL_ENTRY added to $VPNC_DOWN_FILE"
   fi
 
   # nat-start File
-  if [ -s "$NAT_START" ]; then # file exists
+  if [ -s "$NAT_START" ]; then
     if [ "$(grep -c "$SCRIPT_ENTRY" "$NAT_START")" -eq "0" ]; then # if true, then no lines exist
       echo "$SCRIPT_ENTRY" >>"$NAT_START" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
       logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
     fi
-  else
+  else # file does not exist, create VPNC_UP_FILE
     true >"$NAT_START"
     {
       printf '%s\n' "#!/bin/sh"
-      printf '%s\n' "$SCRIPT_ENTRY" # file does not exist, create VPNC_UP_FILE
+      printf '%s\n' "$SCRIPT_ENTRY"
     } >"$NAT_START"
     logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
   fi
@@ -412,17 +413,14 @@ Process_Src_Option() {
       IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
       IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
       # Create routing rules
-      #iptables -t mangle -D PREROUTING -i br0 --src "$SRC" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
-      #iptables -t mangle -A PREROUTING -i br0 --src "$SRC" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
       eval "$IPTABLES_DEL_ENTRY"
       eval "$IPTABLES_ADD_ENTRY"
     else # default to src_range
       IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 -m iprange --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
       IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 -m iprange --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
+      # Create routing rules
       eval "$IPTABLES_DEL_ENTRY"
       eval "$IPTABLES_ADD_ENTRY"
-      #iptables -t mangle -D PREROUTING -i br0 -m iprange --src-range "$SRC_RANGE" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
-      #iptables -t mangle -A PREROUTING -i br0 -m iprange --src-range "$SRC_RANGE" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
     fi
   fi
 
@@ -439,15 +437,12 @@ Process_Src_Option() {
       # Create routing rules
       eval "$IPTABLES_DEL_ENTRY"
       eval "$IPTABLES_ADD_ENTRY"
-      #iptables -t mangle -D PREROUTING -i br0 --src "$SRC" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
-      #iptables -t mangle -A PREROUTING -i br0 --src "$SRC" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
     else # default to 'src-range'
       IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 -m iprange  --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
       IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 -m iprange  --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
+      # Create routing rules
       eval "$IPTABLES_DEL_ENTRY"
       eval "$IPTABLES_ADD_ENTRY"
-      #iptables -t mangle -D PREROUTING -i br0 -m iprange --src-range "$SRC_RANGE" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
-      #iptables -t mangle -A PREROUTING -i br0 -m iprange --src-range "$SRC_RANGE" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
     fi
   fi
 
@@ -462,32 +457,32 @@ Process_Src_Option() {
   NAT_START="/jffs/scripts/nat-start"
 
   # nat-start File
-  if [ -s "$NAT_START" ]; then # file exists
+  if [ -s "$NAT_START" ]; then
     if [ "$(grep -c "$SCRIPT_ENTRY" "$NAT_START")" -eq "0" ]; then # if true, then no lines exist
       echo "$SCRIPT_ENTRY" >>"$NAT_START" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
       logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
     fi
-  else
+  else # file does not exist, create VPNC_UP_FILE
     true >"$NAT_START"
     {
       printf '%s\n' "#!/bin/sh"
-      printf '%s\n' "$SCRIPT_ENTRY" # file does not exist, create VPNC_UP_FILE
+      printf '%s\n' "$SCRIPT_ENTRY"
     } >"$NAT_START"
     logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
   fi
 
   # VPN Client route-up File
   for IPTABLES_ENTRY in "$IPTABLES_DEL_ENTRY" "$IPTABLES_ADD_ENTRY"; do
-    if [ -s "$VPNC_UP_FILE" ]; then # file exists
+    if [ -s "$VPNC_UP_FILE" ]; then
       if [ "$(grep -c "$IPTABLES_ENTRY" "$VPNC_UP_FILE")" -eq "0" ]; then # if true, then no lines exist
         echo "$IPTABLES_ENTRY" >>"$VPNC_UP_FILE" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
         logger -st "($(basename "$0"))" $$ "$IPTABLES_ENTRY added to $VPNC_UP_FILE"
       fi
-    else
+    else  # file does not exist, create VPNC_UP_FILE
       true >"$VPNC_UP_FILE"
       {
         printf '%s\n' "#!/bin/sh"
-        printf '%s\n' "$IPTABLES_ENTRY" # file does not exist, create VPNC_UP_FILE
+        printf '%s\n' "$IPTABLES_ENTRY"
       } >"$VPNC_UP_FILE"
       logger -st "($(basename "$0"))" $$ "$IPTABLES_ENTRY added to $VPNC_UP_FILE"
     fi
@@ -499,11 +494,11 @@ Process_Src_Option() {
       echo "$IPTABLES_DEL_ENTRY" >>"$VPNC_DOWN_FILE" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
       logger -st "($(basename "$0"))" $$ "$IPTABLES_DEL_ENTRY added to $VPNC_DOWN_FILE"
     fi
-  else
+  else  # file does not exist, create VPNC_UP_FILE
     true >"$VPNC_DOWN_FILE"
     {
       printf '%s\n' "#!/bin/sh"
-      printf '%s\n' "$IPTABLES_DEL_ENTRY" # file does not exist, create VPNC_UP_FILE
+      printf '%s\n' "$IPTABLES_DEL_ENTRY"
     } >"$VPNC_DOWN_FILE"
     logger -st "($(basename "$0"))" $$ "$IPTABLES_DEL_ENTRY added to $VPNC_DOWN_FILE"
   fi
@@ -607,7 +602,6 @@ Load_AWS_Ipset_List() {
     true >"$DIR/$IPSET_NAME"
   fi
 
-  # example: for REGION in us-east-1 us-east-2 us-west-1 us-west-2; do
   # don't quote the parameter so it is treated like an array!
   for REGION in $REGION; do
     jq '.prefixes[] | select(.region=='\""$REGION"\"') | .ip_prefix' <"$DIR/ip-ranges.json" | sed 's/"//g' >>"$DIR/$IPSET_NAME"
@@ -622,8 +616,8 @@ Delete_Ipset_List() {
   IPSET_NAME=$1
 
   # Check /jffs/configs/dnsmasq.conf.add for IPSET entry and remove if found
-  if [ -s /jffs/configs/dnsmasq.conf.add ]; then # dnsmasq.conf.add file exists
-    if [ "$(grep -c "$IPSET_NAME" "/jffs/configs/dnsmasq.conf.add")" -ge "1" ]; then # if true, then one or more lines exist in dnsmasq.conf.add
+  if [ -s /jffs/configs/dnsmasq.conf.add ]; then
+    if [ "$(grep -c "$IPSET_NAME" "/jffs/configs/dnsmasq.conf.add")" -ge "1" ]; then # if true, then one or more lines exist
       sed -i "/^ipset.*${IPSET_NAME}$/d" /jffs/configs/dnsmasq.conf.add
       logger -st "($(basename "$0"))" $$ IPSET "$IPSET_NAME deleted from /jffs/configs/dnsmasq.conf.add"
       service restart_dnsmasq 2>/dev/null
@@ -632,7 +626,7 @@ Delete_Ipset_List() {
 
   # Check for IPSET entry in /jffs/scripts/nat-start and remove if found
   NAT_START="/jffs/scripts/nat-start"
-  if [ -s "$NAT_START" ]; then # file exists
+  if [ -s "$NAT_START" ]; then
     if [ "$(grep -c "$IPSET_NAME" "$NAT_START")" -ge "1" ]; then # if true, then one or more lines exist
       sed -i "/$IPSET_NAME/d" "$NAT_START"
       logger -st "($(basename "$0"))" $$ "Script entry for $IPSET_NAME deleted from $NAT_START"
@@ -663,7 +657,6 @@ Delete_Ipset_List() {
 
   #Check_Cron_Job
   if cru l | grep "$IPSET_NAME" 2>/dev/null; then
-    #if [ "$?" = "0" ]; then # cronjob entry found, delete it
     cru d "$IPSET_NAME" "0 2 * * * ipset save $IPSET_NAME" 2>/dev/null
     logger -st "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
   fi
@@ -720,7 +713,7 @@ AWS_Region_Parm() {
 
   AWS_REGION=$(echo "$@" | sed -n "s/^.*aws_region=//p" | awk '{print $1}' | tr ',' '\n')
   true >"/opt/tmp/${SCR_NAME}" # create tmp file for loop processing
-  for AWS_REGION in $AWS_REGION; do #$(echo "$AWS_REGION" | tr ',' '\n'); do
+  for AWS_REGION in $AWS_REGION; do
     awk -v A="$AWS_REGION" 'BEGIN {print A}' >>"/opt/tmp/${SCR_NAME}"
     while read -r AWS_REGION; do
       case "$AWS_REGION" in
@@ -763,7 +756,7 @@ Manual_Method() {
 
   Chk_Entware 60
   if [ "$READY" -eq 1 ]; then Error_Exit "Entware not ready. Unable to access ipset save/restore location"; fi
-  ############## Special Processing for 'ip=' parm #
+  ############## Special Processing for 'ip=' parmameter
   if [ "$(echo "$@" | grep -c 'ip=')" -gt 0 ]; then
     IP=$(echo "$@" | sed -n "s/^.*ip=//p" | awk '{print $1}')
     [ -s "$DIR/$IPSET_NAME" ] || true >"/opt/opt/tmp/$IPSET_NAME"
@@ -793,7 +786,7 @@ Manual_Method() {
       mv "$DIR/${IPSET_NAME}_tmp" "$DIR/$IPSET_NAME"
     done
   fi
-  ############## End of Special Processing for 'ip=' parm #
+  ############## End of Special Processing for 'ip=' parameter
 
   Create_Ipset_List "$IPSET_NAME" "MANUAL"
   Load_MANUAL_Ipset_List "$IPSET_NAME" "$DIR"
@@ -821,6 +814,7 @@ VPN_Server_to_VPN_Client() {
   if [ "$DEL_FLAG" != "del" ]; then # add entry
     eval "$IPTABLES_DEL_ENTRY"
     eval "$IPTABLES_ADD_ENTRY"
+    # vpnclientX-route-up File
     if [ -s "$VPNC_UP_FILE" ]; then
       #Check if an existing entry exists
       for IPTABLES_ENTRY in "$IPTABLES_DEL_ENTRY" "$IPTABLES_ADD_ENTRY"; do
@@ -831,7 +825,7 @@ VPN_Server_to_VPN_Client() {
           iptables -t nat -A POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE
         fi
       done
-    else #file does not exist
+    else # vpnclientX-route-up file does not exist
       true >"$VPNC_UP_FILE"
       {
         echo "#!/bin/sh"
@@ -842,24 +836,24 @@ VPN_Server_to_VPN_Client() {
       iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE 2>/dev/null
       iptables -t nat -A POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE
     fi
-
+    # vpnclientX-route-pre-down File
     if [ -s "$VPNC_DOWN_FILE" ]; then
       #Check if an existing entry exists
-      if [ "$(grep -c "$IPTABLES_DEL_ENTRY" "$VPNC_DOWN_FILE")" -eq "0" ]; then # add entry
+      if [ "$(grep -c "$IPTABLES_DEL_ENTRY" "$VPNC_DOWN_FILE")" -eq "0" ]; then # entry does not exist, add entry
         echo "$IPTABLES_DEL_ENTRY" >>"$VPNC_DOWN_FILE"
       fi
-    else #file does not exist
+    else # # vpnclientX-route-pre-down file does not exist, add entry
       echo "#!/bin/sh" >"$VPNC_DOWN_FILE"
       echo "$IPTABLES_DEL_ENTRY" >>"$VPNC_DOWN_FILE"
     fi
 
     # nat-start File
-    if [ -s "$NAT_START" ]; then # file exists
-      if [ "$(grep -c "$SCRIPT_ENTRY" "$NAT_START")" -eq "0" ]; then # if true, then no lines exist
-        echo "$SCRIPT_ENTRY" >>"$NAT_START" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
+    if [ -s "$NAT_START" ]; then
+      if [ "$(grep -c "$SCRIPT_ENTRY" "$NAT_START")" -eq "0" ]; then # if true, then no lines exist, add entry
+        echo "$SCRIPT_ENTRY" >>"$NAT_START"
         logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
       fi
-    else
+    else # nat-start file does not exist,create it
       true >"$NAT_START"
       {
         printf '%s\n' "#!/bin/sh"
@@ -875,7 +869,7 @@ VPN_Server_to_VPN_Client() {
       nvram commit
       logger -st "($(basename "$0"))" $$ "Restarting VPN Client ${VPN_CLIENT_INSTANCE} to add policy rule for VPN Server ${VPN_SERVER_INSTANCE}"
       service restart_vpnclient"${VPN_CLIENT_INSTANCE}"
-    else #if the former version name entry found in nvram, convert it to the new name
+    else #if the VPN Server entry exists in nvram using the 'vpnserverX' name created by the prior version, convert it to the new name
       if [ "$(echo "$VPN_IP_LIST" | grep -c "vpnserver${VPN_SERVER_INSTANCE}")" -ge "1" ]; then
         logger -st "($(basename "$0"))" $$ "Renamed 'vpnserver${VPN_SERVER_INSTANCE}' reference to 'VPN Server ${VPN_SERVER_INSTANCE}'"
         VPN_IP_LIST="$(echo "$VPN_IP_LIST" | sed "s/<vpnserver${VPN_SERVER_INSTANCE}>/<VPN Server ${VPN_SERVER_INSTANCE}>/")"
@@ -885,7 +879,7 @@ VPN_Server_to_VPN_Client() {
         service restart_vpnclient"${VPN_CLIENT_INSTANCE}"
       fi
     fi
-  else # delete routing and routing rules in vpn server up down scripts
+  else # del parmater passed. Delete routing and routing rules in vpn server up down scripts.
     iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE 2>/dev/null
 
     # vpnserverX-up file
@@ -947,7 +941,7 @@ VPN_Server_to_IPSET() {
   2) VPN_SERVER_TUN="tun22" ;;
   *) Error_Exit "ERROR VPN Server instance $VPN_SERVER_INSTANCE should be a 1 or 2" ;;
   esac
-  # Get VPN Server Subnet Mask
+  # Get VPN Server IP
   VPN_SERVER_IP=$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)
 
   # POSTROUTING CHAIN
@@ -990,7 +984,7 @@ VPN_Server_to_IPSET() {
       iptables -t mangle -A PREROUTING -i "$VPN_SERVER_TUN" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK"
     fi
 
-    if [ -s "$VPNC_DOWN_FILE" ]; then #file exists
+    if [ -s "$VPNC_DOWN_FILE" ]; then
       #Check if an existing entry exists
       for IPTABLES_ENTRY in "$IPTABLES_POSTROUTING_DEL_ENTRY" "$IPTABLES_PREROUTING_DEL_ENTRY"; do
         if [ "$(grep -c "$IPTABLES_ENTRY" "$VPNC_DOWN_FILE")" -eq "0" ]; then # if true, then add entry
@@ -1013,7 +1007,7 @@ VPN_Server_to_IPSET() {
         echo "$SCRIPT_ENTRY" >>"$NAT_START" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
         logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
       fi
-    else
+    else # nat-start does not exist
       true >"$NAT_START"
       {
         printf '%s\n' "#!/bin/sh"
@@ -1022,7 +1016,7 @@ VPN_Server_to_IPSET() {
       logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
     fi
 
-  else # 'del' option selected.
+  else # 'del' option specified.
     iptables -t mangle -D PREROUTING -i "$VPN_SERVER_TUN" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
     iptables -t nat -D POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
 
@@ -1076,7 +1070,6 @@ Harvest_Domains() {
     [ -n "$SCAN_LIST" ] && echo "$SCAN_LIST" >>/opt/tmp/DOMAIN_LIST && logger -t "($(basename "$0"))" $$ "Added $SCAN_LIST during autoscan"
   done
 
-  #DOMAIN_LIST=$(cat "/opt/tmp/DOMAIN_LIST" | sort | uniq | tr '\n' '/' | sed -n 's/\/$/\n/p')
   DOMAIN_LIST=$(awk '{ print $1 }' "/opt/tmp/DOMAIN_LIST" | sort -u | tr '\n' '/' | sed -n 's/\/$/\n/p')
 
   rm /opt/tmp/DOMAIN_LIST
@@ -1092,10 +1085,8 @@ Harvest_Domains() {
 Dnsmasq_Log_File() {
 
   if [ -s "/opt/var/log/dnsmasq.log" ]; then
-    # file exists
     DNSMASQ_LOG_FILE="/opt/var/log/dnsmasq.log"
   elif [ -s "/tmp/var/log/dnsmasq.log" ]; then
-    # file
     DNSMASQ_LOG_FILE="/tmp/var/log/dnsmasq.log"
   elif [ -n "$(find / -name "dnsmasq.log")" ]; then
     DNSMASQ_LOG_FILE=$(find / -name "dnsmasq.log")
@@ -1132,7 +1123,7 @@ else
 fi
 
 #######################################################################
-# Check if special case, parm 'server=' specified
+# Check if 'server=' parameter specified
 #######################################################################
 
 if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
@@ -1194,7 +1185,6 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
     [ -n "$FWMARK" ] || Error_Exit "Error! Mandatory PREROUTING rule for IPSET name $IPSET_NAME does not exist."
 
     TAG_MARK="$FWMARK/$FWMARK"
-    #VPN_CLIENT_INSTANCE="${FWMARK:2:6}"
     FWMARK_SUBSTR=$(echo "$FWMARK" | awk '{ string=substr($0, 3, 6); print string; }')
 
     case "$FWMARK_SUBSTR" in
@@ -1233,7 +1223,6 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
       fi
     fi
     Exit_Routine
-    #exit 0
   fi
   Exit_Routine
 fi
@@ -1242,7 +1231,7 @@ fi
 ######################################################################
 
 #######################################################################
-# Check if special case, parm 'ipset_name=' specified
+# Check if 'ipset_name=' parameter specified
 # This section creates IPSET list with no routing rules
 #######################################################################
 if [ "$(echo "$@" | grep -c 'ipset_name=')" -gt 0 ]; then
@@ -1278,8 +1267,8 @@ if [ "$(echo "$@" | grep -c 'ipset_name=')" -gt 0 ]; then
     Exit_Routine
   fi
 
+  # default to manual method
   if [ -z "$2" ]; then
-    # default to manual method
     Manual_Method $@
     Exit_Routine
   else
@@ -1300,7 +1289,6 @@ SRC_IFACE="$1"
 case "$SRC_IFACE" in
 ALL | 1 | 2 | 3 | 4 | 5) ;;
 *) Check_Second_Parm $@ ;;
-  # Error_Exit "ERROR Source Interface '$SRC_IFACE' should be 'ALL' or '1,2,3,4 or 5' VPN Client number";;
 esac
 
 # Check for DST_IFACE

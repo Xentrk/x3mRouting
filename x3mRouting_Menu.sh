@@ -251,8 +251,12 @@ Update_Version() {
       fi
     done
   else
-    printf '%s%b%s%b%s\n' "Project Repository directory " "$COLOR_GREEN" "$DIR" "$COLOR_WHITE" " not found"
-    echo "Select the install option from the main menu to install the respository"
+    printf '\n%s%b%s%b%s\n' "Project Repository directory " "$COLOR_GREEN" "$DIR" "$COLOR_WHITE" " not found"
+    echo "Select one of the the install options from the main menu to install the respository"
+    echo
+    echo "Press enter to continue"
+    read -r
+    return
   fi
 
   if [ -s "/jffs/scripts/init-start" ]; then

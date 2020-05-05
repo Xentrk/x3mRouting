@@ -211,9 +211,9 @@ Remove_Mounts () {
 Update_Version() {
 
   DIR="$LOCAL_REPO"
-  Remove_Mounts
 
   if [ -d "$DIR" ]; then
+    Remove_Mounts
     for FILE in vpnrouting.sh \
       updown-client.sh \
       Advanced_OpenVPNClient_Content.asp \

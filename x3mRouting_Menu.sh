@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 3-May-2020
+# Last Updated Date: 5-May-2020
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -66,8 +66,10 @@ Main_Menu() {
     if [ "$localmd5" != "$remotemd5" ]; then
       printf '%b[7]%b  Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     fi
-    if [ ! -f "$LOCAL_REPO/x3mRouting.sh" ] || [ "$(ls /jffs/configs/* | grep -c ".nvram")" -ge "1" ]; then
-      printf '%b[u]%b  Update x3mRouting to Version 2.0.0\n' "${COLOR_RED}" "${COLOR_WHITE}"
+    if [ -d "$LOCAL_REPO" ]; then
+      if [ ! -f "$LOCAL_REPO/x3mRouting.sh" ] || [ "$(ls /jffs/configs/* | grep -c ".nvram")" -ge "1" ]; then
+        printf '%b[u]%b  Update x3mRouting to Version 2.0.0\n' "${COLOR_RED}" "${COLOR_WHITE}"
+      fi
     fi
     printf '\n%b[e]%b  Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '\n%bOption ==>%b ' "${COLOR_GREEN}" "${COLOR_WHITE}"
@@ -209,9 +211,9 @@ Remove_Mounts () {
 Update_Version() {
 
   DIR="$LOCAL_REPO"
-  Remove_Mounts
 
   if [ -d "$DIR" ]; then
+    Remove_Mounts
     for FILE in vpnrouting.sh \
       updown-client.sh \
       Advanced_OpenVPNClient_Content.asp \
@@ -249,8 +251,12 @@ Update_Version() {
       fi
     done
   else
-    printf '%s%b%s%b%s\n' "Project Repository directory " "$COLOR_GREEN" "$DIR" "$COLOR_WHITE" " not found"
-    echo "Select the install option from the main menu to install the respository"
+    printf '\n%s%b%s%b%s\n' "Project Repository directory " "$COLOR_GREEN" "$DIR" "$COLOR_WHITE" " not found"
+    echo "Select one of the the install options from the main menu to install the respository"
+    echo
+    echo "Press enter to continue"
+    read -r
+    return
   fi
 
   if [ -s "/jffs/scripts/init-start" ]; then

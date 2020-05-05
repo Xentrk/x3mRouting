@@ -7,7 +7,7 @@ Update x3mRouting to Version 2.0.0# x3mRouting ~ Selective Routing for Asuswrt-M
 ## Introduction
 **x3mRouting** includes selective routing features for LAN Clients, OpenVPN Clients and OpenVPN Servers.
 
-If coming from the first generation of x3mRouting, please read the updated instructions below to become familiar with the new features and usage instructions. Refer to the [Version 2.0.0 Changes](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#version-200-changes) section for a description of the changes and update process.
+If coming from the first generation of x3mRouting, please read the updated instructions below to become familiar with the new features and usage instructions. Refer to the [Version 2.0.0 Changes](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#version-200-changes) section for a description of the changes and the [Version 2.0.0 Update Process](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#version-200-update-process) section for the update instructions.
 
 #### 1. LAN Client Routing
 
@@ -47,7 +47,7 @@ Please beware that Amazon Prime, BBC, Hulu and Netflix block known VPN servers. 
 
 Copy and paste the command below into an SSH session:
 
-      mkdir -p /jffs/addons/x3mRouting && /usr/sbin/curl --retry 3 https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/x3mRouting_Menu.sh -o /jffs/addons/x3mRouting/x3mRouting_Menu.sh && chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh && rm /opt/bin/x3mRouting 2>/dev/null && ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRouting
+      mkdir -p /jffs/addons/x3mRouting && /usr/sbin/curl --retry 3 https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/x3mRouting_Menu.sh -o /jffs/addons/x3mRouting/x3mRouting_Menu.sh && chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh && rm /opt/bin/x3mRouting 2>/dev/null && ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRouting || ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRouting
 
 This command will download and install the installation menu **x3mRouting_Menu.sh** to the **/jffs/addons/x3mRouting** directory and creates a symbolic link to **/opt/bin/x3mRouting**. The installation script is a menu with options to install the three options described below, and options to update or remove the repository. To access the installation menu, type the command **x3mRouting**. Option **[7]  Update x3mRouting Menu** will only appear when a new installation menu is detected on the GitHub repository. Option **[u]  Update x3mRouting to Version 2.0.0** will only appear if you have the prior version of x3mRouting installed.
 
@@ -665,12 +665,12 @@ The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now st
   * The script **x3mRouting_client_nvram.sh** now stores the nvram files in **/jffs/addons/x3mRouting** rather than **/jffs/configs**.
 
 ## Version 2.0.0 Update Process
-You won't be able to update to Version 2.0.0 using the existing x3mRouting Installation Menu due to the file name and implementation changes described above.  
+You won't be able to update to Version 2.0.0 using the existing x3mRouting Installation Menu due to the installation menu changes described above.  
 
   1.  Copy and paste the command below into an SSH session to download the new x3mRouting menu to **/jffs/addons/x3mRouting** and create a symbolic link to **/opt/bin/x3mRouting** which provides the ability to access the menu by typing **x3mRouting** at the command line.
 
 ````
-mkdir -p /jffs/addons/x3mRouting && /usr/sbin/curl --retry 3 https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/x3mRouting_Menu.sh -o /jffs/addons/x3mRouting/x3mRouting_Menu.sh && chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh && rm /opt/bin/x3mRouting 2>/dev/null && ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRouting
+mkdir -p /jffs/addons/x3mRouting && /usr/sbin/curl --retry 3 https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/x3mRouting_Menu.sh -o /jffs/addons/x3mRouting/x3mRouting_Menu.sh && chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh && rm /opt/bin/x3mRouting 2>/dev/null && ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRouting || ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting && x3mRouting
 ````
   2.  After the update has completed, select the **[u]  Update x3mRouting to Version 2.0.0** option.
 

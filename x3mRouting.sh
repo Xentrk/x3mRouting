@@ -872,8 +872,8 @@ VPN_Server_to_VPN_Client() {
 		
 		max=0
 		for n in "" 1 2 3 4 5; do
-			nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"$n"="$(echo "$VPN_IP_LIST" | cut -b$max-$(($max+255)))"
-			max=$(($max+256))
+			nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"$n"="$(echo "$VPN_IP_LIST" | cut -b$max-$((max+255)))"
+			max=$((max+256))
 		done
 		nvram commit
 		logger -st "($(basename "$0"))" $$ "Restarting VPN Client ${VPN_CLIENT_INSTANCE} to add policy rule for VPN Server ${VPN_SERVER_INSTANCE}"
@@ -883,8 +883,8 @@ VPN_Server_to_VPN_Client() {
         VPN_IP_LIST="$(echo "$VPN_IP_LIST" | sed "s/<vpnserver${VPN_SERVER_INSTANCE}>/<VPN Server ${VPN_SERVER_INSTANCE}>/")"
 	    max=0
 		for n in "" 1 2 3 4 5; do
-			nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"$n"="$(echo "$VPN_IP_LIST" | cut -b$max-$(($max+255)))"
-			max=$(($max+256))
+			nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"$n"="$(echo "$VPN_IP_LIST" | cut -b$max-$((max+255)))"
+			max=$((max+256))
 		done
 		nvram commit
         logger -st "($(basename "$0"))" $$ "Restarting vpnclient ${VPN_CLIENT_INSTANCE} for policy rule for VPN Server ${VPN_SERVER_INSTANCE} to take effect"
@@ -924,8 +924,8 @@ VPN_Server_to_VPN_Client() {
       VPN_IP_LIST="$(echo "$VPN_IP_LIST" | sed "s,<VPN Server ${VPN_SERVER_INSTANCE}>${VPN_SERVER_SUBNET}>0.0.0.0>VPN,,")"
 	    max=0
 		for n in "" 1 2 3 4 5; do
-			nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"$n"="$(echo "$VPN_IP_LIST" | cut -b$max-$(($max+255)))"
-			max=$(($max+256))
+			nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"$n"="$(echo "$VPN_IP_LIST" | cut -b$max-$((max+255)))"
+			max=$((max+256))
 		done
 		nvram commit
       logger -st "($(basename "$0"))" $$ "Restarting vpnclient ${VPN_CLIENT_INSTANCE} to remove policy rule for VPN Server ${VPN_SERVER_INSTANCE}"

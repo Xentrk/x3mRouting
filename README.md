@@ -7,7 +7,7 @@ Update x3mRouting to Version 2.0.0# x3mRouting ~ Selective Routing for Asuswrt-M
 ## Introduction
 **x3mRouting** includes selective routing features for LAN Clients, OpenVPN Clients and OpenVPN Servers.
 
-If coming from the first generation of x3mRouting, please read the updated instructions below to become familiar with the new features and usage instructions. Refer to the [Version 2.0.0 Changes](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#version-200-changes) section for a description of the changes and update process.
+If coming from the first generation of x3mRouting, please read the updated instructions below to become familiar with the new features and usage instructions. Refer to the [Version 2.0.0 Changes](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#version-200-changes) section for a description of the changes and the [Version 2.0.0 Update Process](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#version-200-update-process) section for the update instructions.
 
 #### 1. LAN Client Routing
 

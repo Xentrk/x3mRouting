@@ -348,7 +348,7 @@ Check_Files_For_Entries() {
         echo "$IPTABLES_ENTRY" >>"$VPNC_UP_FILE" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
         logger -st "($(basename "$0"))" $$ "$IPTABLES_ENTRY added to $VPNC_UP_FILE"
       fi
-    else  # file does not exist, create VPNC_UP_FILE
+    else # file does not exist, create VPNC_UP_FILE
       true >"$VPNC_UP_FILE"
       {
         printf '%s\n' "#!/bin/sh"
@@ -478,7 +478,7 @@ Process_Src_Option() {
         echo "$IPTABLES_ENTRY" >>"$VPNC_UP_FILE" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
         logger -st "($(basename "$0"))" $$ "$IPTABLES_ENTRY added to $VPNC_UP_FILE"
       fi
-    else  # file does not exist, create VPNC_UP_FILE
+    else # file does not exist, create VPNC_UP_FILE
       true >"$VPNC_UP_FILE"
       {
         printf '%s\n' "#!/bin/sh"
@@ -494,7 +494,7 @@ Process_Src_Option() {
       echo "$IPTABLES_DEL_ENTRY" >>"$VPNC_DOWN_FILE" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
       logger -st "($(basename "$0"))" $$ "$IPTABLES_DEL_ENTRY added to $VPNC_DOWN_FILE"
     fi
-  else  # file does not exist, create VPNC_UP_FILE
+  else # file does not exist, create VPNC_UP_FILE
     true >"$VPNC_DOWN_FILE"
     {
       printf '%s\n' "#!/bin/sh"
@@ -810,6 +810,15 @@ VPN_Server_to_VPN_Client() {
   POLICY_RULE_WITHOUT_NAME="${VPN_SERVER_SUBNET}>0.0.0.0>VPN"
   POLICY_RULE="<VPN Server ${VPN_SERVER_INSTANCE}>${VPN_SERVER_SUBNET}>0.0.0.0>VPN"
   VPN_IP_LIST=$(nvram get vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist)
+  OLD_PR_LENGTH=$(($(nvram get vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist | wc -c) - 1))
+  NEW_PR_LENGTH=${#POLICY_RULE}
+  COMBINED_PR_LENGTH=$((OLD_PR_LENGTH + NEW_PR_LENGTH))
+  DIFFERENCE=$((COMBINED_PR_LENGTH - 255))
+
+  if [ "$COMBINED_PR_LENGTH" -gt 255 ]; then
+    logger -t "($(basename "$0"))" $$ "NVRAM size issue. Combined length of $COMBINED_PR_LENGTH for vpn_client${VPN_CLIENT_INSTANCE}_clientlist and new the VPN Server Policy Rule exceeds the 255 size limit by $DIFFERENCE bytes."
+    Error_Exit "NVRAM size issue. Combined length of $COMBINED_PR_LENGTH for vpn_client${VPN_CLIENT_INSTANCE}_clientlist and new the VPN Server Policy Rule exceeds the 255 size limit by $DIFFERENCE bytes."
+  fi
 
   if [ "$DEL_FLAG" != "del" ]; then # add entry
     eval "$IPTABLES_DEL_ENTRY"
@@ -865,16 +874,22 @@ VPN_Server_to_VPN_Client() {
     # Add nvram entry to vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist
     if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE_WITHOUT_NAME")" -eq "0" ]; then
       VPN_IP_LIST="${VPN_IP_LIST}${POLICY_RULE}"
+      if [ "$VPN_CLIENT_INSTANCE" = "1" ]; then
+        nvram set vpn_client_clientlist="$VPN_IP_LIST"
+      fi
       nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist="$VPN_IP_LIST"
       nvram commit
       logger -st "($(basename "$0"))" $$ "Restarting VPN Client ${VPN_CLIENT_INSTANCE} to add policy rule for VPN Server ${VPN_SERVER_INSTANCE}"
       service restart_vpnclient"${VPN_CLIENT_INSTANCE}"
     else #if the VPN Server entry exists in nvram using the 'vpnserverX' name created by the prior version, convert it to the new name
       if [ "$(echo "$VPN_IP_LIST" | grep -c "vpnserver${VPN_SERVER_INSTANCE}")" -ge "1" ]; then
-        logger -st "($(basename "$0"))" $$ "Renamed 'vpnserver${VPN_SERVER_INSTANCE}' reference to 'VPN Server ${VPN_SERVER_INSTANCE}'"
         VPN_IP_LIST="$(echo "$VPN_IP_LIST" | sed "s/<vpnserver${VPN_SERVER_INSTANCE}>/<VPN Server ${VPN_SERVER_INSTANCE}>/")"
+        if [ "$VPN_CLIENT_INSTANCE" = "1" ]; then
+          nvram set vpn_client_clientlist="$VPN_IP_LIST"
+        fi
         nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist="$VPN_IP_LIST"
         nvram commit
+        logger -st "($(basename "$0"))" $$ "Renamed 'vpnserver${VPN_SERVER_INSTANCE}' reference to 'VPN Server ${VPN_SERVER_INSTANCE}'"
         logger -st "($(basename "$0"))" $$ "Restarting vpnclient ${VPN_CLIENT_INSTANCE} for policy rule for VPN Server ${VPN_SERVER_INSTANCE} to take effect"
         service restart_vpnclient"${VPN_CLIENT_INSTANCE}"
       fi
@@ -910,6 +925,9 @@ VPN_Server_to_VPN_Client() {
     # nvram get vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist
     if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE")" -eq "1" ]; then
       VPN_IP_LIST=$(echo "$VPN_IP_LIST" | sed "s,<VPN Server ${VPN_SERVER_INSTANCE}>${VPN_SERVER_SUBNET}>0.0.0.0>VPN,,")
+      if [ "$VPN_CLIENT_INSTANCE" = "1" ]; then
+        nvram set vpn_client_clientlist="$VPN_IP_LIST"
+      fi
       nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist="$VPN_IP_LIST"
       nvram commit
       logger -st "($(basename "$0"))" $$ "Restarting vpnclient ${VPN_CLIENT_INSTANCE} to remove policy rule for VPN Server ${VPN_SERVER_INSTANCE}"

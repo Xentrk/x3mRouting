@@ -70,7 +70,6 @@
 #
 # x3mRouting.sh {'server='1|2|both} {'ipset_name='} ['del']
 #_____________________________________________________________________________________________________________
-
 # Print between line beginning with '#__' to first blank line inclusive (source: Martineau)
 ShowHelp() {
   awk '/^#__/{f=1} f{print; if (!NF) exit}' "$0" | more

@@ -295,78 +295,33 @@ init_table() {
   fi
 }
 
-# Begin
-if [ "$dev" = "tun11" ]; then
-  VPN_IP_LIST=$(nvram get vpn_client1_clientlist)$(nvram get vpn_client1_clientlist1)$(nvram get vpn_client1_clientlist2)$(nvram get vpn_client1_clientlist3)$(nvram get vpn_client1_clientlist4)$(nvram get vpn_client1_clientlist5)
-  VPN_REDIR=$(nvram get vpn_client1_rgw)
-  VPN_FORCE=$(nvram get vpn_client1_enforce)
-  VPN_UNIT=1
-  VPN_LOGGING=$(nvram get vpn_client1_verb)
-  #### Xentrk: update vpnrouting.sh to use /jffs/addons/x3mRouting/ovpnc1.nvram
-  if [ -s "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram" ]; then
-    VPN_IP_LIST=${VPN_IP_LIST}$(cat "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram")
-    logger -st "($(basename "$0"))" $$ "x3mRouting /jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
-  fi
-  #######################################################################
-elif [ "$dev" = "tun12" ]; then
-  VPN_IP_LIST=$(nvram get vpn_client2_clientlist)$(nvram get vpn_client2_clientlist1)$(nvram get vpn_client2_clientlist2)$(nvram get vpn_client2_clientlist3)$(nvram get vpn_client2_clientlist4)$(nvram get vpn_client2_clientlist5)
-  VPN_REDIR=$(nvram get vpn_client2_rgw)
-  VPN_FORCE=$(nvram get vpn_client2_enforce)
-  VPN_UNIT=2
-  VPN_LOGGING=$(nvram get vpn_client2_verb)
-  #### Xentrk: update vpnrouting.sh to use /jffs/addons/x3mRouting/ovpnc2.nvram
-  # route OVPNC3 clients
-  if [ -s "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram" ]; then
-    VPN_IP_LIST=${VPN_IP_LIST}$(cat "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram")
-    logger -st "($(basename "$0"))" $$ "x3mRouting adding /jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
-  fi
-  ########################################################################
-elif [ "$dev" = "tun13" ]; then
-  VPN_IP_LIST=$(nvram get vpn_client3_clientlist)$(nvram get vpn_client3_clientlist1)$(nvram get vpn_client3_clientlist2)$(nvram get vpn_client3_clientlist3)$(nvram get vpn_client3_clientlist4)$(nvram get vpn_client3_clientlist5)
-  VPN_REDIR=$(nvram get vpn_client3_rgw)
-  VPN_FORCE=$(nvram get vpn_client3_enforce)
-  VPN_UNIT=3
-  VPN_LOGGING=$(nvram get vpn_client3_verb)
+Set_VPN_NVRAM_Vars() {
+
+  VPN_UNIT=$(echo "$dev" | awk '{ string=substr($0, 5, 5); print string; }')
+  VPN_IP_LIST=""
+  for n in "" 1 2 3 4 5; do
+    VPN_IP_LIST="$VPN_IP_LIST""$(nvram get vpn_client"$VPN_UNIT"_clientlist$n)"
+  done
+  VPN_REDIR=$(nvram get vpn_client"$VPN_UNIT"_rgw)
+  VPN_FORCE=$(nvram get vpn_client"$VPN_UNIT"_enforce)
+  VPN_LOGGING=$(nvram get vpn_client"$VPN_UNIT"_verb)
+  VPN_TBL="ovpnc${VPN_UNIT}"
+  START_PRIO=$((10000 + (200 * (VPN_UNIT - 1))))
+  END_PRIO=$((START_PRIO + 199))
+  WAN_PRIO=$START_PRIO
+  VPN_PRIO=$((START_PRIO + 100))
   #### Xentrk: update vpnrouting.sh to use /jffs/addons/x3mRouting/ovpnc3.nvram
   if [ -s "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram" ]; then
     VPN_IP_LIST=${VPN_IP_LIST}$(cat "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram")
     logger -st "($(basename "$0"))" $$ "x3mRouting adding /jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
   fi
-  ########################################################################
-elif [ "$dev" = "tun14" ]; then
-  VPN_IP_LIST=$(nvram get vpn_client4_clientlist)$(nvram get vpn_client4_clientlist1)$(nvram get vpn_client4_clientlist2)$(nvram get vpn_client4_clientlist3)$(nvram get vpn_client4_clientlist4)$(nvram get vpn_client4_clientlist5)
-  VPN_REDIR=$(nvram get vpn_client4_rgw)
-  VPN_FORCE=$(nvram get vpn_client4_enforce)
-  VPN_UNIT=4
-  VPN_LOGGING=$(nvram get vpn_client4_verb)
-  #### Xentrk: update vpnrouting.sh to use /jffs/addons/x3mRouting/ovpnc4.nvram
-  if [ -s "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram" ]; then
-    VPN_IP_LIST=${VPN_IP_LIST}$(cat "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram")
-    logger -st "($(basename "$0"))" $$ "x3mRouting adding /jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
-  fi
-  ########################################################################
-elif [ "$dev" = "tun15" ]; then
-  VPN_IP_LIST=$(nvram get vpn_client5_clientlist)$(nvram get vpn_client5_clientlist1)$(nvram get vpn_client5_clientlist2)$(nvram get vpn_client5_clientlist3)$(nvram get vpn_client5_clientlist4)$(nvram get vpn_client5_clientlist5)
-  VPN_REDIR=$(nvram get vpn_client5_rgw)
-  VPN_FORCE=$(nvram get vpn_client5_enforce)
-  VPN_UNIT=5
-  VPN_LOGGING=$(nvram get vpn_client5_verb)
-  #### Xentrk: update vpnrouting.sh to use /jffs/addons/x3mRouting/ovpnc5.nvram
-  if [ -s "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram" ]; then
-    VPN_IP_LIST=${VPN_IP_LIST}$(cat "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram")
-    logger -st "($(basename "$0"))" $$ "x3mRouting adding /jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
-  fi
-  ########################################################################
-else
-  run_custom_script
-  exit 0
-fi
+}
 
-VPN_TBL="ovpnc${VPN_UNIT}"
-START_PRIO=$((10000 + (200 * (VPN_UNIT - 1))))
-END_PRIO=$((START_PRIO + 199))
-WAN_PRIO=$START_PRIO
-VPN_PRIO=$((START_PRIO + 100))
+# Begin
+case "$dev" in
+  tun11 | tun12 | tun13 | tun14 | tun15) Set_VPN_NVRAM_Vars ;;
+                                      *) run_custom_script && exit 0 ;;
+esac
 
 export VPN_GW VPN_IP VPN_TBL VPN_FORCE
 

@@ -279,6 +279,9 @@ Pre_Install_OpenVPN_Event_x3mRouting () {
   if [ "$(ls /jffs/scripts/x3mRouting | grep -c "load_")" -ge "1" ]; then
     Download_File "$LOCAL_REPO" "x3mRouting.sh"
     Download_File "$LOCAL_REPO" "openvpn-event"
+    if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/x3mRoutingSet" ]; then
+     ln -s "$LOCAL_REPO""/""x3mRouting.sh" "opt/bin/x3mRoutingSet"
+    fi
   fi
 }
 
@@ -759,6 +762,14 @@ Remove_Existing_Installation() {
     fi
   fi
 
+  if [ -s "/opt/bin/x3mRoutingSet" ]; then
+    if ! rm "/opt/bin/x3mRoutingSet" >/dev/null 2>&1; then
+      printf '\nError trying to remove %b"/opt/bin/x3mRoutingSet"%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    else
+      printf '\n%b"/opt/bin/x3mRoutingSet"%b menu file removed\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    fi
+  fi
+
   DIR="/jffs/addons/x3mRouting"
   if [ -d "$DIR" ]; then
 	   if ! rm -rf "${DIR:?}/"* 2>/dev/null; then
@@ -1002,6 +1013,9 @@ Install_x3mRouting_GUI() {
   Download_File "$LOCAL_REPO" "mount_files_gui.sh"
   Init_Start_Update "mount_files_gui.sh"
   sh /jffs/scripts/init-start
+  if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/x3mRoutingSet" ]; then
+     ln -s "$LOCAL_REPO""/""x3mRouting.sh" "opt/bin/x3mRoutingSet"
+  fi
   Check_Profile_Add
   echo
   echo "Installation of x3mRouting completed"
@@ -1016,6 +1030,9 @@ Install_x3mRouting_Shell_Scripts() {
   Check_Requirements
   Create_Project_Directory
   Download_File "$LOCAL_REPO" "x3mRouting.sh"
+  if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/x3mRoutingSet" ]; then
+     ln -s "$LOCAL_REPO""/""x3mRouting.sh" "opt/bin/x3mRoutingSet"
+  fi
   Check_Profile_Add
 
 }

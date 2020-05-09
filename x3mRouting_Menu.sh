@@ -1079,7 +1079,8 @@ Update_Installer() {
       fi
       printf '\nUpdate Complete! %s\n' "$remotemd5"
       sh /jffs/addons/x3mRouting/x3mRouting_Menu.sh
-      break
+      #break
+      exit 0
       ;;
     2)
       Main_Menu

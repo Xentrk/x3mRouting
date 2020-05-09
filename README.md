@@ -198,13 +198,7 @@ The manual method is used to create IPSET lists from a file in the backup/restor
 The manual method with **'ip='** parameter is used to create IPSET lists from one or more IP addresses separated by a comma.
 
 ##### Optional 'src='' and 'src_range='' parameters
-x3mRouting also provides the option to specify the source IP address or source IP address ranges of LAN devices you want the routing rules to be applied to.  
-
-##### Optional 'dir=' parameter
-By default, x3mRouting will use the **/opt/tmp** directory as the backup/restore location. Use the **'dir='** parameter to specify an altnernate backup/restore location
-
-##### Optional 'del' parameter
-Specifying the **'del'** parameter will delete the IPSET list, routing rules and configuration performed during the setup. It will not delete the backup/restore file.
+x3mRouting also provides the option to specify the source IP address or source IP address ranges of LAN devices you want the routing rules to be applied to.
 
 #### x3mRouting.sh Usage Notes
 

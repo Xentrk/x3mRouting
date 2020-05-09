@@ -317,13 +317,13 @@ sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX  dnsmasq=netflix.com,nfl
 ````
 
 #### dnsmasq Method with autoscan
-Search dnsmasq.log file for domains that contain the keyword "amazon" and create the IPSET list AMAZON from the domains collected using the dnsmasq method. You can view the domains collected by looking at the corresponding entry in **/jffs/configs/dnsmasq.conf.add** or by looking at the script entry in **/jffs/scripts/nat-start**
+Search **dnsmasq.log** file for domains that contain the keyword "amazon" and create the IPSET list AMAZON from the domains collected using the dnsmasq method. You can view the domains collected by looking at the corresponding entry in **/jffs/configs/dnsmasq.conf.add** or by looking at the script entry in **/jffs/scripts/nat-start**
 
 ````
 sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON autoscan=amazon
 ````
 
-Search dnsmasq.log file for domains that contain the keywords "amazonaws", "netflix" and "nflx" and create the IPSET list AMZ_NFLX using the dnsmasq method.
+Search **dnsmasq.log** file for domains that contain the keywords "amazonaws", "netflix" and "nflx" and create the IPSET list AMZ_NFLX using the dnsmasq method.
 
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMZ_NFLX autoscan=amazonaws,netflix,nflx
 
@@ -434,7 +434,7 @@ sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 ipset_name=PANDORA del
 ````
 
 ### [4] getdomainnames.sh Script
-This script will create a uniquely sorted list of domain names from dnsmasq.log that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service.  The script requires that the dnsmasq.log file exists in the **/opt/var/log** directory. You must first enable dnsmasq logging if it's not enabled. You can also enabling dnsmasq logging by installing [Diversion, the Router Ad-Blocker for Asuswrt-Merlin](https://diversion.ch/).
+This script will create a uniquely sorted list of domain names from **dnsmasq.log** that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service.  The script requires that the **dnsmasq.log** file exists in the **/opt/var/log** directory. You must first enable dnsmasq logging if it's not enabled. You can also enabling dnsmasq logging by installing [Diversion, the Router Ad-Blocker for Asuswrt-Merlin](https://diversion.ch/).
 
 #### Enable dnsmasq Logging
 1. Navigate to the **/jffs/configs** directory e.g **cd /jffs/config**

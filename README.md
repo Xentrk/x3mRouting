@@ -434,7 +434,7 @@ sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 ipset_name=PANDORA del
 ````
 
 ### [4] getdomainnames.sh Script
-This script will create a uniquely sorted list of domain names from dnsmasq.log that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service.  The script requires that the dnsmasq.log file exists in the **/opt/var/log** directory. You must first enable dnsmasq logging if it's not enabled.
+This script will create a uniquely sorted list of domain names from dnsmasq.log that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service.  The script requires that the dnsmasq.log file exists in the **/opt/var/log** directory. You must first enable dnsmasq logging if it's not enabled. You can also enabling dnsmasq logging by installing [Diversion, the Router Ad-Blocker for Asuswrt-Merlin](https://diversion.ch/).
 
 #### Enable dnsmasq Logging
 1. Navigate to the **/jffs/configs** directory e.g **cd /jffs/config**
@@ -684,9 +684,13 @@ During the update process, x3mRouting will:
   * Remove prior x3mRouting version entries found in **/jffs/scripts/nat-start** or **vpnclientX-route-up** files. If only a **#!/bin/sh** or comment lines exist, the user will be prompted to remove the file. The recommendation is to select the option to remove the file. A backup of **nat-start** and the local x3mRouing repository exists in case you need to recover.
   * Update the remaining x3mRouting scripts to the new version.
 
-  3. View the **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** script and validate. A line showing the prior entry and file source will be shown with the new entry. Only entries involving routing to the WAN interface may require an edit as the new version requires the VPN Client number to bypass be specified. The conversion utility will assign VPN Client 1 as the one to bypass. If necessary, edit the '1' to be the VPN Client number '1-5' you want to bypass. When done, save the conversion script and execute it (e.g. **sh x3mRouting_Conversion.sh**). An example of the conversion file is shown below:
+  3. View the **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** script and validate.
+      * A line showing the prior entry and file source will be shown with the new entry.
+      * Entries involving routing to the WAN interface may require an edit as the new version requires the VPN Client number to bypass be specified in order to peform the setup and configuration. The conversion utility will default to VPN Client 1 as the VPN Client to bypass. If necessary, edit the '1' to be the VPN Client number '1-5' you want to bypass.
+      * If you have an entry for **VPN Server to IPSET List" routing, you must validate that the entry for creating the IPSET list is run before the **VPN Server to IPSET List** entry. Otherwise, the **VPN Server to IPSET List" entry will fail since the IPSET list and associated routing rules do not exist.
+      * When done, save the conversion script and execute it (e.g. **sh x3mRouting_Conversion.sh**).
 
-##### x3mRouting_Conversion.sh
+##### Example x3mRouting_Conversion.sh
 ````
 #!/bin/sh
 # Source File====> /jffs/scripts/nat-start

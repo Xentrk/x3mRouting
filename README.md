@@ -708,8 +708,8 @@ During the update process, x3mRouting will:
   * Update the remaining x3mRouting scripts to the new version.
 
   3. View the **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** script and validate.
-      * A line showing the prior entry and file source will be shown with the new entry.
-      * Entries involving routing to the WAN interface may require an edit as the new version requires the VPN Client number to bypass be specified in order to peform the setup and configuration. The conversion utility will default to VPN Client 1 as the VPN Client to bypass. If necessary, edit the '1' to be the VPN Client number '1-5' you want to bypass.
+     * A line showing the prior entry and file source will be shown with the new entry.
+     * Entries involving routing to the WAN interface may require an edit as the new version requires the VPN Client number to bypass be specified in order to peform the setup and configuration. The conversion utility will default to VPN Client 1 as the VPN Client to bypass. If necessary, edit the '1' to be the VPN Client number '1-5' you want to bypass.
       * If you have an entry for **VPN Server to IPSET List" routing, you must validate that the entry for creating the IPSET list is run before the **VPN Server to IPSET List** entry. Otherwise, the **VPN Server to IPSET List" entry will fail since the IPSET list and associated routing rules do not exist.
       * When done, save the conversion script and execute it (e.g. **sh x3mRouting_Conversion.sh**).
 

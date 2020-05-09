@@ -135,7 +135,7 @@ Main_Menu() {
 
 Install_done() {
   echo
-  printf '%s%b%s%b%s\n' "Installation of " "$COLOR_GREEN" "$1" "$COLOR_GREEN" " completed"
+  printf '%s%b%s%b%s\n\n' "Installation of " "$COLOR_GREEN" "$1" "$COLOR_GREEN" " completed"
   echo "Press enter to continue"
   read -r
   Welcome_Message
@@ -269,6 +269,7 @@ Update_Version() {
   fi
   echo
   echo "Update of x3mRouting completed"
+  echo
   echo "Press enter to continue"
   read -r
 }
@@ -1019,6 +1020,7 @@ Install_x3mRouting_GUI() {
   Check_Profile_Add
   echo
   echo "Installation of x3mRouting completed"
+  echo
   echo "Press enter to continue"
   read -r
   Welcome_Message
@@ -1077,7 +1079,7 @@ Update_Installer() {
         echo "Creating 'x3mRouting' alias" 2>&1
         ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting
       fi
-      printf '\n%s\n' "x3mRouting Installation Menu update completed $remotemd5"
+      printf '\n%s\n\n' "x3mRouting Installation Menu update completed $remotemd5"
       echo "Press enter to continue"
       read -r
       sh /jffs/addons/x3mRouting/x3mRouting_Menu.sh

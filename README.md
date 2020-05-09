@@ -20,11 +20,11 @@ Provides the ability to create IPSET lists using the **x3mRouting.sh** script an
 
 The [x3mRouing.sh](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#3-openvpn-event--x3mroutingsh-script-1) script provides the ability to
 
-  * Create IPSET lists with no routing rules. The feature is for those who prefer to use the custom OpenVPN Client Screen.
+  * Create IPSET lists with no routing rules. The feature is for those who prefer to use the OpenVPN Client Screen to create the routing rules for IPSET lists.
   * Create and selectively route IPSET lists to the VPN Client interface for all traffic or specific devices.
   * Bypass a VPN Client interface for all traffic or specific devices.
-  * Route VPN Server 1, 2 or both traffic to one of the VPN Clients.
-  * Selectively route VPN Server 1, 2 or both traffic to the same routing rules as an IPSET.
+  * Route VPN Server 1, 2 or both to one of the VPN Clients.
+  * Selectively route VPN Server 1, 2 or both to the same routing rules as an IPSET.
 
 #### 4. getdomainnames.sh Script
 The [getdomainnames.sh](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#4-getdomainnamessh-script-1) script will create a uniquely sorted list of domain names gathered from **dnsmasq.log** that you collect by accessing a website or streaming service. Use the script to help determine the domain names used by a website or streaming service.
@@ -87,7 +87,7 @@ If an existing **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file exists,
 #### x3mRouting_client_nvram.sh
 **x3mRouting_client_nvram.sh** is the second script to run. This script will create the nvram files for VPN Clients in the **/jffs/addons/x3mRouting** directory based on the interface assignments in **/jffs/scripts/x3mRouting/x3mRouting_client_rules**. An nvram file will not be created in the **/jffs/addons/x3mRouting/** directory for LAN clients assigned to use the WAN interface.
 
-Similar to the firmware, the next step is to bounce the VPN Client interface to have the routing assignments take effect. This is accomplished by selecting the **“Apply”** button on the OpenVPN Client Screen you assigned the LAN client to. Alternatively, you can bounce the WAN interface by selecting the **“Apply”** button on the WAN screen. Restarting the WAN will also restart any active VPN clients. There is a slight delay before the VPN Client becomes active. Check the status of each VPN Client using the OpenVPN Status Screen.
+Similar to the firmware, the next step is to select the **“Apply”** button on the OpenVPN Client Screen you assigned the LAN clients to in order to have the routing assignments take effect.
 
 The routing rules for LAN Clients will automatically be applied upon a system boot. You only need to rerun **x3mRouting_client_nvram.sh** and bounce the VPN Client if you have made LAN Client interface assignment changes in the **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file.
 

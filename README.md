@@ -702,7 +702,7 @@ During the update process, x3mRouting will:
   * Make a backup of **/jffs/scripts/nat-start** and copy the x3mRouting directory contents to **/jffs/scripts/x3mRouting/backup**.
   * Remove obsolete x3mRouting scripts.
   * Any LAN Client Routing nvram files that exist in **/jffs/configs** will get moved to **/jffs/addons/x3mRouting** and the **x3mRouting_client_rules** to **/jffs/scripts/x3mRouting**.
-  * **/jffs/scripts/nat-start** and openvpn-event files in the **/jffs/scripts/x3mRouting** directory will be scanned for references to the old scripts or routing rules. A conversion file will get created in **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** containing the new script entries using the new usage syntax.
+  * **/jffs/scripts/nat-start** and openvpn-event files in the **/jffs/scripts/x3mRouting** directory will be scanned for references to the old scripts or routing rules. A conversion file will get created in **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** containing the new script entries.
   * Backup **/jffs/configs/dnsmasq.conf.add** if it exists and delete any 'ipset=' entries. 'ipset=' entries will get recreated when you run the conversion script.
   * Remove prior x3mRouting version entries found in **/jffs/scripts/nat-start** or **vpnclientX-route-up** files. If only a **#!/bin/sh** or comment lines exist, the user will be prompted to remove the file. The recommendation is to select the option to remove the file. A backup of **nat-start** and the local x3mRouing repository exists in case you need to recover.
   * Update the remaining x3mRouting scripts to the new version.

@@ -1077,9 +1077,11 @@ Update_Installer() {
         echo "Creating 'x3mRouting' alias" 2>&1
         ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting
       fi
-      printf '\nUpdate Complete! %s\n' "$remotemd5"
+      printf '\n%s\n' "x3mRouting Installation Menu update completed $remotemd5"
+      echo "Press enter to continue"
+      read -r
       sh /jffs/addons/x3mRouting/x3mRouting_Menu.sh
-      #break
+      # chg from break to exit 0 to fix sub shell error code dumps
       exit 0
       ;;
     2)

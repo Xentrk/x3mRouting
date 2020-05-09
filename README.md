@@ -450,7 +450,7 @@ This script will create a uniquely sorted list of domain names from **dnsmasq.lo
 2. Navigate to the log file directory **/opt/var/log**
 3. Enter the command: **tail -f dnsmasq.log > myfile** where 'myfile' is any file name you choose.
 4. Access the streaming service and watch some videos for a few seconds and select each option to generate domain names
-5. Type 'Ctrl-c' to exit
+5. Enter **Ctrl-c** to exit
 6. **sh getdomainnames.sh {file} {IP}**, where 'file'
 is the name of the source file you created in the **/opt/var/log** directory and 'IP' is the IPv4 address of client device that was used to collect the domains.
 

@@ -166,9 +166,13 @@ iptables -t nat -D POSTROUTING -s "$(nvram get vpn_server_sn)"/24 -o tun11 -j MA
 #### IPSET Save/Restore File Location
 By default, the **/opt/tmp** entware directory is used as the IPSET save/restore file location. If you prefer, you can specify another directory location by passing a directory parameter to the script (e.g. dir=/tmp/mnt/ASUS/mylists).
 
-#### Valid Amazon AWS Regions
-**x3mRouting.sh** script will create an IPSET list containing all IPv4 address for the Amazon AWS region(s) specified. The source file used by the script is provided by Amazon at [https://ip-ranges.amazonaws.com/ip-ranges.json](https://ip-ranges.amazonaws.com/ip-ranges.json). You must specify one or more of the regions below when creating the IPSET list:
+#### IPSET Methods
+To create an IPSET list, x3mRouting requires that the method be specified. If no method is specified, it will default to the manual method.
 
+##### AMAZON AWS Region Method
+**x3mRouting.sh** script will create an IPSET list containing all IPv4 address for the Amazon AWS region(s) specified. The source file used by the script is provided by Amazon at [https://ip-ranges.amazonaws.com/ip-ranges.json](https://ip-ranges.amazonaws.com/ip-ranges.json). You must specify the **'aws_region='** parameter and one or more of the regions below, separated by a comma, when creating the IPSET list:
+
+###### Valid Amazon AWS Regions
 * AP - Asia Pacific
 * CA - Canada
 * CN - China
@@ -177,6 +181,21 @@ By default, the **/opt/tmp** entware directory is used as the IPSET save/restore
 * US - USA
 * GV - USA Government
 * GLOBAL - Global
+
+##### ASN Method
+You must specify the **'asnum='** parameter and one or more valid AS numbers separated by a comma.
+
+##### dnsmasq Method
+You must specify the **'dnsmasq='** parameter and one or more domain names separated by a comma.
+
+##### dnsmasq Method with autosccan
+This method will search **dnsmasq.log** for domain names that match the search criteria specified on the **'autoscan='** parameter. One or more search criteria can be provided using a comma delimited list. The domains collected will be used to create an IPSET list using the dnsmasq method.
+
+##### Manual Method
+The manual method is used to create IPSET lists from a file in **/opt/tmp** containing the IPv4 addresses and/or IPv4 CIDR format that you created manually, either using an editor, script or other method to populate the file with IPv4 addresses.
+
+##### Manual Method with ip=
+The manual method with **'ip='** parameter is used to create IPSET lists from one or more IP addresses separated by a comma.
 
 #### x3mRouting.sh Usage Notes
 
@@ -270,7 +289,6 @@ Create IPSET list NETFLIX using the dnsmasq method
 sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 ````
 #### Manual Method
-The manual method is used to create IPSET lists from a file in **/opt/tmp** containing the IPv4 addresses and/or IPv4 CIDR format that you created manually, either using an editor, script or other method to populate the file with IPv4 addresses.
 
 Create IPSET list BBC using the manual method
 ````
@@ -330,7 +348,6 @@ Search **dnsmasq.log** file for domains that contain the keywords "amazonaws", "
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMZ_NFLX autoscan=amazonaws,netflix,nflx
 
 #### Manual Method
-The manual method is used to create IPSET lists from a file in **/opt/tmp** containing the IPv4 addresses and/or IPv4 CIDR format that you created manually, either using an editor, script or other method to populate the file with IPv4 addresses.
 
 Route all traffic matching IPSET list WIMIPCOM to VPN Client 1.
 
@@ -383,7 +400,6 @@ Route VPN Client 1 traffic from 192.168.1.152 matching IPSET list NETFLIX to WAN
 sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 NETFLIX domain=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net src=192.168.1.152
 ````
 #### Manual Method
-The manual method is used to create IPSET lists from a file in **/opt/tmp** containing the IPv4 addresses and/or IPv4 CIDR format that you created manually, either using an editor, script or other method to populate the file with IPv4 addresses.
 
 Route all VPN Client 1 traffic matching IPSET list WIMIPCOM to the WAN.
 ````

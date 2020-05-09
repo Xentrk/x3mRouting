@@ -673,18 +673,18 @@ You won't be able to update to Version 2.0.0 using the existing x3mRouting Insta
 ````
 sh -c "$(curl -sL https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/Install_x3mRouting.sh)"
 ````
-  2.  After the update has completed, select the **[u]  Update x3mRouting to Version 2.0.0** option.
+  2.  After the download of the x3mRouting Installation Menu has completed, select the **[u]  Update x3mRouting to Version 2.0.0** option.
 
-During the update process, the x3mRouting Installation Menu will:
-  * Backup **/jffs/scripts/nat-start** and copy the x3mRouting directory contents to **/jffs/scripts/x3mRouting/backup**.
+During the update process, x3mRouting will:
+  * Make a backup of **/jffs/scripts/nat-start** and copy the x3mRouting directory contents to **/jffs/scripts/x3mRouting/backup**.
   * Remove obsolete x3mRouting scripts.
-  * Any LAN Client Routing nvram files that exist will get moved to **/jffs/addons/x3mRouting** and the **x3mRouting_client_rules** file from **/jffs/configs** to **/jffs/scripts/x3mRouting** directory.
+  * Any LAN Client Routing nvram files that exist in **/jffs/configs** will get moved to **/jffs/addons/x3mRouting** and the **x3mRouting_client_rules** to **/jffs/scripts/x3mRouting**.
   * **/jffs/scripts/nat-start** and openvpn-event files in the **/jffs/scripts/x3mRouting** directory will be scanned for references to the old scripts or routing rules. A conversion file will get created in **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** containing the new script entries using the new usage syntax.
   * Backup **/jffs/configs/dnsmasq.conf.add** if it exists and delete any 'ipset=' entries. 'ipset=' entries will get recreated when you run the conversion script.
   * Remove prior x3mRouting version entries found in **/jffs/scripts/nat-start** or **vpnclientX-route-up** files. If only a **#!/bin/sh** or comment lines exist, the user will be prompted to remove the file. The recommendation is to select the option to remove the file. A backup of **nat-start** and the local x3mRouing repository exists in case you need to recover.
   * Update the remaining x3mRouting scripts to the new version.
 
-  3.  View the **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** script and validate. A line showing the prior entry and file source will be shown with the new entry. Only entries involving routing to the WAN interface may require an edit. The new version requires that the VPN Client to bypass be specified. The conversion utility will assume the VPN Client you want to bypass is '1'. If necessary, edit the '1' to be the VPN Client number '1-5' you want to bypass. When done, save the conversion script and execute it (e.g. **sh x3mRouting_Conversion.sh**). An example of the conversion file is shown below:
+  3. View the **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** script and validate. A line showing the prior entry and file source will be shown with the new entry. Only entries involving routing to the WAN interface may require an edit as the new version requires the VPN Client number to bypass be specified. The conversion utility will assign VPN Client 1 as the one to bypass. If necessary, edit the '1' to be the VPN Client number '1-5' you want to bypass. When done, save the conversion script and execute it (e.g. **sh x3mRouting_Conversion.sh**). An example of the conversion file is shown below:
 
 ##### x3mRouting_Conversion.sh
 ````
@@ -709,9 +709,9 @@ sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 ipset_name=PANDORA
 # Found VPN Server to VPN Client iptables entries in /jffs/scripts/x3mRouting/vpnserver1-up
 sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 client=1
 ````
-  After execution, the IPSET list and associated routing rules, if specified, will be created along with the required entries in **/jffs/scripts/nat-start** and appropriate openvpn-event up/down files.
+  4.  After execution, the IPSET list and associated routing rules, if specified, will be created along with the required entries in **/jffs/scripts/nat-start** and appropriate openvpn-event up/down files.
 
-  4. Run the commands below to validate VPN Server POSTROUTING and VPN Client PREROUTING rules. POSTROUTING rules only get created for **VPN Server to VPN Client** and **VPN Server to IPSET List** rules.
+  5. Run the commands below to validate VPN Server POSTROUTING and VPN Client PREROUTING rules. POSTROUTING rules only get created for **VPN Server to VPN Client** and **VPN Server to IPSET List** rules.
 
 ````
   iptables -nvL POSTROUTING -t nat --line

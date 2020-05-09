@@ -270,6 +270,8 @@ Create IPSET list NETFLIX using the dnsmasq method
 sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 ````
 #### Manual Method
+The manual method is used to create IPSET lists from a file in **/opt/tmp** containing the IPv4 addresses and/or IPv4 CIDR format that you created manually, either using an editor, script or other method to populate the file with IPv4 addresses.
+
 Create IPSET list BBC using the manual method
 ````
 sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=BBC
@@ -328,7 +330,7 @@ Search **dnsmasq.log** file for domains that contain the keywords "amazonaws", "
     sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMZ_NFLX autoscan=amazonaws,netflix,nflx
 
 #### Manual Method
-The manual method is used to create IPSET lists from files in **/opt/tmp** containing the IPv4 addresses and/or IPv4 CIDR format.
+The manual method is used to create IPSET lists from a file in **/opt/tmp** containing the IPv4 addresses and/or IPv4 CIDR format that you created manually, either using an editor, script or other method to populate the file with IPv4 addresses.
 
 Route all traffic matching IPSET list WIMIPCOM to VPN Client 1.
 
@@ -381,6 +383,8 @@ Route VPN Client 1 traffic from 192.168.1.152 matching IPSET list NETFLIX to WAN
 sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 NETFLIX domain=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net src=192.168.1.152
 ````
 #### Manual Method
+The manual method is used to create IPSET lists from a file in **/opt/tmp** containing the IPv4 addresses and/or IPv4 CIDR format that you created manually, either using an editor, script or other method to populate the file with IPv4 addresses.
+
 Route all VPN Client 1 traffic matching IPSET list WIMIPCOM to the WAN.
 ````
 sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM

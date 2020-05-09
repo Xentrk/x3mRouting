@@ -258,12 +258,12 @@ Use this method if you want to create an IPSET list with no routing rules. You m
 #### ASN Method
 Create IPSET list NETFLIX using AS2906 as the source
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh/x3mRouting.sh ipset_name=NETFLIX asnum=AS2906  
+sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=NETFLIX asnum=AS2906  
 ````
 ####  Amazon AWS Region Method
 Create IPSET list AMAZON_US created from Amazon US region
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh/x3mRouting.sh ipset_name=AMAZON_US aws_region=US
+sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=AMAZON_US aws_region=US
 ````
 #### dnsmasq Method
 Create IPSET list NETFLIX using the dnsmasq method

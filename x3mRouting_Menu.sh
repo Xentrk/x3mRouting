@@ -1015,7 +1015,7 @@ Install_x3mRouting_GUI() {
   Init_Start_Update "mount_files_gui.sh"
   sh /jffs/scripts/init-start
   if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/x3mRoutingSet" ]; then
-     ln -s "$LOCAL_REPO""/""x3mRouting.sh" "opt/bin/x3mRoutingSet"
+     ln -s "$LOCAL_REPO/x3mRouting.sh" "opt/bin/x3mRoutingSet"
   fi
   Check_Profile_Add
   echo
@@ -1033,7 +1033,7 @@ Install_x3mRouting_Shell_Scripts() {
   Create_Project_Directory
   Download_File "$LOCAL_REPO" "x3mRouting.sh"
   if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/x3mRoutingSet" ]; then
-     ln -s "$LOCAL_REPO""/""x3mRouting.sh" "opt/bin/x3mRoutingSet"
+     ln -s "$LOCAL_REPO/x3mRouting.sh" "opt/bin/x3mRoutingSet"
   fi
   Check_Profile_Add
 

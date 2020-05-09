@@ -192,10 +192,19 @@ You must specify the **'dnsmasq='** parameter and one or more domain names separ
 This method will search **dnsmasq.log** for domain names that match the search criteria specified on the **'autoscan='** parameter. One or more search criteria can be provided using a comma delimited list. The domains collected will be used to create an IPSET list using the dnsmasq method.
 
 ##### Manual Method
-The manual method is used to create IPSET lists from a file in **/opt/tmp** containing the IPv4 addresses and/or IPv4 CIDR format that you created manually, either using an editor, script or other method to populate the file with IPv4 addresses.
+The manual method is used to create IPSET lists from a file in the backup/restore directory containing the IPv4 addresses and/or IPv4 CIDR format that you created manually, either using an editor, script or other method to populate the file with IPv4 addresses.
 
-##### Manual Method with ip=
+##### Manual Method with 'ip=''
 The manual method with **'ip='** parameter is used to create IPSET lists from one or more IP addresses separated by a comma.
+
+##### Optional 'src='' and 'src_range='' parameters
+x3mRouting also provides the option to specify the source IP address or source IP address ranges of LAN devices you want the routing rules to be applied to.  
+
+##### Optional 'dir=' parameter
+By default, x3mRouting will use the **/opt/tmp** directory as the backup/restore location. Use the **'dir='** parameter to specify an altnernate backup/restore location
+
+##### Optional 'del' parameter
+Specifying the **'del'** parameter will delete the IPSET list, routing rules and configuration performed during the setup. It will not delete the backup/restore file.
 
 #### x3mRouting.sh Usage Notes
 

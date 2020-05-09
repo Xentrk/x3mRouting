@@ -10,15 +10,15 @@ If coming from the first generation of x3mRouting, please read the updated instr
 
 #### 1. LAN Client Routing
 
-An alternative approach to automate and easily assign LAN clients to a WAN or VPN Client interface. This option eliminates the need to enter the LAN Client information and IP addresses in the OpenVPN Client Screen. The **LAN Clients** option can be used by itself or with one of the two options below.
+An alternative approach to automate and easily assign LAN clients to a WAN or VPN Client interface. This option eliminates the need to enter the LAN Client information and IP addresses in the OpenVPN Client Screen. The [LAN Clients Routing](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#1-lan-client-routing-1) option can be used by itself or with one of the two options below.
 
 #### 2. OpenVPN Client Screen, OpenVPN Event & x3mRouting.sh Script
 
-Provides the ability to create IPSET lists using the **x3mRouting.sh** script and selectively route the IPSET lists thru the VPN Client by entering the IPSET name in a modified OpenVPN Client Screen. The customized OpenVPN Client Screen is still a work in progress. You can't use the screen to route IPSET lists to bypass the VPN Client and route to the WAN interface at this time. Use option 3 instead.
+Provides the ability to create IPSET lists using the **x3mRouting.sh** script and selectively route the IPSET lists thru the VPN Client by entering the IPSET name in a modified [OpenVPN Client Screen](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#2-openvpn-client-screen-openvpn-event--x3mroutingsh-script-1). The customized OpenVPN Client Screen is still a work in progress. You can't use the screen to route IPSET lists to bypass the VPN Client and route to the WAN interface at this time. Use option 3 instead.
 
 #### 3. OpenVPN Event & x3mRouting.sh Script
 
-The **x3mRouing.sh** script provides the ability to
+The [x3mRouing.sh](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#3-openvpn-event--x3mroutingsh-script-1) script provides the ability to
 
   * Create IPSET lists with no routing rules. The feature is for those who prefer to use the custom OpenVPN Client Screen.
   * Create and selectively route IPSET lists to the VPN Client interface for all traffic or specific devices.
@@ -27,7 +27,7 @@ The **x3mRouing.sh** script provides the ability to
   * Selectively route VPN Server 1, 2 or both traffic to the same routing rules as an IPSET.
 
 #### 4. getdomainnames.sh Script
-This script will create a uniquely sorted list of domain names from dnsmasq.log that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service.
+The [getdomainnames.sh](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#4-getdomainnamessh-script-1) script will create a uniquely sorted list of domain names gathered from **dnsmasq.log** that you collect by accessing a website or streaming service. Use the script to help determine the domain names used by a website or streaming service.
 
 ## Support
 For help and support, please visit the Asuswrt-Merlin x3mRouting support thread on [snbforums.com](https://www.snbforums.com/threads/x3mrouting-selective-routing-for-asuswrt-merlin-firmware.57793/#post-506675).

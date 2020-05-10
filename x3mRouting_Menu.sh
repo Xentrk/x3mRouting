@@ -110,6 +110,7 @@ Main_Menu() {
         ;;
       7)
         Update_Installer
+        Update_Version
         return 1
         ;;
       u)

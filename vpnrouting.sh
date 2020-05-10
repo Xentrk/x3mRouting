@@ -3,8 +3,6 @@
 # -- Disabled quote for processing array variable PARAM on line 274
 # shellcheck disable=SC2154
 # -- SC2154: dev is referenced but not assigned. (stay true to firmware for these warnings!)
-# shellcheck disable=SC2021
-# -- SC2021: Don't use [] around classes in tr, it replaces literal square brackets.
 
 PARAM=$*
 if [ "$PARAM" = "" ]; then
@@ -313,15 +311,14 @@ Set_VPN_NVRAM_Vars() {
     VPN_IP_LIST=${VPN_IP_LIST}$(cat "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram")
     logger -st "($(basename "$0"))" $$ "x3mRouting adding /jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
   fi
+
 }
 
 # Begin
 case "$dev" in
-  tun11 | tun12 | tun13 | tun14 | tun15) Set_VPN_NVRAM_Vars ;;
-                                      *) run_custom_script && exit 0 ;;
+tun11 | tun12 | tun13 | tun14 | tun15) Set_VPN_NVRAM_Vars ;;
+                                    *) run_custom_script && exit 0 ;;
 esac
-
-export VPN_GW VPN_IP VPN_TBL VPN_FORCE
 
 # webui reports that vpn_force changed while vpn client was down
 if [ "$script_type" = "rmupdate" ]; then

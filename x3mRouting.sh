@@ -324,9 +324,9 @@ Check_Files_For_Entries() {
   OPT1=$4
 
   if [ -z "$OPT1" ]; then # 3 parms passed
-    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$0") $SRC_IFACE $DST_IFACE $IPSET_NAME"
+    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$(readlink -f "$0")") $SRC_IFACE $DST_IFACE $IPSET_NAME"
   elif [ -n "$OPT1" ]; then # OPT1 parm passed e.g. dnsmasq=, aws_region=, asnum=, ip=
-    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$0") $SRC_IFACE $DST_IFACE $IPSET_NAME $OPT1"
+    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$(readlink -f "$0")") $SRC_IFACE $DST_IFACE $IPSET_NAME $OPT1"
   fi
 
   if [ "$SRC_IFACE" = "ALL" ]; then
@@ -376,7 +376,7 @@ Check_Files_For_Entries() {
   # nat-start File
   if [ -s "$NAT_START" ]; then
     if [ "$(grep -c "$SCRIPT_ENTRY" "$NAT_START")" -eq "0" ]; then # if true, then no lines exist
-      echo "$SCRIPT_ENTRY" >>"$NAT_START" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
+      echo "$SCRIPT_ENTRY" >>"$NAT_START" # add $SCRIPT_ENTRY to $NAT_START
       logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
     fi
   else # file does not exist, create VPNC_UP_FILE
@@ -407,7 +407,7 @@ Process_Src_Option() {
 
   # Process when OPT1 contains 'src=' or 'src_range='
   if [ "$(echo "$OPT1" | grep -c 'src=')" -gt 0 ] || [ "$(echo "$OPT1" | grep -c 'src_range=')" -gt 0 ]; then # must be manual method
-    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$0") $SRC_IFACE $DST_IFACE ipset_name=$IPSET_NAME $OPT1"
+    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$(readlink -f "$0")") $SRC_IFACE $DST_IFACE ipset_name=$IPSET_NAME $OPT1"
     Manual_Method $@
     if [ "$(echo "$OPT1" | grep -c 'src=')" -gt 0 ]; then
       IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
@@ -426,11 +426,11 @@ Process_Src_Option() {
 
   # Process when OPT2 contains 'src=' or 'src_range='
   if [ "$(echo "$OPT2" | grep -c 'src=')" -gt 0 ] || [ "$(echo "$OPT2" | grep -c 'src_range=')" -gt 0 ]; then #must be asnum, amazon or dnsmasq method
-    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$0") $SRC_IFACE $DST_IFACE ipset_name=$IPSET_NAME $OPT1 $OPT2"
+    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$(readlink -f "$0")") $SRC_IFACE $DST_IFACE ipset_name=$IPSET_NAME $OPT1 $OPT2"
     # HANDLE Better?
-    cp /jffs/scripts/x3mRouting/x3mRouting.sh /tmp/tmp_x3mRouting.sh
-    sh /tmp/tmp_x3mRouting.sh ipset_name="$IPSET_NAME" "$OPT1" #this creates ipset list and gets around lock issue on current script
-    rm /tmp/tmp_x3mRouting.sh
+    cp /jffs/scripts/x3mRouting/"$(basename "$(readlink -f "$0")")" /tmp/tmp_"$(basename "$(readlink -f "$0")")"
+    sh /tmp/tmp_"$(basename "$(readlink -f "$0")")" ipset_name="$IPSET_NAME" "$OPT1" #this creates ipset list and gets around lock issue on current script
+    rm /tmp/tmp_"$(basename "$(readlink -f "$0")")"
     if [ "$(echo "$OPT2" | grep -c 'src=')" -gt 0 ]; then
       IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
       IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
@@ -459,7 +459,7 @@ Process_Src_Option() {
   # nat-start File
   if [ -s "$NAT_START" ]; then
     if [ "$(grep -c "$SCRIPT_ENTRY" "$NAT_START")" -eq "0" ]; then # if true, then no lines exist
-      echo "$SCRIPT_ENTRY" >>"$NAT_START" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
+      echo "$SCRIPT_ENTRY" >>"$NAT_START" # add $SCRIPT_ENTRY to $NAT_START
       logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
     fi
   else # file does not exist, create VPNC_UP_FILE
@@ -800,7 +800,7 @@ VPN_Server_to_VPN_Client() {
   DEL_FLAG=$4
   SERVER="server=$VPN_SERVER_INSTANCE"
   CLIENT="client=$VPN_CLIENT_INSTANCE"
-  SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$0") $SERVER $CLIENT"
+  SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting $SERVER $CLIENT"
   VPN_SERVER_SUBNET="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24"
   IPTABLES_DEL_ENTRY="iptables -t nat -D POSTROUTING -s \"\$(nvram get vpn_server${VPN_SERVER_INSTANCE}_sn)\"/24 -o $IFACE -j MASQUERADE 2>/dev/null"
   IPTABLES_ADD_ENTRY="iptables -t nat -A POSTROUTING -s \"\$(nvram get vpn_server${VPN_SERVER_INSTANCE}_sn)\"/24 -o $IFACE -j MASQUERADE"
@@ -949,7 +949,7 @@ VPN_Server_to_IPSET() {
   DEL_FLAG=$6
   SERVER="server=$VPN_SERVER_INSTANCE"
   IPSET="ipset_name=$IPSET_NAME"
-  SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$0") $SERVER $IPSET"
+  SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/$(basename "$(readlink -f "$0")") $SERVER $IPSET"
 
   case "$VPN_SERVER_INSTANCE" in
   1) VPN_SERVER_TUN="tun21" ;;

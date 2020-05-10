@@ -800,7 +800,7 @@ VPN_Server_to_VPN_Client() {
   DEL_FLAG=$4
   SERVER="server=$VPN_SERVER_INSTANCE"
   CLIENT="client=$VPN_CLIENT_INSTANCE"
-  SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting $SERVER $CLIENT"
+  SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SERVER $CLIENT"
   VPN_SERVER_SUBNET="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24"
   IPTABLES_DEL_ENTRY="iptables -t nat -D POSTROUTING -s \"\$(nvram get vpn_server${VPN_SERVER_INSTANCE}_sn)\"/24 -o $IFACE -j MASQUERADE 2>/dev/null"
   IPTABLES_ADD_ENTRY="iptables -t nat -A POSTROUTING -s \"\$(nvram get vpn_server${VPN_SERVER_INSTANCE}_sn)\"/24 -o $IFACE -j MASQUERADE"
@@ -868,7 +868,7 @@ VPN_Server_to_VPN_Client() {
 
     # Add nvram entry to vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist
     if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE_WITHOUT_NAME")" -eq "0" ]; then
-      VPN_IP_LIST="${VPN_IP_LIST}${POLICY_RULE}"		
+      VPN_IP_LIST="${VPN_IP_LIST}${POLICY_RULE}"
   		max=0
   		for n in "" 1 2 3 4 5; do
   			nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"$n"="$(echo "$VPN_IP_LIST" | cut -b$max-$((max+254)))"

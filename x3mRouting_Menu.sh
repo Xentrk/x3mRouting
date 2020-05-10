@@ -739,22 +739,8 @@ Remove_Existing_Installation() {
   # unmount vpnrouting, vpn gui and updown-client
   Remove_Mounts
 
-  # Purge /jffs/scripts/x3mRouting directory
-  for DIR in $LOCAL_REPO; do
-    if [ -d "$DIR" ]; then
-      if ! rm -rf "${DIR:?}/"* >/dev/null 2>&1; then
-        printf '\nNo files found to remove in %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
-      fi
-      if ! rmdir "$DIR" >/dev/null 2>&1; then
-        printf '\nError trying to remove %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
-      else
-        printf '\n%b%s%b folder and all files removed\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
-      fi
-    else
-      printf '\n%b%s%b folder does not exist. No directory to remove\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
-    fi
-  done
 
+  # Remove symlinks
   if [ -s "/opt/bin/x3mRouting" ]; then
     if ! rm "/opt/bin/x3mRouting" >/dev/null 2>&1; then
       printf '\nError trying to remove %b"/opt/bin/x3mRouting"%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
@@ -770,6 +756,22 @@ Remove_Existing_Installation() {
       printf '\n%b"/opt/bin/x3mRoutingSet"%b menu file removed\n' "$COLOR_GREEN" "$COLOR_WHITE"
     fi
   fi
+
+  # Purge /jffs/scripts/x3mRouting directory
+  for DIR in $LOCAL_REPO; do
+    if [ -d "$DIR" ]; then
+      if ! rm -rf "${DIR:?}/"* >/dev/null 2>&1; then
+        printf '\nNo files found to remove in %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+      fi
+      if ! rmdir "$DIR" >/dev/null 2>&1; then
+        printf '\nError trying to remove %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+      else
+        printf '\n%b%s%b folder and all files removed\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+      fi
+    else
+      printf '\n%b%s%b folder does not exist. No directory to remove\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
+    fi
+  done
 
   DIR="/jffs/addons/x3mRouting"
   if [ -d "$DIR" ]; then

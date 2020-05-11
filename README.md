@@ -50,7 +50,7 @@ Copy and paste the command below into an SSH session:
 sh -c "$(curl -sL https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/Install_x3mRouting.sh)"
 ```
 
-This command will download and install the installation menu **x3mRouting_Menu.sh** to the **/jffs/addons/x3mRouting** directory and creates a symbolic link to **/opt/bin/x3mRouting**. The installation script is a menu with options to install the three options described below, and options to update or remove the repository. To access the installation menu, type the command **x3mRouting**. Option **[7]  Update x3mRouting Menu** will only appear when a new installation menu is detected on the GitHub repository. Option **[u]  Update x3mRouting to Version 2.0.0** will only appear if you have the prior version of x3mRouting installed.
+This command will download and install the installation menu **x3mRouting_Menu.sh** to the **/jffs/addons/x3mRouting** directory. The installation script is a menu with options to install the four options described below, including options to update or remove the x3mRouting files in **/jffs/scripts/x3mRouting**. To access the installation menu, type the command **x3mRouting**. Option **[7]  Update x3mRouting Menu** will only appear when a new installation menu is detected on the GitHub repository. Option **[u]  Update x3mRouting to Version 2.0.0** will only appear if you have the prior version of x3mRouting installed. 
 
 <img src="https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG/InstallationMenu.PNG" alt="drawing" width="600" height="600"/>
 
@@ -279,27 +279,27 @@ Use this method if you want to create an IPSET list with no routing rules. You m
 #### ASN Method
 Create IPSET list NETFLIX using AS2906 as the source
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=NETFLIX asnum=AS2906  
+sh x3mRouting.sh ipset_name=NETFLIX asnum=AS2906  
 ````
 ####  Amazon AWS Region Method
 Create IPSET list AMAZON_US created from Amazon US region
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=AMAZON_US aws_region=US
+sh x3mRouting.sh ipset_name=AMAZON_US aws_region=US
 ````
 #### dnsmasq Method
 Create IPSET list NETFLIX using the dnsmasq method
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
+sh x3mRouting.sh ipset_name=NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 ````
 #### Manual Method
 
 Create IPSET list BBC using the manual method
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=BBC
+sh x3mRouting.sh ipset_name=BBC
 ````
 Create IPSET list BBC using the manual method. Use the 'dir=' location as the backup/restore location
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=BBC dir=/tmp/mnt/RT-AC88U/mylists
+sh x3mRouting.sh ipset_name=BBC dir=/tmp/mnt/RT-AC88U/mylists
 ````
 
 ### VPN Client Routing
@@ -309,60 +309,60 @@ Use this approach to route IPSET traffic to a VPN Client.
 
 Route all traffic matching IPSET list NETFLIX created from AS2906 to VPN Client1.
 
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX asnum=AS2906
+    sh x3mRouting.sh ALL 1 NETFLIX asnum=AS2906
 
 Route all traffic matching IPSET list BBC created from AS2818 and AS31459 to VPN Client1.
 
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 BBC asnum=AS2818,AS31459
+    sh x3mRouting.sh ALL 1 BBC asnum=AS2818,AS31459
 
 Route all traffic matching IPSET list NETFLIX created from AS2906 to VPN Client1 from LAN device 192.168.1.152.   
 
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX asnum=AS2906 src=192.168.1.152
+    sh x3mRouting.sh ALL 1 NETFLIX asnum=AS2906 src=192.168.1.152
 
 #### Amazon AWS Region Method
 Route all traffic matching IPSET list AMAZON_US created from the AWS US region to VPN Client 1.
 
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON_US aws_region=US
+    sh x3mRouting.sh ALL 1 AMAZON_US aws_region=US
 
 Route all traffic matching IPSET list AMAZON created from the AWS US and CA regions to VPN Client 1.
 
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON aws_region=US,CA
+    sh x3mRouting.sh ALL 1 AMAZON aws_region=US,CA
 
 Route IP address ranges 192.168.1.152-192.168.1.157 traffic matching IPSET list AMAZON_US created from the Amazon US region to VPN Client 1.
 
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON_US aws_region=US src_range=192.168.1.152-192.168.1.157
+    sh x3mRouting.sh ALL 1 AMAZON_US aws_region=US src_range=192.168.1.152-192.168.1.157
 
 #### dnsmasq Method
 Route all traffic matching IPSET list NETFLIX created from domain names to VPN Client1.
 
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX  dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
+sh x3mRouting.sh ALL 1 NETFLIX  dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 ````
 
 #### dnsmasq Method with autoscan
 Search **dnsmasq.log** file for domains that contain the keyword "amazon" and create the IPSET list AMAZON from the domains collected using the dnsmasq method. You can view the domains collected by looking at the corresponding entry in **/jffs/configs/dnsmasq.conf.add** or by looking at the script entry in **/jffs/scripts/nat-start**
 
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMAZON autoscan=amazon
+sh x3mRouting.sh ALL 1 AMAZON autoscan=amazon
 ````
 
 Search **dnsmasq.log** file for domains that contain the keywords "amazonaws", "netflix" and "nflx" and create the IPSET list AMZ_NFLX using the dnsmasq method.
 
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 AMZ_NFLX autoscan=amazonaws,netflix,nflx
+    sh x3mRouting.sh ALL 1 AMZ_NFLX autoscan=amazonaws,netflix,nflx
 
 #### Manual Method
 
 Route all traffic matching IPSET list WIMIPCOM to VPN Client 1.
 
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 WIMIPCOM
+    sh x3mRouting.sh ALL 1 WIMIPCOM
 
 Route all traffic matching IPSET list WIMIPCOM to VPN Client 1 using the /mnt/ASUS/mylists directory as the save/restore location.
 
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 WIMIPCOM dir=/mnt/ASUS/mylists
+    sh x3mRouting.sh ALL 1 WIMIPCOM dir=/mnt/ASUS/mylists
 
 Route all VPN Client 1 traffic matching IPSET list WIMIPCOM created from the IPv4 addresses provided.
 
-    sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 WIMIPCOM ip=104.27.198.90,104.27.199.90
+    sh x3mRouting.sh ALL 1 WIMIPCOM ip=104.27.198.90,104.27.199.90
 
 ### VPN Client Bypass Routing
 Use this approach to bypass the VPN Client for traffic matching an IPSET list and route to the WAN interface. This approach is often used when a rule to route the entire LAN (e.g. 192.168.1.0/24) thru a VPN Client exists in the Policy Routing section of the OpenVPN Client Screen and an exception needs to be made to bypass the VPN Client for a service that blocks known VPN Servers.
@@ -371,68 +371,68 @@ Use this approach to bypass the VPN Client for traffic matching an IPSET list an
 Route VPN Client 1 traffic matching IPSET list NETFLIX to WAN.
 
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 NETFLIX asnum=AS2906
+sh x3mRouting.sh 1 0 NETFLIX asnum=AS2906
 ````
 
 Route VPN Client 1 traffic from 192.168.1.152 matching IPSET list NETFLIX to WAN.
 
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 NETFLIX asnum=AS2906 src=192.168.1.152
+sh x3mRouting.sh 1 0 NETFLIX asnum=AS2906 src=192.168.1.152
 ````
 
 #### Amazon AWS Region Method
 Route VPN Client 1 traffic matching IPSET list AMAZON_US to WAN.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 AMAZON_US aws_region=US
+sh x3mRouting.sh 1 0 AMAZON_US aws_region=US
 ````
 Route VPN Client 1 traffic from 192.168.1.152-192.168.1.157 matching IPSET list AMAZON_US to WAN.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 AMAZON_US aws_region=US src_range=192.168.1.152-192.168.1.157
+sh x3mRouting.sh 1 0 AMAZON_US aws_region=US src_range=192.168.1.152-192.168.1.157
 ````
 #### dnsmasq Method
 Route all VPN Client 1 traffic matching IPSET list WIMIPCOM to the WAN.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM dnsmasq=whatismyip.com
+sh x3mRouting.sh 1 0 WIMIPCOM dnsmasq=whatismyip.com
 ````
 Route all VPN Client 1 traffic matching IPSET list NETFLIX to the WAN.       
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
+sh x3mRouting.sh 1 0 NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 ````
 Route VPN Client 1 traffic from 192.168.1.152 matching IPSET list NETFLIX to WAN.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 NETFLIX domain=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net src=192.168.1.152
+sh x3mRouting.sh 1 0 NETFLIX domain=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net src=192.168.1.152
 ````
 #### Manual Method
 
 Route all VPN Client 1 traffic matching IPSET list WIMIPCOM to the WAN.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM
+sh x3mRouting.sh 1 0 WIMIPCOM
 ````
 Route all VPN Client 1 traffic matching IPSET list WIMIPCOM created from the IPv4 addresses provided to the WAN.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM ip=104.27.198.90,104.27.199.90
+sh x3mRouting.sh 1 0 WIMIPCOM ip=104.27.198.90,104.27.199.90
 ````
 Route VPN Client 1 traffic from 192.168.1.152 matching IPSET list WIMIPCOM to the WAN.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM src=192.168.1.152
+sh x3mRouting.sh 1 0 WIMIPCOM src=192.168.1.152
 ````
 Route VPN Client 1 traffic from 192.168.1.152-192.168.1.157 matching IPSET list WIMIPCOM to WAN.       
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh 1 0 WIMIPCOM src_range=192.168.1.152-192.168.1.157
+sh /x3mRouting.sh 1 0 WIMIPCOM src_range=192.168.1.152-192.168.1.157
 ````
 ### VPN Server to VPN Client Routing
 Route from VPN Server 1,2 or both to VPN Client 1,2,3,4 or 5.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 client=1
-sh /jffs/scripts/x3mRouting/x3mRouting.sh server=2 client=1
-sh /jffs/scripts/x3mRouting/x3mRouting.sh server=both client=1
+sh x3mRouting.sh server=1 client=1
+sh x3mRouting.sh server=2 client=1
+sh x3mRouting.sh server=both client=1
 ````
 ### VPN Server to IPSET List Routing
 Route from VPN Server 1,2 or both the same routing rules for the IPSET list PANDORA.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 ipset_name=PANDORA
-sh /jffs/scripts/x3mRouting/x3mRouting.sh server=2 ipset_name=PANDORA
-sh /jffs/scripts/x3mRouting/x3mRouting.sh server=both ipset_name=PANDORA
+sh x3mRouting.sh server=1 ipset_name=PANDORA
+sh x3mRouting.sh server=2 ipset_name=PANDORA
+sh x3mRouting.sh server=both ipset_name=PANDORA
 ````
 ##### Requirements
 1. The IPSET list must exist!
@@ -441,19 +441,19 @@ sh /jffs/scripts/x3mRouting/x3mRouting.sh server=both ipset_name=PANDORA
 ### Delete an IPSET List, all Routing Rules and cru jobs
 Either option listed below will work. The first example is the easiest as there is no requirement to specify the interfaces or method.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=MYIPSET del
-sh /jffs/scripts/x3mRouting/x3mRouting.sh ALL 1 NETFLIX del
+sh x3mRouting.sh ipset_name=MYIPSET del
+sh x3mRouting.sh ALL 1 NETFLIX del
 ````
 ### Delete a VPN Server to VPN Client Routing Rule
 VPN Server to VPN Client routing rules require the VPN Server and Client to properly remove the iptables rules.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 client=1 del
+sh x3mRouting.sh server=1 client=1 del
 ````
 
 ### Delete a VPN Server to IPSET list Routing Rule
 VPN Server to IPSET list routing rules require the VPN Server and IPSET name to properly remove the iptables rules.
 ````
-sh /jffs/scripts/x3mRouting/x3mRouting.sh server=1 ipset_name=PANDORA del
+sh x3mRouting.sh server=1 ipset_name=PANDORA del
 ````
 
 ### [4] getdomainnames.sh Script
@@ -479,7 +479,7 @@ is the name of the source file you created in the **/opt/var/log** directory and
 
 Usage Example:
 
-    sh /jffs/scripts/x3mRouting/getdomainnames.sh myfile 192.168.1.50
+    sh getdomainnames.sh myfile 192.168.1.50
 
 The domains collected will be stored in the **/opt/var/log/** directory using the same name as the output file with '_domains' concatenated at the end of the file name (e.g. myfile_domains)
 

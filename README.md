@@ -183,7 +183,7 @@ To create an IPSET list, x3mRouting requires that the method be specified. If no
 * GLOBAL - Global
 
 ##### ASN Method
-x3mRouting will create an IPSET list using the [AS Number](https://www.apnic.net/get-ip/faqs/asn/) specified using the **'asnum='** parameter and one or more valid AS numbers separated by a comma. The IPv4 addresses are downloaded from [ipinfo.io/](https://ipinfo.io/). ipinfo.io may require whitelisting if you use an ad-blocker program. If x3mRouting is unable to download the IP addresses from ipinfo.io, it will attempt to download using the aslookup tool on [api.hackertarget.com/aslookup/](https://api.hackertarget.com/aslookup/).
+x3mRouting will create an IPSET list using the [AS Number](https://www.apnic.net/get-ip/faqs/asn/) specified using the **'asnum='** parameter and one or more valid AS numbers separated by a comma. The IPv4 addresses are downloaded from [ipinfo.io](https://ipinfo.io/). ipinfo.io may require whitelisting if you use an ad-blocker program. If x3mRouting is unable to download the IP addresses from ipinfo.io, it will attempt to download using the aslookup tool on [api.hackertarget.com/aslookup/](https://api.hackertarget.com/aslookup/).
 
 ##### dnsmasq Method
 You must specify the **'dnsmasq='** parameter and one or more domain names separated by a comma.
@@ -204,7 +204,7 @@ x3mRouting also provides the option to specify the source IP address or source I
 
 * Required parameters are listed inside the braces { }
 * Optional parameters are listed inside of the brackets [ ]
-* Valid parameter values are listed in parenthesis ( )
+* Valid parameter values are listed in parenthesis ( ). The vertical lines "|" are used to separate the values in the list. Example: (1|2|both)
 
 ##### Create IPSET List with no Routing Rules
 Provides the ability to create an IPSET list with no routing rules. Use this method when using the OpenVPN Client Screen to create the routing rules.

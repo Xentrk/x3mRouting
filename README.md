@@ -672,7 +672,7 @@ Martineau also contributed the modified **OpenVPN Client Screen**, the [Vimeo](h
 ## Version 2.0.0 Changes
 
 #### x3mRouting Menu
-The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now stored in **/jffs/addons/x3mRouting**. A symbolic link to **/opt/bin/x3mRouting** is created to support the ability to access the menu by typing **x3mRouting** at the command line. The x3mRouting menu update fixes the issue of non-harmful code output appearing when exiting the menu after performing a menu update.
+The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now stored in **/jffs/addons/x3mRouting**. The command to access the **x3mRouting** menu has been changed from **x3mRouting** to **x3mMenu**. The x3mRouting menu update also fixes the issue of non-harmful code output appearing when exiting the menu after performing a menu update.
 
 #### VPN Server and VPN Client Routing Script Changes
   * The separate scripts for:
@@ -708,9 +708,9 @@ The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now st
   * The script **x3mRouting_client_nvram.sh** now stores the nvram files in **/jffs/addons/x3mRouting** rather than **/jffs/configs**.
 
 ## Version 2.0.0 Update Process
-You won't be able to update to Version 2.0.0 using the existing x3mRouting Installation Menu due to the installation menu changes described above.  
+You won't be able to update to Version 2.0.0 using the existing **x3mRouting** Menu due to the installation menu changes described above.  
 
-  1.  Copy and paste the command below into an SSH session to download the new x3mRouting menu to **/jffs/addons/x3mRouting** and create a symbolic link to **/opt/bin/x3mRouting** which provides the ability to access the menu by typing **x3mRouting** at the command line.
+  1.  Copy and paste the command below into an SSH session to download the new x3mRouting menu.
 
 ````
 sh -c "$(curl -sL https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/Install_x3mRouting.sh)"
@@ -720,6 +720,7 @@ sh -c "$(curl -sL https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting
 During the update process, x3mRouting will:
   * Make a backup of **/jffs/scripts/nat-start** and copy the x3mRouting directory contents to **/jffs/scripts/x3mRouting/backup**.
   * Remove obsolete x3mRouting scripts.
+  * Remove obsolete x3mRouting script in /opt/bin.
   * Any LAN Client Routing nvram files that exist in **/jffs/configs** will get moved to **/jffs/addons/x3mRouting** and the **x3mRouting_client_rules** to **/jffs/scripts/x3mRouting**.
   * **/jffs/scripts/nat-start** and openvpn-event files in the **/jffs/scripts/x3mRouting** directory will be scanned for references to the old scripts or routing rules. A conversion file will get created in **/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh** containing the new script entries.
   * Backup **/jffs/configs/dnsmasq.conf.add** if it exists and delete any 'ipset=' entries. 'ipset=' entries will get recreated when you run the conversion script.

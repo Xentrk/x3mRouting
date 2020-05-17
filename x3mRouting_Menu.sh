@@ -281,8 +281,8 @@ Pre_Install_OpenVPN_Event_x3mRouting () {
   if [ "$(ls /jffs/scripts/x3mRouting | grep -c "load_")" -ge "1" ]; then
     Download_File "$LOCAL_REPO" "x3mRouting.sh"
     Download_File "$LOCAL_REPO" "openvpn-event"
-    if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/x3mRoutingSet" ]; then
-     ln -s "$LOCAL_REPO/x3mRouting.sh" "/opt/bin/x3mRoutingSet"
+    if [ -d "/opt/bin" ] && [ "$(find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/scripts/x3mRouting/x3mRouting.sh")" -eq 0 ]; then
+     ln -s "$LOCAL_REPO/x3mRouting.sh" "/opt/bin/x3mRouting"
     fi
   fi
 }
@@ -746,15 +746,15 @@ Remove_Existing_Installation() {
     if ! rm "/opt/bin/x3mRouting" >/dev/null 2>&1; then
       printf '\nError trying to remove %b"/opt/bin/x3mRouting"%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
     else
-      printf '\n%b"/opt/bin/x3mRouting"%b menu file removed\n' "$COLOR_GREEN" "$COLOR_WHITE"
+      printf '\n%b"/opt/bin/x3mRouting"%b x3mRouting symbolic link file removed\n' "$COLOR_GREEN" "$COLOR_WHITE"
     fi
   fi
 
-  if [ -s "/opt/bin/x3mRoutingSet" ]; then
-    if ! rm "/opt/bin/x3mRoutingSet" >/dev/null 2>&1; then
-      printf '\nError trying to remove %b"/opt/bin/x3mRoutingSet"%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
+  if [ -s "/opt/bin/x3mMenu" ]; then
+    if ! rm "/opt/bin/x3mMenu" >/dev/null 2>&1; then
+      printf '\nError trying to remove %b"/opt/bin/x3mMenu"%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
     else
-      printf '\n%b"/opt/bin/x3mRoutingSet"%b menu file removed\n' "$COLOR_GREEN" "$COLOR_WHITE"
+      printf '\n%b"/opt/bin/x3mMenu"%b x3mMenu symbolic link file removed\n' "$COLOR_GREEN" "$COLOR_WHITE"
     fi
   fi
 
@@ -1017,8 +1017,9 @@ Install_x3mRouting_GUI() {
   Download_File "$LOCAL_REPO" "mount_files_gui.sh"
   Init_Start_Update "mount_files_gui.sh"
   sh /jffs/scripts/init-start
-  if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/x3mRoutingSet" ]; then
-     ln -s "$LOCAL_REPO/x3mRouting.sh" "/opt/bin/x3mRoutingSet"
+  # x3mRouting.sh Script
+  if [ -d "/opt/bin" ] && [ "$(find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
+     ln -s "/jffs/scripts/x3mRouting/x3mRouting.sh" "/opt/bin/x3mRouting"
   fi
   Check_Profile_Add
   echo
@@ -1035,8 +1036,9 @@ Install_x3mRouting_Shell_Scripts() {
   Check_Requirements
   Create_Project_Directory
   Download_File "$LOCAL_REPO" "x3mRouting.sh"
-  if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/x3mRoutingSet" ]; then
-     ln -s "$LOCAL_REPO/x3mRouting.sh" "/opt/bin/x3mRoutingSet"
+  # x3mRouting.sh Script
+  if [ -d "/opt/bin" ] && [ "$(find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
+     ln -s "/jffs/scripts/x3mRouting/x3mRouting.sh" "/opt/bin/x3mRouting"
   fi
   Check_Profile_Add
 
@@ -1078,9 +1080,9 @@ Update_Installer() {
       Download_File /jffs/addons/x3mRouting x3mRouting_Menu.sh
       chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh
       rm -rf "/opt/bin/x3mRouting" 2>/dev/null
-      if [ -d "/opt/bin" ] && [ ! -L "/opt/bin/x3mRouting" ]; then
+      if [ -d "/opt/bin" ] && [ "$(find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
         echo "Creating 'x3mRouting' alias" 2>&1
-        ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mRouting
+        ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mMenu
       fi
       printf '\n%s\n\n' "x3mRouting Installation Menu update completed $remotemd5"
       echo "Press enter to continue"

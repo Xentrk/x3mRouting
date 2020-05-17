@@ -202,12 +202,12 @@ x3mRouting also provides the option to specify the source IP address or source I
 
 #### x3mRouting.sh Usage Notes
 
-You can run the x3Routing.sh script as follows:
+You can run the **x3Routing.sh** script as follows:
 
 Navigate to **/jffs/scripts/x3mRouting** directory (e.g. cd /jffs/scripts/x3mRouting) and use either the 'sh' or './' syntax:
 
 ````
-x3mRouting.sh [options]
+sh x3mRouting.sh [options]
 ````
 or
 ````
@@ -228,7 +228,7 @@ x3mRouting [options]
 ##### Create IPSET List with no Routing Rules
 Provides the ability to create an IPSET list with no routing rules. Use this method when using the OpenVPN Client Screen to create the routing rules.
 ````
-x3mRouting.sh {ipset_name=}
+x3mRouting {ipset_name=}
                  ['autoscan='keyword1[,keyword2]...] # Scans for keywords and creates IPSET list using the dnsmasq method
                  ['asnum='asnum[,asnum]...] # ASN method
                  ['aws_region='US[,EU]...]  # Amazon method
@@ -244,7 +244,7 @@ Provides the ability to:
 * Selectively route VPN Server traffic to an existing IPSET list routing rule.
 
 ````
-x3mRouting.sh {src iface} (ALL|1|2|3|4|5)
+x3mRouting {src iface} (ALL|1|2|3|4|5)
                  {dst iface} (0|1|2|3|4|5)
                  **START: src/dst usage notes**
                   Valid SRC and DST Combinations
@@ -272,16 +272,16 @@ x3mRouting.sh {src iface} (ALL|1|2|3|4|5)
 ##### VPN Server to VPN Client Routing
 
 ````
-x3mRouting.sh {'server='1|2|both} {'client='1|2|3|4|5} ['del']
+x3mRouting {'server='1|2|both} {'client='1|2|3|4|5} ['del']
 ````
 
 ##### VPN Server to existing LAN routing rules for an IPSET list
 
 ````
-x3mRouting.sh {'server='1|2|both} {'ipset_name='} ['del']
+x3mRouting {'server='1|2|both} {'ipset_name='} ['del']
 ````
 
-## x3mRouting.sh Usage Examples
+## x3mRouting Usage Examples
 Usage examples are provided for the following routing functions:  
   * Create IPSET List - No Routing Rules
   * VPN Client Routing
@@ -298,27 +298,27 @@ Use this method if you want to create an IPSET list with no routing rules. You m
 #### ASN Method
 Create IPSET list NETFLIX using AS2906 as the source
 ````
-x3mRouting.sh ipset_name=NETFLIX asnum=AS2906  
+x3mRouting ipset_name=NETFLIX asnum=AS2906  
 ````
 ####  Amazon AWS Region Method
 Create IPSET list AMAZON_US created from Amazon US region
 ````
-x3mRouting.sh ipset_name=AMAZON_US aws_region=US
+x3mRouting ipset_name=AMAZON_US aws_region=US
 ````
 #### dnsmasq Method
 Create IPSET list NETFLIX using the dnsmasq method
 ````
-x3mRouting.sh ipset_name=NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
+x3mRouting ipset_name=NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 ````
 #### Manual Method
 
 Create IPSET list BBC using the manual method
 ````
-x3mRouting.sh ipset_name=BBC
+x3mRouting ipset_name=BBC
 ````
 Create IPSET list BBC using the manual method. Use the 'dir=' location as the backup/restore location
 ````
-x3mRouting.sh ipset_name=BBC dir=/tmp/mnt/RT-AC88U/mylists
+x3mRouting ipset_name=BBC dir=/tmp/mnt/RT-AC88U/mylists
 ````
 
 ### VPN Client Routing
@@ -328,60 +328,60 @@ Use this approach to route IPSET traffic to a VPN Client.
 
 Route all traffic matching IPSET list NETFLIX created from AS2906 to VPN Client1.
 
-    x3mRouting.sh ALL 1 NETFLIX asnum=AS2906
+    x3mRouting ALL 1 NETFLIX asnum=AS2906
 
 Route all traffic matching IPSET list BBC created from AS2818 and AS31459 to VPN Client1.
 
-    x3mRouting.sh ALL 1 BBC asnum=AS2818,AS31459
+    x3mRouting ALL 1 BBC asnum=AS2818,AS31459
 
 Route all traffic matching IPSET list NETFLIX created from AS2906 to VPN Client1 from LAN device 192.168.1.152.   
 
-    x3mRouting.sh ALL 1 NETFLIX asnum=AS2906 src=192.168.1.152
+    x3mRouting ALL 1 NETFLIX asnum=AS2906 src=192.168.1.152
 
 #### Amazon AWS Region Method
 Route all traffic matching IPSET list AMAZON_US created from the AWS US region to VPN Client 1.
 
-    x3mRouting.sh ALL 1 AMAZON_US aws_region=US
+    x3mRouting ALL 1 AMAZON_US aws_region=US
 
 Route all traffic matching IPSET list AMAZON created from the AWS US and CA regions to VPN Client 1.
 
-    x3mRouting.sh ALL 1 AMAZON aws_region=US,CA
+    x3mRouting ALL 1 AMAZON aws_region=US,CA
 
 Route IP address ranges 192.168.1.152-192.168.1.157 traffic matching IPSET list AMAZON_US created from the Amazon US region to VPN Client 1.
 
-    x3mRouting.sh ALL 1 AMAZON_US aws_region=US src_range=192.168.1.152-192.168.1.157
+    x3mRouting ALL 1 AMAZON_US aws_region=US src_range=192.168.1.152-192.168.1.157
 
 #### dnsmasq Method
 Route all traffic matching IPSET list NETFLIX created from domain names to VPN Client1.
 
 ````
-x3mRouting.sh ALL 1 NETFLIX  dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
+x3mRouting ALL 1 NETFLIX  dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 ````
 
 #### dnsmasq Method with autoscan
 Search **dnsmasq.log** file for domains that contain the keyword "amazon" and create the IPSET list AMAZON from the domains collected using the dnsmasq method. You can view the domains collected by looking at the corresponding entry in **/jffs/configs/dnsmasq.conf.add** or by looking at the script entry in **/jffs/scripts/nat-start**
 
 ````
-x3mRouting.sh ALL 1 AMAZON autoscan=amazon
+x3mRouting ALL 1 AMAZON autoscan=amazon
 ````
 
 Search **dnsmasq.log** file for domains that contain the keywords "amazonaws", "netflix" and "nflx" and create the IPSET list AMZ_NFLX using the dnsmasq method.
 
-    x3mRouting.sh ALL 1 AMZ_NFLX autoscan=amazonaws,netflix,nflx
+    x3mRouting ALL 1 AMZ_NFLX autoscan=amazonaws,netflix,nflx
 
 #### Manual Method
 
 Route all traffic matching IPSET list WIMIPCOM to VPN Client 1.
 
-    x3mRouting.sh ALL 1 WIMIPCOM
+    x3mRouting ALL 1 WIMIPCOM
 
 Route all traffic matching IPSET list WIMIPCOM to VPN Client 1 using the /mnt/ASUS/mylists directory as the save/restore location.
 
-    x3mRouting.sh ALL 1 WIMIPCOM dir=/mnt/ASUS/mylists
+    x3mRouting ALL 1 WIMIPCOM dir=/mnt/ASUS/mylists
 
 Route all VPN Client 1 traffic matching IPSET list WIMIPCOM created from the IPv4 addresses provided.
 
-    x3mRouting.sh ALL 1 WIMIPCOM ip=104.27.198.90,104.27.199.90
+    x3mRouting ALL 1 WIMIPCOM ip=104.27.198.90,104.27.199.90
 
 ### VPN Client Bypass Routing
 Use this approach to bypass the VPN Client for traffic matching an IPSET list and route to the WAN interface. This approach is often used when a rule to route the entire LAN (e.g. 192.168.1.0/24) thru a VPN Client exists in the Policy Routing section of the OpenVPN Client Screen and an exception needs to be made to bypass the VPN Client for a service that blocks known VPN Servers.
@@ -390,68 +390,68 @@ Use this approach to bypass the VPN Client for traffic matching an IPSET list an
 Route VPN Client 1 traffic matching IPSET list NETFLIX to WAN.
 
 ````
-x3mRouting.sh 1 0 NETFLIX asnum=AS2906
+x3mRouting 1 0 NETFLIX asnum=AS2906
 ````
 
 Route VPN Client 1 traffic from 192.168.1.152 matching IPSET list NETFLIX to WAN.
 
 ````
-x3mRouting.sh 1 0 NETFLIX asnum=AS2906 src=192.168.1.152
+x3mRouting 1 0 NETFLIX asnum=AS2906 src=192.168.1.152
 ````
 
 #### Amazon AWS Region Method
 Route VPN Client 1 traffic matching IPSET list AMAZON_US to WAN.
 ````
-x3mRouting.sh 1 0 AMAZON_US aws_region=US
+x3mRouting 1 0 AMAZON_US aws_region=US
 ````
 Route VPN Client 1 traffic from 192.168.1.152-192.168.1.157 matching IPSET list AMAZON_US to WAN.
 ````
-x3mRouting.sh 1 0 AMAZON_US aws_region=US src_range=192.168.1.152-192.168.1.157
+x3mRouting 1 0 AMAZON_US aws_region=US src_range=192.168.1.152-192.168.1.157
 ````
 #### dnsmasq Method
 Route all VPN Client 1 traffic matching IPSET list WIMIPCOM to the WAN.
 ````
-x3mRouting.sh 1 0 WIMIPCOM dnsmasq=whatismyip.com
+x3mRouting 1 0 WIMIPCOM dnsmasq=whatismyip.com
 ````
 Route all VPN Client 1 traffic matching IPSET list NETFLIX to the WAN.       
 ````
-x3mRouting.sh 1 0 NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
+x3mRouting 1 0 NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net
 ````
 Route VPN Client 1 traffic from 192.168.1.152 matching IPSET list NETFLIX to WAN.
 ````
-x3mRouting.sh 1 0 NETFLIX domain=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net src=192.168.1.152
+x3mRouting 1 0 NETFLIX domain=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net src=192.168.1.152
 ````
 #### Manual Method
 
 Route all VPN Client 1 traffic matching IPSET list WIMIPCOM to the WAN.
 ````
-x3mRouting.sh 1 0 WIMIPCOM
+x3mRouting 1 0 WIMIPCOM
 ````
 Route all VPN Client 1 traffic matching IPSET list WIMIPCOM created from the IPv4 addresses provided to the WAN.
 ````
-x3mRouting.sh 1 0 WIMIPCOM ip=104.27.198.90,104.27.199.90
+x3mRouting 1 0 WIMIPCOM ip=104.27.198.90,104.27.199.90
 ````
 Route VPN Client 1 traffic from 192.168.1.152 matching IPSET list WIMIPCOM to the WAN.
 ````
-x3mRouting.sh 1 0 WIMIPCOM src=192.168.1.152
+x3mRouting 1 0 WIMIPCOM src=192.168.1.152
 ````
 Route VPN Client 1 traffic from 192.168.1.152-192.168.1.157 matching IPSET list WIMIPCOM to WAN.       
 ````
-x3mRouting.sh 1 0 WIMIPCOM src_range=192.168.1.152-192.168.1.157
+x3mRouting 1 0 WIMIPCOM src_range=192.168.1.152-192.168.1.157
 ````
 ### VPN Server to VPN Client Routing
 Route from VPN Server 1,2 or both to VPN Client 1,2,3,4 or 5.
 ````
-x3mRouting.sh server=1 client=1
-x3mRouting.sh server=2 client=1
-x3mRouting.sh server=both client=1
+x3mRouting server=1 client=1
+x3mRouting server=2 client=1
+x3mRouting server=both client=1
 ````
 ### VPN Server to IPSET List Routing
 Route from VPN Server 1,2 or both the same routing rules for the IPSET list PANDORA.
 ````
-x3mRouting.sh server=1 ipset_name=PANDORA
-x3mRouting.sh server=2 ipset_name=PANDORA
-x3mRouting.sh server=both ipset_name=PANDORA
+x3mRouting server=1 ipset_name=PANDORA
+x3mRouting server=2 ipset_name=PANDORA
+x3mRouting server=both ipset_name=PANDORA
 ````
 ##### Requirements
 1. The IPSET list must exist!
@@ -460,19 +460,19 @@ x3mRouting.sh server=both ipset_name=PANDORA
 ### Delete an IPSET List, all Routing Rules and cru jobs
 Either option listed below will work. The first example is the easiest as there is no requirement to specify the interfaces or method.
 ````
-x3mRouting.sh ipset_name=MYIPSET del
-x3mRouting.sh ALL 1 NETFLIX del
+x3mRouting ipset_name=MYIPSET del
+x3mRouting ALL 1 NETFLIX del
 ````
 ### Delete a VPN Server to VPN Client Routing Rule
 VPN Server to VPN Client routing rules require the VPN Server and Client to properly remove the iptables rules.
 ````
-x3mRouting.sh server=1 client=1 del
+x3mRouting server=1 client=1 del
 ````
 
 ### Delete a VPN Server to IPSET list Routing Rule
 VPN Server to IPSET list routing rules require the VPN Server and IPSET name to properly remove the iptables rules.
 ````
-x3mRouting.sh server=1 ipset_name=PANDORA del
+x3mRouting server=1 ipset_name=PANDORA del
 ````
 
 ### [4] getdomainnames.sh Script
@@ -700,7 +700,7 @@ The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now st
       * that a routing rule to be applied to a single LAN IP addresses or IP address range.
     * Added ability to display usage notes by passing the 'help' parameter
 ````
-      x3mRouting.sh help
+      x3mRouting help
 ````
 
 #### LAN Client Routing Changes

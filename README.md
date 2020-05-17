@@ -245,28 +245,28 @@ Provides the ability to:
 
 ````
 x3mRouting {src iface} (ALL|1|2|3|4|5)
-                 {dst iface} (0|1|2|3|4|5)
-                 **START: src/dst usage notes**
-                  Valid SRC and DST Combinations
-                  1) VPN Client Routing
-                     - Use this SRC and DST combination to route all IPSET list traffic to a VPN Client:
-                       ALL 1, ALL 2, ALL 3, ALL 4, ALL 5
-                  2) VPN Bypass Routing
-                     - Use this SRC and DST combination to bypass the VPN Client for an IPSET list and route to the WAN interface:
-                       1 0, 2 0, 3 0, 4 0, 5 0
-                  **END: src/dst usage notes**
-                  {ipset_name}
-                  ['autoscan='keyword1[,keyword2]...] # Scans for keywords and creates IPSET list using the dnsmasq method
-                  ['asnum='asnum[,asnum]...] # ASN method
-                  ['aws_region='US[,EU]...]  # Amazon method
-                  ['dnsmasq='domain[,domain]...] # dnsmasq method
-                  ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
-                  ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
-                  ['ip='ip[,ip][,cidr]...]
-                  ['src='src_ip]
-                  ['src_range='from_ip-to_ip]
-                  ['dir='save_restore_location]
-                  ['del']
+           {dst iface} (0|1|2|3|4|5)
+           **START: src/dst usage notes**
+           Valid SRC and DST Combinations
+           1) VPN Client Routing
+              - Use this SRC and DST combination to route all IPSET list traffic to a VPN Client:
+                ALL 1, ALL 2, ALL 3, ALL 4, ALL 5
+           2) VPN Bypass Routing
+              - Use this SRC and DST combination to bypass the VPN Client for an IPSET list and route to the WAN interface:
+                1 0, 2 0, 3 0, 4 0, 5 0
+           **END: src/dst usage notes**
+           {ipset_name}
+           ['autoscan='keyword1[,keyword2]...] # Scans for keywords and creates IPSET list using the dnsmasq method
+           ['asnum='asnum[,asnum]...] # ASN method
+           ['aws_region='US[,EU]...]  # Amazon method
+           ['dnsmasq='domain[,domain]...] # dnsmasq method
+           ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
+           ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
+           ['ip='ip[,ip][,cidr]...]
+           ['src='src_ip]
+           ['src_range='from_ip-to_ip]
+           ['dir='save_restore_location]
+           ['del']
 ````
 
 ##### VPN Server to VPN Client Routing

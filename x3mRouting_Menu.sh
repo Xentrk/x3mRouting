@@ -280,10 +280,8 @@ Pre_Install_OpenVPN_Event_x3mRouting () {
   # checking for existance of any "load" scripts. Their presence indicates x3mRouting.sh & openvpn need to be first installed
   # before removing the "load" scripts
   if [ "$(ls /jffs/scripts/x3mRouting | grep -c "load_")" -ge "1" ]; then
-    Download_File "$LOCAL_REPO" "x3mRouting.sh"
+    Download_File "$LOCAL_REPO" "x3mRouting.sh" && rm -rf "/opt/bin/x3mRouting" 2>/dev/null && ln -s "$LOCAL_REPO/x3mRouting.sh" "/opt/bin/x3mRouting"
     Download_File "$LOCAL_REPO" "openvpn-event"
-    rm -rf "/opt/bin/x3mRouting" 2>/dev/null
-    ln -s "$LOCAL_REPO/x3mRouting.sh" "/opt/bin/x3mRouting"
   fi
 }
 

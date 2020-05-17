@@ -6,15 +6,15 @@ while true; do
   chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh
   # Remove old link if exist
   if [ -d "/opt/bin" ] && [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
-    rm /opt/bin/x3mRouting 2>/dev/null
+    rm -rf /opt/bin/x3mRouting 2>/dev/null
   fi
   # x3mRouting.sh Script
   if [ -d "/opt/bin" ] && [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
     if [ -s "/opt/bin/x3mRouting" ]; then # old alias situation
-      rm /opt/bin/x3mRouting 2>/dev/null
+      rm -rf /opt/bin/x3mRouting 2>/dev/null
     fi
   fi
-  rm /opt/bin/x3mMenu 2>/dev/null
+  rm -rf /opt/bin/x3mMenu 2>/dev/null
   ln -s "/jffs/addons/x3mRouting/x3mRouting_Menu.sh" "/opt/bin/x3mMenu"
   x3mMenu
   exit 0

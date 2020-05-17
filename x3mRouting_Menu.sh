@@ -1080,10 +1080,13 @@ Update_Installer() {
       Download_File /jffs/addons/x3mRouting x3mRouting_Menu.sh
       chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh
       rm -rf "/opt/bin/x3mRouting" 2>/dev/null
-      if [ -d "/opt/bin" ] && [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
-        if [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
+      if [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
+        if [ -d "/opt/bin" ] && [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
+          # /opt/bin/x3mMenu -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh
+          if [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
           echo "Creating 'x3mRouting' alias"
           ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mMenu 2>&1
+          fi
         fi
       fi
       printf '\n%s\n\n' "x3mRouting Installation Menu update completed $remotemd5"

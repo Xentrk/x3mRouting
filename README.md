@@ -202,6 +202,27 @@ x3mRouting also provides the option to specify the source IP address or source I
 
 #### x3mRouting.sh Usage Notes
 
+You can run the x3Routing.sh script as follows:
+
+Navigate to **/jffs/scripts/x3mRouting** directory (e.g. cd /jffs/scripts/x3mRouting) and use either the 'sh' or './' syntax:
+
+````
+sh x3mRouting.sh [options]
+````
+or
+````
+./x3mRouting.sh
+````
+
+Use the **x3mRouting** command:
+````
+x3mRouting [options]
+````
+Provide the full path:
+````
+sh /jffs/scripts/x3mRouting.sh [options]
+````
+
 * Required parameters are listed inside the braces { }
 * Optional parameters are listed inside of the brackets [ ]
 * Valid parameter values are listed in parenthesis ( ). The vertical lines "|" are used to separate the values in the list. Example: (1|2|both)

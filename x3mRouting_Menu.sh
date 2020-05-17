@@ -281,7 +281,7 @@ Pre_Install_OpenVPN_Event_x3mRouting () {
   if [ "$(ls /jffs/scripts/x3mRouting | grep -c "load_")" -ge "1" ]; then
     Download_File "$LOCAL_REPO" "x3mRouting.sh"
     Download_File "$LOCAL_REPO" "openvpn-event"
-    if [ -d "/opt/bin" ] && [ "$(find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/scripts/x3mRouting/x3mRouting.sh")" -eq 0 ]; then
+    if [ -d "/opt/bin" ] && [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/scripts/x3mRouting/x3mRouting.sh")" -eq 0 ]; then
      ln -s "$LOCAL_REPO/x3mRouting.sh" "/opt/bin/x3mRouting"
     fi
   fi
@@ -1018,7 +1018,7 @@ Install_x3mRouting_GUI() {
   Init_Start_Update "mount_files_gui.sh"
   sh /jffs/scripts/init-start
   # x3mRouting.sh Script
-  if [ -d "/opt/bin" ] && [ "$(find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
+  if [ -d "/opt/bin" ] && [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
      ln -s "/jffs/scripts/x3mRouting/x3mRouting.sh" "/opt/bin/x3mRouting"
   fi
   Check_Profile_Add
@@ -1037,7 +1037,7 @@ Install_x3mRouting_Shell_Scripts() {
   Create_Project_Directory
   Download_File "$LOCAL_REPO" "x3mRouting.sh"
   # x3mRouting.sh Script
-  if [ -d "/opt/bin" ] && [ "$(find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
+  if [ -d "/opt/bin" ] && [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
      ln -s "/jffs/scripts/x3mRouting/x3mRouting.sh" "/opt/bin/x3mRouting"
   fi
   Check_Profile_Add
@@ -1080,7 +1080,7 @@ Update_Installer() {
       Download_File /jffs/addons/x3mRouting x3mRouting_Menu.sh
       chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh
       rm -rf "/opt/bin/x3mRouting" 2>/dev/null
-      if [ -d "/opt/bin" ] && [ "$(find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
+      if [ -d "/opt/bin" ] && [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
         echo "Creating 'x3mRouting' alias" 2>&1
         ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mMenu
       fi

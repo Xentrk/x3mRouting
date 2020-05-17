@@ -229,13 +229,13 @@ x3mRouting [options]
 Provides the ability to create an IPSET list with no routing rules. Use this method when using the OpenVPN Client Screen to create the routing rules.
 ````
 x3mRouting {ipset_name=}
-                 ['autoscan='keyword1[,keyword2]...] # Scans for keywords and creates IPSET list using the dnsmasq method
-                 ['asnum='asnum[,asnum]...] # ASN method
-                 ['aws_region='US[,EU]...]  # Amazon method
-                 ['dnsmasq='domain[,domain]...] # dnsmasq method
-                 ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
-                 ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
-                 ['del']
+           ['autoscan='keyword1[,keyword2]...] # Scans for keywords and creates IPSET list using the dnsmasq method
+           ['asnum='asnum[,asnum]...] # ASN method
+           ['aws_region='US[,EU]...]  # Amazon method
+           ['dnsmasq='domain[,domain]...] # dnsmasq method
+           ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
+           ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
+           ['del']
 ````
 ##### Create IPSET List with Routing Rules
 Provides the ability to:

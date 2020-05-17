@@ -282,9 +282,8 @@ Pre_Install_OpenVPN_Event_x3mRouting () {
   if [ "$(ls /jffs/scripts/x3mRouting | grep -c "load_")" -ge "1" ]; then
     Download_File "$LOCAL_REPO" "x3mRouting.sh"
     Download_File "$LOCAL_REPO" "openvpn-event"
-    if [ -d "/opt/bin" ] && [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/scripts/x3mRouting/x3mRouting.sh")" -eq 0 ]; then
-     ln -s "$LOCAL_REPO/x3mRouting.sh" "/opt/bin/x3mRouting"
-    fi
+    rm -rf "/opt/bin/x3mRouting" 2>/dev/null
+    ln -s "$LOCAL_REPO/x3mRouting.sh" "/opt/bin/x3mRouting"
   fi
 }
 
@@ -740,7 +739,6 @@ Remove_Existing_Installation() {
 
   # unmount vpnrouting, vpn gui and updown-client
   Remove_Mounts
-
 
   # Remove symlinks
   if [ -s "/opt/bin/x3mRouting" ]; then

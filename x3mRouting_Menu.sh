@@ -1017,17 +1017,8 @@ Install_x3mRouting_GUI() {
   Download_File "$LOCAL_REPO" "mount_files_gui.sh"
   Init_Start_Update "mount_files_gui.sh"
   sh /jffs/scripts/init-start
-  # x3mRouting.sh Script
-  if [ -d "/opt/bin" ] && [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
-     ln -s "/jffs/scripts/x3mRouting/x3mRouting.sh" "/opt/bin/x3mRouting"
-  fi
   Check_Profile_Add
   echo
-  echo "Installation of x3mRouting completed"
-  echo
-  echo "Press enter to continue"
-  read -r
-  Welcome_Message
 
 }
 

@@ -1077,8 +1077,8 @@ Update_Installer() {
       read -r
       sh /jffs/addons/x3mRouting/x3mRouting_Menu.sh
       # chg from break to exit 0 to fix sub shell error code dumps
-      #exit 0
-      break
+      exit 0
+      #break
       ;;
     2)
       Main_Menu

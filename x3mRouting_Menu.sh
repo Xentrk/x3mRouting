@@ -1070,7 +1070,6 @@ Update_Installer() {
           rm -rf "/opt/bin/x3mRouting" 2>/dev/null
       fi
       if [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mMenu-> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
-          echo "Creating 'x3mMenu' alias"
           ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mMenu 2>&1
       fi
       printf '\n%s\n\n' "x3mRouting Installation Menu update completed $remotemd5"

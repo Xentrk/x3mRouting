@@ -1335,10 +1335,8 @@
 													<tr id="client_nat">
 														<th>Create NAT on tunnel</th>
 														<td>
-															<input type="radio" name="vpn_client_nat" class="input" value="1" onclick="update_visibility();" checked>
-															Yes
-															<input type="radio" name="vpn_client_nat" class="input" value="0" onclick="update_visibility();">
-															No
+															<input type="radio" name="vpn_client_nat" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "1", "checked"); %>>Yes
+							                <input type="radio" name="vpn_client_nat" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "0", "checked"); %>>No
 															<span id="client_nat_warn_text">Routes must be configured manually.</span>
 														</td>
 													</tr>
@@ -1383,10 +1381,8 @@
 													<tr id="client_userauth">
 														<th>Username/Password Authentication</th>
 														<td>
-															<input type="radio" name="vpn_client_userauth" class="input" value="1" onclick="update_visibility();" checked>
-															Yes
-															<input type="radio" name="vpn_client_userauth" class="input" value="0" onclick="update_visibility();">
-															No
+															<input type="radio" name="vpn_client_userauth" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_userauth", "1", "checked"); %>>Yes
+							<input type="radio" name="vpn_client_userauth" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_userauth", "0", "checked"); %>>No
 														</td>
 													</tr>
 													<tr id="client_username">
@@ -1407,10 +1403,8 @@
 															Username / Password Auth. Only
 														</th>
 														<td>
-															<input type="radio" name="vpn_client_useronly" class="input" value="1" onclick="update_visibility();" checked>
-															Yes
-															<input type="radio" name="vpn_client_useronly" class="input" value="0" onclick="update_visibility();">
-															No
+                              <input type="radio" name="vpn_client_useronly" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_useronly", "1", "checked"); %>>Yes
+							                <input type="radio" name="vpn_client_useronly" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_useronly", "0", "checked"); %>>No
 															<span id="client_ca_warn_text">Warning: You must define a Certificate Authority.</span>
 														</td>
 													</tr>
@@ -1514,10 +1508,8 @@
 									<tr id="client_tlsremote">
 										<th>Verify Server Certificate</th>
 										<td>
-											<input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="1">
-											Yes
-											<input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="0" checked>
-											No
+											<input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="1" <% nvram_match_x("", "vpn_client_tlsremote", "1", "checked"); %>>Yes
+							<input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="0" <% nvram_match_x("", "vpn_client_tlsremote", "0", "checked"); %>>No
 											<label style="padding-left:3em;" id="client_cn_label">Common name:</label><input type="text" maxlength="255" class="input_25_table" id="vpn_client_cn" name="vpn_client_cn" value="">
 										</td>
 									</tr>

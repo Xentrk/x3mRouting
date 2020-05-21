@@ -17,6 +17,10 @@
 
 ADDON_DIR=/jffs/addons/x3mRouting
 
+for VAR 1 2 3 4 5; do
+[ -f $ADDON_DIR/ovpnc${VAR}.nvram ] && rm -rf $ADDON_DIR/ovpnc${VAR}.nvram
+done
+
 Create_LAN_Client_Routes() {
 
   CONFIG_FILE="/jffs/scripts/x3mRouting/x3mRouting_client_rules"

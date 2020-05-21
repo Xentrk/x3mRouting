@@ -17,7 +17,7 @@
 
 ADDON_DIR=/jffs/addons/x3mRouting
 
-for VAR 1 2 3 4 5; do
+for VAR in 1 2 3 4 5; do
 [ -f $ADDON_DIR/ovpnc${VAR}.nvram ] && rm -rf $ADDON_DIR/ovpnc${VAR}.nvram
 done
 

@@ -1487,7 +1487,7 @@
 												<option value="-1" <% nvram_match("vpn_client_comp","-1","selected"); %>>Disabled</option>
 												<option value="no" <% nvram_match("vpn_client_comp","no","selected"); %>>None</option>
 												<option value="yes" <% nvram_match("vpn_client_comp","yes","selected"); %>>LZO</option>
-												<option value="adaptive" <% nvram_match("vpn_client_comp","adaptive","selected"); %>> LZO Adaptive</option>
+												<option value="adaptive" <% nvram_match("vpn_client_comp","adaptive","selected"); %>>LZO Adaptive</option>
 												<option value="lz4" <% nvram_match("vpn_client_comp","lz4","selected"); %>>LZ4</option>
 												<option value="lz4-v2" <% nvram_match("vpn_client_comp","lz4-v2","selected"); %>>LZ4-V2</option>
 											</select>
@@ -1526,7 +1526,7 @@
 										<th>Block routed clients if tunnel goes down</th>
 										<td>
 											<input type="radio" name="vpn_client_enforce" class="input" value="1" <% nvram_match_x("", "vpn_client_enforce", "1", "checked"); %>>Yes
-							        <input type="radio" name="vpn_client_enforce" class="input" value="0" <% nvram_match_x("", "vpn_client_enforce", "0", "checked"); %>> No
+							        <input type="radio" name="vpn_client_enforce" class="input" value="0" <% nvram_match_x("", "vpn_client_enforce", "0", "checked"); %>>No
 										</td>
 									</tr>
 								</table>

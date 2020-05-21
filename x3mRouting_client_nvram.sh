@@ -17,9 +17,13 @@
 
 ADDON_DIR=/jffs/addons/x3mRouting
 
-for VAR in 1 2 3 4 5; do
-[ -f $ADDON_DIR/ovpnc${VAR}.nvram ] && rm -rf $ADDON_DIR/ovpnc${VAR}.nvram
-done
+Cleanup_OLD_LAN_Client_Routes() {
+  for VAR in 1 2 3 4 5; do
+    if [ -f $ADDON_DIR/ovpnc${VAR}.nvram ]; then
+      rm -rf $ADDON_DIR/ovpnc${VAR}.nvram
+    fi
+  done
+}
 
 Create_LAN_Client_Routes() {
 
@@ -87,5 +91,6 @@ Create_LAN_Client_Routes() {
 # End of functions
 # Begin
 mkdir -p /jffs/addons/x3mRouting
+Cleanup_OLD_LAN_Client_Routes
 Create_LAN_Client_Routes
 echo "Script completed"

@@ -22,15 +22,16 @@ searchdomains=
 
 create_client_list(){
 	server=$1
-if [ -s "/jffs/configs/ovpnc${instance}.nvram" ]; then
-  VPN_IP_LIST="$(nvram get vpn_client"$instance"_clientlist)$(nvram get vpn_client"$instance"_clientlist1)$(nvram get vpn_client"$instance"_clientlist2)$(nvram get vpn_client"$instance"_clientlist3)$(nvram get vpn_client"$instance"_clientlist4)$(nvram get vpn_client"$instance"_clientlist5)$(cat "/jffs/addons/x3mRouting/ovpnc${instance}.nvram")"
-else
-  VPN_IP_LIST="$(nvram get vpn_client"$instance"_clientlist)$(nvram get vpn_client"$instance"_clientlist1)$(nvram get vpn_client"$instance"_clientlist2)$(nvram get vpn_client"$instance"_clientlist3)$(nvram get vpn_client"$instance"_clientlist4)$(nvram get vpn_client"$instance"_clientlist5)"
-fi
-###################### Xentrk: Concatenate custom nvram file in /jffs/configs to nvram vpn_clientx
-#  if [ -s "/jffs/configs/ovpnc${instance}.nvram" ]; then 
-#     VPN_IP_LIST=${VPN_IP_LIST}$(cat "/jffs/addons/x3mRouting/ovpnc${instance}.nvram")
-#  fi
+	# Get the six nvram vars for vpn clientlist
+	VPN_IP_LIST="$(nvram get vpn_client"$VPN_UNIT"_clientlist)"
+  for n in 1 2 3 4 5; do
+    VPN_IP_LIST="${VPN_IP_LIST}$(nvram get vpn_client"$VPN_UNIT"_clientlist$n)"
+  done
+  #### Xentrk: update vpnrouting.sh to use /jffs/addons/x3mRouting/ovpncX.nvram file
+  if [ -s "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram" ]; then
+    VPN_IP_LIST="${VPN_IP_LIST}$(cat "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram")"
+    logger -st "($(basename "$0"))" $$ "x3mRouting adding /jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
+  fi
 #################### end of custom code
 
 	OLDIFS=$IFS

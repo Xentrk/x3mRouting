@@ -3,6 +3,10 @@
 # -- Disabled quote for processing array variable PARAM on line 274
 # shellcheck disable=SC2154
 # -- SC2154: dev is referenced but not assigned. (stay true to firmware for these warnings!)
+# shellcheck disable=SC2018
+# shellcheck disable=SC2019
+# shellcheck disable=SC2021
+# -- SC2021: Don't use [] around classes in tr, it replaces literal square brackets.
 
 PARAM=$*
 if [ "$PARAM" = "" ]; then
@@ -294,10 +298,16 @@ init_table() {
 Set_VPN_NVRAM_Vars() {
 
   VPN_UNIT=$(echo "$dev" | awk '{ string=substr($0, 5, 5); print string; }')
-  NVAR_IP_LIST="$(nvram get vpn_client"$VPN_UNIT"_clientlist)"
+  VPN_IP_LIST="$(nvram get vpn_client"$VPN_UNIT"_clientlist)"
   for n in 1 2 3 4 5; do
-  NVAR_IP_LIST${n}="$(nvram get vpn_client"$VPN_UNIT"_clientlist$n)"
+    VPN_IP_LIST="${VPN_IP_LIST}$(nvram get vpn_client"$VPN_UNIT"_clientlist$n)"
   done
+  #### Xentrk: update vpnrouting.sh to use /jffs/addons/x3mRouting/ovpncX.nvram file
+  if [ -s "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram" ]; then
+    VPN_IP_LIST="${VPN_IP_LIST}$(cat "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram")"
+    logger -st "($(basename "$0"))" $$ "x3mRouting adding /jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
+  fi
+  #### end of custom code
   VPN_REDIR=$(nvram get vpn_client"$VPN_UNIT"_rgw)
   VPN_FORCE=$(nvram get vpn_client"$VPN_UNIT"_enforce)
   VPN_LOGGING=$(nvram get vpn_client"$VPN_UNIT"_verb)
@@ -306,20 +316,13 @@ Set_VPN_NVRAM_Vars() {
   END_PRIO=$((START_PRIO + 199))
   WAN_PRIO=$START_PRIO
   VPN_PRIO=$((START_PRIO + 100))
-  #### Xentrk: update vpnrouting.sh to use /jffs/addons/x3mRouting/ovpnc3.nvram
-  if [ -s "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram" ]; then
-    VPN_IP_LIST="${NVAR_IP_LIST}${NVAR_IP_LIST1}${NVAR_IP_LIST2}${NVAR_IP_LIST3}${NVAR_IP_LIST4}${NVAR_IP_LIST5}$(cat "/jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram")"
-    logger -st "($(basename "$0"))" $$ "x3mRouting adding /jffs/addons/x3mRouting/ovpnc${VPN_UNIT}.nvram to VPN_IP_LIST"
-  else
-    VPN_IP_LIST="${NVAR_IP_LIST}${NVAR_IP_LIST1}${NVAR_IP_LIST2}${NVAR_IP_LIST3}${NVAR_IP_LIST4}${NVAR_IP_LIST5}"
-  fi
 
 }
 
 # Begin
 case "$dev" in
-tun11 | tun12 | tun13 | tun14 | tun15) Set_VPN_NVRAM_Vars ;;
-                                    *) run_custom_script && exit 0 ;;
+  tun11 | tun12 | tun13 | tun14 | tun15) Set_VPN_NVRAM_Vars ;;
+  *) run_custom_script && exit 0 ;;
 esac
 
 # webui reports that vpn_force changed while vpn client was down

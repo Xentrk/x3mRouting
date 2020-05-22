@@ -3,7 +3,7 @@
 # Script: x3mRouting_rules.sh
 # VERSION=2.0.0
 # Author: Xentrk
-# 13-April-2020
+# 22-May-2020
 #
 #####################################################################################################
 # Description:
@@ -15,14 +15,11 @@
 # Uncomment the line below for debugging
 # set -x
 
-ADDON_DIR=/jffs/addons/x3mRouting
-
 Cleanup_OLD_LAN_Client_Routes() {
   for VAR in 1 2 3 4 5; do
-    if [ -f $ADDON_DIR/ovpnc${VAR}.nvram ]; then
-      rm -rf $ADDON_DIR/ovpnc${VAR}.nvram
-    fi
+    [ -f "$ADDON_DIR/ovpnc${VAR}.nvram" ] && rm -rf "$ADDON_DIR/ovpnc${VAR}.nvram"
   done
+
 }
 
 Create_LAN_Client_Routes() {
@@ -90,6 +87,7 @@ Create_LAN_Client_Routes() {
 
 # End of functions
 # Begin
+ADDON_DIR=/jffs/addons/x3mRouting
 mkdir -p /jffs/addons/x3mRouting
 Cleanup_OLD_LAN_Client_Routes
 Create_LAN_Client_Routes

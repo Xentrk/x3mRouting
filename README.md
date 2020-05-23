@@ -85,11 +85,9 @@ By default, the script assigns each LAN client to the OVPNC1 interface. After ru
 If an existing **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file exists, a backup copy of the existing **x3mRouting_client_rules** file is made by appending the timestamp to the existing file. You only need to run this script if you have made changes to DHCP static assignments or accidentally deleted the **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file.
 
 #### x3mRouting_client_nvram.sh
-**x3mRouting_client_nvram.sh** is the second script to run. This script will create the nvram files for VPN Clients in the **/jffs/addons/x3mRouting** directory based on the interface assignments in **/jffs/scripts/x3mRouting/x3mRouting_client_rules**. An nvram file will not be created in the **/jffs/addons/x3mRouting/** directory for LAN clients assigned to use the WAN interface.
+**x3mRouting_client_nvram.sh** is the second script to run. This script will create the nvram files for VPN Clients in the **/jffs/addons/x3mRouting** directory based on the interface assignments in **/jffs/scripts/x3mRouting/x3mRouting_client_rules**. An nvram file will not be created in the **/jffs/addons/x3mRouting/** directory for LAN clients assigned to use the WAN interface. The OpenVPN Client is then restarted to apply the routing assignments.
 
-Similar to the firmware, the next step is to select the **“Apply”** button on the OpenVPN Client Screen you assigned the LAN clients to in order to have the routing assignments take effect.
-
-The routing rules for LAN Clients will automatically be applied upon a system boot. You only need to rerun **x3mRouting_client_nvram.sh** and bounce the VPN Client if you have made LAN Client interface assignment changes in the **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file.
+The routing rules for LAN Clients will automatically be applied upon a system boot. You only need to rerun **x3mRouting_client_nvram.sh** if you have made LAN Client interface assignment changes in the **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file.
 
 ### [2] OpenVPN Client Screen, OpenVPN Event & x3mRouting.sh Script
 As part of this project, you can also choose to download and install a modified OpenVPN Client Screen to selectively route IPSET lists thru a VPN Client. You can't use the screen to route IPSET lists to the WAN interface. You must use option 3 instead. See the [OpenVPN Event & x3mRouting.sh Script](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#3-openvpn-event--x3mroutingsh-script-1) section below for instructions on how to create IPSET list with no routing rules for use by the OpenVPN Client Screen.

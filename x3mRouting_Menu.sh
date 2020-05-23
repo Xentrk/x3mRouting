@@ -988,7 +988,7 @@ Init_Start_Update() {
       printf '\nUpdated %b/jffs/scripts/init-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
     else
       printf '\nRequired entry already exists in %b/jffs/scripts/init-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
-      printf 'Skipping update of %b/jffs/scripts/init-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
+      printf '\nSkipping update of %b/jffs/scripts/init-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
     fi
   else
     echo "#!/bin/sh" >/jffs/scripts/init-start

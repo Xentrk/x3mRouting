@@ -82,6 +82,7 @@ Main_Menu() {
     case "$menu1" in
       1)
         mkdir -p "$LOCAL_REPO"
+        echo
         Install_x3mRouting_LAN_Clients
         Install_Done "x3mRouting for LAN Clients"
         return 1
@@ -174,6 +175,8 @@ Remove_LAN_Clients() {
       fi
     done
   fi
+  echo "Press enter to continue"
+  read -r
   Welcome_Message
 }
 

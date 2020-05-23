@@ -643,8 +643,8 @@ The installation menu **x3mMenu** will display a menu with the options to instal
 | Script Name   | Option [1] |  Option [2] | Option [3] | Option [4] |
 | --- | :---: | :---: | :---: | :---: |
 |x3mRouting_client_nvram.sh         | X |   |   |   |
-|x3mRouting_config.sh               | X |   |   |   |
-|updown.sh                          | X | X |   |   |
+|x3mRouting_client_config.sh        | X |   |   |   |
+|updown-client.sh                   | X | X |   |   |
 |vpnrouting.sh                      | X | X |   |   |
 |mount_files_lan.sh                 | X |   |   |   |
 |mount_files_gui.sh                 |   | X |   |   |

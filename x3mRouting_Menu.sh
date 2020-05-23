@@ -288,12 +288,13 @@ Update_Repo_Files() {
         else
           printf 'No new version of %b%s%b to update - latest is %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
         fi
-      fi
-      localmd5="$(md5sum "$LOCAL_REPO/$FILE" | awk '{print $1}')"
-      remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
-      if [ "$localmd5" != "$remotemd5" ]; then
-        printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " does not match - downloading"
-        Download_File "$LOCAL_REPO" "$FILE"
+
+        localmd5="$(md5sum "$LOCAL_REPO/$FILE" | awk '{print $1}')"
+        remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
+        if [ "$localmd5" != "$remotemd5" ]; then
+          printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " does not match - downloading"
+          Download_File "$LOCAL_REPO" "$FILE"
+        fi
       fi
     done
   else

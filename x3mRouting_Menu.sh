@@ -86,6 +86,10 @@ Main_Menu() {
         Install_Done "x3mRouting for LAN Clients"
         return 1
         ;;
+      "1 del")
+        Confirm_Remove_LAN_Clients
+        return 1
+        ;;
       2)
         mkdir -p "$LOCAL_REPO"
         Install_x3mRouting_GUI
@@ -149,6 +153,48 @@ Install_Done() {
   echo "Press enter to continue"
   read -r
   Welcome_Message
+}
+
+Remove_LAN_Clients() {
+
+  if [ -s "$LOCAL_REPO/Advanced_OpenVPNClient_Content.asp" ]; then
+    for FILE in mount_files_lan.sh x3mRouting_client_nvram.sh x3mRouting_client_config.sh; do
+      if [ -s "$LOCAL_REPO/$FILE" ]; then
+        rm -rf "$FILE" && printf '%s%b%s%b%s\n\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_GREEN" " completed"
+      fi
+    done
+  else
+    for FILE in mount_files_lan.sh x3mRouting_client_nvram.sh x3mRouting_client_config.sh vpnrouting.sh updown-client.sh mount_files_lan.sh; do
+        if [ -s "$LOCAL_REPO/$FILE" ]; then
+          rm -rf "$FILE" && printf '%s%b%s%b%s\n\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_GREEN" " completed"
+        fi
+    done
+  fi
+
+}
+
+
+Confirm_Remove_LAN_Clients() {
+  while true; do
+    printf '\nAre you sure you want to uninstall LAN Client Routing files?\n'
+    printf '%b[1]%b --> Yes \n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[2]%b --> Cancel\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '\n%b[1-2]%b: ' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    read -r "menu_Validate_Removal"
+    case "$menu_Validate_Removal" in
+    1)
+      Remove_LAN_Clients
+      break
+      ;;
+    2)
+      Welcome_Message
+      break
+      ;;
+    *)
+      printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu_Validate_Removal" "$COLOR_WHITE"
+      ;;
+    esac
+  done
 }
 
 Validate_Removal() {

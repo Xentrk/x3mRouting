@@ -258,11 +258,13 @@ Update_Addons_Files() {
 
   Remove_Mounts
   for FILE in vpnrouting.sh updown-client.sh Advanced_OpenVPNClient_Content.asp mount_files_lan.sh mount_files_gui.sh; do
-    localmd5="$(md5sum "$ADDONS/$FILE" | awk '{print $1}')"
-    remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
-    if [ "$localmd5" != "$remotemd5" ]; then
-      printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " does not match - downloading"
-      Download_File "$ADDONS" "$FILE"
+    if [ -s "$ADDONS/$FILE" ]; then
+      localmd5="$(md5sum "$ADDONS/$FILE" | awk '{print $1}')"
+      remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
+      if [ "$localmd5" != "$remotemd5" ]; then
+        printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " does not match - downloading"
+        Download_File "$ADDONS" "$FILE"
+      fi
     fi
   done
 

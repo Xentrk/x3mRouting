@@ -161,6 +161,8 @@ Remove_LAN_Clients() {
   for VPN_ID in 1 2 3 4 5; do
     [ -s "$ADDON_DIR/ovpnc${VPN_ID}.nvram" ] && rm -rf "$ADDON_DIR/ovpnc${VPN_ID}.nvram" && service restart_vpnclient"$VPN_ID" && echo "Retarting VPN Client $VPN_ID to remove x3mRouting LAN Client Rules"
   done
+  
+  [ -s "$LOCAL_REPO/x3mRouting_client_rules" ] && rm -f "$LOCAL_REPO/x3mRouting_client_rules"
 
   if [ -s "$LOCAL_REPO/Advanced_OpenVPNClient_Content.asp" ]; then
     for FILE in mount_files_lan.sh x3mRouting_client_nvram.sh x3mRouting_client_config.sh; do

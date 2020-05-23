@@ -161,13 +161,13 @@ Remove_LAN_Clients() {
   if [ -s "$LOCAL_REPO/Advanced_OpenVPNClient_Content.asp" ]; then
     for FILE in mount_files_lan.sh x3mRouting_client_nvram.sh x3mRouting_client_config.sh; do
       if [ -s "$LOCAL_REPO/$FILE" ]; then
-        rm -rf "$FILE" && printf '\n\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
+        rm -rf "$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
       fi
     done
   else
     for FILE in mount_files_lan.sh x3mRouting_client_nvram.sh x3mRouting_client_config.sh vpnrouting.sh updown-client.sh mount_files_lan.sh; do
       if [ -s "$LOCAL_REPO/$FILE" ]; then
-        rm -rf "$FILE" && printf '\n\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
+        rm -rf "$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
         case $FILE in
           vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh ;;
           updown-client.sh) [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh ;;
@@ -175,8 +175,7 @@ Remove_LAN_Clients() {
       fi
     done
   fi
-  echo
-  echo "Press enter to continue"
+  printf "\nPress enter to continue"
   read -r
   Welcome_Message
 }

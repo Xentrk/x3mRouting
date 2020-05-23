@@ -219,32 +219,13 @@ Remove_OPT2() {
   [ "$READY" -eq "0" ] && echo "Existing jq package found." && opkg remove jq && echo "jq successfully removed" || echo "Error occurred when removing jq"
 
   for FILE in x3mRouting.sh openvpn-event; do
-    if [ -s "$LOCAL_REPO/$FILE" ]; then
-      printf '\n%s%b%s%b%s\n\n' "Are you sure you want to uninstall the " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " file?"
-      printf '\n%s\n' "$FILE will work without the GUI" 
-      printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
-      printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN" "$COLOR_WHITE"
-      printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
-      read -r "menu_Validate_Removal"
-      case "$menu_Validate_Removal" in
-      1)
-        [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
-        [ "$FILE" = "x3mRouting.sh" ] &&  rm -rf "/opt/bin/x3mRouting" 2>/dev/null
-        break
-        ;;
-      2)
-        return
-        ;;
-      *)
-        printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu_Validate_Removal" "$COLOR_WHITE"
-        ;;
-      esac
-    fi
+    [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
+    [ "$FILE" = "x3mRouting.sh" ] &&  rm -rf "/opt/bin/x3mRouting" 2>/dev/null
   done
 
   [ -s "$ADDONS/mount_files_gui.sh" ] && rm -f "$ADDONS/mount_files_gui.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/mount_files_gui.sh" "$COLOR_WHITE" " completed"
 
-  [ -s Advanced_OpenVPNClient_Content.asp ] && [ "$(df | grep -q "/www/Advanced_OpenVPNClient_Content.asp")" ] && umount /www/Advanced_OpenVPNClient_Content.asp && rm -f "$ADDONS/Advanced_OpenVPNClient_Content.asp"
+  [ -s "$ADDONS/Advanced_OpenVPNClient_Content.asp" ] && [ "$(df | grep -q "/www/Advanced_OpenVPNClient_Content.asp")" ] && umount /www/Advanced_OpenVPNClient_Content.asp && rm -f "$ADDONS/Advanced_OpenVPNClient_Content.asp"
 
   if [ ! -s "$LOCAL_REPO/x3mRouting_client_nvram.sh" ] && [ ! -s "$LOCAL_REPO/x3mRouting_client_config.sh" ]; then
     for FILE in vpnrouting.sh updown-client.sh; do

@@ -232,7 +232,7 @@ Confirm_Update() {
     printf 'since you last installed the repository.  Updating is highly recommended to get the most recent.\n'
     printf 'files. Chosing this option will not update missing files. Select the install option from the\n'
     printf 'menu to reinstall missing files\n\n'
-    printf 'Would you like to check and download any files that have been updated?\n'
+    printf 'Would you like to check and download any files that have been updated?\n\n'
     printf '%b[1]%b  --> Yes\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '%b[2]%b  --> No\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     echo
@@ -1175,8 +1175,8 @@ Update_Installer() {
 
   while true; do
     printf '\n\nAn updated version of the x3mRouting menu as been detected\n'
-    printf 'Updating the x3mRouting menu is highly recommended.\n'
-    printf 'Would you like to download the new version now?\n'
+    printf 'Updating the x3mRouting menu is highly recommended.\n\n'
+    printf 'Would you like to download the new version now?\n\n'
     printf '%b[1]%b  --> Yes\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '%b[2]%b  --> No\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     echo

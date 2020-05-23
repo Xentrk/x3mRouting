@@ -243,7 +243,7 @@ Remove_OPT2() {
 
   [ -s "$ADDONS/mount_files_gui.sh" ] && rm -f "$ADDONS/mount_files_gui.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/mount_files_gui.sh" "$COLOR_WHITE" " completed"
 
-  [ -s "$ADDONS/Advanced_OpenVPNClient_Content" ] && rm -f "$ADDONS/Advanced_OpenVPNClient_Content" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/Advanced_OpenVPNClient_Content" "$COLOR_WHITE" " completed"
+  [ -s "$ADDONS/Advanced_OpenVPNClient_Content.asp" ] && rm -f "$ADDONS/Advanced_OpenVPNClient_Content.asp" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/Advanced_OpenVPNClient_Content.asp" "$COLOR_WHITE" " completed"
 
   if [ ! -s "$LOCAL_REPO/x3mRouting_client_nvram.sh" ] && [ ! -s "$LOCAL_REPO/x3mRouting_client_config.sh" ]; then
     for FILE in vpnrouting.sh updown-client.sh; do
@@ -950,11 +950,7 @@ Remove_Existing_Installation() {
   Chk_Entware jq 1
   if [ "$READY" -eq "0" ]; then
     echo "Existing jq package found. Removing jq"
-    if opkg remove jq; then
-      echo "jq successfully removed"
-    else
-      echo "Error occurred when removing jq"
-    fi
+    opkg remove jq && echo "jq successfully removed" || echo "Error occurred when removing jq"
   fi
 
   # Remove entries from /jffs/scripts/init-start

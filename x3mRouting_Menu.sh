@@ -243,6 +243,7 @@ Confirm_Update() {
     read -r "Confirm_Update_Option"
     case "$Confirm_Update_Option" in
     1)
+      echo
       Update_Repo_Files
       Update_Addons_Files
       break

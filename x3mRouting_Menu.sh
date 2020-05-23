@@ -227,7 +227,7 @@ Remove_OPT2() {
         Chk_Entware jq 1
         [ "$READY" -eq "0" ] && echo "Existing jq package found." && opkg remove jq && echo "jq successfully removed" || echo "Error occurred when removing jq"
         [ -s "$LOCAL_REPO/x3mRouting.sh" ] && rm -f "$LOCAL_REPO/x3mRouting.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/mount_files_lan.sh" "$COLOR_WHITE" " completed"
-        [ -s "$LOCAL_REPO/openvpn-event.sh" ] && rm -f "$LOCAL_REPO/openvpn-event" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/mount_files_lan.sh" "$COLOR_WHITE" " completed"
+        [ -s "$LOCAL_REPO/openvpn-event" ] && rm -f "$LOCAL_REPO/openvpn-event" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/mount_files_lan.sh" "$COLOR_WHITE" " completed"
         break
         ;;
       2)

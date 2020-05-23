@@ -21,7 +21,8 @@ VERSION="2.0.0"
 GIT_REPO="x3mRouting"
 #GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/master"
 GITHUB_DIR=https://raw.githubusercontent.com/Xentrk/$GIT_REPO/x3mRouting-NG
-LOCAL_REPO="/jffs/scripts/x3mRouting"
+LOCAL_REPO=/jffs/scripts/x3mRouting
+ADDONS=/jffs/addons/x3mRouting
 
 # Uncomment the line below for debugging
 #set -x
@@ -61,7 +62,7 @@ Main_Menu() {
     printf '%b[4]%b  Install getdomainnames.sh Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '%b[5]%b  Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '%b[6]%b  Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    localmd5="$(md5sum "/jffs/addons/x3mRouting/x3mRouting_Menu.sh" | awk '{print $1}')"
+    localmd5="$(md5sum "$ADDONS/x3mRouting_Menu.sh" | awk '{print $1}')"
     remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/x3mRouting_Menu.sh" | md5sum | awk '{print $1}')"
     if [ "$localmd5" != "$remotemd5" ]; then
       printf '%b[7]%b  Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
@@ -77,26 +78,30 @@ Main_Menu() {
 
     case "$menu1" in
       1)
+        mkdir -p "$LOCAL_REPO"
         Install_x3mRouting_LAN_Clients
-        Install_done "x3mRouting for LAN Clients"
+        Install_Done "x3mRouting for LAN Clients"
         return 1
         ;;
       2)
+        mkdir -p "$LOCAL_REPO"
         Install_x3mRouting_GUI
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
-        Install_done "GUI, OpenVPN Event and Shell Scripts"
+        Install_Done "GUI, OpenVPN Event and Shell Scripts"
         return 1
         ;;
       3)
+        mkdir -p "$LOCAL_REPO"
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
-        Install_done "OpenVPN Event and Shell Scripts"
+        Install_Done "OpenVPN Event and Shell Scripts"
         return 1
         ;;
       4)
+        mkdir -p "$LOCAL_REPO"
         Download_File "$LOCAL_REPO" "getdomainnames.sh"
-        Install_done "getdomainnames.sh"
+        Install_Done "getdomainnames.sh"
         return 1
         ;;
       5)
@@ -115,7 +120,8 @@ Main_Menu() {
       u)
         Pre_Install_OpenVPN_Event_x3mRouting
         Update_NewVersion
-        Update_Version
+        Update_Repo_Files
+        Update_Addons_Files
         Welcome_Message
         return 1
         ;;
@@ -133,7 +139,7 @@ Main_Menu() {
   done
 }
 
-Install_done() {
+Install_Done() {
   echo
   printf '%s%b%s%b%s\n\n' "Installation of " "$COLOR_GREEN" "$1" "$COLOR_GREEN" " completed"
   echo "Press enter to continue"
@@ -180,7 +186,8 @@ Confirm_Update() {
     read -r "Confirm_Update_Option"
     case "$Confirm_Update_Option" in
     1)
-      Update_Version
+      Update_Repo_Files
+      Update_Addons_Files
       break
       ;;
     2)
@@ -196,58 +203,93 @@ Confirm_Update() {
 
 Remove_Mounts () {
 
-  if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ]; then
-    umount /usr/sbin/vpnrouting.sh
-  fi
-  if [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ]; then
-    umount /usr/sbin/updown-client.sh
-  fi
-  if [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ]; then
-    umount /www/Advanced_OpenVPNClient_Content.asp
-  fi
+  [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh
+  [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh
+  [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ] && umount /www/Advanced_OpenVPNClient_Content.asp
+
 }
+
+Migrate_Util_Files () {
+
+  for FILE in vpnrouting.sh updown-client.sh Advanced_OpenVPNClient_Content.asp mount_files_lan.sh mount_files_gui.sh; do
+    if [ -s "$LOCAL_REPO/$FILE" ]; then
+      case "$FILE" in
+        vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh && [ -s "$LOCAL_REPO/$FILE" ] && mv "$LOCAL_REPO/$FILE" "$ADDONS/$FILE" ;;
+        updown-client.sh) [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh && [ -s "$LOCAL_REPO/$FILE" ] && mv "$LOCAL_REPO/$FILE" "$ADDONS/$FILE" ;;
+        Advanced_OpenVPNClient_Content.asp) [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ] && umount /www/Advanced_OpenVPNClient_Content.asp && [ -s "$LOCAL_REPO/$FILE" ] && mv "$LOCAL_REPO/$FILE" "$ADDONS/$FILE" ;;
+        mount_files_lan.sh | mount_files_gui.sh) [ -s "$LOCAL_REPO/$FILE" ] && mv "$LOCAL_REPO/$FILE" "$ADDONS/$FILE" && sed 's/scripts/addons/' "$ADDONS/$FILE" > "/tmp/$FILE" && mv "/tmp/$FILE" "$ADDONS/$FILE" && chmod 755 "$ADDONS/$FILE" ;;
+      esac
+    fi
+  done
+
+  if [ -s "/jffs/scripts/init-start" ]; then
+    for FILE in mount_files_lan.sh mount_files_gui.sh; do
+      if grep -q "$LOCAL_REPO/$FILE" "/jffs/scripts/init-start"; then
+        OLD_ENTRY="$LOCAL_REPO/$FILE"
+        NEW_ENTRY="$ADDONS/$FILE"
+        sed "s|$OLD_ENTRY|$NEW_ENTRY|" "/jffs/scripts/init-start" > "/tmp/init-start" && mv "/tmp/init-start" "/jffs/scripts/init-start" && chmod 755 "/jffs/scripts/init-start"
+        sh /jffs/scripts/init-start
+      fi
+    done
+  fi
+
+}
+
 ### Code for update code functions inspired by https://github.com/Adamm00 - credit to @Adamm
 ### and https://github.com/jackyaz/spdMerlin - credit to Jack Yaz
-Update_Version() {
+Update_Addons_Files() {
 
-  DIR="$LOCAL_REPO"
+    for FILE in mount_files_lan.sh mount_files_gui.sh; do
+      if [ -s "$ADDONS/$FILE" ]; then
+        localver=$(grep "VERSION=" "$ADDONS/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
+        serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
+        if [ "$localver" != "$serverver" ]; then
+          printf 'New version of %b%s%b available - updating to %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
+          Download_File "$ADDONS" "$FILE"
+        else
+          printf 'No new version of %b%s%b to update - latest is %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
+        fi
+      fi
+    done
 
-  if [ -d "$DIR" ]; then
-    Remove_Mounts
-    for FILE in vpnrouting.sh \
-      updown-client.sh \
-      Advanced_OpenVPNClient_Content.asp \
-      x3mRouting.sh \
-      x3mRouting_client_nvram.sh \
-      x3mRouting_client_config.sh \
-      mount_files_lan.sh \
-      mount_files_gui.sh \
-      openvpn-event \
-      getdomainnames.sh; do
-      if [ -s "$DIR/$FILE" ]; then
-        #if [ -z "$1" ]; then
-          if [ "$FILE" != "vpnrouting.sh" ]; then
-            if [ "$FILE" != "updown-client.sh" ]; then
-              if [ "$FILE" != "Advanced_OpenVPNClient_Content.asp" ]; then
-                # force_update="false"
-                localver=$(grep "VERSION=" "$DIR/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
-                serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
-                if [ "$localver" != "$serverver" ]; then
-                  printf 'New version of %b%s%b available - updating to %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
-                  Download_File "$DIR" "$FILE"
-                else
-                  printf 'No new version of %b%s%b to update - latest is %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
-                fi
-              fi
-            fi
-          fi
-          localmd5="$(md5sum "$DIR/$FILE" | awk '{print $1}')"
-          remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
-          if [ "$localmd5" != "$remotemd5" ]; then
-            printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " does not match - downloading"
-            Download_File "$DIR" "$FILE"
-          fi
-        #fi
+  Remove_Mounts
+  for FILE in vpnrouting.sh updown-client.sh Advanced_OpenVPNClient_Content.asp mount_files_lan.sh mount_files_gui.sh; do
+    localmd5="$(md5sum "$ADDONS/$FILE" | awk '{print $1}')"
+    remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
+    if [ "$localmd5" != "$remotemd5" ]; then
+      printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " does not match - downloading"
+      Download_File "$ADDONS" "$FILE"
+    fi
+  done
+
+  sh /jffs/scripts/init-start
+  echo
+  echo "Update of x3mRouting completed"
+  echo
+  echo "Press enter to continue"
+  read -r
+
+}
+
+Update_Repo_Files() {
+
+  if [ -d "$LOCAL_REPO" ]; then
+    for FILE in x3mRouting.sh x3mRouting_client_nvram.sh x3mRouting_client_config.sh openvpn-event getdomainnames.sh; do
+      if [ -s "$LOCAL_REPO/$FILE" ]; then
+        localver=$(grep "VERSION=" "$LOCAL_REPO/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
+        serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
+        if [ "$localver" != "$serverver" ]; then
+          printf 'New version of %b%s%b available - updating to %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
+          Download_File "$LOCAL_REPO" "$FILE"
+        else
+          printf 'No new version of %b%s%b to update - latest is %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
+        fi
+      fi
+      localmd5="$(md5sum "$LOCAL_REPO/$FILE" | awk '{print $1}')"
+      remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
+      if [ "$localmd5" != "$remotemd5" ]; then
+        printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " does not match - downloading"
+        Download_File "$LOCAL_REPO" "$FILE"
       fi
     done
   else
@@ -259,25 +301,12 @@ Update_Version() {
     return
   fi
 
-  if [ -s "/jffs/scripts/init-start" ]; then
-    if [ "$(grep -c "sh /jffs/scripts/x3mRouting/mount_files_gui.sh" "/jffs/scripts/init-start")" -ge 1 ]; then
-      sh /jffs/scripts/x3mRouting/mount_files_gui.sh
-    fi
-    if [ "$(grep -c "sh /jffs/scripts/x3mRouting/mount_files_lan.sh" "/jffs/scripts/init-start")" -ge 1 ]; then
-      sh /jffs/scripts/x3mRouting/mount_files_lan.sh
-    fi
-  fi
-  echo
-  echo "Update of x3mRouting completed"
-  echo
-  echo "Press enter to continue"
-  read -r
 }
 
 Pre_Install_OpenVPN_Event_x3mRouting () {
   # checking for existance of any "load" scripts. Their presence indicates x3mRouting.sh & openvpn need to be first installed
   # before removing the "load" scripts
-  if [ "$(ls /jffs/scripts/x3mRouting | grep -c "load_")" -ge "1" ]; then
+  if [ "$(ls "$LOCAL_REPO" | grep -c "load_")" -ge "1" ]; then
     Download_File "$LOCAL_REPO" "x3mRouting.sh" && rm -rf "/opt/bin/x3mRouting" 2>/dev/null && ln -s "$LOCAL_REPO/x3mRouting.sh" "/opt/bin/x3mRouting"
     Download_File "$LOCAL_REPO" "openvpn-event"
   fi
@@ -540,89 +569,89 @@ Update_NewVersion() {
 
   }
 
-Remove_Prerouting_Rules () {
+  Remove_Prerouting_Rules () {
 
-  echo
-  echo "Delete any existing PREROUTING rules for IPSET lists"
-  echo
-  iptables -nvL PREROUTING -t mangle --line | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
-    echo "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
-    iptables -t mangle -D PREROUTING "$CHAIN_NUM"
-  done
+    echo
+    echo "Delete any existing PREROUTING rules for IPSET lists"
+    echo
+    iptables -nvL PREROUTING -t mangle --line | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
+      echo "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
+      iptables -t mangle -D PREROUTING "$CHAIN_NUM"
+    done
 
-}
+  }
 
-Remove_IPSET_dnsmasqconfadd () {
+  Remove_IPSET_dnsmasqconfadd () {
 
-  if [ -s "/jffs/configs/dnsmasq.conf.add" ]; then
-    cp "/jffs/configs/dnsmasq.conf.add" "/jffs/configs/dnsmasq.conf.add.$TIMESTAMP"
-    sed -i "\\~ipset~d" "/jffs/configs/dnsmasq.conf.add"
-    Check_For_Shebang "/jffs/configs/dnsmasq.conf.add"
-  fi
-}
+    if [ -s "/jffs/configs/dnsmasq.conf.add" ]; then
+      cp "/jffs/configs/dnsmasq.conf.add" "/jffs/configs/dnsmasq.conf.add.$TIMESTAMP"
+      sed -i "\\~ipset~d" "/jffs/configs/dnsmasq.conf.add"
+      Check_For_Shebang "/jffs/configs/dnsmasq.conf.add"
+    fi
+  }
 
-Convert_Server_Routing_Entries() {
+  Convert_Server_Routing_Entries() {
 
-  for VPNSERVER in 1 2; do
-    VPN_SERVER_SN=$(nvram get vpn_server${VPNSERVER}_sn)/24
-    for SERVER_FILE in "$LOCAL_REPO/vpnserver${VPNSERVER}-up" "$LOCAL_REPO/vpnserver${VPNSERVER}-down"; do
-      while [ -s "$SERVER_FILE" ]; do
-        while [ "$(grep -c "$VPN_SERVER_SN" "$SERVER_FILE")" -ge "1" ]; do
-        #if [ "$(grep -c "$VPN_SERVER_SN" "$SERVER_FILE")" -ge "1" ]; then
-          TUN=$(grep -m 1 "$VPN_SERVER_SN" "$SERVER_FILE" | awk '{print $9}')
-          case "$TUN" in
-            tun11) VPN_CLIENT_INSTANCE=1 ;;
-            tun12) VPN_CLIENT_INSTANCE=2 ;;
-            tun13) VPN_CLIENT_INSTANCE=3 ;;
-            tun14) VPN_CLIENT_INSTANCE=4 ;;
-            tun15) VPN_CLIENT_INSTANCE=5 ;;
-          esac
-          # Determine if iptables rule is a VPN Server to VPN Client or VPN Server to IPSET List
-          # Test for VPN Server to VPN Client
-          VPN_IP_LIST=$(nvram get vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist)
-          POLICY_RULE_WITHOUT_NAME="${VPN_SERVER_SN}>0.0.0.0>VPN"
-          if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE_WITHOUT_NAME")" -ge "1" ]; then
-            # Confirmed VPN Server to VPN Client
-            if [ "$(echo "$SERVER_FILE" | grep -c "up")" -gt "0" ]; then # only create script for vpnserverX-up file
-              SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh server=$VPNSERVER client=$VPN_CLIENT_INSTANCE"
-              {
-                echo
-                echo "# Found VPN Server to VPN Client iptables entries in $SERVER_FILE"
-                echo "$SCRIPT_ENTRY"
-              } >> "$CONV_FILE"
-               # Delete POSTROUTING Entry
-              iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SN" -o "$TUN" -j MASQUERADE 2>/dev/null
+    for VPNSERVER in 1 2; do
+      VPN_SERVER_SN=$(nvram get vpn_server${VPNSERVER}_sn)/24
+      for SERVER_FILE in "$LOCAL_REPO/vpnserver${VPNSERVER}-up" "$LOCAL_REPO/vpnserver${VPNSERVER}-down"; do
+        while [ -s "$SERVER_FILE" ]; do
+          while [ "$(grep -c "$VPN_SERVER_SN" "$SERVER_FILE")" -ge "1" ]; do
+            #if [ "$(grep -c "$VPN_SERVER_SN" "$SERVER_FILE")" -ge "1" ]; then
+            TUN=$(grep -m 1 "$VPN_SERVER_SN" "$SERVER_FILE" | awk '{print $9}')
+            case "$TUN" in
+              tun11) VPN_CLIENT_INSTANCE=1 ;;
+              tun12) VPN_CLIENT_INSTANCE=2 ;;
+              tun13) VPN_CLIENT_INSTANCE=3 ;;
+              tun14) VPN_CLIENT_INSTANCE=4 ;;
+              tun15) VPN_CLIENT_INSTANCE=5 ;;
+            esac
+            # Determine if iptables rule is a VPN Server to VPN Client or VPN Server to IPSET List
+            # Test for VPN Server to VPN Client
+            VPN_IP_LIST=$(nvram get vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist)
+            POLICY_RULE_WITHOUT_NAME="${VPN_SERVER_SN}>0.0.0.0>VPN"
+            if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE_WITHOUT_NAME")" -ge "1" ]; then
+              # Confirmed VPN Server to VPN Client
+              if [ "$(echo "$SERVER_FILE" | grep -c "up")" -gt "0" ]; then # only create script for vpnserverX-up file
+                SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh server=$VPNSERVER client=$VPN_CLIENT_INSTANCE"
+                {
+                  echo
+                  echo "# Found VPN Server to VPN Client iptables entries in $SERVER_FILE"
+                  echo "$SCRIPT_ENTRY"
+                } >> "$CONV_FILE"
+                # Delete POSTROUTING Entry
+                iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SN" -o "$TUN" -j MASQUERADE 2>/dev/null
+              fi
+              CMD="awk '\$5 == \"POSTROUTING\" && \$7 == \"$VPN_SERVER_SN\" && \$9 == \"$TUN\" && \$11 == \"MASQUERADE\" {next} {print \$0}' \"$SERVER_FILE\" #> \"$SERVER_FILE.tmp\" && mv \"$SERVER_FILE.tmp\" \"$SERVER_FILE\""
+              eval "$CMD" > "$SERVER_FILE.tmp" && mv "$SERVER_FILE.tmp" "$SERVER_FILE"
+            else # Default to VPN Server to IPSET List
+              IPSET_NAME=$(grep -m 1 "tun2${VPNSERVER}" "$SERVER_FILE" | awk '{print $11}')
+              TAG_MARK=$(grep -m 1 "tun2${VPNSERVER}" "$SERVER_FILE" | awk '{print $16}')
+              if [ "$(echo "$SERVER_FILE" | grep -c "up")" -gt "0" ]; then # only create script for vpnserverX-up file
+                SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh server=$VPNSERVER ipset_name=$IPSET_NAME" >> "$CONV_FILE"
+                {
+                  echo
+                  echo "# Found VPN Server to IPSET list iptables entries in $SERVER_FILE"
+                  echo "$SCRIPT_ENTRY"
+                } >> "$CONV_FILE"
+                iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SN" -o "$TUN" -j MASQUERADE 2>/dev/null
+                iptables -t mangle -D PREROUTING -i tun2"$VPNSERVER" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
+              fi
+
+              # Delete POSTROUTING Entry
+              CMD="awk '\$5 == \"POSTROUTING\" && \$7 == \"$VPN_SERVER_SN\" && \$9 == \"$TUN\" && \$11 == \"MASQUERADE\" {next} {print \$0}' \"$SERVER_FILE\" #> \"$SERVER_FILE.tmp\" && mv \"$SERVER_FILE.tmp\" \"$SERVER_FILE\""
+              eval "$CMD" > "$SERVER_FILE.tmp" && mv "$SERVER_FILE.tmp" "$SERVER_FILE"
+              # Delete PREROUTING Entry
+              CMD="awk '\$5 == \"PREROUTING\" && \$7 == \"tun2$VPNSERVER\" && \$11 == \"$IPSET_NAME\" {next} {print \$0}' \"$SERVER_FILE"\" #> \"$SERVER_FILE.tmp\" && mv \"$SERVER_FILE.tmp\" \"$SERVER_FILE"\""
+              eval "$CMD" > "$SERVER_FILE.tmp" && mv "$SERVER_FILE.tmp" "$SERVER_FILE"
             fi
-            CMD="awk '\$5 == \"POSTROUTING\" && \$7 == \"$VPN_SERVER_SN\" && \$9 == \"$TUN\" && \$11 == \"MASQUERADE\" {next} {print \$0}' \"$SERVER_FILE\" #> \"$SERVER_FILE.tmp\" && mv \"$SERVER_FILE.tmp\" \"$SERVER_FILE\""
-            eval "$CMD" > "$SERVER_FILE.tmp" && mv "$SERVER_FILE.tmp" "$SERVER_FILE"
-          else # Default to VPN Server to IPSET List
-            IPSET_NAME=$(grep -m 1 "tun2${VPNSERVER}" "$SERVER_FILE" | awk '{print $11}')
-            TAG_MARK=$(grep -m 1 "tun2${VPNSERVER}" "$SERVER_FILE" | awk '{print $16}')
-            if [ "$(echo "$SERVER_FILE" | grep -c "up")" -gt "0" ]; then # only create script for vpnserverX-up file
-              SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh server=$VPNSERVER ipset_name=$IPSET_NAME" >> "$CONV_FILE"
-              {
-                echo
-                echo "# Found VPN Server to IPSET list iptables entries in $SERVER_FILE"
-                echo "$SCRIPT_ENTRY"
-              } >> "$CONV_FILE"
-              iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SN" -o "$TUN" -j MASQUERADE 2>/dev/null
-              iptables -t mangle -D PREROUTING -i tun2"$VPNSERVER" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
-            fi
-
-            # Delete POSTROUTING Entry
-            CMD="awk '\$5 == \"POSTROUTING\" && \$7 == \"$VPN_SERVER_SN\" && \$9 == \"$TUN\" && \$11 == \"MASQUERADE\" {next} {print \$0}' \"$SERVER_FILE\" #> \"$SERVER_FILE.tmp\" && mv \"$SERVER_FILE.tmp\" \"$SERVER_FILE\""
-            eval "$CMD" > "$SERVER_FILE.tmp" && mv "$SERVER_FILE.tmp" "$SERVER_FILE"
-            # Delete PREROUTING Entry
-            CMD="awk '\$5 == \"PREROUTING\" && \$7 == \"tun2$VPNSERVER\" && \$11 == \"$IPSET_NAME\" {next} {print \$0}' \"$SERVER_FILE"\" #> \"$SERVER_FILE.tmp\" && mv \"$SERVER_FILE.tmp\" \"$SERVER_FILE"\""
-            eval "$CMD" > "$SERVER_FILE.tmp" && mv "$SERVER_FILE.tmp" "$SERVER_FILE"
-          fi
-        done #fi
-        Check_For_Shebang "$SERVER_FILE"
+          done #fi
+          Check_For_Shebang "$SERVER_FILE"
+        done
       done
     done
-  done
 
-}
+  }
   # END: Conversion Functions
 
   # START: Process Conversion
@@ -660,8 +689,7 @@ Convert_Server_Routing_Entries() {
   for VPNID in 1 2 3 4 5; do
     CFG_FILE=/jffs/configs/ovpnc${VPNID}.nvram
     if [ -s "$CFG_FILE" ]; then # file exists
-      mkdir -p /jffs/addons/x3mRouting
-      mv "$CFG_FILE" /jffs/addons/x3mRouting/ovpnc${VPNID}.nvram && printf '%s\n' "$CFG_FILE moved to /jffs/addons/x3mRouting/ovpnc${VPNID}.nvram"
+      mv "$CFG_FILE" "$ADDONS/ovpnc${VPNID}.nvram" && printf '%s\n' "$CFG_FILE moved to $ADDONS/ovpnc${VPNID}.nvram"
     fi
   done
 
@@ -723,7 +751,7 @@ Remove_Existing_Installation() {
 
   # Remove entries from /jffs/scripts/init-start
   if [ -s "/jffs/scripts/init-start" ]; then # file exists
-    for PARM in "sh $LOCAL_REPO/mount_files_lan.sh" "sh $LOCAL_REPO/mount_files_gui.sh"; do
+    for PARM in "sh $ADDONS/mount_files_lan.sh" "sh $ADDONS/mount_files_gui.sh"; do
       if grep -q "$PARM" "/jffs/scripts/init-start"; then # see if line exists
         sed -i "\\~$PARM~d" "/jffs/scripts/init-start"
         printf '%b%s%b%s%b%s%b\n' "$COLOR_GREEN" "$PARM" "$COLOR_WHITE" " entry removed from " "$COLOR_GREEN" "/jffs/scripts/init-start" "$COLOR_WHITE"
@@ -754,7 +782,7 @@ Remove_Existing_Installation() {
   fi
 
   # Purge /jffs/scripts/x3mRouting directory
-  for DIR in $LOCAL_REPO; do
+  for DIR in $LOCAL_REPO $ADDONS; do
     if [ -d "$DIR" ]; then
       if ! rm -rf "${DIR:?}/"* >/dev/null 2>&1; then
         printf '\nNo files found to remove in %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
@@ -768,20 +796,6 @@ Remove_Existing_Installation() {
       printf '\n%b%s%b folder does not exist. No directory to remove\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
     fi
   done
-
-  DIR="/jffs/addons/x3mRouting"
-  if [ -d "$DIR" ]; then
-	   if ! rm -rf "${DIR:?}/"* 2>/dev/null; then
-		   printf '\nNo files found to remove in %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
-	   fi
-	   if ! rmdir "$DIR" 2>/dev/null; then
-		   printf '\nError trying to remove %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
-	   else
-		   printf '\n%b%s%b folder and all files removed\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
-	   fi
-  else
-      printf '\n%b%s%b folder does not exist. No directory to remove\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
-  fi
 
   Exit_Message
 
@@ -830,20 +844,6 @@ Chk_Entware() {
   return "$READY"
 }
 
-Create_Project_Directory() {
-
-  for DIR in $LOCAL_REPO; do
-    if [ ! -d "$DIR" ]; then
-      if mkdir -p "$DIR" >/dev/null 2>&1; then
-        printf "Created project directory %b%s%b\\n" "${COLOR_GREEN}" "${DIR}" "${COLOR_WHITE}"
-      else
-        printf "Error creating directory %b%s%b. Exiting $(basename "$0")\\n" "${COLOR_GREEN}" "${DIR}" "${COLOR_WHITE}"
-        exit 1
-      fi
-    fi
-  done
-}
-
 Download_File() {
 
   DIR="$1"
@@ -878,18 +878,18 @@ Exit_Message() {
 
 Init_Start_Update() {
 
-  PARM="$1"
+  PARM=$1
 
   # checking for condition that user previously installed LAN clients. if so, remove mount_files_lan.sh entry
   if [ -s "/jffs/scripts/init-start" ] && [ "$PARM" = "mount_files_gui.sh" ]; then
-    if grep -q "sh $LOCAL_REPO/mount_files_lan.sh" "/jffs/scripts/init-start"; then
-      sed -i "\\~$LOCAL_REPO/mount_files_lan.sh~d" "/jffs/scripts/init-start"
+    if grep -q "sh $ADDONS/mount_files_lan.sh" "/jffs/scripts/init-start"; then
+      sed -i "\\~$ADDONS/mount_files_lan.sh~d" "/jffs/scripts/init-start"
     fi
   fi
 
   if [ -s "/jffs/scripts/init-start" ]; then # file exists
     if ! grep -q "$PARM" "/jffs/scripts/init-start"; then
-      echo "sh $LOCAL_REPO/$PARM" >>/jffs/scripts/init-start
+      echo "sh $ADDONS/$PARM    # x3mRouting" >>/jffs/scripts/init-start
       printf 'Updated %b/jffs/scripts/init-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
     else
       printf 'Required entry already exists in %b/jffs/scripts/init-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
@@ -897,7 +897,7 @@ Init_Start_Update() {
     fi
   else
     echo "#!/bin/sh" >/jffs/scripts/init-start
-    echo "sh $LOCAL_REPO/$PARM" >>/jffs/scripts/init-start
+    echo "sh $ADDONS/$PARM    # x3mRouting" >>/jffs/scripts/init-start
     chmod 0755 /jffs/scripts/init-start
     printf 'Created %b/jffs/scripts/init-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
   fi
@@ -905,21 +905,19 @@ Init_Start_Update() {
 
 Install_x3mRouting_LAN_Clients() {
 
-  Create_Project_Directory
   Download_File "$LOCAL_REPO" "x3mRouting_client_nvram.sh"
   Download_File "$LOCAL_REPO" "x3mRouting_client_config.sh"
-  Download_File "$LOCAL_REPO" "vpnrouting.sh"
-  Download_File "$LOCAL_REPO" "updown-client.sh"
-  Download_File "$LOCAL_REPO" "mount_files_lan.sh"
+  Download_File "$ADDONS" "vpnrouting.sh"
+  Download_File "$ADDONS" "updown-client.sh"
+  Download_File "$ADDONS" "mount_files_lan.sh"
   Init_Start_Update "mount_files_lan.sh"
   sh /jffs/scripts/init-start
 }
 
 Install_x3mRouting_OpenVPN_Event() {
 
-  Create_Project_Directory
   Download_File "$LOCAL_REPO" "openvpn-event"
-  chmod 0755 "$DIR/$FILE"
+  chmod 0755 "$LOCAL_REPO/openvpn-event"
   if [ -s /jffs/scripts/openvpn-event ]; then
     if [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" "/jffs/scripts/openvpn-event")" -eq 0 ]; then # see if line exists
       printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
@@ -1004,12 +1002,11 @@ Check_Profile_Add() {
 Install_x3mRouting_GUI() {
 
   Check_Requirements
-  Create_Project_Directory
-  Download_File "$LOCAL_REPO" "vpnrouting.sh"
-  Download_File "$LOCAL_REPO" "updown-client.sh"
-  Download_File "$LOCAL_REPO" "Advanced_OpenVPNClient_Content.asp"
+  Download_File "$ADDONS" "vpnrouting.sh"
+  Download_File "$ADDONS" "updown-client.sh"
+  Download_File "$ADDONS" "Advanced_OpenVPNClient_Content.asp"
+  Download_File "$ADDONS" "mount_files_gui.sh"
   Download_File "$LOCAL_REPO" "x3mRouting.sh"
-  Download_File "$LOCAL_REPO" "mount_files_gui.sh"
   Init_Start_Update "mount_files_gui.sh"
   sh /jffs/scripts/init-start
   Check_Profile_Add
@@ -1020,31 +1017,12 @@ Install_x3mRouting_GUI() {
 Install_x3mRouting_Shell_Scripts() {
 
   Check_Requirements
-  Create_Project_Directory
   Download_File "$LOCAL_REPO" "x3mRouting.sh"
   # x3mRouting.sh Script
   if [ -d "/opt/bin" ] && [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
      ln -s "/jffs/scripts/x3mRouting/x3mRouting.sh" "/opt/bin/x3mRouting"
   fi
   Check_Profile_Add
-
-}
-
-Check_OpenVPN_Event() {
-
-    while true; do
-      if [ -s /jffs/scripts/openvpn-event ]; then
-        if [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" "/jffs/scripts/openvpn-event")" -eq 0 ]; then # see if line exists
-          printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
-        fi
-      else
-        echo "#!/bin/sh" >/jffs/scripts/openvpn-event
-        printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
-        chmod 0755 /jffs/scripts/openvpn-event
-      fi
-        Download_File /jffs/scripts/x3mRouting openvpn-event
-        break
-    done
 
 }
 
@@ -1062,20 +1040,19 @@ Update_Installer() {
     echo
     case "$menu_Update_Installer" in
     1)
-      mkdir -p /jffs/addons/x3mRouting
-      Download_File /jffs/addons/x3mRouting x3mRouting_Menu.sh
-      chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh
+      Download_File "$ADDONS" x3mRouting_Menu.sh
+      chmod 755 "$ADDONS/x3mRouting_Menu.sh"
       rm -rf "/opt/bin/x3mMenu" 2>/dev/null
       if [ -d "/opt/bin" ] && [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 1 ]; then # remove prior version alias if it exists.
           rm -rf "/opt/bin/x3mRouting" 2>/dev/null
       fi
       if [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mMenu-> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ]; then
-          ln -s /jffs/addons/x3mRouting/x3mRouting_Menu.sh /opt/bin/x3mMenu 2>&1
+          ln -s "$ADDONS/x3mRouting_Menu.sh" /opt/bin/x3mMenu 2>&1
       fi
       printf '\n%s\n\n' "x3mRouting Installation Menu update completed $remotemd5"
       echo "Press enter to continue"
       read -r
-      sh /jffs/addons/x3mRouting/x3mRouting_Menu.sh
+      sh "$ADDONS/x3mRouting_Menu.sh"
       # chg from break to exit 0 to fix sub shell error code dumps
       exit 0
       #break
@@ -1091,4 +1068,5 @@ Update_Installer() {
   done
 }
 
+Migrate_Util_Files  # If necessary, automatically move utility files to /jffs/addons/x3mRouting
 Welcome_Message

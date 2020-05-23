@@ -174,7 +174,7 @@ Remove_LAN_Clients() {
       fi
     done
   fi
-
+  Welcome_Message
 }
 
 

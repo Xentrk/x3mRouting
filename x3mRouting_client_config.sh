@@ -3,7 +3,7 @@
 # Script: x3mRouting_client_config.sh
 # VERSION=2.0.0
 # Author: Xentrk
-# 13-April-2020
+# 23-May-2020
 #
 #####################################################################################################
 # Description:
@@ -115,7 +115,7 @@ while read -r _ IP HOSTNAME; do
   echo "$IP $HOSTNAME" >>$CONFIG_FILE
 done </tmp/MACIPHOSTNAMES.$$
 
-sort "$CONFIG_FILE" -o "$CONFIG_FILE"
+sort -ut '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4n "$CONFIG_FILE" -o "$CONFIG_FILE"
 
 rm -rf /tmp/static_mac.$$
 rm -rf /tmp/static_ip.$$

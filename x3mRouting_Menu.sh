@@ -175,6 +175,7 @@ Remove_LAN_Clients() {
       fi
     done
   fi
+  echo
   echo "Press enter to continue"
   read -r
   Welcome_Message

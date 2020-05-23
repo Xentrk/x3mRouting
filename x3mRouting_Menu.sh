@@ -214,7 +214,7 @@ Confirm_Remove_LAN_Clients() {
 
 Remove_OPT2() {
 
-  if [ -s "$ADDONS/x3mRouting.sh" ] && [ -s "$ADDONS/openvpn-event" ]; then
+  if [ -s "$LOCAL_REPO/x3mRouting.sh" ] && [ -s "$LOCAL_REPO/openvpn-event" ]; then
     while true; do
       printf '\n%s%b%s%b%s%b%s%b%s\n\n' "Are you sure you want to uninstall" "$COLOR_GREEN" " x3mRouting.sh" "$COLOR_WHITE" " and " "$COLOR_GREEN" "openvpn-event" "$COLOR_WHITE" " files?"
       printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
@@ -223,8 +223,8 @@ Remove_OPT2() {
       read -r "menu_Validate_Removal"
       case "$menu_Validate_Removal" in
       1)
-        [ -s "$ADDONS/x3mRouting.sh" ] && rm -f "$ADDONS/x3mRouting.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/mount_files_lan.sh" "$COLOR_WHITE" " completed"
-        [ -s "$ADDONS/x3mRouting.sh" ] && rm -f "$ADDONS/openvpn-event" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/mount_files_lan.sh" "$COLOR_WHITE" " completed"
+        [ -s "$LOCAL_REPO/x3mRouting.sh" ] && rm -f "$LOCAL_REPO/x3mRouting.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/mount_files_lan.sh" "$COLOR_WHITE" " completed"
+        [ -s "$LOCAL_REPO/openvpn-event.sh" ] && rm -f "$LOCAL_REPO/openvpn-event" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/mount_files_lan.sh" "$COLOR_WHITE" " completed"
         break
         ;;
       2)

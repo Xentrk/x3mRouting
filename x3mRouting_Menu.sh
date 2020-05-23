@@ -99,6 +99,10 @@ Main_Menu() {
         Install_Done "GUI, OpenVPN Event and Shell Scripts"
         return 1
         ;;
+      "2 del")
+        Confirm_Remove_OPT2_Clients
+        return 1
+        ;;
       3)
         mkdir -p "$LOCAL_REPO"
         Install_x3mRouting_OpenVPN_Event
@@ -195,6 +199,75 @@ Confirm_Remove_LAN_Clients() {
     case "$menu_Validate_Removal" in
     1)
       Remove_LAN_Clients
+      break
+      ;;
+    2)
+      Welcome_Message
+      break
+      ;;
+    *)
+      printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu_Validate_Removal" "$COLOR_WHITE"
+      ;;
+    esac
+  done
+}
+
+Remove_OPT2() {
+
+  if [ -s "$ADDONS/x3mRouting.sh" ] && [ -s "$ADDONS/openvpn-event" ]; then
+    while true; do
+      printf '\n%s%b%s%b%s%b%s%b%s\n\n' "Are you sure you want to uninstall" "$COLOR_GREEN" " x3mRouting.sh" "$COLOR_WHITE" " and " "$COLOR_GREEN" "openvpn-event" "$COLOR_WHITE" " files?"
+      printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
+      printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN" "$COLOR_WHITE"
+      printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
+      read -r "menu_Validate_Removal"
+      case "$menu_Validate_Removal" in
+      1)
+        [ -s "$ADDONS/x3mRouting.sh" ] && rm -f "$ADDONS/x3mRouting.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/mount_files_lan.sh" "$COLOR_WHITE" " completed"
+        [ -s "$ADDONS/x3mRouting.sh" ] && rm -f "$ADDONS/openvpn-event" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/mount_files_lan.sh" "$COLOR_WHITE" " completed"
+        break
+        ;;
+      2)
+        Welcome_Message
+        break
+        ;;
+      *)
+        printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu_Validate_Removal" "$COLOR_WHITE"
+        ;;
+      esac
+    done
+  fi
+
+  [ -s "$ADDONS/mount_files_gui.sh" ] && rm -f "$ADDONS/mount_files_gui.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/mount_files_gui.sh" "$COLOR_WHITE" " completed"
+
+  [ -s "$ADDONS/Advanced_OpenVPNClient_Content" ] && rm -f "$ADDONS/Advanced_OpenVPNClient_Content" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/Advanced_OpenVPNClient_Content" "$COLOR_WHITE" " completed"
+
+  if [ ! -s "$LOCAL_REPO/x3mRouting_client_nvram.sh" ] && [ ! -s "$LOCAL_REPO/x3mRouting_client_config.sh" ]; then
+    for FILE in vpnrouting.sh updown-client.sh; do
+      if [ -s "$ADDONS/$FILE" ]; then
+        case $FILE in
+          vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh ;;
+          updown-client.sh) [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh ;;
+        esac
+        rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
+      fi
+    done
+  fi
+  printf "\nPress enter to continue"
+  read -r
+  Welcome_Message
+}
+
+Confirm_Remove_OPT2_Clients() {
+  while true; do
+    printf '\nAre you sure you want to uninstall Option 2 files?\n\n'
+    printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
+    read -r "menu_Validate_Removal"
+    case "$menu_Validate_Removal" in
+    1)
+      Remove_OPT2
       break
       ;;
     2)

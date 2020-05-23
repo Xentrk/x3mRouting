@@ -151,7 +151,7 @@ Install_Done() {
 
 Validate_Removal() {
   while true; do
-    printf 'Are you sure you want to uninstall the %bx3mRouting%b repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '\nAre you sure you want to uninstall the %bx3mRouting%b repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf 'and all changes made by the installer?\n'
     printf '%b[1]%b --> Yes \n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '%b[2]%b --> Cancel\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
@@ -824,7 +824,6 @@ Remove_Existing_Installation() {
       if grep -q "$PARM" "/jffs/scripts/init-start"; then # see if line exists
         sed -i "\\~$PARM~d" "/jffs/scripts/init-start"
         printf '%b%s%b%s%b%s%b\n' "$COLOR_GREEN" "$PARM" "$COLOR_WHITE" " entry removed from " "$COLOR_GREEN" "/jffs/scripts/init-start" "$COLOR_WHITE"
-        printf '%s%b%s%b%s\n' "You can manaully delete " "$COLOR_GREEN" "/jffs/scripts/init-start" "$COLOR_WHITE" " if you no longer require it"
       fi
     done
     Check_For_Shebang /jffs/scripts/init-start
@@ -845,10 +844,9 @@ Remove_Existing_Installation() {
     # remove x3mRouting entries in nat-start
     echo
     printf '%s%b%s%b%s\n\n' "Checking " "$COLOR_GREEN" "$NAT_START" "$COLOR_WHITE" " for x3mRouting scripts."
-    if grep -q "x3mRouting" "/jffs/scripts/nat-start"; then # see if line exists
+    if grep -q "x3mRouting" "$NAT_START"; then # see if line exists
       sed -i "\\~x3mRouting~d" "$NAT_START"
-      printf '%b%s%b%s%b%s%b\n' "$COLOR_GREEN" "$PARM" "$COLOR_WHITE" " entry removed from " "$COLOR_GREEN" "/jffs/scripts/init-start" "$COLOR_WHITE"
-      printf '%s%b%s%b%s\n' "You can manaully delete " "$COLOR_GREEN" "/jffs/scripts/init-start" "$COLOR_WHITE" " if you no longer require it"
+      printf '%b%s%b%s%b%s%b\n' "$COLOR_GREEN" "$PARM" "$COLOR_WHITE" " entry removed from " "$COLOR_GREEN" "$NAT_START" "$COLOR_WHITE"
     fi
     Check_For_Shebang "$NAT_START"
   fi

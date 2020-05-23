@@ -1223,9 +1223,9 @@ Install_x3mRouting_GUI() {
 Install_x3mRouting_Shell_Scripts() {
 
   Check_Requirements
+  rm -rf "/opt/bin/x3mRouting" 2>/dev/null
   Download_File "$LOCAL_REPO" "x3mRouting.sh"
-  # x3mRouting.sh Script
-  [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/addons/x3mRouting/x3mRouting_Menu.sh")" -eq 0 ] && ln -s "/jffs/scripts/x3mRouting/x3mRouting.sh" "/opt/bin/x3mRouting"
+  ln -s "/jffs/scripts/x3mRouting/x3mRouting.sh" "/opt/bin/x3mRouting"
   Check_Profile_Add
 
 }

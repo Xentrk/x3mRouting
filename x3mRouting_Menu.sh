@@ -159,21 +159,21 @@ Install_Done() {
 Remove_LAN_Clients() {
 
   for VPN_ID in 1 2 3 4 5; do
-    [ -s "$ADDON_DIR/ovpnc${VPN_ID}.nvram" ] && rm -rf "$ADDON_DIR/ovpnc${VPN_ID}.nvram" && service restart_vpnclient"$VPN_ID" && echo "Retarting VPN Client $VPN_ID to remove x3mRouting LAN Client Rules"
+    [ -s "$ADDONS/ovpnc${VPN_ID}.nvram" ] && rm -rf "$ADDONS/ovpnc${VPN_ID}.nvram" && service restart_vpnclient"$VPN_ID" && echo "Retarting VPN Client $VPN_ID to remove x3mRouting LAN Client Rules"
   done
-  
-  [ -s "$LOCAL_REPO/x3mRouting_client_rules" ] && rm -f "$LOCAL_REPO/x3mRouting_client_rules"
 
-  if [ -s "$LOCAL_REPO/Advanced_OpenVPNClient_Content.asp" ]; then
+  [ -s "$LOCAL_REPO/x3mRouting_client_rules" ] && rm -f "$LOCAL_REPO/x3mRouting_client_rules" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/x3mRouting_client_rules" "$COLOR_WHITE" " completed"
+
+  if [ -s "$ADDONS/Advanced_OpenVPNClient_Content.asp" ]; then
     for FILE in mount_files_lan.sh x3mRouting_client_nvram.sh x3mRouting_client_config.sh; do
-      if [ -s "$LOCAL_REPO/$FILE" ]; then
-        rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
+      if [ -s "$ADDONS/$FILE" ]; then
+        rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed"
       fi
     done
   else
     for FILE in mount_files_lan.sh x3mRouting_client_nvram.sh x3mRouting_client_config.sh vpnrouting.sh updown-client.sh mount_files_lan.sh; do
-      if [ -s "$LOCAL_REPO/$FILE" ]; then
-        rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
+      if [ -s "$ADDONS/$FILE" ]; then
+        rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
         case $FILE in
           vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh ;;
           updown-client.sh) [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh ;;

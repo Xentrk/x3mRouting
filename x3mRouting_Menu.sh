@@ -210,7 +210,7 @@ Remove_Mounts () {
 }
 
 Migrate_Util_Files () {
-set -x
+
   for FILE in vpnrouting.sh updown-client.sh Advanced_OpenVPNClient_Content.asp mount_files_lan.sh mount_files_gui.sh; do
     if [ -s "$LOCAL_REPO/$FILE" ]; then
       case "$FILE" in

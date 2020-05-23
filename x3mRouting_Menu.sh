@@ -165,9 +165,13 @@ Remove_LAN_Clients() {
     done
   else
     for FILE in mount_files_lan.sh x3mRouting_client_nvram.sh x3mRouting_client_config.sh vpnrouting.sh updown-client.sh mount_files_lan.sh; do
-        if [ -s "$LOCAL_REPO/$FILE" ]; then
-          rm -rf "$FILE" && printf '%s%b%s%b%s\n\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_GREEN" " completed"
-        fi
+      if [ -s "$LOCAL_REPO/$FILE" ]; then
+        rm -rf "$FILE" && printf '%s%b%s%b%s\n\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_GREEN" " completed"
+        case $FILE in
+          vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh ;;
+          updown-client.sh) [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh ;;
+        esac
+      fi
     done
   fi
 

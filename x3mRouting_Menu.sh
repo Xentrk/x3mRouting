@@ -94,6 +94,7 @@ Main_Menu() {
         ;;
       2)
         mkdir -p "$LOCAL_REPO"
+        printf '\n'
         Install_x3mRouting_GUI
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
@@ -235,7 +236,7 @@ Remove_OPT2() {
           vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh && rm -f "$ADDONS/$FILE";;
           updown-client.sh) [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh && rm -f "$ADDONS/$FILE" ;;
         esac
-        rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
+        rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed"
       fi
     done
   fi

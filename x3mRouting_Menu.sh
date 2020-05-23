@@ -220,7 +220,8 @@ Remove_OPT2() {
 
   for FILE in x3mRouting.sh openvpn-event; do
     if [ -s "$LOCAL_REPO/$FILE" ]; then
-    printf '\n%s%b%s%b%s\n\n' "Are you sure you want to uninstall the " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " file?"
+      printf '\n%s%b%s%b%s\n\n' "Are you sure you want to uninstall the " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " file?"
+      printf '\n%s\n' "$FILE will work without the GUI" 
       printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
       printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN" "$COLOR_WHITE"
       printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
@@ -228,6 +229,7 @@ Remove_OPT2() {
       case "$menu_Validate_Removal" in
       1)
         [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
+        [ "$FILE" = "x3mRouting.sh" ] &&  rm -rf "/opt/bin/x3mRouting" 2>/dev/null
         break
         ;;
       2)

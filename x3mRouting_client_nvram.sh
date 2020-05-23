@@ -3,7 +3,7 @@
 # Script: x3mRouting_rules.sh
 # VERSION=2.0.0
 # Author: Xentrk
-# 22-May-2020
+# 23-May-2020
 #
 #####################################################################################################
 # Description:
@@ -93,7 +93,6 @@ Create_LAN_Client_Routes() {
 # End of functions
 # Begin
 ADDON_DIR=/jffs/addons/x3mRouting
-mkdir -p /jffs/addons/x3mRouting
 Cleanup_OLD_LAN_Client_Routes
 Create_LAN_Client_Routes
 echo "Script completed"

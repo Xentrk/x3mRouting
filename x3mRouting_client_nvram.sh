@@ -16,8 +16,8 @@
 # set -x
 
 Cleanup_OLD_LAN_Client_Routes() {
-  for VAR in 1 2 3 4 5; do
-    [ -f "$ADDON_DIR/ovpnc${VAR}.nvram" ] && rm -rf "$ADDON_DIR/ovpnc${VAR}.nvram"
+  for VPN_ID in 1 2 3 4 5; do
+    [ -f "$ADDON_DIR/ovpnc${VPN_ID}.nvram" ] && rm -rf "$ADDON_DIR/ovpnc${VPN_ID}.nvram"
   done
 
 }

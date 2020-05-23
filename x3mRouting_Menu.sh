@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 9-May-2020
+# Last Updated Date: 23-May-2020
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -23,6 +23,7 @@ GIT_REPO="x3mRouting"
 GITHUB_DIR=https://raw.githubusercontent.com/Xentrk/$GIT_REPO/x3mRouting-NG
 LOCAL_REPO=/jffs/scripts/x3mRouting
 ADDONS=/jffs/addons/x3mRouting
+NAT_START=/jffs/scripts/nat-start
 
 # Uncomment the line below for debugging
 #set -x
@@ -120,6 +121,7 @@ Main_Menu() {
       u)
         Pre_Install_OpenVPN_Event_x3mRouting
         Update_NewVersion
+        Migrate_Util_Files
         Update_Repo_Files
         Update_Addons_Files
         Welcome_Message
@@ -315,7 +317,6 @@ Pre_Install_OpenVPN_Event_x3mRouting () {
 Update_NewVersion() {
   # This script will clean-up old files and create a conversion file
 
-  NAT_START=/jffs/scripts/nat-start
   CONV_FILE=/jffs/scripts/x3mRouting/x3mRouting_Conversion.sh
 
   # START: Functions
@@ -738,6 +739,74 @@ Update_NewVersion() {
 Remove_Existing_Installation() {
   echo "Starting removal of x3mRouting Repository"
 
+  Check_For_Shebang() {
+
+    CLIENTX_FILE=$1
+    SHEBANG_COUNT=0
+    EMPTY_LINE_COUNT=0
+    NOT_EMPTY_LINE_COUNT=0
+    COMMENT_LINE_COUNT=0
+
+    if [ -f "$CLIENTX_FILE" ]; then # file exists
+      while read -r LINE || [ -n "$LINE" ]; do
+        if [ "$LINE" = "#!/bin/sh" ]; then
+          SHEBANG_COUNT=$((SHEBANG_COUNT + 1))
+          continue
+        fi
+
+        linetype=$(echo "$LINE" | awk '{ string=substr($0, 1, 1); print string; }')
+        if [ "$linetype" = "#" ]; then
+          COMMENT_LINE_COUNT=$((COMMENT_LINE_COUNT + 1))
+          continue
+        fi
+
+        if [ -z "$LINE" ]; then
+	       EMPTY_LINE_COUNT=$((EMPTY_LINE_COUNT + 1))
+          continue
+        fi
+
+        if [ -n "$LINE" ]; then
+	        NOT_EMPTY_LINE_COUNT=$((NOT_EMPTY_LINE_COUNT + 1))
+          continue
+        fi
+      done < "$CLIENTX_FILE"
+    else
+      return
+    fi
+
+    if [ "$NOT_EMPTY_LINE_COUNT" -eq 0 ]; then
+
+      printf '\n%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has been analyzed for entries"
+      printf '%b%s%b%s\n\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
+      printf '%s%b%s%b%b%s\n' "Would you like to remove " "$COLOR_GREEN" "$CLIENTX_FILE"  "$COLOR_WHITE" "? " "(Yes is recommended)"
+      printf '[1]  --> Yes\n'
+      printf '[2]  --> No\n'
+      echo
+      while true; do
+        printf '[1-2]: '
+        read -r "OPTION"
+        case "$OPTION" in
+          1)
+            rm "$CLIENTX_FILE"
+            printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " file deleted"
+            break
+            ;;
+          2)
+            break
+            ;;
+          *)
+            echo "[*] $OPTION Isn't An Option!"
+            ;;
+        esac
+      done
+    else
+      printf '\n%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has been analyzed for entries"
+      printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" "has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
+      printf '%s%b%s%b%s\n' "Skipping removal of " "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" "."
+    fi
+
+  }
+
   # Remove the jq package
   Chk_Entware jq 1
   if [ "$READY" -eq "0" ]; then
@@ -758,8 +827,31 @@ Remove_Existing_Installation() {
         printf '%s%b%s%b%s\n' "You can manaully delete " "$COLOR_GREEN" "/jffs/scripts/init-start" "$COLOR_WHITE" " if you no longer require it"
       fi
     done
+    Check_For_Shebang /jffs/scripts/init-start
   fi
-  # TBD - ckeck if only the she-bang exists and del file it it does
+
+  # Remove entries from /jffs/scripts/nat-start
+  if [ -s "$NAT_START" ]; then
+    TIMESTAMP=$(date +"%Y-%m-%d-%H.%M.%S")
+    if ! cp "$NAT_START" "$NAT_START"."$TIMESTAMP"; then
+      printf '\nBackup of the prior %s file could not be made.\n' "$NAT_START"
+      printf 'Exiting...\n'
+      return
+    else
+      echo
+      printf '%s%b%s%b%s\n' "Existing " "$COLOR_GREEN" "$NAT_START" "$COLOR_WHITE" " file found."
+      printf '%s%b%s%b%s\n' "Backup file saved to " "$COLOR_GREEN" "$NAT_START.$TIMESTAMP" "$COLOR_WHITE" "."
+    fi
+    # remove x3mRouting entries in nat-start
+    echo
+    printf '%s%b%s%b%s\n\n' "Checking " "$COLOR_GREEN" "$NAT_START" "$COLOR_WHITE" " for x3mRouting scripts."
+    if grep -q "x3mRouting" "/jffs/scripts/nat-start"; then # see if line exists
+      sed -i "\\~x3mRouting~d" "$NAT_START"
+      printf '%b%s%b%s%b%s%b\n' "$COLOR_GREEN" "$PARM" "$COLOR_WHITE" " entry removed from " "$COLOR_GREEN" "/jffs/scripts/init-start" "$COLOR_WHITE"
+      printf '%s%b%s%b%s\n' "You can manaully delete " "$COLOR_GREEN" "/jffs/scripts/init-start" "$COLOR_WHITE" " if you no longer require it"
+    fi
+    Check_For_Shebang "$NAT_START"
+  fi
 
   # unmount vpnrouting, vpn gui and updown-client
   Remove_Mounts
@@ -1068,5 +1160,5 @@ Update_Installer() {
   done
 }
 
-Migrate_Util_Files  # If necessary, automatically move utility files to /jffs/addons/x3mRouting
+Migrate_Util_Files  # If necessary, automatically move utility files to /jffs/addons/x3mRouting, remove from here after test group converts
 Welcome_Message

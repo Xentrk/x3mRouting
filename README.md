@@ -672,7 +672,7 @@ Martineau also contributed the modified **OpenVPN Client Screen**, the [Vimeo](h
 ## Version 2.0.0 Changes
 
 #### x3mRouting Menu
-The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now stored in **/jffs/addons/x3mRouting**. The command to access the **x3mRouting** menu has been changed from **x3mRouting** to **x3mMenu**. The x3mRouting menu update also fixes the issue of non-harmful code output appearing when exiting the menu after performing a menu update.
+The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now stored in **/jffs/addons/x3mRouting**. The command to access the **x3mRouting** menu has been changed from **x3mRouting** to **x3mMenu**. The x3mRouting menu update also fixes the issue of code output appearing when exiting the menu after performing a menu update.
 
 #### VPN Server and VPN Client Routing Script Changes
   * The separate scripts for:

@@ -982,7 +982,7 @@ Init_Start_Update() {
   if [ -s "/jffs/scripts/init-start" ]; then # file exists
     if ! grep -q "$PARM" "/jffs/scripts/init-start"; then
       echo "sh $ADDONS/$PARM    # x3mRouting" >>/jffs/scripts/init-start
-      printf 'Updated %b/jffs/scripts/init-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
+      printf '\nUpdated %b/jffs/scripts/init-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
     else
       printf 'Required entry already exists in %b/jffs/scripts/init-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
       printf 'Skipping update of %b/jffs/scripts/init-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"

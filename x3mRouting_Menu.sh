@@ -149,7 +149,7 @@ Main_Menu() {
 
 Install_Done() {
   echo
-  printf '%s%b%s%b%s\n\n' "Installation of " "$COLOR_GREEN" "$1" "$COLOR_GREEN" " completed"
+  printf '%s%b%s%b%s\n\n' "Installation of " "$COLOR_GREEN" "$1" "$COLOR_WHITE" " completed"
   echo "Press enter to continue"
   read -r
   Welcome_Message

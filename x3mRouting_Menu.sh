@@ -160,13 +160,13 @@ Remove_LAN_Clients() {
   if [ -s "$LOCAL_REPO/Advanced_OpenVPNClient_Content.asp" ]; then
     for FILE in mount_files_lan.sh x3mRouting_client_nvram.sh x3mRouting_client_config.sh; do
       if [ -s "$LOCAL_REPO/$FILE" ]; then
-        rm -rf "$FILE" && printf '%s%b%s%b%s\n\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_GREEN" " completed"
+        rm -rf "$FILE" && printf '%s%b%s%b%s\n\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
       fi
     done
   else
     for FILE in mount_files_lan.sh x3mRouting_client_nvram.sh x3mRouting_client_config.sh vpnrouting.sh updown-client.sh mount_files_lan.sh; do
       if [ -s "$LOCAL_REPO/$FILE" ]; then
-        rm -rf "$FILE" && printf '%s%b%s%b%s\n\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_GREEN" " completed"
+        rm -rf "$FILE" && printf '%s%b%s%b%s\n\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
         case $FILE in
           vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh ;;
           updown-client.sh) [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh ;;
@@ -180,10 +180,10 @@ Remove_LAN_Clients() {
 
 Confirm_Remove_LAN_Clients() {
   while true; do
-    printf '\nAre you sure you want to uninstall LAN Client Routing files?\n'
-    printf '%b[1]%b --> Yes \n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    printf '%b[2]%b --> Cancel\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    printf '\n%b[1-2]%b: ' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '\nAre you sure you want to uninstall LAN Client Routing files?\n\n'
+    printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
     read -r "menu_Validate_Removal"
     case "$menu_Validate_Removal" in
     1)
@@ -203,11 +203,11 @@ Confirm_Remove_LAN_Clients() {
 
 Validate_Removal() {
   while true; do
-    printf '\nAre you sure you want to uninstall the %bx3mRouting%b repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '\nAre you sure you want to uninstall the %bx3mRouting%b repository\n\n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf 'and all changes made by the installer?\n'
-    printf '%b[1]%b --> Yes \n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    printf '%b[2]%b --> Cancel\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    printf '\n%b[1-2]%b: ' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN}" "$COLOR_WHITE"
+    printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
     read -r "menu_Validate_Removal"
     case "$menu_Validate_Removal" in
     1)
@@ -233,8 +233,8 @@ Confirm_Update() {
     printf 'files. Chosing this option will not update missing files. Select the install option from the\n'
     printf 'menu to reinstall missing files\n\n'
     printf 'Would you like to check and download any files that have been updated?\n\n'
-    printf '%b[1]%b  --> Yes\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    printf '%b[2]%b  --> No\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[1]%b  --> Yes\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '%b[2]%b  --> No\n' "$COLOR_GREEN" "$COLOR_WHITE"
     echo
     printf '[1-2]: '
     read -r "Confirm_Update_Option"
@@ -1177,8 +1177,8 @@ Update_Installer() {
     printf '\n\nAn updated version of the x3mRouting menu as been detected\n'
     printf 'Updating the x3mRouting menu is highly recommended.\n\n'
     printf 'Would you like to download the new version now?\n\n'
-    printf '%b[1]%b  --> Yes\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    printf '%b[2]%b  --> No\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[1]%b  --> Yes\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '%b[2]%b  --> No\n' "$COLOR_GREEN" "$COLOR_WHITE"
     echo
     printf '[1-2]: '
     read -r "menu_Update_Installer"

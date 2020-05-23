@@ -141,7 +141,7 @@ Main_Menu() {
         return 1
         ;;
       *)
-        printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu1" "$COLOR_WHITE"
+        printf '\n%bInvalid Option%b %s%b Please enter a valid option\n\n' "$COLOR_RED" "$COLOR_GREEN" "$menu1" "$COLOR_WHITE"
         ;;
     esac
   done

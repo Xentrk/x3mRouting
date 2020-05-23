@@ -52,35 +52,40 @@ Create_LAN_Client_Routes() {
   # OVPNC1 clients
   if [ -s "/tmp/ovpnc1.$$" ]; then
     awk '{ print }' ORS='' <"/tmp/ovpnc1.$$" >"$ADDON_DIR/ovpnc1.nvram"
-    echo "Created nvram file for OpenVPN Client 1"
+    echo "Created nvram file for OpenVPN Client 1" && echo "Restarting OpenVPN Client 1 to apply assignments"
+    service restart_vpnclient1
     rm /tmp/ovpnc1.$$
   fi
 
   # OVPNC2 clients
   if [ -s "/tmp/ovpnc2.$$" ]; then
     awk '{ print }' ORS='' <"/tmp/ovpnc2.$$" >"$ADDON_DIR/ovpnc2.nvram"
-    echo "Created nvram file for OpenVPN Client 2"
+    echo "Created nvram file for OpenVPN Client 2" && echo "Restarting OpenVPN Client 2 to apply assignments"
+    service restart_vpnclient2
     rm -rf /tmp/ovpnc2.$$
   fi
 
   # OVPNC3 clients
   if [ -s "/tmp/ovpnc3.$$" ]; then
     awk '{ print }' ORS='' <"/tmp/ovpnc3.$$" >"$ADDON_DIR/ovpnc3.nvram"
-    echo "Created nvram file for OpenVPN Client 3"
+    echo "Created nvram file for OpenVPN Client 3" && echo "Restarting OpenVPN Client 3 to apply assignments"
+    service restart_vpnclient3
     rm -rf /tmp/ovpnc3.$$
   fi
 
   # OVPNC4 clients
   if [ -s "/tmp/ovpnc4.$$" ]; then
     awk '{ print }' ORS='' <"/tmp/ovpnc4.$$" >"$ADDON_DIR/ovpnc4.nvram"
-    echo "Created nvram file for OpenVPN Client 4"
+    echo "Created nvram file for OpenVPN Client 4" && echo "Restarting OpenVPN Client 4 to apply assignments"
+    service restart_vpnclient4
     rm -rf /tmp/ovpnc4.$$
   fi
 
   # OVPNC5 clients
   if [ -s "/tmp/ovpnc5.$$" ]; then
     awk '{ print }' ORS='' <"/tmp/ovpnc5.$$" >"$ADDON_DIR/ovpnc5.nvram"
-    echo "Created nvram file for OpenVPN Client 5"
+    echo "Created nvram file for OpenVPN Client 5" && echo "Restarting OpenVPN Client 5 to apply assignments"
+    service restart_vpnclient5
     rm -rf /tmp/ovpnc5.$$
   fi
 }

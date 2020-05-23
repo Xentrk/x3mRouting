@@ -214,32 +214,31 @@ Confirm_Remove_LAN_Clients() {
 
 Remove_OPT2() {
 
-  if [ -s "$LOCAL_REPO/x3mRouting.sh" ] && [ -s "$LOCAL_REPO/openvpn-event" ]; then
-    while true; do
-      printf '\n%s%b%s%b%s%b%s%b%s\n\n' "Are you sure you want to uninstall" "$COLOR_GREEN" " x3mRouting.sh" "$COLOR_WHITE" " and " "$COLOR_GREEN" "openvpn-event" "$COLOR_WHITE" " files?"
+  # Remove the jq package
+  Chk_Entware jq 1
+  [ "$READY" -eq "0" ] && echo "Existing jq package found." && opkg remove jq && echo "jq successfully removed" || echo "Error occurred when removing jq"
+
+  for FILE in x3mRouting.sh openvpn-event; do
+    if [ -s "$LOCAL_REPO/$FILE" ]; then
+    printf '\n%s%b%s%b%s\n\n' "Are you sure you want to uninstall the " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " file?"
       printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
       printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN" "$COLOR_WHITE"
       printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
       read -r "menu_Validate_Removal"
       case "$menu_Validate_Removal" in
       1)
-        # Remove the jq package
-        Chk_Entware jq 1
-        [ "$READY" -eq "0" ] && echo "Existing jq package found." && opkg remove jq && echo "jq successfully removed" || echo "Error occurred when removing jq"
-        [ -s "$LOCAL_REPO/x3mRouting.sh" ] && rm -f "$LOCAL_REPO/x3mRouting.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/mount_files_lan.sh" "$COLOR_WHITE" " completed"
-        [ -s "$LOCAL_REPO/openvpn-event" ] && rm -f "$LOCAL_REPO/openvpn-event" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/mount_files_lan.sh" "$COLOR_WHITE" " completed"
+        [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
         break
         ;;
       2)
-        Welcome_Message
-        break
+        return
         ;;
       *)
         printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu_Validate_Removal" "$COLOR_WHITE"
         ;;
       esac
-    done
-  fi
+    fi
+  done
 
   [ -s "$ADDONS/mount_files_gui.sh" ] && rm -f "$ADDONS/mount_files_gui.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/mount_files_gui.sh" "$COLOR_WHITE" " completed"
 

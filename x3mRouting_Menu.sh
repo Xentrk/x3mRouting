@@ -70,7 +70,8 @@ Main_Menu() {
     fi
     if [ -d "$LOCAL_REPO" ]; then
       if [ ! -f "$LOCAL_REPO/x3mRouting_client_config.sh" ] && [ ! -f "$LOCAL_REPO/x3mRouting_client_nvram.sh" ] && [ ! -f "$LOCAL_REPO/x3mRouting.sh" ]; then
-        if [ ! -f "$LOCAL_REPO/x3mRouting.sh" ] || [ "$(ls /jffs/configs/* | grep -c ".nvram")" -ge "1" ]; then
+        #if [ ! -f "$LOCAL_REPO/x3mRouting.sh" ]
+        if [ "$(ls "$LOCAL_REPO" | grep -c "_load")" -ge 1 ] || [ "$(ls /jffs/configs/* | grep -c ".nvram")" -ge "1" ]; then
           printf '%b[u]%b  Update x3mRouting to Version 2.0.0\n' "${COLOR_RED}" "${COLOR_WHITE}"
         fi
       fi

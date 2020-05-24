@@ -25,7 +25,7 @@ create_client_list() {
   #### Xentrk: update vpnrouting.sh to use /jffs/addons/x3mRouting/ovpncX.nvram file if it exists
   # Get the six nvram vars for vpn clientlist
   VPN_IP_LIST="$(nvram get vpn_client${instance}_clientlist)"
-  for n in 1 2 3 4 5; do
+  for n in "" 1 2 3 4 5; do
     VPN_IP_LIST="${VPN_IP_LIST}$(nvram get vpn_client${instance}_clientlist${n})"
   done
   logger -st "($(basename "$0"))" $$ "Value of VPN_IP_LIST @1 is $VPN_IP_LIST"

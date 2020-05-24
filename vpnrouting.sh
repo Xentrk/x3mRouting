@@ -299,7 +299,7 @@ Set_VPN_NVRAM_Vars() {
 
   VPN_UNIT=$(echo "$dev" | awk '{ string=substr($0, 5, 5); print string; }')
   VPN_IP_LIST="$(nvram get vpn_client"$VPN_UNIT"_clientlist)"
-  for n in 1 2 3 4 5; do
+  for n in "" 1 2 3 4 5; do
     VPN_IP_LIST="${VPN_IP_LIST}$(nvram get vpn_client"$VPN_UNIT"_clientlist$n)"
   done
   #### Xentrk: update vpnrouting.sh to use /jffs/addons/x3mRouting/ovpncX.nvram file

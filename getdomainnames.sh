@@ -1,9 +1,10 @@
 #!/bin/sh
+trap cleanup 1 2 3 6
 ####################################################################################################
 # Script: getdomainnames.sh
-# VERSION=1.0.0
+# VERSION=2.0.0
 # Author: Xentrk
-# Date: 12-April-2020
+# Date: 24-May-2020
 #_______________________________________________________________________________________________________________
 #
 # This script will format the output stored in 'myfile' created using the command: tail -f dnsmasq.log > myfile
@@ -32,29 +33,40 @@ ShowHelp() {
   awk '/^#__/{f=1} f{print; if (!NF) exit}' "$0" | more
 }
 
+cleanup()
+{
+  echo "Done capturing domains from dnsmasq.log"
+  echo "Sorting file."
+  true >"$OUTPUT_FILE"
+  grep "$IPv4" "${OUTPUT_FILE}_tmp" | grep "query" | awk '{ print $6 }' | sort -u >>"$OUTPUT_FILE"
+  printf '%s\n%s' "File contents are:" "$(cat "$OUTPUT_FILE")"
+  printf '%s\n' "File location is: $OUTPUT_FILE"
+  exit 0
+}
+
 # Need assistance!???
 if [ "$1" = "help" ] || [ "$1" = "-h" ]; then
   ShowHelp
   exit 0
 fi
 
-[ -z "$1" ] && echo "Error! Missing parameter 1" && exit 1
-[ -z "$2" ] && echo "Error! Missing parameter 2" && exit 1
 
-SOURCE_FILE="/opt/var/log/$1"
-IPv4="$2"
+printf '\nEnter a descriptive name of the output file ==> '
+read -r "FILE"
+OUTPUT_FILE="/opt/var/log/$FILE"
 
-A=$(echo "$IPv4" | grep -oE "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$")
-
-if [ -z "$A" ]; then
+printf '\nEnter the IP address ==> '
+read -r "IPv4"
+IP=$(echo "$IPv4" | grep -oE "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$")
+if [ -z "$IP" ]; then
   printf 'Error! "%s" is not a valid IPv4 address\n' "$IPv4"
   exit 1
 fi
 
-if [ -s "$SOURCE_FILE" ]; then
-  OUTPUT_FILE="${SOURCE_FILE}_domains"
-  true >"$OUTPUT_FILE"
-  grep "$IPv4" "$SOURCE_FILE" | grep "query" | awk '{ print $6 }' | sort -u >>"$OUTPUT_FILE"
+if [ -s "/opt/var/log/dnsmasq.log" ]; then
+  printf '\nPress the Enter key to stop logging\n'
+    tail -f /opt/var/log/dnsmasq.log > ${OUTPUT_FILE}_tmp
 else
-  echo "Error! $SOURCE_FILE does not exist"
+  printf '\nError /opt/var/log/dnsmasq.log file does not exist\n'
+  exit 0
 fi

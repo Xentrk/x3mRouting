@@ -60,7 +60,7 @@ Main_Menu() {
     printf '%b[1]%b  Install LAN Client Routing\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '%b[2]%b  Install OpenVPN Client GUI, OpenVPN Event & x3mRouting.sh Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '%b[3]%b  Install OpenVPN Event & x3mRouting.sh Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    printf '%b[4]%b  Install getdomainnames.sh Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[4]%b  Install getdomainnames.sh & autoscan.sh Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '%b[5]%b  Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '%b[6]%b  Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     localmd5="$(md5sum "$ADDONS/x3mRouting_Menu.sh" | awk '{print $1}')"
@@ -120,6 +120,7 @@ Main_Menu() {
         mkdir -p "$LOCAL_REPO"
         Download_File "$LOCAL_REPO" "getdomainnames.sh"
         Install_Done "getdomainnames.sh"
+        Install_Done "autoscan.sh"
         return 1
         ;;
       5)

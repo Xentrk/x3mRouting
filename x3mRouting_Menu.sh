@@ -102,7 +102,7 @@ Main_Menu() {
         return 1
         ;;
       "2 del")
-        Confirm_Remove_OPT2_Clients
+        Confirm_Removal_OPT2
         return 1
         ;;
       3)
@@ -110,6 +110,10 @@ Main_Menu() {
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
         Install_Done "OpenVPN Event and Shell Scripts"
+        return 1
+        ;;
+      "3 del")
+        Confirm_Removal_OPT3
         return 1
         ;;
       4)
@@ -245,7 +249,7 @@ Remove_OPT2() {
   Welcome_Message
 }
 
-Confirm_Remove_OPT2_Clients() {
+Confirm_Removal_OPT2() {
   while true; do
     printf '\nAre you sure you want to uninstall Option 2 files?\n\n'
     printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
@@ -267,6 +271,46 @@ Confirm_Remove_OPT2_Clients() {
     esac
   done
 }
+
+Remove_OPT3() {
+
+  # Remove the jq package
+  Chk_Entware jq 1
+  [ "$READY" -eq "0" ] && echo "Existing jq package found." && opkg remove jq && echo "jq successfully removed" || echo "Error occurred when removing jq"
+
+  for FILE in x3mRouting.sh openvpn-event; do
+    [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
+    [ "$FILE" = "x3mRouting.sh" ] &&  rm -rf "/opt/bin/x3mRouting" 2>/dev/null
+  done
+
+  printf "\nPress enter to continue"
+  read -r
+  Welcome_Message
+}
+
+Confirm_Removal_OPT3() {
+  while true; do
+    printf '\nAre you sure you want to uninstall Option 3 files?\n\n'
+    printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
+    read -r "menu_Validate_Removal"
+    case "$menu_Validate_Removal" in
+    1)
+      Remove_OPT3
+      break
+      ;;
+    2)
+      Welcome_Message
+      break
+      ;;
+    *)
+      printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu_Validate_Removal" "$COLOR_WHITE"
+      ;;
+    esac
+  done
+}
+
 
 Validate_Removal() {
   while true; do

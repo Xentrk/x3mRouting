@@ -1217,12 +1217,12 @@ Remove_Existing_Installation() {
   # Remove symlinks
   Remove_Symlinks
 
-  # Purge /jffs/scripts/x3mRouting directory
-  Purge_x3mRouting_Directory
-
   Remove_Prerouting_Rules
 
   Remove_Postrouting_Rules
+
+  # Purge /jffs/scripts/x3mRouting directory
+  Purge_x3mRouting_Directory
 
   printf '\n%s\n\n' "x3mRouting has been uninstalled" && exit 1
 

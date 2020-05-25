@@ -29,9 +29,9 @@ The [x3mRouing.sh](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#3-ope
 #### 4. getdomainnames.sh & autoscan.sh Scripts
 These two scripts can be used to analyze the domain names being used for a website or streaming service.
 
-The [getdomainnames.sh](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#4-getdomainnamessh-script-1) script will create a uniquely sorted list of domain names gathered from **dnsmasq.log** that you collect by accessing a website or streaming service. Use the script to help determine the domain names used by a website or streaming service.
+The [getdomainnames.sh](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#getdomainnamessh-script) script will create a uniquely sorted list of domain names gathered from **dnsmasq.log** that you collect by accessing a website or streaming service. Use the script to help determine the domain names used by a website or streaming service.
 
-The autoscan.sh script is used to search for one or more terms in **dnsmasq.log**. It will return the top level domain names if there is a match.
+The [autoscan.sh](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#autoscansh-script) script is used to search for one or more terms in **dnsmasq.log**. It will return the top level domain names if there is a match.
 
 ## Support
 For help and support, please visit the Asuswrt-Merlin x3mRouting support thread on [snbforums.com](https://www.snbforums.com/threads/x3mrouting-selective-routing-for-asuswrt-merlin-firmware.57793/#post-506675).

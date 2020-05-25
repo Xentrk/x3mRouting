@@ -845,8 +845,8 @@ Update_NewVersion() {
     echo
     for VPN_SERVER_INSTANCE in 1 2; do
       VPN_SERVER_SUBNET="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24"
-      iptables -nvL POSTROUTING -t nat --line | grep "$VPN_SERVER_SUBNET" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
-        echo "Deleting POSTROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
+      iptables -nvL POSTROUTING -t nat --line | grep "$VPN_SERVER_SUBNET" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM; do
+        echo "Deleting POSTROUTING Chain $CHAIN_NUM for $VPN_SERVER_INSTANCE"
         iptables -t mangle -D POSTROUTING "$CHAIN_NUM"
       done
     done
@@ -1095,8 +1095,8 @@ Remove_Postrouting_Rules () {
   echo
   for VPN_SERVER_INSTANCE in 1 2; do
     VPN_SERVER_SUBNET="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24"
-    iptables -nvL POSTROUTING -t nat --line | grep "$VPN_SERVER_SUBNET" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
-      echo "Deleting POSTROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
+    iptables -nvL POSTROUTING -t nat --line | grep "$VPN_SERVER_SUBNET" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM; do
+      echo "Deleting POSTROUTING Chain $CHAIN_NUM for $VPN_SERVER_INSTANCE"
       iptables -t mangle -D POSTROUTING "$CHAIN_NUM"
     done
   done

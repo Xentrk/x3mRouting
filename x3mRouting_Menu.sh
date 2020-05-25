@@ -965,7 +965,7 @@ Update_NewVersion() {
 
   # Migrate /jffs/configs/x3mRouting_client_rules
   if [ -s "/jffs/configs/x3mRouting_client_rules" ]; then # file exists
-    mv /jffs/configs/x3mRouting_client_rules /jffs/scripts/x3mRouting/x3mRouting_client_rules && printf '%s\n' "$/jffs/configs/x3mRouting_client_rules moved to /jffs/scripts/x3mRouting/x3mRouting_client_rules"
+    mv /jffs/configs/x3mRouting_client_rules /jffs/scripts/x3mRouting/x3mRouting_client_rules && printf '%s\n' "/jffs/configs/x3mRouting_client_rules moved to /jffs/scripts/x3mRouting/x3mRouting_client_rules"
   fi
 
   # Process any vpnclientX-route-up files in x3mRouting directory

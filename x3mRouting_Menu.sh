@@ -410,8 +410,8 @@ Confirm_Removal_OPT4() {
 
 Validate_Removal() {
   while true; do
-    printf '\nAre you sure you want to uninstall the %bx3mRouting%b repository\n\n' "$COLOR_GREEN" "$COLOR_WHITE"
-    printf 'and all changes made by the installer?\n'
+    printf '\nAre you sure you want to uninstall the %bx3mRouting%b repository\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf 'and all changes made by the installer?\n\n'
     printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN}" "$COLOR_WHITE"
     printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
@@ -1224,7 +1224,7 @@ Remove_Existing_Installation() {
 
   Remove_Postrouting_Rules
 
-  Exit_Message
+  printf '%s\n' "x3mRouting has been uninstalled" && exit 1
 
 }
 

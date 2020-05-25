@@ -66,7 +66,7 @@ In the Asuswrt-Merlin firmware, one must type the IP address of each LAN client 
 The x3mRouting LAN Client method is an alternative approach to assigning LAN clients to a WAN or VPN Client interface. If you have many LAN clients to assign to the interface, the scripts will eliminate the manual effort involved in typing the DHCP IP address of each LAN client in the Policy Routing section of the OpenVPN Client Screen. You can still use the OpenVPN Client Screen to assign LAN clients in addition to using this feature. The two methods can coexist.
 
 #### x3mRouting_client_config.sh
-**x3mRouting_client_config.sh** is the first script to run. The script will create the file **/jffs/scripts/x3mRouting/x3mRouting_client_rules** which contains a separate line for each LAN client with a static DHCP IP address assignment. Each line contains three fields separated by a space. The first field is a number representing the interface assignment (0=WAN, 1=OVPNC1 to 5=OVPNC5) followed by the LAN client IP address and LAN client description.
+**x3mRouting_client_config.sh** is run automatically when installing LAN Client Routing. The script will create the file **/jffs/scripts/x3mRouting/x3mRouting_client_rules** which contains a separate line for each LAN client with a static DHCP IP address assignment. Each line contains three fields separated by a space. The first field is a number representing the interface assignment (0=WAN, 1=OVPNC1 to 5=OVPNC5) followed by the LAN client IP address and LAN client description.
 
 By default, the script assigns each LAN client to the OVPNC1 interface. After running the script, edit the **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file and assign the interface to each LAN client. Instructions on how to assign the interface to each LAN client are located at the top of the file.
 
@@ -86,7 +86,7 @@ By default, the script assigns each LAN client to the OVPNC1 interface. After ru
     2 192.168.1.153 iPad
     1 192.168.1.154 Lenovo-Laptop
 
-If an existing **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file exists, a backup copy of the existing **x3mRouting_client_rules** file is made by appending the timestamp to the existing file. You only need to run this script if you have made changes to DHCP static assignments or accidentally deleted the **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file.
+If an existing **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file exists, a backup copy of the existing **x3mRouting_client_rules** file is made by appending the timestamp to the existing file. You only need to run this script if you have made changes to DHCP static assignments or deleted the **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file and all backups.
 
 #### x3mRouting_client_nvram.sh
 **x3mRouting_client_nvram.sh** is the second script to run. This script will create the nvram files for VPN Clients in the **/jffs/addons/x3mRouting** directory based on the interface assignments in **/jffs/scripts/x3mRouting/x3mRouting_client_rules**. An nvram file will not be created in the **/jffs/addons/x3mRouting/** directory for LAN clients assigned to use the WAN interface. The OpenVPN Client is then restarted to apply the routing assignments.

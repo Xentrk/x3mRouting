@@ -120,9 +120,10 @@ Main_Menu() {
         ;;
       4)
         mkdir -p "$LOCAL_REPO"
-        Download_File "$LOCAL_REPO" "getdomainnames.sh"
-        Install_Done "getdomainnames.sh"
-        Install_Done "autoscan.sh"
+        for FILE in "getdomainnames.sh" "autoscan.sh"; do
+          Download_File "$LOCAL_REPO" "$FILE"
+        done
+        Install_Done "getdomainnames.sh ad autoscan.sh"
         return 1
         ;;
       "4 del")

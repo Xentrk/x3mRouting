@@ -76,8 +76,8 @@ Main_Menu() {
         fi
       fi
     fi
-    printf '\n%b[e]%b  Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    printf '\n%bOption ==>%b ' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '\n%b[e]%b  Exit Script\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '\n%bOption ==>%b ' "$COLOR_GREEN" "$COLOR_WHITE"
     read -r "MENU1"
 
     case "$MENU1" in
@@ -85,6 +85,8 @@ Main_Menu() {
         mkdir -p "$LOCAL_REPO"
         echo
         Install_x3mRouting_LAN_Clients
+        printf '\n%s%b%s%b%s\n\n' "Creating " "$COLOR_GREEN" "$LOCAL_REPO//x3mRouting_client_rules" "$COLOR_WHITE" " file"
+        sh "$LOCAL_REPO/x3mRouting_client_config.sh"
         Install_Done "x3mRouting for LAN Clients"
         return 1
         ;;

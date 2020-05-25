@@ -690,6 +690,7 @@ The installation menu **x3mMenu** will display a menu with the options to instal
 |x3mRouting.sh                      |   | X | X |   |
 |openvpn-event                      |   | X | X |   |
 |getdomainnames.sh                  |   |   |   | X |
+|autoscan.sh                        |   |   |   | X |
 
 ## Acknowledgements
 I want to acknowledge the following [snbforums](https://www.snbforums.com) members who helped make this project possible.

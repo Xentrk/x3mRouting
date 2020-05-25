@@ -312,6 +312,39 @@ Confirm_Removal_OPT3() {
   done
 }
 
+Remove_OPT4() {
+
+  for FILE in getdomainnames.sh autoscan.sh; do
+    [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
+  done
+
+  printf "\nPress enter to continue"
+  read -r
+  Welcome_Message
+}
+
+Confirm_Removal_OPT4() {
+  while true; do
+    printf '\n%s%b%s%b%s%b%s%b%s\n\n' "Are you sure you want to uninstall" "$COLOR_GREEN" " getdomainnames.sh" "$COLOR_WHITE" " and " "$COLOR_GREEN" "autoscan.sh" "$COLOR_WHITE" " files?"
+    printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
+    read -r "menu_Validate_Removal"
+    case "$menu_Validate_Removal" in
+    1)
+      Remove_OPT4
+      break
+      ;;
+    2)
+      Welcome_Message
+      break
+      ;;
+    *)
+      printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu_Validate_Removal" "$COLOR_WHITE"
+      ;;
+    esac
+  done
+}
 
 Validate_Removal() {
   while true; do

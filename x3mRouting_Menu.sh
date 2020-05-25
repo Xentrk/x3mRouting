@@ -228,18 +228,39 @@ Confirm_Removal_OPT1() {
 Remove_OPT2() {
 
   # Remove the jq package
-  Chk_Entware jq 1
-  [ "$READY" -eq "0" ] && echo "Existing jq package found." && opkg remove jq && echo "jq successfully removed" || echo "Error occurred when removing jq"
+  Remove_jq_Package
 
+  # Remove entries from /jffs/scripts/init-start
+  Remove_init_start_Entries
+
+  # Remove entries from /jffs/scripts/nat-start
+  Remove_nat_start_Entries
+
+  # Remove vpnclientX-route-up files
+  for VPNID in 1 2 3 4 5; do
+    UP_FILE=/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-up
+    [ -s "$UP_FILE" ] && rm -rf "$UP_FILE"
+  done
+
+  # Remove vpnclientX-route-pre-down files
+  for VPNID in 1 2 3 4 5; do
+    DOWN_FILE=/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-pre-down
+    [ -s "$DOWN_FILE" ] && rm -rf "$DOWN_FILE"
+  done
+
+  # Remove x3mRouting.sh and openvpn-event files
   for FILE in x3mRouting.sh openvpn-event; do
     [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
     [ "$FILE" = "x3mRouting.sh" ] &&  rm -rf "/opt/bin/x3mRouting" 2>/dev/null
   done
 
+  # Remove mount_files_gui.sh file
   [ -s "$ADDONS/mount_files_gui.sh" ] && rm -f "$ADDONS/mount_files_gui.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/mount_files_gui.sh" "$COLOR_WHITE" " completed"
 
+  # Remove Advanced_OpenVPNClient_Content.asp file
   [ -s "$ADDONS/Advanced_OpenVPNClient_Content.asp" ] && [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ] && umount /www/Advanced_OpenVPNClient_Content.asp && rm -f "$ADDONS/Advanced_OpenVPNClient_Content.asp" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/Advanced_OpenVPNClient_Content.asp" "$COLOR_WHITE" " completed"
 
+  # Only remove vpnrouting.sh and updown-client.sh files if LAN Client Routing is not being used
   if [ ! -s "$LOCAL_REPO/x3mRouting_client_nvram.sh" ] && [ ! -s "$LOCAL_REPO/x3mRouting_client_config.sh" ]; then
     for FILE in vpnrouting.sh updown-client.sh; do
       if [ -s "$ADDONS/$FILE" ]; then
@@ -281,10 +302,30 @@ Confirm_Removal_OPT2() {
 
 Remove_OPT3() {
 
-  # Remove the jq package
-  Chk_Entware jq 1
-  [ "$READY" -eq "0" ] && echo "Existing jq package found." && opkg remove jq && echo "jq successfully removed" || echo "Error occurred when removing jq"
+  echo "Starting removal of option 3 files and associated file entries..."
 
+  # Remove the jq package
+  Remove_jq_Package
+
+  # Remove entries from /jffs/scripts/init-start
+  Remove_init_start_Entries
+
+  # Remove entries from /jffs/scripts/nat-start
+  Remove_nat_start_Entries
+
+  # Remove vpnclientX-route-up files
+  for VPNID in 1 2 3 4 5; do
+    UP_FILE=/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-up
+    [ -s "$UP_FILE" ] && rm -rf "$UP_FILE"
+  done
+
+  # Remove vpnclientX-route-pre-down files
+  for VPNID in 1 2 3 4 5; do
+    DOWN_FILE=/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-pre-down
+    [ -s "$DOWN_FILE" ] && rm -rf "$DOWN_FILE"
+  done
+
+  # Remove x3mRouting.sh and openvpn-event files
   for FILE in x3mRouting.sh openvpn-event; do
     [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
     [ "$FILE" = "x3mRouting.sh" ] &&  rm -rf "/opt/bin/x3mRouting" 2>/dev/null
@@ -943,77 +984,75 @@ Update_NewVersion() {
 }
 ### End of Conversion Function
 
-Remove_Existing_Installation() {
-  echo "Starting removal of x3mRouting Repository"
+Check_For_Shebang() {
 
-  Check_For_Shebang() {
+  CLIENTX_FILE=$1
+  SHEBANG_COUNT=0
+  EMPTY_LINE_COUNT=0
+  NOT_EMPTY_LINE_COUNT=0
+  COMMENT_LINE_COUNT=0
 
-    CLIENTX_FILE=$1
-    SHEBANG_COUNT=0
-    EMPTY_LINE_COUNT=0
-    NOT_EMPTY_LINE_COUNT=0
-    COMMENT_LINE_COUNT=0
+  if [ -f "$CLIENTX_FILE" ]; then # file exists
+    while read -r LINE || [ -n "$LINE" ]; do
+      if [ "$LINE" = "#!/bin/sh" ]; then
+        SHEBANG_COUNT=$((SHEBANG_COUNT + 1))
+        continue
+      fi
 
-    if [ -f "$CLIENTX_FILE" ]; then # file exists
-      while read -r LINE || [ -n "$LINE" ]; do
-        if [ "$LINE" = "#!/bin/sh" ]; then
-          SHEBANG_COUNT=$((SHEBANG_COUNT + 1))
-          continue
-        fi
+      linetype=$(echo "$LINE" | awk '{ string=substr($0, 1, 1); print string; }')
+      if [ "$linetype" = "#" ]; then
+        COMMENT_LINE_COUNT=$((COMMENT_LINE_COUNT + 1))
+        continue
+      fi
 
-        linetype=$(echo "$LINE" | awk '{ string=substr($0, 1, 1); print string; }')
-        if [ "$linetype" = "#" ]; then
-          COMMENT_LINE_COUNT=$((COMMENT_LINE_COUNT + 1))
-          continue
-        fi
+      if [ -z "$LINE" ]; then
+       EMPTY_LINE_COUNT=$((EMPTY_LINE_COUNT + 1))
+        continue
+      fi
 
-        if [ -z "$LINE" ]; then
-	       EMPTY_LINE_COUNT=$((EMPTY_LINE_COUNT + 1))
-          continue
-        fi
+      if [ -n "$LINE" ]; then
+        NOT_EMPTY_LINE_COUNT=$((NOT_EMPTY_LINE_COUNT + 1))
+        continue
+      fi
+    done < "$CLIENTX_FILE"
+  else
+    return
+  fi
 
-        if [ -n "$LINE" ]; then
-	        NOT_EMPTY_LINE_COUNT=$((NOT_EMPTY_LINE_COUNT + 1))
-          continue
-        fi
-      done < "$CLIENTX_FILE"
-    else
-      return
-    fi
+  if [ "$NOT_EMPTY_LINE_COUNT" -eq 0 ]; then
 
-    if [ "$NOT_EMPTY_LINE_COUNT" -eq 0 ]; then
+    printf '\n%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has been analyzed for entries"
+    printf '%b%s%b%s\n\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
+    printf '%s%b%s%b%b%s\n' "Would you like to remove " "$COLOR_GREEN" "$CLIENTX_FILE"  "$COLOR_WHITE" "? " "(Yes is recommended)"
+    printf '[1]  --> Yes\n'
+    printf '[2]  --> No\n'
+    echo
+    while true; do
+      printf '[1-2]: '
+      read -r "OPTION"
+      case "$OPTION" in
+        1)
+          rm "$CLIENTX_FILE"
+          printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " file deleted"
+          break
+          ;;
+        2)
+          break
+          ;;
+        *)
+          echo "[*] $OPTION Isn't An Option!"
+          ;;
+      esac
+    done
+  else
+    printf '\n%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has been analyzed for entries"
+    printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
+    printf '%s%b%s%b%s\n' "Skipping removal of " "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" "."
+  fi
 
-      printf '\n%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has been analyzed for entries"
-      printf '%b%s%b%s\n\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
-      printf '%s%b%s%b%b%s\n' "Would you like to remove " "$COLOR_GREEN" "$CLIENTX_FILE"  "$COLOR_WHITE" "? " "(Yes is recommended)"
-      printf '[1]  --> Yes\n'
-      printf '[2]  --> No\n'
-      echo
-      while true; do
-        printf '[1-2]: '
-        read -r "OPTION"
-        case "$OPTION" in
-          1)
-            rm "$CLIENTX_FILE"
-            printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " file deleted"
-            break
-            ;;
-          2)
-            break
-            ;;
-          *)
-            echo "[*] $OPTION Isn't An Option!"
-            ;;
-        esac
-      done
-    else
-      printf '\n%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has been analyzed for entries"
-      printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
-      printf '%s%b%s%b%s\n' "Skipping removal of " "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" "."
-    fi
+}
 
-  }
-
+Remove_jq_Package() {
   # Remove the jq package
   Chk_Entware jq 1
   if [ "$READY" -eq "0" ]; then
@@ -1021,7 +1060,11 @@ Remove_Existing_Installation() {
     opkg remove jq && echo "jq successfully removed" || echo "Error occurred when removing jq"
   fi
 
-  # Remove entries from /jffs/scripts/init-start
+}
+
+Remove_init_start_Entries() {
+# Remove entries from /jffs/scripts/init-start
+
   if [ -s "/jffs/scripts/init-start" ]; then # file exists
     for PARM in "sh $ADDONS/mount_files_lan.sh" "sh $ADDONS/mount_files_gui.sh"; do
       if grep -q "$PARM" "/jffs/scripts/init-start"; then # see if line exists
@@ -1032,6 +1075,9 @@ Remove_Existing_Installation() {
     Check_For_Shebang /jffs/scripts/init-start
   fi
 
+}
+
+Remove_nat_start_Entries() {
   # Remove entries from /jffs/scripts/nat-start
   if [ -s "$NAT_START" ]; then
     TIMESTAMP=$(date +"%Y-%m-%d-%H.%M.%S")
@@ -1053,11 +1099,10 @@ Remove_Existing_Installation() {
     fi
     Check_For_Shebang "$NAT_START"
   fi
+}
 
-  # unmount vpnrouting, vpn gui and updown-client
-  Remove_Mounts
+Remove_Symlinks() {
 
-  # Remove symlinks
   if [ -s "/opt/bin/x3mRouting" ]; then
     if ! rm "/opt/bin/x3mRouting" >/dev/null 2>&1; then
       printf '\nError trying to remove %b"/opt/bin/x3mRouting"%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
@@ -1074,6 +1119,9 @@ Remove_Existing_Installation() {
     fi
   fi
 
+}
+
+Purge_x3mRouting_Directory() {
   # Purge /jffs/scripts/x3mRouting directory
   for DIR in $LOCAL_REPO $ADDONS; do
     if [ -d "$DIR" ]; then
@@ -1089,6 +1137,30 @@ Remove_Existing_Installation() {
       printf '\n%b%s%b folder does not exist. No directory to remove\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
     fi
   done
+
+}
+
+Remove_Existing_Installation() {
+
+  echo "Starting removal of x3mRouting Repository"
+
+  # Remove the jq package
+  Remove_jq_Package
+
+  # Remove entries from /jffs/scripts/init-start
+  Remove_init_start_Entries
+
+  # Remove entries from /jffs/scripts/nat-start
+  Remove_nat_start_Entries
+
+  # unmount vpnrouting, vpn gui and updown-client
+  Remove_Mounts
+
+  # Remove symlinks
+  Remove_Symlinks
+
+  # Purge /jffs/scripts/x3mRouting directory
+  Purge_x3mRouting_Directory
 
   Exit_Message
 

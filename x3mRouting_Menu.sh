@@ -1224,7 +1224,7 @@ Remove_Existing_Installation() {
 
   Remove_Postrouting_Rules
 
-  printf '%s\n' "x3mRouting has been uninstalled" && exit 1
+  printf '\n%s\n\n' "x3mRouting has been uninstalled" && exit 1
 
 }
 

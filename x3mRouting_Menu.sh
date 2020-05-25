@@ -78,9 +78,9 @@ Main_Menu() {
     fi
     printf '\n%b[e]%b  Exit Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
     printf '\n%bOption ==>%b ' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    read -r "menu1"
+    read -r "MENU1"
 
-    case "$menu1" in
+    case "$MENU1" in
       1)
         mkdir -p "$LOCAL_REPO"
         echo
@@ -157,7 +157,7 @@ Main_Menu() {
         return 1
         ;;
       *)
-        printf '\n%bInvalid Option%b %s%b Please enter a valid option\n\n' "$COLOR_RED" "$COLOR_GREEN" "$menu1" "$COLOR_WHITE"
+        printf '\n%bInvalid Option%b %s%b Please enter a valid option\n\n' "$COLOR_RED" "$COLOR_GREEN" "$MENU1" "$COLOR_WHITE"
         ;;
     esac
   done
@@ -199,15 +199,14 @@ Remove_LAN_Clients() {
   Welcome_Message
 }
 
-
 Confirm_Remove_LAN_Clients() {
   while true; do
     printf '\nAre you sure you want to uninstall LAN Client Routing files?\n\n'
     printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
-    read -r "menu_Validate_Removal"
-    case "$menu_Validate_Removal" in
+    read -r "MENU_VALIDATE_REMOVAL"
+    case "$MENU_VALIDATE_REMOVAL" in
     1)
       Remove_LAN_Clients
       break
@@ -217,7 +216,7 @@ Confirm_Remove_LAN_Clients() {
       break
       ;;
     *)
-      printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu_Validate_Removal" "$COLOR_WHITE"
+      printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$MENU_VALIDATE_REMOVAL" "$COLOR_WHITE"
       ;;
     esac
   done
@@ -260,8 +259,8 @@ Confirm_Removal_OPT2() {
     printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
-    read -r "menu_Validate_Removal"
-    case "$menu_Validate_Removal" in
+    read -r "MENU_VALIDATE_REMOVAL"
+    case "$MENU_VALIDATE_REMOVAL" in
     1)
       Remove_OPT2
       break
@@ -271,7 +270,7 @@ Confirm_Removal_OPT2() {
       break
       ;;
     *)
-      printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu_Validate_Removal" "$COLOR_WHITE"
+      printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$MENU_VALIDATE_REMOVAL" "$COLOR_WHITE"
       ;;
     esac
   done
@@ -299,8 +298,8 @@ Confirm_Removal_OPT3() {
     printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
-    read -r "menu_Validate_Removal"
-    case "$menu_Validate_Removal" in
+    read -r "MENU_VALIDATE_REMOVAL"
+    case "$MENU_VALIDATE_REMOVAL" in
     1)
       Remove_OPT3
       break
@@ -310,7 +309,7 @@ Confirm_Removal_OPT3() {
       break
       ;;
     *)
-      printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu_Validate_Removal" "$COLOR_WHITE"
+      printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$MENU_VALIDATE_REMOVAL" "$COLOR_WHITE"
       ;;
     esac
   done
@@ -333,8 +332,8 @@ Confirm_Removal_OPT4() {
     printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
-    read -r "menu_Validate_Removal"
-    case "$menu_Validate_Removal" in
+    read -r "MENU_VALIDATE_REMOVAL"
+    case "$MENU_VALIDATE_REMOVAL" in
     1)
       Remove_OPT4
       break
@@ -344,7 +343,7 @@ Confirm_Removal_OPT4() {
       break
       ;;
     *)
-      printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu_Validate_Removal" "$COLOR_WHITE"
+      printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$MENU_VALIDATE_REMOVAL" "$COLOR_WHITE"
       ;;
     esac
   done
@@ -357,8 +356,8 @@ Validate_Removal() {
     printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '%b[2]%b --> Cancel\n' "$COLOR_GREEN}" "$COLOR_WHITE"
     printf '\n%b[1-2]%b: ' "$COLOR_GREEN" "$COLOR_WHITE"
-    read -r "menu_Validate_Removal"
-    case "$menu_Validate_Removal" in
+    read -r "MENU_VALIDATE_REMOVAL"
+    case "$MENU_VALIDATE_REMOVAL" in
     1)
       Remove_Existing_Installation
       break
@@ -368,7 +367,7 @@ Validate_Removal() {
       break
       ;;
     *)
-      printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$menu_Validate_Removal" "$COLOR_WHITE"
+      printf '%bInvalid Option%b %s%b Please enter a valid option\n' "$COLOR_RED" "$COLOR_GREEN" "$MENU_VALIDATE_REMOVAL" "$COLOR_WHITE"
       ;;
     esac
   done
@@ -386,8 +385,8 @@ Confirm_Update() {
     printf '%b[2]%b  --> No\n' "$COLOR_GREEN" "$COLOR_WHITE"
     echo
     printf '[1-2]: '
-    read -r "Confirm_Update_Option"
-    case "$Confirm_Update_Option" in
+    read -r "CONFIRM_UPDATE_OPTION"
+    case "$CONFIRM_UPDATE_OPTION" in
     1)
       echo
       Update_Repo_Files
@@ -399,7 +398,7 @@ Confirm_Update() {
       break
       ;;
     *)
-      echo "[*] $Confirm_Update_Option Isn't An Option!"
+      echo "[*] $CONFIRM_UPDATE_OPTION Isn't An Option!"
       ;;
     esac
   done
@@ -1322,9 +1321,9 @@ Update_Installer() {
     printf '%b[2]%b  --> No\n' "$COLOR_GREEN" "$COLOR_WHITE"
     echo
     printf '[1-2]: '
-    read -r "menu_Update_Installer"
+    read -r "MENU_UPDATE_INSTALLER"
     echo
-    case "$menu_Update_Installer" in
+    case "$MENU_UPDATE_INSTALLER" in
     1)
       Download_File "$ADDONS" x3mRouting_Menu.sh
       chmod 755 "$ADDONS/x3mRouting_Menu.sh"
@@ -1348,7 +1347,7 @@ Update_Installer() {
       break
       ;;
     *)
-      echo "[*] $menu_Update_Installer Is Not An Option!"
+      echo "[*] $MENU_UPDATE_INSTALLER Is Not An Option!"
       ;;
     esac
   done

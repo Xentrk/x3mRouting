@@ -128,7 +128,7 @@ Main_Menu() {
         printf '%s%b%s%b%s%b%s%b%s\n\n' "Installation of " "$COLOR_GREEN" "getdomainnames.sh" "$COLOR_WHITE" " and " "$COLOR_GREEN" "autoscan.sh" "$COLOR_WHITE" " completed"
         echo "Press enter to continue"
         read -r
-        return 1
+        Welcome_Message
         ;;
       "4 del")
         Confirm_Removal_OPT4

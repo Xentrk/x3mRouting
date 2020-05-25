@@ -123,6 +123,10 @@ Main_Menu() {
         Install_Done "autoscan.sh"
         return 1
         ;;
+      "4 del")
+        Confirm_Removal_OPT4
+        return 1
+        ;;
       5)
         Confirm_Update
         Welcome_Message

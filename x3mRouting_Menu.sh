@@ -57,25 +57,16 @@ Welcome_Message() {
 
 Main_Menu() {
   while true; do
-    printf '%b[1]%b  Install LAN Client Routing\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    printf '%b[2]%b  Install OpenVPN Client GUI, OpenVPN Event & x3mRouting.sh Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    printf '%b[3]%b  Install OpenVPN Event & x3mRouting.sh Script\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    printf '%b[4]%b  Install getdomainnames.sh & autoscan.sh Scripts\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    printf '%b[5]%b  Check for updates to existing x3mRouting installation\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    printf '%b[6]%b  Remove x3mRouting Repository\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+    printf '%b[1]%b  Install LAN Client Routing\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '%b[2]%b  Install OpenVPN Client GUI, OpenVPN Event & x3mRouting.sh Script\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '%b[3]%b  Install OpenVPN Event & x3mRouting.sh Script\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '%b[4]%b  Install getdomainnames.sh & autoscan.sh Scripts\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '%b[5]%b  Check for updates to existing x3mRouting installation\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '%b[6]%b  Remove x3mRouting Repository\n' "$COLOR_GREEN" "$COLOR_WHITE"
     localmd5="$(md5sum "$ADDONS/x3mRouting_Menu.sh" | awk '{print $1}')"
     remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/x3mRouting_Menu.sh" | md5sum | awk '{print $1}')"
-    if [ "$localmd5" != "$remotemd5" ]; then
-      printf '%b[7]%b  Update x3mRouting Menu\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    fi
-    if [ -d "$LOCAL_REPO" ]; then
-      if [ ! -f "$LOCAL_REPO/x3mRouting_client_config.sh" ] && [ ! -f "$LOCAL_REPO/x3mRouting_client_nvram.sh" ] && [ ! -f "$LOCAL_REPO/x3mRouting.sh" ]; then
-        #if [ ! -f "$LOCAL_REPO/x3mRouting.sh" ]
-        if [ "$(ls "$LOCAL_REPO" | grep -c "load_")" -ge 1 ] || [ "$(ls /jffs/configs/* | grep -c ".nvram")" -ge "1" ]; then
-          printf '%b[u]%b  Update x3mRouting to Version 2.0.0\n' "${COLOR_RED}" "${COLOR_WHITE}"
-        fi
-      fi
-    fi
+    [ "$localmd5" != "$remotemd5" ] && printf '%b[7]%b  Update x3mRouting Menu\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    [ -d "$LOCAL_REPO" ] && [ "$(ls "$LOCAL_REPO" | grep -c "load_")" -ge 1 ] && printf '%b[u]%b  Update x3mRouting to Version 2.0.0\n' "$COLOR_RED" "$COLOR_WHITE"
     printf '\n%b%s%b%s\n' "$COLOR_GREEN" "[n del]" "$COLOR_WHITE" "  Uninstall option number 1, 2, 3 or 4 (e.g. '1 del')"
     printf '%b[e]%b  Exit x3mMenu\n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '\n%b%s%b%s' "$COLOR_GREEN" "Option " "$COLOR_WHITE" "==> "

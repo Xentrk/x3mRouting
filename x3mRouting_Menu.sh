@@ -124,7 +124,10 @@ Main_Menu() {
         for FILE in "getdomainnames.sh" "autoscan.sh"; do
           Download_File "$LOCAL_REPO" "$FILE"
         done
-        Install_Done "getdomainnames.sh ad autoscan.sh"
+        echo
+        printf '%s%b%s%b%s%b%s%b%s\n\n' "Installation of " "$COLOR_GREEN" "getdomainnames.sh" "$COLOR_WHITE" " and " "$COLOR_GREEN" "autoscan.sh" "$COLOR_WHITE" " completed"
+        echo "Press enter to continue"
+        read -r
         return 1
         ;;
       "4 del")

@@ -77,7 +77,7 @@ Main_Menu() {
       fi
     fi
     printf '\n%b%s%b%s\n' "$COLOR_GREEN" "{ n [ del ] }" "$COLOR_WHITE" "  Remove options 1 - 4"
-    printf '\n%b[e]%b  Exit Script\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '%b[e]%b  Exit Script\n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '\n%b%s%b%s' "$COLOR_GREEN" "Option " "$COLOR_WHITE" "==> "
     read -r "MENU1"
 

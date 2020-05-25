@@ -236,6 +236,10 @@ Remove_OPT2() {
   # Remove entries from /jffs/scripts/nat-start
   Remove_nat_start_Entries
 
+  Remove_Prerouting_Rules
+
+  Remove_Postrouting_Rules
+
   # Remove vpnclientX-route-up files
   for VPNID in 1 2 3 4 5; do
     UP_FILE=/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-up
@@ -312,6 +316,10 @@ Remove_OPT3() {
 
   # Remove entries from /jffs/scripts/nat-start
   Remove_nat_start_Entries
+
+  Remove_Prerouting_Rules
+
+  Remove_Postrouting_Rules
 
   # Remove vpnclientX-route-up files
   for VPNID in 1 2 3 4 5; do
@@ -830,6 +838,21 @@ Update_NewVersion() {
 
   }
 
+  Remove_Postrouting_Rules () {
+
+    echo
+    echo "Delete any existing POSTROUTING rules for VPN Servers"
+    echo
+    for VPN_SERVER_INSTANCE in 1 2; do
+      VPN_SERVER_SUBNET="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24"
+      iptables -nvL POSTROUTING -t nat --line | grep "$VPN_SERVER_SUBNET" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
+        echo "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
+        iptables -t mangle -D PREROUTING "$CHAIN_NUM"
+      done
+    done
+
+  }
+
   Remove_IPSET_dnsmasqconfadd () {
 
     if [ -s "/jffs/configs/dnsmasq.conf.add" ]; then
@@ -979,6 +1002,7 @@ Update_NewVersion() {
   Remove_From_nat_start
   Remove_From_UP_File
   Remove_Prerouting_Rules
+  Remove_Postroutng_Rules
   Remove_IPSET_dnsmasqconfadd
 
 }
@@ -1049,6 +1073,33 @@ Check_For_Shebang() {
     printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " has $SHEBANG_COUNT shebang entry, $NOT_EMPTY_LINE_COUNT valid lines, $COMMENT_LINE_COUNT comment lines and $EMPTY_LINE_COUNT empty lines."
     printf '%s%b%s%b%s\n' "Skipping removal of " "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" "."
   fi
+
+}
+
+Remove_Prerouting_Rules () {
+
+  echo
+  echo "Delete any existing PREROUTING rules for IPSET lists"
+  echo
+  iptables -nvL PREROUTING -t mangle --line | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
+    echo "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
+    iptables -t mangle -D PREROUTING "$CHAIN_NUM"
+  done
+
+}
+
+Remove_Postrouting_Rules () {
+
+  echo
+  echo "Delete any existing POSTROUTING rules for VPN Servers"
+  echo
+  for VPN_SERVER_INSTANCE in 1 2; do
+    VPN_SERVER_SUBNET="$(nvram get vpn_server"${VPN_SERVER_INSTANCE}"_sn)/24"
+    iptables -nvL POSTROUTING -t nat --line | grep "$VPN_SERVER_SUBNET" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
+      echo "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
+      iptables -t mangle -D PREROUTING "$CHAIN_NUM"
+    done
+  done
 
 }
 
@@ -1161,6 +1212,10 @@ Remove_Existing_Installation() {
 
   # Purge /jffs/scripts/x3mRouting directory
   Purge_x3mRouting_Directory
+
+  Remove_Prerouting_Rules
+
+  Remove_Postrouting_Rules
 
   Exit_Message
 

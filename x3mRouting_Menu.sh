@@ -1186,11 +1186,7 @@ Purge_x3mRouting_Directory() {
       if ! rm -rf "${DIR:?}/"* >/dev/null 2>&1; then
         printf '\nNo files found to remove in %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
       fi
-      if ! rmdir "$DIR" >/dev/null 2>&1; then
-        printf '\nError trying to remove %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
-      else
-        printf '\n%b%s%b folder and all files removed\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
-      fi
+      rmdir "$DIR" >/dev/null 2>&1 && printf '\n%b%s%b folder and all files removed\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE" || printf '\nError trying to remove %b%s%b\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
     else
       printf '\n%b%s%b folder does not exist. No directory to remove\n' "$COLOR_GREEN" "$DIR" "$COLOR_WHITE"
     fi

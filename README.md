@@ -26,8 +26,12 @@ The [x3mRouing.sh](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#3-ope
   * Route VPN Server 1, 2 or both to one of the VPN Clients.
   * Selectively route VPN Server 1, 2 or both to the same routing rules as an IPSET.
 
-#### 4. getdomainnames.sh Script
+#### 4. getdomainnames.sh & autoscan.sh Scripts
+These two scripts can be used to analyze the domain names being used for a website or streaming service.
+
 The [getdomainnames.sh](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#4-getdomainnamessh-script-1) script will create a uniquely sorted list of domain names gathered from **dnsmasq.log** that you collect by accessing a website or streaming service. Use the script to help determine the domain names used by a website or streaming service.
+
+The autoscan.sh script is used to search for one or more terms in **dnsmasq.log**. It will return the top level domain names if there is a match.
 
 ## Support
 For help and support, please visit the Asuswrt-Merlin x3mRouting support thread on [snbforums.com](https://www.snbforums.com/threads/x3mrouting-selective-routing-for-asuswrt-merlin-firmware.57793/#post-506675).
@@ -473,34 +477,54 @@ VPN Server to IPSET list routing rules require the VPN Server and IPSET name to 
 x3mRouting server=1 ipset_name=PANDORA del
 ````
 
-### [4] getdomainnames.sh Script
-This script will create a uniquely sorted list of domain names from **dnsmasq.log** that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service.  The script requires that the **dnsmasq.log** file exists in the **/opt/var/log** directory. You must first enable dnsmasq logging if it's not enabled. You can also enabling dnsmasq logging by installing [Diversion, the Router Ad-Blocker for Asuswrt-Merlin](https://diversion.ch/).
+### [4] getdomainnames.sh and autoscan.sh Scripts
+#### getdomainnames.sh Script
+**getdomainnames.sh** script will create a uniquely sorted list of domain names from **dnsmasq.log** that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service. The script requires that the **dnsmasq.log** file exists in the **/opt/var/log** directory. You must first enable dnsmasq logging if it's not enabled using the instructions below. You can also enabling dnsmasq logging by installing [Diversion, the Router Ad-Blocker for Asuswrt-Merlin](https://diversion.ch/).
 
-#### Enable dnsmasq Logging
+##### Enable dnsmasq Logging
 1. Navigate to the **/jffs/configs** directory e.g **cd /jffs/config**
 2. Use your SFTP or SSH client to create the **dnsmasq.conf.add** file
 3. Add the following entry to **/jffs/configs/dnsmasq.conf.add**:
     **log-facility=/opt/var/log/dnsmasq.log**
 4. Save and exit **dnsmasq.conf.log**
 5. Restart dnsmasq
-    service restart_dnsmasq
+````    
+service restart_dnsmasq
+````
 
-#### getdomainnames.sh Usage Instructions
-1. Download the script **getdomainnames.sh**
-2. Navigate to the log file directory **/opt/var/log**
-3. Enter the command: **tail -f dnsmasq.log > myfile** where 'myfile' is any file name you choose.
-4. Access the streaming service and watch some videos for a few seconds and select each option to generate domain names
-5. Enter **Ctrl-c** to exit
-6. **sh getdomainnames.sh {file} {IP}**, where 'file'
-is the name of the source file you created in the **/opt/var/log** directory and 'IP' is the IPv4 address of client device that was used to collect the domains.
+##### getdomainnames.sh Usage Instructions
+1. Navigate to the **/jffs/scripts/x3mRouting** file directory (e.g. cd /jffs/scripts/x3mRouting).
+2. Run the script (e.g. sh getdomainnames.sh).
+3. You will be prompted for a file name that will be used to store the domain names collected.
+4. Next, you will be prompted for the IPv4 address of the device you are using to perform the lookups.
+5. When prompted, go to the website or access the streaming service and select each option to generate traffic and collect domain names.
+6. When done, type **Ctrl-C** to stop collecting domain names.
+7. The domain names collected will appear on the screen. They are also stored in the file you specified in the **/opt/var/log** directory for future reference.
 
-Usage Example:
+#### autoscan.sh Script
+**autoscan.sh** can be used to search for terms in **dnsmasq.log** and return the top level domain names when a match is found. You can specify more than one search term by separating the search terms with a comma. The top level domain names can be specified when using the **dnsmasq** method.
 
-    sh getdomainnames.sh myfile 192.168.1.50
+````
+sh autoscan.sh autoscan=disney
 
-The domains collected will be stored in the **/opt/var/log/** directory using the same name as the output file with '_domains' concatenated at the end of the file name (e.g. myfile_domains)
+demdex.net
+disney-plus.net
+disney.com
+disney.io
+disneyplus.com
+footprint.net
+go.com
+````
 
-The next step is to check the file for domains not related to the streaming service. These are domains generated by other applications on the LAN client you streamed from that may not be related to the streaming service. You don't have to use the fully qualified domain name. For example, the domain **occ-0-1077-1062.1.nflxso.net** would be entered as **nflxso.net**. Likewise, www.netflix.com would be entered as **netflix.com**.
+````
+sh autoscan.sh autoscan=netflix,nflx
+
+netflix.com
+nflxext.com
+nflximg.net
+nflxso.net
+nflxvideo.net
+````
 
 ## Helpful Tips, Validation and Troubleshooting
 
@@ -514,7 +538,7 @@ Use the **"Follow the log file"** option of [Diversion](https://diversion.ch) ad
 #### How to determine AS Numbers for streaming services
 Use the site [https://bgp.he.net](https://bgp.he.net/) to find AS Numbers for streaming services. You can type the name of the streaming service in the **search box** or an IP address.
 
-Alternatively, you can use the **nslookup** command to find the IP address of a domain name. Then use the **whob** command to find the AS Number of the IP address.
+Alternatively, you can use the **nslookup** command to find the IP address of a domain name. Then use the **whob** command to find the AS Number and subnet address for the IP address.
 
     # nslookup occ-0-1077-1062.1.nflxso.net
 
@@ -527,9 +551,25 @@ Alternatively, you can use the **nslookup** command to find the IP address of a 
 
     # whob 198.38.96.132 | grep AS
 
+    IP: 198.38.96.132
     Origin-AS: 2906
-    AS-Path: 34224 3356 2906
+    Prefix: 198.38.96.0/19
+    AS-Path: 20912 3257 3356 2906
     AS-Org-Name: Netflix Streaming Services Inc.
+    Org-Name: Netflix Streaming Services Inc.
+    Net-Name: SSI-CDN-2
+    Cache-Date: 1590306161
+    Latitude: 39.738008
+    Longitude: -75.550353
+    City: Wilmington
+    Region: Delaware
+    Country: United States
+    Country-Code: US
+
+Use the subnet address to validate the entry exists in the IPSET list:
+
+    ipset -L NETFLIX | grep 198.38.96.0/19
+    198.38.96.0/19
 
 ### Validation and Troubleshooting
 #### IPSET lists

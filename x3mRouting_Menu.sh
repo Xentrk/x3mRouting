@@ -77,7 +77,7 @@ Main_Menu() {
       fi
     fi
     printf '\n%b[e]%b  Exit Script\n' "$COLOR_GREEN" "$COLOR_WHITE"
-    printf '\n%bOption ==>%b ' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '\n%s%b%s%b%s' "{ n[{-n}] [ del ]" "$COLOR_GREEN" " Option " "$COLOR_WHITE" "==>" 
     read -r "MENU1"
 
     case "$MENU1" in

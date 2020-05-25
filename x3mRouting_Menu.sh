@@ -175,10 +175,12 @@ Install_Done() {
 
 Remove_OPT1() {
 
+  # Remove LOCAL_REPO files
   for FILE in x3mRouting_client_nvram.sh x3mRouting_client_config.sh x3mRouting_client_rules; do
     [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
   done
 
+  # Remove ADDONS files
   [ -s "$ADDONS/mount_files_lan.sh" ] && rm -f "$ADDONS/mount_files_lan.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/mount_files_lan.sh" "$COLOR_WHITE" " completed"
 
   # only remove vpnrouting.sh and updown-client.sh if GUI is not being used.

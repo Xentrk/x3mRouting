@@ -502,7 +502,7 @@ service restart_dnsmasq
 7. The domain names collected will appear on the screen. They are also stored in the file you specified in the **/opt/var/log** directory for future reference.
 
 #### autoscan.sh Script
-**autoscan.sh** can be used to search for terms in **dnsmasq.log** and return the top level domain names when a match is found. You can specify more than one search term by separating the search terms with a comma. The top level domain names can be specified when using the **dnsmasq** method.
+**autoscan.sh** can be used to search for terms in **dnsmasq.log** and return the top level domain names when a match is found. You can specify one or  more search term by separating the search terms with a comma. The top level domain names the script returns can be specified when using the **dnsmasq** method.
 
 ````
 sh autoscan.sh autoscan=disney

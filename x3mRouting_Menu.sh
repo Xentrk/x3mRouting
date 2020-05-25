@@ -89,7 +89,7 @@ Main_Menu() {
         return 1
         ;;
       "1 del")
-        Confirm_Remove_LAN_Clients
+        Confirm_Removal_OPT1
         return 1
         ;;
       2)
@@ -171,11 +171,7 @@ Install_Done() {
   Welcome_Message
 }
 
-Remove_LAN_Clients() {
-
-  for VPN_ID in 1 2 3 4 5; do
-    [ -s "$ADDONS/ovpnc${VPN_ID}.nvram" ] && rm -rf "$ADDONS/ovpnc${VPN_ID}.nvram" && service restart_vpnclient"$VPN_ID" && echo "Retarting VPN Client $VPN_ID to remove x3mRouting LAN Client Rules"
-  done
+Remove_OPT1() {
 
   for FILE in x3mRouting_client_nvram.sh x3mRouting_client_config.sh x3mRouting_client_rules; do
     [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
@@ -188,18 +184,23 @@ Remove_LAN_Clients() {
     for FILE in vpnrouting.sh updown-client.sh; do
       if [ -s "$ADDONS/$FILE" ]; then
         case $FILE in
-          vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh && rm -rf /usr/sbin/vpnrouting.sh && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed";;
+          vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh && rm -rf /usr/sbin/vpnrouting.sh && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed" ;;
           updown-client.sh) [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh & rm -rf /usr/sbin/updown-client.sh && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed" ;;
         esac
       fi
     done
   fi
+
+  for VPN_ID in 1 2 3 4 5; do
+    [ -s "$ADDONS/ovpnc${VPN_ID}.nvram" ] && rm -rf "$ADDONS/ovpnc${VPN_ID}.nvram" && service restart_vpnclient"$VPN_ID" && echo "Retarting VPN Client $VPN_ID to remove x3mRouting LAN Client Rules"
+  done
+
   printf "\nPress enter to continue"
   read -r
   Welcome_Message
 }
 
-Confirm_Remove_LAN_Clients() {
+Confirm_Removal_OPT1() {
   while true; do
     printf '\nAre you sure you want to uninstall LAN Client Routing files?\n\n'
     printf '%b[1]%b --> Yes \n' "$COLOR_GREEN" "$COLOR_WHITE"
@@ -208,7 +209,7 @@ Confirm_Remove_LAN_Clients() {
     read -r "MENU_VALIDATE_REMOVAL"
     case "$MENU_VALIDATE_REMOVAL" in
     1)
-      Remove_LAN_Clients
+      Remove_OPT1
       break
       ;;
     2)

@@ -529,7 +529,7 @@ Update_Addons_Files() {
         printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " does not match - downloading"
         Download_File "$ADDONS" "$FILE"
       else
-        printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "  matches GitHub repo file."
+        printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " matches GitHub repo file."
       fi
     fi
   done
@@ -567,7 +567,7 @@ Update_Repo_Files() {
           printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " does not match - downloading"
           Download_File "$LOCAL_REPO" "$FILE"
         else
-          printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "  matches GitHub repo file."
+          printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " matches GitHub repo file."
         fi
       fi
     done

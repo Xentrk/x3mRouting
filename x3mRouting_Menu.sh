@@ -69,7 +69,7 @@ Main_Menu() {
     # Look for presence of old files to determine if candidate for update
     [ -d "$LOCAL_REPO" ] && [ "$(ls "$LOCAL_REPO" | grep -c "load_")" -ge 1 ] || [ "$(ls "$LOCAL_REPO" | grep -c "route_all_vpnserver.sh")" -ge 1 ] || [ "$(ls "$LOCAL_REPO" | grep -c "route_ipset_vpnserver.sh")" -ge 1 ] && printf '%b[u]%b  Update x3mRouting to Version 2.0.0\n' "$COLOR_RED" "$COLOR_WHITE"
     # End Check for old files
-    printf '\n%b%s%b%s\n' "$COLOR_GREEN" "[n del]" "$COLOR_WHITE" "  Uninstall option number 1, 2, 3 or 4 (e.g. '1 del')"
+    printf '\n%b%s%b%s\n' "$COLOR_GREEN" "[n del]" "$COLOR_WHITE" "  Uninstall Option Number"
     printf '%b[e]%b  Exit x3mMenu\n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '\n%b%s%b%s' "$COLOR_GREEN" "Option " "$COLOR_WHITE" "==> "
     read -r "MENU1"

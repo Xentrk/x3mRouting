@@ -528,6 +528,8 @@ Update_Addons_Files() {
       if [ "$localmd5" != "$remotemd5" ]; then
         printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " does not match - downloading"
         Download_File "$ADDONS" "$FILE"
+      else
+        printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "  matches GitHub repo file."
       fi
     fi
   done
@@ -536,7 +538,7 @@ Update_Addons_Files() {
   for FILE in mount_files_lan.sh mount_files_gui.sh; do
     [ -s "$ADDONS/$FILE" ] && sh "$ADDONS/$FILE"
   done
-  
+
   echo
   echo "Update of x3mRouting completed"
   echo
@@ -564,6 +566,8 @@ Update_Repo_Files() {
         if [ "$localmd5" != "$remotemd5" ]; then
           printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " does not match - downloading"
           Download_File "$LOCAL_REPO" "$FILE"
+        else
+          printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "  matches GitHub repo file."
         fi
       fi
     done

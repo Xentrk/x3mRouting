@@ -504,6 +504,7 @@ Migrate_Util_Files () {
 ### and https://github.com/jackyaz/spdMerlin - credit to Jack Yaz
 Update_Addons_Files() {
 
+    # Check if version update
     for FILE in mount_files_lan.sh mount_files_gui.sh; do
       if [ -s "$ADDONS/$FILE" ]; then
         localver=$(grep "VERSION=" "$ADDONS/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
@@ -518,7 +519,9 @@ Update_Addons_Files() {
     done
 
   Remove_Mounts
-  for FILE in vpnrouting.sh updown-client.sh Advanced_OpenVPNClient_Content.asp; do
+
+  # Check if md5sum difference
+  for FILE in vpnrouting.sh updown-client.sh Advanced_OpenVPNClient_Content.asp ount_files_lan.sh mount_files_gui.sh; do
     if [ -s "$ADDONS/$FILE" ]; then
       localmd5="$(md5sum "$ADDONS/$FILE" | awk '{print $1}')"
       remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
@@ -533,6 +536,7 @@ Update_Addons_Files() {
   for FILE in mount_files_lan.sh mount_files_gui.sh; do
     [ -s "$ADDONS/$FILE" ] && sh "$ADDONS/$FILE"
   done
+  
   echo
   echo "Update of x3mRouting completed"
   echo

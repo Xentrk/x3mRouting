@@ -173,19 +173,19 @@ Remove_OPT1() {
 
   # Remove LOCAL_REPO files
   for FILE in x3mRouting_client_nvram.sh x3mRouting_client_config.sh x3mRouting_client_rules; do
-    [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
+    [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found. Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
   done
 
   # Remove ADDONS files
-  [ -s "$ADDONS/mount_files_lan.sh" ] && rm -f "$ADDONS/mount_files_lan.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/mount_files_lan.sh" "$COLOR_WHITE" " completed"
+  [ -s "$ADDONS/mount_files_lan.sh" ] && rm -f "$ADDONS/mount_files_lan.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/mount_files_lan.sh" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found. Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed"
 
   # only remove vpnrouting.sh and updown-client.sh if GUI is not being used.
   if [ ! -s "$ADDONS/Advanced_OpenVPNClient_Content.asp" ]; then
     for FILE in vpnrouting.sh updown-client.sh; do
       if [ -s "$ADDONS/$FILE" ]; then
         case $FILE in
-          vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh && rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" ;;
-          updown-client.sh) [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh && rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" ;;
+          vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh && rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found. Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" ;;
+          updown-client.sh) [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh && rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found. Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed";;
         esac
       fi
     done

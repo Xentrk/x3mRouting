@@ -517,7 +517,10 @@ Update_Addons_Files() {
     fi
   done
 
-  sh /jffs/scripts/init-start
+  # Remount Files
+  for FILE in mount_files_lan.sh mount_files_gui.sh; do
+    [ -s "$ADDONS/$FILE" ] && sh "$ADDONS/$FILE"
+  done
   echo
   echo "Update of x3mRouting completed"
   echo

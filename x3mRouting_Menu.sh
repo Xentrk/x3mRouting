@@ -67,7 +67,11 @@ Main_Menu() {
     remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/x3mRouting_Menu.sh" | md5sum | awk '{print $1}')"
     [ "$localmd5" != "$remotemd5" ] && printf '%b[7]%b  Update x3mRouting Menu\n' "$COLOR_GREEN" "$COLOR_WHITE"
     # Look for presence of old files to determine if candidate for update
-    [ -d "$LOCAL_REPO" ] && [ "$(ls "$LOCAL_REPO" | grep -c "load_")" -ge 1 ] || [ "$(ls "$LOCAL_REPO" | grep -c "route_all_vpnserver.sh")" -ge 1 ] || [ "$(ls "$LOCAL_REPO" | grep -c "route_ipset_vpnserver.sh")" -ge 1 ] && printf '%b[u]%b  Update x3mRouting to Version 2.0.0\n' "$COLOR_RED" "$COLOR_WHITE"
+    if [ -d "$LOCAL_REPO" ]; then
+      if [ "$(ls "$LOCAL_REPO" | grep -c "load_")" -ge 1 ] || [ "$(ls "$LOCAL_REPO" | grep -c "route_all_vpnserver.sh")" -ge 1 ] || [ "$(ls "$LOCAL_REPO" | grep -c "route_ipset_vpnserver.sh")" -ge 1 ]; then
+        printf '%b[u]%b  Update x3mRouting to Version 2.0.0\n' "$COLOR_RED" "$COLOR_WHITE"
+      fi
+    fi
     # End Check for old files
     printf '\n%b%s%b%s\n' "$COLOR_GREEN" "[n del]" "$COLOR_WHITE" "  Uninstall Option Number"
     printf '%b[e]%b  Exit x3mMenu\n' "$COLOR_GREEN" "$COLOR_WHITE"

@@ -66,7 +66,9 @@ Main_Menu() {
     localmd5="$(md5sum "$ADDONS/x3mRouting_Menu.sh" | awk '{print $1}')"
     remotemd5="$(curl -fsL --retry 3 "${GITHUB_DIR}/x3mRouting_Menu.sh" | md5sum | awk '{print $1}')"
     [ "$localmd5" != "$remotemd5" ] && printf '%b[7]%b  Update x3mRouting Menu\n' "$COLOR_GREEN" "$COLOR_WHITE"
-    [ -d "$LOCAL_REPO" ] && [ "$(ls "$LOCAL_REPO" | grep -c "load_")" -ge 1 ] && printf '%b[u]%b  Update x3mRouting to Version 2.0.0\n' "$COLOR_RED" "$COLOR_WHITE"
+    # Look for presence of old files to determine if candidate for update
+    [ -d "$LOCAL_REPO" ] && [ "$(ls "$LOCAL_REPO" | grep -c "load_")" -ge 1 ] || [ "$(ls "$LOCAL_REPO" | grep -c "route_all_vpnserver.sh")" -ge 1 ] || [ "$(ls "$LOCAL_REPO" | grep -c "route_ipset_vpnserver.sh")" -ge 1 ] && printf '%b[u]%b  Update x3mRouting to Version 2.0.0\n' "$COLOR_RED" "$COLOR_WHITE"
+    # End Check for old files
     printf '\n%b%s%b%s\n' "$COLOR_GREEN" "[n del]" "$COLOR_WHITE" "  Uninstall option number 1, 2, 3 or 4 (e.g. '1 del')"
     printf '%b[e]%b  Exit x3mMenu\n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '\n%b%s%b%s' "$COLOR_GREEN" "Option " "$COLOR_WHITE" "==> "
@@ -464,6 +466,12 @@ Remove_Mounts () {
 
 Migrate_Util_Files () {
 
+  for VPN_ID in 1 2 3 4 5; do
+    [ -s "/jffs/configs/ovpnc${VPN_ID}.nvram" ] && mv "/jffs/configs/ovpnc${VPN_ID}.nvram" "$ADDONS/ovpnc${VPN_ID}.nvram"
+  done
+
+  [ -s "/jffs/configs/x3mRouting_client_config" ] && mv "/jffs/configs/x3mRouting_client_config" "$ADDONS/x3mRouting_client_config"
+
   for FILE in vpnrouting.sh updown-client.sh Advanced_OpenVPNClient_Content.asp mount_files_lan.sh mount_files_gui.sh; do
     if [ -s "$LOCAL_REPO/$FILE" ]; then
       case "$FILE" in
@@ -481,10 +489,14 @@ Migrate_Util_Files () {
         OLD_ENTRY="$LOCAL_REPO/$FILE"
         NEW_ENTRY="$ADDONS/$FILE"
         sed "s|$OLD_ENTRY|$NEW_ENTRY|" "/jffs/scripts/init-start" > "/tmp/init-start" && mv "/tmp/init-start" "/jffs/scripts/init-start" && chmod 755 "/jffs/scripts/init-start"
-        sh /jffs/scripts/init-start
       fi
     done
   fi
+  
+  # Remount Files
+  for FILE in mount_files_lan.sh mount_files_gui.sh; do
+    [ -s "$ADDONS/$FILE" ] && sh "$ADDONS/$FILE"
+  done
 
 }
 

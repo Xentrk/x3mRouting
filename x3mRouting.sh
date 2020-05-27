@@ -661,10 +661,28 @@ Delete_Ipset_List() {
     logger -st "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
   fi
 
-  iptables -nvL PREROUTING -t mangle --line | grep "$IPSET_NAME" | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
+  Define_IFACE "$IPSET_NAME"
+
+  # Delete PREROUTING Rules for Normal IPSET routing
+  iptables -nvL PREROUTING -t mangle --line | grep  "br0" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
     logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
     iptables -t mangle -D PREROUTING "$CHAIN_NUM"
   done
+
+  # Delete PREROUTING Rule for VPN Server to IPSET & POSTROUTING Rule
+  VPN_SERVER_TUN="$(iptables -nvL PREROUTING -t mangle --line | grep  "tun21" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $7}')"
+
+  [ -z "$VPN_SERVER_TUN" ] && VPN_SERVER_TUN="$(iptables -nvL PREROUTING -t mangle --line | grep  "tun22" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $7}')"
+
+  # Delete PREROUTING Rule
+  iptables -nvL PREROUTING -t mangle --line | grep  "$VPN_SERVER_TUN" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
+    logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
+    iptables -t mangle -D PREROUTING "$CHAIN_NUM"
+  done
+
+  # Delete POSTROUTING Rule
+  SERVER_UNIT="$(echo "$VPN_SERVER_TUN" | awk '{ string=substr($0, 5, 5); print string; }')"
+  iptables -t nat -D POSTROUTING -s "$(nvram get vpn_server${SERVER_UNIT=}_sn)"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
 
   # Destroy the IPSET list
   if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then
@@ -1117,6 +1135,28 @@ Check_Second_Parm() {
   fi
 }
 
+Define_IFACE() {
+
+  ### Define interface/bitmask to route traffic to. Use existing PREROUTING rule for IPSET to determine FWMARK.
+  FWMARK=$(iptables -nvL PREROUTING -t mangle --line | grep "br0" | grep "$IPSET_NAME" | awk '{print $16}')
+
+  [ -n "$FWMARK" ] || Error_Exit "Error! Mandatory PREROUTING rule for IPSET name $IPSET_NAME does not exist."
+
+  TAG_MARK="$FWMARK/$FWMARK"
+  FWMARK_SUBSTR=$(echo "$FWMARK" | awk '{ string=substr($0, 3, 6); print string; }')
+
+  case "$FWMARK_SUBSTR" in
+  8000) IFACE="br0" ;;
+  1000) IFACE="tun11" ;;
+  2000) IFACE="tun12" ;;
+  4000) IFACE="tun13" ;;
+  7000) IFACE="tun14" ;;
+  3000) IFACE="tun15" ;;
+  *) Error_Exit "ERROR $1 should be a 1-5=VPN" ;;
+  esac
+
+}
+
 #==================== End of Functions  =====================================
 SCR_NAME=$(basename "$0" | sed 's/.sh//')
 # Uncomment the line below for debugging
@@ -1194,23 +1234,7 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
       fi
     fi
 
-    ### Define interface/bitmask to route traffic to. Use existing PREROUTING rule for IPSET to determine FWMARK.
-    FWMARK=$(iptables -nvL PREROUTING -t mangle --line | grep "br0" | grep "$IPSET_NAME" | awk '{print $16}')
-
-    [ -n "$FWMARK" ] || Error_Exit "Error! Mandatory PREROUTING rule for IPSET name $IPSET_NAME does not exist."
-
-    TAG_MARK="$FWMARK/$FWMARK"
-    FWMARK_SUBSTR=$(echo "$FWMARK" | awk '{ string=substr($0, 3, 6); print string; }')
-
-    case "$FWMARK_SUBSTR" in
-    8000) IFACE="br0" ;;
-    1000) IFACE="tun11" ;;
-    2000) IFACE="tun12" ;;
-    4000) IFACE="tun13" ;;
-    7000) IFACE="tun14" ;;
-    3000) IFACE="tun15" ;;
-    *) Error_Exit "ERROR $1 should be a 1-5=VPN" ;;
-    esac
+    Define_IFACE "$IPSET_NAME"
 
     case "$IFACE" in
     tun11) VPN_CLIENT_INSTANCE=1 ;;

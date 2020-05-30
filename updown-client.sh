@@ -60,14 +60,36 @@ create_client_list() {
   IFS=$OLDIFS
 }
 
-run_script_event() {
-  if [ -f /jffs/scripts/openvpn-event ]; then
-    /usr/bin/logger -t "custom_script" "Running /jffs/scripts/openvpn-event (args: $*)"
-    /bin/sh /jffs/scripts/openvpn-event $*
-  fi
+run_script_event(){
+	if [ -f /jffs/scripts/openvpn-event ]
+	then
+		if [ "$(nvram get jffs2_scripts)" = "0" ]
+		then
+			/usr/bin/logger -t "custom_script" "Found openvpn-event, but custom script execution is disabled!"
+		else
+			/usr/bin/logger -t "custom_script" "Running /jffs/scripts/openvpn-event (args: $*)"
+			/bin/sh /jffs/scripts/openvpn-event $*
+		fi
+	fi
 }
 
 ### Main
+
+if [ "$script_type" = "down" ]; then
+  /usr/sbin/iptables -t nat -D PREROUTING -p udp -m udp --dport 53 -j DNSVPN${instance}
+  /usr/sbin/iptables -t nat -D PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN${instance}
+  /usr/sbin/iptables -t nat -F DNSVPN${instance}
+  /usr/sbin/iptables -t nat -X DNSVPN${instance}
+
+  if [ -f "$qosscript" ]; then
+    sed -i "s/-A/-D/g" "$qosscript"
+    /bin/sh "$qosscript"
+    rm "$qosscript"
+  fi
+
+  [ -f "$resolvfile" ] && rm "$resolvfile"
+  [ -f "$dnsscript" ] && rm "$dnsscript"
+fi
 
 if [ "$instance" = "" ] || [ "$(nvram get vpn_client${instance}_adns)" -eq 0 ]; then
   run_script_event $*
@@ -85,7 +107,6 @@ if [ -f "$resolvfile" ]; then
 fi
 
 if [ "$script_type" = "up" ]; then
-
   echo "#!/bin/sh" >>"$dnsscript"
   echo /usr/sbin/iptables -t nat -N DNSVPN${instance} >>"$dnsscript"
 
@@ -125,19 +146,6 @@ if [ "$script_type" = "up" ]; then
     echo "#!/bin/sh" >>"$qosscript"
     echo /usr/sbin/iptables -t mangle -A POSTROUTING -o br0 -m mark --mark 0x40000000/0xc0000000 -j MARK --set-xmark 0x80000000/0xC0000000 >>"$qosscript"
     /bin/sh "$qosscript"
-  fi
-fi
-
-if [ "$script_type" = "down" ]; then
-  /usr/sbin/iptables -t nat -D PREROUTING -p udp -m udp --dport 53 -j DNSVPN${instance}
-  /usr/sbin/iptables -t nat -D PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN${instance}
-  /usr/sbin/iptables -t nat -F DNSVPN${instance}
-  /usr/sbin/iptables -t nat -X DNSVPN${instance}
-
-  if [ -f "$qosscript" ]; then
-    sed -i "s/-A/-D/g" "$qosscript"
-    /bin/sh "$qosscript"
-    rm "$qosscript"
   fi
 fi
 

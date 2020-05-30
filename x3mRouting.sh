@@ -828,9 +828,9 @@ VPN_Server_to_VPN_Client() {
   POLICY_RULE_WITHOUT_NAME="${VPN_SERVER_SUBNET}>0.0.0.0>VPN"
   POLICY_RULE="<VPN Server ${VPN_SERVER_INSTANCE}>${VPN_SERVER_SUBNET}>0.0.0.0>VPN"
 
-  VPN_IP_LIST=""
-  for n in "" 1 2 3 4 5; do
-    VPN_IP_LIST="$VPN_IP_LIST""$(nvram get vpn_client"$VPN_CLIENT_INSTANCE"_clientlist$n)"
+  VPN_IP_LIST="$(nvram get vpn_client"$VPN_CLIENT_INSTANCE"_clientlist)"
+  for n in 1 2 3 4 5; do
+    VPN_IP_LIST="${VPN_IP_LIST}$(nvram get vpn_client"$VPN_CLIENT_INSTANCE"_clientlist$n)"
   done
 
   if [ "$DEL_FLAG" != "del" ]; then # add entry

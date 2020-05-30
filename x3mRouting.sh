@@ -682,7 +682,7 @@ Delete_Ipset_List() {
 
   # Delete POSTROUTING Rule
   SERVER_UNIT="$(echo "$VPN_SERVER_TUN" | awk '{ string=substr($0, 5, 5); print string; }')"
-  iptables -t nat -D POSTROUTING -s "$(nvram get vpn_server${SERVER_UNIT=}_sn)"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
+  iptables -t nat -D POSTROUTING -s "$(nvram get vpn_server${SERVER_UNIT}_sn)"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
 
   # Destroy the IPSET list
   if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then
@@ -830,7 +830,7 @@ VPN_Server_to_VPN_Client() {
 
   VPN_IP_LIST="$(nvram get vpn_client"$VPN_CLIENT_INSTANCE"_clientlist)"
   for n in 1 2 3 4 5; do
-    VPN_IP_LIST="${VPN_IP_LIST}$(nvram get vpn_client"$VPN_CLIENT_INSTANCE"_clientlist$n)"
+    VPN_IP_LIST="${VPN_IP_LIST}$(nvram get vpn_client"$VPN_CLIENT_INSTANCE"_clientlist${n})"
   done
 
   if [ "$DEL_FLAG" != "del" ]; then # add entry
@@ -890,10 +890,10 @@ VPN_Server_to_VPN_Client() {
       low=0
       max=255
       for n in "" 1 2 3 4 5; do
-        nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"$n"="$(echo "$VPN_IP_LIST" | cut -b$low-$max)"
+        nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"${n}"="$(echo "$VPN_IP_LIST" | cut -b $low-$max)"
         low=$((max + 1))
-	      max=$((low + 254))
-      done
+	        max=$((low + 254))
+        done
       nvram commit
       logger -st "($(basename "$0"))" $$ "Restarting VPN Client ${VPN_CLIENT_INSTANCE} to add policy rule for VPN Server ${VPN_SERVER_INSTANCE}"
       service restart_vpnclient"${VPN_CLIENT_INSTANCE}"
@@ -903,7 +903,7 @@ VPN_Server_to_VPN_Client() {
         low=0
         max=255
         for n in "" 1 2 3 4 5; do
-          nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"$n"="$(echo "$VPN_IP_LIST" | cut -b$low-$max)"
+          nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"${n}"="$(echo "$VPN_IP_LIST" | cut -b $low-$max)"
           low=$((max + 1))
           max=$((low + 254))
         done
@@ -946,10 +946,10 @@ VPN_Server_to_VPN_Client() {
       low=0
       max=255
       for n in "" 1 2 3 4 5; do
-        nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"$n"="$(echo "$VPN_IP_LIST" | cut -b$low-$max)"
+        nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"${n}"="$(echo "$VPN_IP_LIST" | cut -b $low-$max)"
         low=$((max + 1))
-	      max=$((low + 254))
-      done
+	        max=$((low + 254))
+       done
       nvram commit
       logger -st "($(basename "$0"))" $$ "Restarting vpnclient ${VPN_CLIENT_INSTANCE} to remove policy rule for VPN Server ${VPN_SERVER_INSTANCE}"
       service restart_vpnclient"${VPN_CLIENT_INSTANCE}"

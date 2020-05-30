@@ -664,25 +664,25 @@ Delete_Ipset_List() {
   Define_IFACE "$IPSET_NAME"
 
   # Delete PREROUTING Rules for Normal IPSET routing
-  iptables -nvL PREROUTING -t mangle --line | grep  "br0" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
+  iptables -nvL PREROUTING -t mangle --line | grep "br0" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
     logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
     iptables -t mangle -D PREROUTING "$CHAIN_NUM"
   done
 
   # Delete PREROUTING Rule for VPN Server to IPSET & POSTROUTING Rule
-  VPN_SERVER_TUN="$(iptables -nvL PREROUTING -t mangle --line | grep  "tun21" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $7}')"
+  VPN_SERVER_TUN="$(iptables -nvL PREROUTING -t mangle --line | grep "tun21" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $7}')"
 
-  [ -z "$VPN_SERVER_TUN" ] && VPN_SERVER_TUN="$(iptables -nvL PREROUTING -t mangle --line | grep  "tun22" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $7}')"
+  [ -z "$VPN_SERVER_TUN" ] && VPN_SERVER_TUN="$(iptables -nvL PREROUTING -t mangle --line | grep "tun22" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $7}')"
 
   # Delete PREROUTING Rule
-  iptables -nvL PREROUTING -t mangle --line | grep  "$VPN_SERVER_TUN" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
+  iptables -nvL PREROUTING -t mangle --line | grep "$VPN_SERVER_TUN" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
     logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
     iptables -t mangle -D PREROUTING "$CHAIN_NUM"
   done
 
   # Delete POSTROUTING Rule
   SERVER_UNIT="$(echo "$VPN_SERVER_TUN" | awk '{ string=substr($0, 5, 5); print string; }')"
-  iptables -t nat -D POSTROUTING -s "$(nvram get vpn_server${SERVER_UNIT}_sn)"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
+  iptables -t nat -D POSTROUTING -s "$(nvram get vpn_server"${SERVER_UNIT}"_sn)"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
 
   # Destroy the IPSET list
   if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then
@@ -885,21 +885,9 @@ VPN_Server_to_VPN_Client() {
     fi
 
     # Add nvram entry to vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist
-    if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE_WITHOUT_NAME")" -eq "0" ]; then
+    if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE_WITHOUT_NAME")" -eq 0 ]; then
       VPN_IP_LIST="${VPN_IP_LIST}${POLICY_RULE}"
-      low=0
-      max=255
-      for n in "" 1 2 3 4 5; do
-        nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"${n}"="$(echo "$VPN_IP_LIST" | cut -b $low-$max)"
-        low=$((max + 1))
-	        max=$((low + 254))
-        done
-      nvram commit
-      logger -st "($(basename "$0"))" $$ "Restarting VPN Client ${VPN_CLIENT_INSTANCE} to add policy rule for VPN Server ${VPN_SERVER_INSTANCE}"
-      service restart_vpnclient"${VPN_CLIENT_INSTANCE}"
-    else #if the VPN Server entry exists in nvram using the 'vpnserverX' name created by the prior version, convert it to the new name
-      if [ "$(echo "$VPN_IP_LIST" | grep -c "vpnserver${VPN_SERVER_INSTANCE}")" -ge "1" ]; then
-        VPN_IP_LIST="$(echo "$VPN_IP_LIST" | sed "s/<vpnserver${VPN_SERVER_INSTANCE}>/<VPN Server ${VPN_SERVER_INSTANCE}>/")"
+      if [ "$(uname -m)" = "aarch64" ]; then
         low=0
         max=255
         for n in "" 1 2 3 4 5; do
@@ -907,6 +895,26 @@ VPN_Server_to_VPN_Client() {
           low=$((max + 1))
           max=$((low + 254))
         done
+      else
+        nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist="$VPN_IP_LIST"
+      fi
+      nvram commit
+      logger -st "($(basename "$0"))" $$ "Restarting VPN Client ${VPN_CLIENT_INSTANCE} to add policy rule for VPN Server ${VPN_SERVER_INSTANCE}"
+      service restart_vpnclient"${VPN_CLIENT_INSTANCE}"
+    else #if the VPN Server entry exists in nvram using the 'vpnserverX' name created by the prior version, convert it to the new name
+      if [ "$(echo "$VPN_IP_LIST" | grep -c "vpnserver${VPN_SERVER_INSTANCE}")" -ge "1" ]; then
+        VPN_IP_LIST="$(echo "$VPN_IP_LIST" | sed "s/<vpnserver${VPN_SERVER_INSTANCE}>/<VPN Server ${VPN_SERVER_INSTANCE}>/")"
+        if [ "$(uname -m)" = "aarch64" ]; then
+          low=0
+          max=255
+          for n in "" 1 2 3 4 5; do
+            nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"${n}"="$(echo "$VPN_IP_LIST" | cut -b $low-$max)"
+            low=$((max + 1))
+            max=$((low + 254))
+          done
+        else
+          nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist="$VPN_IP_LIST"
+        fi
         nvram commit
         logger -st "($(basename "$0"))" $$ "Restarting vpnclient ${VPN_CLIENT_INSTANCE} for policy rule for VPN Server ${VPN_SERVER_INSTANCE} to take effect"
         service restart_vpnclient"${VPN_CLIENT_INSTANCE}"
@@ -943,13 +951,17 @@ VPN_Server_to_VPN_Client() {
     # nvram get vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist
     if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE")" -eq "1" ]; then
       VPN_IP_LIST="$(echo "$VPN_IP_LIST" | sed "s,<VPN Server ${VPN_SERVER_INSTANCE}>${VPN_SERVER_SUBNET}>0.0.0.0>VPN,,")"
-      low=0
-      max=255
-      for n in "" 1 2 3 4 5; do
-        nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"${n}"="$(echo "$VPN_IP_LIST" | cut -b $low-$max)"
-        low=$((max + 1))
-	        max=$((low + 254))
-       done
+      if [ "$(uname -m)" = "aarch64" ]; then
+        low=0
+        max=255
+        for n in "" 1 2 3 4 5; do
+          nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist"${n}"="$(echo "$VPN_IP_LIST" | cut -b $low-$max)"
+          low=$((max + 1))
+          max=$((low + 254))
+        done
+      else
+        nvram set vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist="$VPN_IP_LIST"
+      fi
       nvram commit
       logger -st "($(basename "$0"))" $$ "Restarting vpnclient ${VPN_CLIENT_INSTANCE} to remove policy rule for VPN Server ${VPN_SERVER_INSTANCE}"
       service restart_vpnclient"${VPN_CLIENT_INSTANCE}"

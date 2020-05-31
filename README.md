@@ -485,10 +485,14 @@ x3mRouting server=1 ipset_name=PANDORA del
 1. Navigate to the **/jffs/configs** directory e.g **cd /jffs/config**
 2. Use your SFTP or SSH client to create the **dnsmasq.conf.add** file
 3. Add the following entry to **/jffs/configs/dnsmasq.conf.add**:
-    **log-facility=/opt/var/log/dnsmasq.log**
-4. Save and exit **dnsmasq.conf.log**
+````
+log-async
+log-queries
+log-facility=/opt/var/log/dnsmasq.log    
+````
+4. Save and exit **dnsmasq.conf.add**
 5. Restart dnsmasq
-````    
+````
 service restart_dnsmasq
 ````
 

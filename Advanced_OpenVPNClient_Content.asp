@@ -741,15 +741,15 @@
 				clientlist_array += "&#60" /*&#60*/
 			else
 				clientlist_array += "&#62" /*&#62*/
-			clientlist_array += obj.value;
-			obj.value = "";
+				clientlist_array += obj.value;
+			  obj.value = "";
 		}
 
 		function addRow_Group(upper) {
 			var rule_num = document.getElementById('clientlist_table').rows.length;
 			var item_num = document.getElementById('clientlist_table').rows[0].cells.length;
 			if (rule_num >= upper) {
-				alert("Temporarily unable to get the latest firmware information. Please try again later. " + upper + " Band");
+				alert("This table only allows " + upper + " items!");
 				return false;
 			}
 			if (!validator.safeName(document.form.clientlist_deviceName))
@@ -772,7 +772,7 @@
 				for (i = 0; i < rule_num; i++) {
 					if (document.form.clientlist_ipAddr.value.toLowerCase() == document.getElementById('clientlist_table').rows[i].cells[1].innerHTML.toLowerCase() &&
 						document.form.clientlist_dstipAddr.value.toLowerCase() == document.getElementById('clientlist_table').rows[i].cells[2].innerHTML.toLowerCase()) {
-						alert("Successfully added <span class='amesh_device_info'></span> to your AiMesh system, it will take a while to show up as connected in the AiMesh router list. " + "Osaka, Sapporo, Tokyo " + "Abu Dhabi, Muscat"); //<!-- Martineau Hack 3 of 8 -->
+						alert("This entry has been in list.");
 						document.form.clientlist_ipAddr.focus();
 						document.form.clientlist_ipAddr.select();
 						return false;

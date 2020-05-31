@@ -6,7 +6,7 @@
 # Script: x3mRouting.sh
 # VERSION=2.0.0
 # Author: Xentrk
-# Date: 5-May-2020
+# Date: 31-May-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -1122,6 +1122,7 @@ Harvest_Domains() {
   done
 
   DOMAIN_LIST=$(awk '{ print $1 }' "/opt/tmp/DOMAIN_LIST" | sort -u | tr '\n' '/' | sed -n 's/\/$/\n/p')
+  NAT_ENTRY=$(echo $DOMAIN_LIST | sed 's|/|,|g')
 
   rm /opt/tmp/DOMAIN_LIST
 
@@ -1433,7 +1434,7 @@ if [ "$(echo "$@" | grep -c 'autoscan')" -gt 0 ]; then
   Dnsmasq_Log_File $@
   Harvest_Domains $@
   Create_Routing_Rules "$IPSET_NAME"
-  Check_Files_For_Entries "$SRC_IFACE" "$DST_IFACE" "$IPSET_NAME" "dnsmasq=$DOMAIN_LIST"
+  Check_Files_For_Entries "$SRC_IFACE" "$DST_IFACE" "$IPSET_NAME" "dnsmasq=$NAT_ENTRY"
   Exit_Routine
 fi
 

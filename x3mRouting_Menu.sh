@@ -554,7 +554,7 @@ Update_Addons_Files() {
 Update_Repo_Files() {
 
   if [ -d "$LOCAL_REPO" ]; then
-    for FILE in x3mRouting.sh x3mRouting_client_nvram.sh x3mRouting_client_config.sh openvpn-event getdomainnames.sh; do
+    for FILE in x3mRouting.sh x3mRouting_client_nvram.sh x3mRouting_client_config.sh openvpn-event getdomainnames.sh autoscan.sh; do
       if [ -s "$LOCAL_REPO/$FILE" ]; then
         localver=$(grep "VERSION=" "$LOCAL_REPO/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
         serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')

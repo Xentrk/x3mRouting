@@ -316,6 +316,39 @@ Check_For_Shebang() {
 
 }
 
+Check_Nat_Start_For_Entries() {
+
+  IPSET_NAME=$1
+  OPT1=$2
+
+  if [ -z "$OPT1" ]; then # 1 parm passed
+    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=$IPSET_NAME"
+  elif [ -n "$OPT1" ]; then # OPT1 parm passed e.g. dnsmasq=, aws_region=, asnum=, ip=
+    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh ipset_name=$IPSET_NAME $OPT1"
+  fi
+
+  NAT_START="/jffs/scripts/nat-start"
+
+  # nat-start File
+  if [ -s "$NAT_START" ]; then
+    if [ "$(grep -c "$SCRIPT_ENTRY" "$NAT_START")" -eq "0" ]; then # if true, then no lines exist
+      echo "$SCRIPT_ENTRY" >>"$NAT_START" # add $SCRIPT_ENTRY to $NAT_START
+      logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
+    fi
+  else # file does not exist, create VPNC_UP_FILE
+    true >"$NAT_START"
+    {
+      printf '%s\n' "#!/bin/sh"
+      printf '%s\n' "$SCRIPT_ENTRY"
+    } >"$NAT_START"
+    logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
+  fi
+
+  #set permissions for each file
+  [ -s "$NAT_START" ] && chmod 755 "$NAT_START"
+
+}
+
 Check_Files_For_Entries() {
 
   SRC_IFACE=$1
@@ -634,15 +667,15 @@ Delete_Ipset_List() {
     fi
   fi
 
-  # Check_Files_For_Entriess for any entries related to IPSET_NAME
+  # Check_Files_For_Entries for any entries related to IPSET_NAME
   for VPNID in 1 2 3 4 5; do
     VPNC_UP_FILE="/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-up"
     VPNC_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-pre-down"
-    if [ -s "$VPNC_DOWN_FILE" ]; then # file exists
+    if [ -s "$VPNC_UP_FILE" ]; then # file exists
       # Note: not passing del entry
       if [ "$(grep -c "$IPSET_NAME" "$VPNC_UP_FILE")" -ge "1" ]; then # if true, then one or more lines exist
         sed -i "/$IPSET_NAME/d" "$VPNC_UP_FILE"
-        logger -st "($(basename "$0"))" $$ "ipset $IPSET_NAME entry deleted from $VPNC_DOWN_FILE"
+        logger -st "($(basename "$0"))" $$ "ipset $IPSET_NAME entry deleted from $VPNC_UP_FILE"
         Check_For_Shebang "$VPNC_UP_FILE"
       fi
     fi
@@ -661,7 +694,7 @@ Delete_Ipset_List() {
     logger -st "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
   fi
 
-  Define_IFACE "$IPSET_NAME"
+  #Define_IFACE "$IPSET_NAME"
 
   # Delete PREROUTING Rules for Normal IPSET routing
   iptables -nvL PREROUTING -t mangle --line | grep "br0" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
@@ -1303,6 +1336,7 @@ if [ "$(echo "$@" | grep -c 'ipset_name=')" -gt 0 ]; then
   # Check for 'dnsmasq=' parm
   if [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ]; then
     DNSMASQ_Parm $@
+    Check_Nat_Start_For_Entries $@
     Exit_Routine
   fi
 
@@ -1310,24 +1344,28 @@ if [ "$(echo "$@" | grep -c 'ipset_name=')" -gt 0 ]; then
   if [ "$(echo "$@" | grep -c 'autoscan=')" -gt 0 ]; then
     Dnsmasq_Log_File
     Harvest_Domains $@
+    Check_Nat_Start_For_Entries $@
     Exit_Routine
   fi
 
   # check if 'asnum=' parm
   if [ "$(echo "$@" | grep -c 'asnum=')" -gt 0 ]; then
     ASNUM_Parm $@
+    Check_Nat_Start_For_Entries $@
     Exit_Routine
   fi
 
   # check if 'aws_region=' parm
   if [ "$(echo "$@" | grep -c 'aws_region=')" -gt 0 ]; then
     AWS_Region_Parm $@
+    Check_Nat_Start_For_Entries $@
     Exit_Routine
   fi
 
   # default to manual method
   if [ -z "$2" ]; then
     Manual_Method $@
+    Check_Nat_Start_For_Entries $@
     Exit_Routine
   else
     # If I reached this point, I have encountered a value I don't expect

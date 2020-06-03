@@ -451,7 +451,7 @@ Process_Src_Option() {
 
   # Process when OPT1 contains 'src=' or 'src_range='
   if [ "$(echo "$OPT1" | grep -c 'src=')" -ge 0 ] || [ "$(echo "$OPT1" | grep -c 'src_range=')" -gt 0 ]; then # must be manual method
-    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE ipset_name=$IPSET_NAME $OPT1"
+    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE $IPSET_NAME $OPT1"
     Manual_Method $@
     if [ "$(echo "$OPT1" | grep -c 'src=')" -gt 0 ]; then
       IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
@@ -470,7 +470,7 @@ Process_Src_Option() {
 
   # Process when OPT2 contains 'src=' or 'src_range='
   if [ "$(echo "$OPT2" | grep -c 'src=')" -gt 0 ] || [ "$(echo "$OPT2" | grep -c 'src_range=')" -gt 0 ]; then #must be asnum, amazon or dnsmasq method
-    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE ipset_name=$IPSET_NAME $OPT1 $OPT2"
+    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE $IPSET_NAME $OPT1 $OPT2"
     # HANDLE Better?
     cp /jffs/scripts/x3mRouting/x3mRouting.sh /tmp/tmp_x3mRouting.sh
     sh /tmp/tmp_x3mRouting.sh ipset_name="$IPSET_NAME" "$OPT1" #this creates ipset list and gets around lock issue on current script

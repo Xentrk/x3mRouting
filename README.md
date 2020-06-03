@@ -281,7 +281,7 @@ x3mRouting {'server='1|2|both} {'ipset_name='} ['del']
 ````
 
 #### x3mRouting Usage Examples
-Usage examples are provided for the following routing functions:  
+Usage examples are provided below for the following routing functions:  
   * [VPN Client Routing](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#vpn-client-routing)
   * [VPN Client Bypass Routing](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#vpn-client-bypass-routing)
   * [VPN Server to VPN Client Routing](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#vpn-server-to-vpn-client-routing-1)

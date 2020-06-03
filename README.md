@@ -261,13 +261,11 @@ x3mRouting {src iface} (ALL|1|2|3|4|5)
            ['autoscan='keyword1[,keyword2]...] # Scans for keywords and creates IPSET list using the dnsmasq method
            ['asnum='asnum[,asnum]...] # ASN method
            ['aws_region='US[,EU]...]  # Amazon method
-           ['dnsmasq='domain[,domain]...] # dnsmasq method
-           ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
-           ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
-           ['ip='ip[,ip][,cidr]...]
-           ['src='src_ip]
-           ['src_range='from_ip-to_ip]
-           ['dir='save_restore_location]
+           ['dnsmasq='domain[,domain]...]  # dnsmasq method
+           ['ip='ip[,ip][,cidr]...]  # Equivalent to manual method
+           ['src='src_ip]  # Apply rule to IP address
+           ['src_range='from_ip-to_ip]  # Apply rule to IP address range
+           ['dir='save_restore_location]  # if 'dir' not specified, defaults to /opt/tmp
            ['del']
 ````
 

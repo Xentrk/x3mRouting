@@ -185,7 +185,7 @@ Create IPSET list BBC using the manual method. Use the 'dir=' location as the ba
 ````
 x3mRouting ipset_name=BBC dir=/tmp/mnt/RT-AC88U/mylists
 ````
-##### Delete an IPSET List and cru jobs
+#### Delete an IPSET List, routing rules, script entries and cru jobs
 ````
 x3mRouting ipset_name=MYIPSET del
 `````
@@ -425,7 +425,7 @@ x3mRouting server=both ipset_name=PANDORA
 1. The IPSET list must exist!
 2. A PREROUTING rule must currently exist so the script can determine the VPN Client to route to!
 
-#### Delete an IPSET List, all Routing Rules and cru jobs
+#### Delete an IPSET List, Routing Rules, Script Entries and cru jobs
 Either option listed below will work. The first example is the easiest as there is no requirement to specify the interfaces or method.
 ````
 x3mRouting ipset_name=MYIPSET del

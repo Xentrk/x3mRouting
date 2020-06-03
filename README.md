@@ -126,14 +126,14 @@ In the screen picture above, you will notice an entry for **DummyVPN1**. For the
 Running **x3mRouting** will automatically perform the set-up. The features of **openvpn-event** are used to create the routing rule during a VPN Client up event and remove the routing rule during a VPN Client down event. **/jffs/scripts/nat-start** is used to execute the scripts at system boot or during a firewall restart event.
 
 ##### IPSET Methods
-To create an IPSET list, x3mRouting requires that one of the following methods be specified
+To create an IPSET list, x3mRouting requires that one of the following methods be specified.
 
-* [AMAZON AWS Region Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#amazon-aws-region-method)
-* [ASN Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#asn-method)
-* [dnsmasq Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#dnsmasq-method)
+* [AMAZON AWS Region Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#amazon-aws-region-method-1)
+* [ASN Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#asn-method-1)
+* [dnsmasq Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#dnsmasq-method-1)
 * [dnsmasq Method with autoscan](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#dnsmasq-method-with-autosccan)
 
-If no method is specified, x3mRouting will default to the [Manual Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#manual-method). You can also manually create an IPSET list using the [Manual Method with 'ip='](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#manual-method-with-ip).
+If no method is specified, x3mRouting will default to the [Manual Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#manual-method-1). You can also manually create an IPSET list using the [Manual Method with 'ip='](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#manual-method-with-ip).
 
 #### Create an IPSET List with no Routing Rules Usage Notes
 You must specify the 'ipset_name=' parameter when no routing rules are specified. Use the OpenVPN Client Screen to create the routing rules.
@@ -197,12 +197,12 @@ Running **x3mRouting** will automatically perform the set-up. The features of **
 #### IPSET Methods
 To create an IPSET list, x3mRouting requires that one of the following methods be specified
 
-* [AMAZON AWS Region Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#amazon-aws-region-method)
-* [ASN Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#asn-method)
-* [dnsmasq Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#dnsmasq-method)
+* [AMAZON AWS Region Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#amazon-aws-region-method-1)
+* [ASN Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#asn-method-1)
+* [dnsmasq Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#dnsmasq-method-1)
 * [dnsmasq Method with autoscan](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#dnsmasq-method-with-autosccan)
 
-If no method is specified, x3mRouting will default to the [Manual Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#manual-method). You can also manually create an IPSET list using the [Manual Method with 'ip='](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#manual-method-with-ip).
+If no method is specified, x3mRouting will default to the [Manual Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#manual-method-1). You can also manually create an IPSET list using the [Manual Method with 'ip='](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#manual-method-with-ip).
 
 Optional **'src='** and **'src_range='** parameters provides the option to specify the source IP address or source IP address ranges of LAN devices you want the routing rules to be applied to.
 

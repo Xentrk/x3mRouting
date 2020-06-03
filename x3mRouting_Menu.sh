@@ -1236,7 +1236,7 @@ Remove_Existing_Installation() {
   Remove_Postrouting_Rules
 
   # Purge /jffs/scripts/x3mRouting directory
-  cd /jffs/scripts/ 2>/dev/null || return;
+  cd /jffs/scripts 2>/dev/null || return;
   Purge_x3mRouting_Directory
 
   printf '\n%s\n\n' "x3mRouting has been uninstalled" && exit 1

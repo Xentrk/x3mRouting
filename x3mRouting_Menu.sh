@@ -68,7 +68,7 @@ Main_Menu() {
     [ "$localmd5" != "$remotemd5" ] && printf '%b[7]%b  Update x3mRouting Menu\n' "$COLOR_GREEN" "$COLOR_WHITE"
     # Look for presence of old files to determine if candidate for update
     if [ -d "$LOCAL_REPO" ]; then
-      if [ "$(ls "$LOCAL_REPO" | grep -c "load_")" -ge 1 ] || [ "$(ls "$LOCAL_REPO" | grep -c "route_all_vpnserver.sh")" -ge 1 ] || [ "$(ls "$LOCAL_REPO" | grep -c "route_ipset_vpnserver.sh")" -ge 1 ]; then
+      if [ "$(ls "$LOCAL_REPO" | grep -c "load_")" -ge 1 ] || [ "$(ls "$LOCAL_REPO" | grep -c "route_all_vpnserver.sh")" -ge 1 ] || [ "$(ls "$LOCAL_REPO" | grep -c "route_ipset_vpnserver.sh")" -ge 1 ] || [ "$(ls "/jffs/configs" | grep -c ".nvram")" -ge 1 ]; then
         printf '%b[u]%b  Update x3mRouting to Version 2.0.0\n' "$COLOR_RED" "$COLOR_WHITE"
       fi
     fi
@@ -1505,5 +1505,4 @@ Update_Installer() {
   done
 }
 
-Migrate_Util_Files  # If necessary, automatically move utility files to /jffs/addons/x3mRouting, remove from here after test group converts
 Welcome_Message

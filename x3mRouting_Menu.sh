@@ -1027,7 +1027,7 @@ Update_NewVersion() {
   Remove_From_nat_start
   Remove_From_UP_File
   Remove_Prerouting_Rules
-  Remove_Postroutng_Rules
+  Remove_Postrouting_Rules
   Remove_IPSET_dnsmasqconfadd
 
 }

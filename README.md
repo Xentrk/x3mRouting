@@ -15,8 +15,8 @@ An alternative approach to automate and easily assign LAN clients to a WAN or VP
 ### 2. OpenVPN Client Screen, OpenVPN Event & x3mRouting.sh Script
 
 Provides the ability to create IPSET lists using the **x3mRouting.sh** script and selectively route the IPSET lists thru the VPN Client by entering the IPSET name in a modified [OpenVPN Client Screen](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#2-openvpn-client-screen-openvpn-event--x3mroutingsh-script-1). The customized OpenVPN Client Screen is still a work in progress. You can't use the screen to:
-* bypass the VPN Client for an IPSET list and route to the WAN interface
-* apply an IPSET routing rule to a specific device
+* Bypass the VPN Client for an IPSET list and route to the WAN interface
+* Apply an IPSET routing rule to a specific device
 
 If you have these two requirements, see the usage instructions in Option 3.
 
@@ -100,8 +100,8 @@ The routing rules for LAN Clients will automatically be applied upon a system bo
 
 #### OpenVPN Client Screen
 As part of this project, you can also choose to download and install a modified OpenVPN Client Screen to selectively route IPSET lists thru a VPN Client. You can't use the screen to:
-* bypass the VPN Client for an IPSET list and route to the WAN interface
-* apply an IPSET routing rule to a specific device
+* Bypass the VPN Client for an IPSET list and route to the WAN interface.
+* Apply an IPSET routing rule to a specific device.
 
 If you have these two requirements, see the usage instructions in [Option 3](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#3-openvpn-event--x3mroutingsh-script-1) below.
 
@@ -185,7 +185,7 @@ Create IPSET list BBC using the manual method. Use the 'dir=' location as the ba
 ````
 x3mRouting ipset_name=BBC dir=/tmp/mnt/RT-AC88U/mylists
 ````
-Delete an IPSET List and cru jobs
+##### Delete an IPSET List and cru jobs
 ````
 x3mRouting ipset_name=MYIPSET del
 `````
@@ -204,7 +204,7 @@ To create an IPSET list, x3mRouting requires that one of the following methods b
 
 If no method is specified, x3mRouting will default to the [Manual Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#manual-method). You can also manually create an IPSET list using the [Manual Method with 'ip='](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#manual-method-with-ip).
 
-[Optional 'src=' and 'src_range=' parameters](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#optional-src-and-src_range-parameters) provides the option to specify the source IP address or source IP address ranges of LAN devices you want the routing rules to be applied to.
+Optional **'src='** and **'src_range='** parameters provides the option to specify the source IP address or source IP address ranges of LAN devices you want the routing rules to be applied to.
 
 ##### AMAZON AWS Region Method
 **x3mRouting.sh** script will create an IPSET list containing all IPv4 address for the Amazon AWS region(s) specified. The source file used by the script is provided by Amazon at [https://ip-ranges.amazonaws.com/ip-ranges.json](https://ip-ranges.amazonaws.com/ip-ranges.json). You must specify the **'aws_region='** parameter and one or more of the regions below, separated by a comma, when creating the IPSET list:

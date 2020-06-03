@@ -6,7 +6,7 @@
 # Script: x3mRouting.sh
 # VERSION=2.0.0
 # Author: Xentrk
-# Date: 3-June-2020
+# Date: 2-June-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -443,51 +443,86 @@ Process_Src_Option() {
   SRC_IFACE=$1
   DST_IFACE=$2
   IPSET_NAME=$3
-  OPT1=$4
-  OPT2=$5
   SRC=$(echo "$@" | sed -n "s/^.*src=//p" | awk '{print $1}')
   SRC_RANGE=$(echo "$@" | sed -n "s/^.*src_range=//p" | awk '{print $1}')
   DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}')
 
-  # Process when OPT1 contains 'src=' or 'src_range='
-  if [ "$(echo "$OPT1" | grep -c 'src=')" -ge 0 ] || [ "$(echo "$OPT1" | grep -c 'src_range=')" -gt 0 ]; then # must be manual method
-    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE $IPSET_NAME $OPT1"
-    Manual_Method $@
-    if [ "$(echo "$OPT1" | grep -c 'src=')" -gt 0 ]; then
-      IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
-      IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
-      # Create routing rules
-      eval "$IPTABLES_DEL_ENTRY"
-      eval "$IPTABLES_ADD_ENTRY"
-    else # default to src_range
-      IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 -m iprange --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
-      IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 -m iprange --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
-      # Create routing rules
-      eval "$IPTABLES_DEL_ENTRY"
-      eval "$IPTABLES_ADD_ENTRY"
-    fi
+  if [ "$(echo "$@" | grep -c 'asnum=')" -gt 0 ]; then
+    ASN=$(echo "$@" | sed -n "s/^.*asnum=//p" | awk '{print $1}')
+    X3M_METHOD="asnum=${ASN}"
+  elif [ "$(echo "$@" | grep -c 'aws_region=')" -gt 0 ]; then
+    AWS_REGION=$(echo "$@" | sed -n "s/^.*aws_region=//p" | awk '{print $1}')
+    X3M_METHOD="aws_region=${AWS_REGION}"
+  elif [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ]; then
+    DOMAINS=$(echo "$@" | sed -n "s/^.*dnsmasq=//p" | awk '{print $1}')
+    X3M_METHOD="dnsmasq=${DOMAINS}"
+  else
+    X3M_METHOD="Manual"
   fi
 
-  # Process when OPT2 contains 'src=' or 'src_range='
-  if [ "$(echo "$OPT2" | grep -c 'src=')" -gt 0 ] || [ "$(echo "$OPT2" | grep -c 'src_range=')" -gt 0 ]; then #must be asnum, amazon or dnsmasq method
-    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE $IPSET_NAME $OPT1 $OPT2"
-    # HANDLE Better?
-    cp /jffs/scripts/x3mRouting/x3mRouting.sh /tmp/tmp_x3mRouting.sh
-    sh /tmp/tmp_x3mRouting.sh ipset_name="$IPSET_NAME" "$OPT1" #this creates ipset list and gets around lock issue on current script
-    rm /tmp/tmp_x3mRouting.sh
-    if [ "$(echo "$OPT2" | grep -c 'src=')" -gt 0 ]; then
-      IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
-      IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
-      # Create routing rules
-      eval "$IPTABLES_DEL_ENTRY"
-      eval "$IPTABLES_ADD_ENTRY"
-    else # default to 'src-range'
-      IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 -m iprange  --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
-      IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 -m iprange  --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
-      # Create routing rules
-      eval "$IPTABLES_DEL_ENTRY"
-      eval "$IPTABLES_ADD_ENTRY"
+  # Create the IPSET list first!
+  while true; do
+    # Check for 'dnsmasq=' parm
+    if [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ]; then
+      DNSMASQ_Parm $@
+      break
     fi
+
+    # Check for 'autoscan=' parm
+    if [ "$(echo "$@" | grep -c 'autoscan=')" -gt 0 ]; then
+      Dnsmasq_Log_File
+      Harvest_Domains $@
+      break
+    fi
+
+    # check if 'asnum=' parm
+    if [ "$(echo "$@" | grep -c 'asnum=')" -gt 0 ]; then
+      ASNUM_Parm $@
+      break
+    fi
+
+    # check if 'aws_region=' parm
+    if [ "$(echo "$@" | grep -c 'aws_region=')" -gt 0 ]; then
+      AWS_Region_Parm $@
+      break
+    fi
+  done
+
+  # Manual Method to create ipset list if IP address specified
+  if [ "$X3M_METHOD" = "Manual" ]; then
+    Manual_Method $@
+  fi
+
+  if [ -n "$SRC" ]; then
+    if [ "$X3M_METHOD" = "Manual" ]; then #
+      SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE $IPSET_NAME src=${SRC}"
+      [ "$DIR" != "/opt/tmp" ] && SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE $IPSET_NAME src=${SRC} dir=${DIR}"
+      Manual_Method $@
+    else
+      SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE $IPSET_NAME $X3M_METHOD src=${SRC}"
+      [ "$DIR" != "/opt/tmp" ] && SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE $IPSET_NAME $X3M_METHOD src=${SRC} dir=${DIR}"
+    fi
+    IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
+    IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 --src $SRC -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
+    # Create routing rules
+    eval "$IPTABLES_DEL_ENTRY"
+    eval "$IPTABLES_ADD_ENTRY"
+  fi
+
+  if [ -n "$SRC_RANGE" ]; then
+    if [ "$X3M_METHOD" = "Manual" ]; then
+      SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE $IPSET_NAME src_range=${SRC_RANGE}"
+      [ "$DIR" != "/opt/tmp" ] && SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE $IPSET_NAME src_range=${SRC_RANGE} dir=${DIR}"
+      Manual_Method $@
+    else
+      SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE $IPSET_NAME $X3M_METHOD src_range=${SRC_RANGE}"
+      [ "$DIR" != "/opt/tmp" ] && SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE $IPSET_NAME $X3M_METHOD src_range=${SRC_RANGE} dir=${DIR}"
+    fi
+    IPTABLES_DEL_ENTRY="iptables -t mangle -D PREROUTING -i br0 -m iprange --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK 2>/dev/null"
+    IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 -m iprange --src-range $SRC_RANGE -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
+    # Create routing rules
+    eval "$IPTABLES_DEL_ENTRY"
+    eval "$IPTABLES_ADD_ENTRY"
   fi
 
   if [ "$SRC_IFACE" = "ALL" ]; then
@@ -501,9 +536,6 @@ Process_Src_Option() {
   NAT_START="/jffs/scripts/nat-start"
 
   # nat-start File
-  if [ "$DIR" != "/opt/tmp" ]; then
-    SCRIPT_ENTRY="$SCRIPT_ENTRY dir=$DIR"
-  fi
   if [ -s "$NAT_START" ]; then
     if [ "$(grep -c "$SCRIPT_ENTRY" "$NAT_START")" -eq "0" ]; then # if true, then no lines exist
       echo "$SCRIPT_ENTRY" >>"$NAT_START" # add $SCRIPT_ENTRY to $NAT_START

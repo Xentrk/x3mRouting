@@ -17,6 +17,7 @@ An alternative approach to automate and easily assign LAN clients to a WAN or VP
 Provides the ability to create IPSET lists using the **x3mRouting.sh** script and selectively route the IPSET lists thru the VPN Client by entering the IPSET name in a modified [OpenVPN Client Screen](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#2-openvpn-client-screen-openvpn-event--x3mroutingsh-script-1). The customized OpenVPN Client Screen is still a work in progress. You can't use the screen to:
 * bypass the VPN Client for an IPSET list and route to the WAN interface
 * apply an IPSET routing rule to a specific device
+
 If you have these two requirements, see the usage instructions in Option 3.
 
 ### 3. OpenVPN Event & x3mRouting.sh Script
@@ -101,6 +102,7 @@ The routing rules for LAN Clients will automatically be applied upon a system bo
 As part of this project, you can also choose to download and install a modified OpenVPN Client Screen to selectively route IPSET lists thru a VPN Client. You can't use the screen to:
 * bypass the VPN Client for an IPSET list and route to the WAN interface
 * apply an IPSET routing rule to a specific device
+
 If you have these two requirements, see the usage instructions in [Option 3](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#3-openvpn-event--x3mroutingsh-script-1) below.
 
 [@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client Screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. I greatly appreciate his generosity in providing the modified code and allowing me to include it in the project.
@@ -133,7 +135,7 @@ To create an IPSET list, x3mRouting requires that one of the following methods b
 
 If no method is specified, x3mRouting will default to the [Manual Method](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#manual-method). You can also manually create an IPSET list using the [Manual Method with 'ip='](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#manual-method-with-ip).
 
-##### Usage Notes: Create an IPSET List with no Routing Rules
+#### Create an IPSET List with no Routing Rules Usage Notes
 You must specify the 'ipset_name=' parameter when no routing rules are specified. Use the OpenVPN Client Screen to create the routing rules.
 * Required parameters are listed inside the braces { }
 * Optional parameters are listed inside of the brackets [ ]
@@ -147,6 +149,7 @@ x3mRouting {ipset_name=}
            ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
            ['del']
 ````
+#### Create an IPSET List with no Routing Rules Usage Examples
 
 ##### ASN Method
 Create IPSET list NETFLIX using AS2906 as the source

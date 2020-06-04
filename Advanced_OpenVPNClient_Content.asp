@@ -127,8 +127,7 @@
 			text-decoration: none;
 		}
 
-		#ClientList_Block_PC div:hover,
-		#ClientList_Block a:hover {
+		#ClientList_Block_PC div:hover, #ClientList_Block a:hover {
 			background-color: #3366FF;
 			color: #FFFFFF;
 			cursor: default;
@@ -232,7 +231,7 @@
 			//showLANIPList("setClientIP"); // Martineau Hack - Pass the name of the function to call
 			//showLANIPList("setIPSETIP"); // Martineau Hack - Pass the name of the function to call
 			showDropdownClientList('setClientIP', 'name>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
-			showDropdownClientList('setIPSETIP', 'name>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
+			//showDropdownClientList('setIPSETIP', 'name>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
 			document.form.clientlist_DIM1.value = "DST";
 			document.form.clientlist_DIM2.value = "";
 			document.form.clientlist_DIM3.value = "";
@@ -1556,9 +1555,8 @@
 											<input type="text" class="input_15_table" maxlength="15" name="clientlist_deviceName" onClick="hideClients_Block();" onKeyPress="return validator.isString(this, event);">
 										</td>
 										<td width="29%">
-											<input type="text" class="input_18_table" maxlength="18" name="clientlist_ipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" onClick="hideClients_Block();" autocomplete="off" autocorrect="off"
-												autocapitalize="off">
-											<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="User in use:">
+											<input type="text" class="input_18_table" maxlength="18" name="clientlist_ipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
+											<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="Select the device name.">
 											<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
 										</td>
 										<td width="25%">
@@ -1597,8 +1595,8 @@
 										</td>
 										<td width="29%">
 											<input type="text" class="input_18_table" maxlength="18" name="clientlist_IPSETipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
-											<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullIPSETLANIPList(this);" title="Enable PPPoE relay allows devices in LAN to establish a individual PPPoE connections that passes through NAT." onmouseover="over_var=1;"
-												onmouseout="over_var=0;">
+											<!--<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullIPSETLANIPList(this);" title="Enable PPPoE relay allows devices in LAN to establish a individual PPPoE connections that passes through NAT." onmouseover="over_var=1;"
+												onmouseout="over_var=0;">-->
 											<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
 										</td>
 										<td width="12%">

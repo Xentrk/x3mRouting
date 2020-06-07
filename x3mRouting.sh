@@ -6,7 +6,7 @@
 # Script: x3mRouting.sh
 # VERSION=2.0.0
 # Author: Xentrk
-# Date: 2-June-2020
+# Date: 7-June-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -445,7 +445,11 @@ Process_Src_Option() {
   IPSET_NAME=$3
   SRC=$(echo "$@" | sed -n "s/^.*src=//p" | awk '{print $1}')
   SRC_RANGE=$(echo "$@" | sed -n "s/^.*src_range=//p" | awk '{print $1}')
-  DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}')
+  if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
+    DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
+  else
+    DIR="/opt/tmp"
+  fi
 
   if [ "$(echo "$@" | grep -c 'asnum=')" -gt 0 ]; then
     ASN=$(echo "$@" | sed -n "s/^.*asnum=//p" | awk '{print $1}')
@@ -1201,7 +1205,7 @@ Harvest_Domains() {
   done
 
   DOMAIN_LIST=$(awk '{ print $1 }' "/opt/tmp/DOMAIN_LIST" | sort -u | tr '\n' '/' | sed -n 's/\/$/\n/p')
-  NAT_ENTRY=$(echo $DOMAIN_LIST | sed 's|/|,|g')
+  NAT_ENTRY=$(echo "$DOMAIN_LIST" | sed 's|/|,|g')
 
   rm /opt/tmp/DOMAIN_LIST
 
@@ -1504,7 +1508,7 @@ fi
 
 # 'src=' or 'src_range=' parms require exception processing
 if [ "$(echo "$@" | grep -c 'src=')" -gt 0 ] || [ "$(echo "$@" | grep -c 'src_range=')" -gt 0 ]; then
-  Process_Src_Option "$@"
+  Process_Src_Option $@
   Exit_Routine
 fi
 

@@ -694,7 +694,7 @@
 			var code = "";
 			var width = ["24%", "29%", "25%", "10%", "12%"];
 			var codeipset = ""; // Martineau Hack - HTML code block for IPSET display
-			var widthipset = ["24%", "29%", "13%", "12%", "10%", "12%"]; // Martineau Hack - Columns for IPSETlient table
+			var widthipset = ["24%", "29%", "12%", "13%", "10%", "12%"]; // Martineau Hack - Columns for IPSETlient table
 			code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="clientlist_table">';
 			codeipset += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="IPSETlist_table">';
 			if (clientlist_row.length == 1)
@@ -1595,7 +1595,7 @@
 										</td>
 										<td width="29%">
 											<input type="text" class="input_18_table" maxlength="18" name="clientlist_IPSETipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
-											<!--<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullIPSETLANIPList(this);" title="Enable PPPoE relay allows devices in LAN to establish a individual PPPoE connections that passes through NAT." onmouseover="over_var=1;"
+											<!--<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullIPSETLANIPList(this);" title="Select the device name." onmouseover="over_var=1;"
 												onmouseout="over_var=0;">-->
 											<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
 										</td>

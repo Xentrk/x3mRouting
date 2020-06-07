@@ -791,7 +791,7 @@
 			var item_num = document.getElementById('clientlist_table').rows[0].cells.length;
 			var dimx = ""
 			if (rule_num >= upper) {
-				alert("Duplicate port number with HTTP and HTTPS WAN port setting. " + upper + " NAT (Network Address Translation) is a process used in routers to replace the address information of network packet with new address information. Typical applications for NAT is router which connect to LAN with the WAN. In LAN every network devices had a private IP(LAN IP) but there is only one public IP(WAN IP). To grant the network devices access to the Internet, the router replaces the private IP address of the sender with its own public IP address in all outgoing data packets. The router saves all necessary information in a table(NAT table) so that incoming data packets can then be assigned on the correct network device.");
+				alert("This table only allows " + upper + " items!");
 				return false;
 			}
 			if (document.form.clientlist_IPSETName.value == "")

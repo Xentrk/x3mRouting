@@ -234,7 +234,7 @@
 			//showDropdownClientList('setIPSETIP', 'name>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
 			document.form.clientlist_DIM1.value = "DST";
 			document.form.clientlist_DIM2.value = "";
-			document.form.clientlist_DIM3.value = "";
+			//document.form.clientlist_DIM3.value = "";
 			//<!-- Martineau Hack ############################################################################-->
 			free_options(document.form.vpn_client_unit);
 			add_option(document.form.vpn_client_unit, "1: <% nvram_get("vpn_client1_desc"); %>", "1", (openvpn_unit == 1));
@@ -562,7 +562,12 @@
 								break;
 							case 3:
 								tmp_value += document.getElementById('IPSETlist_table').rows[i].cells[2].innerHTML; // Field 4 is the 3rd Col
+                tmp_value += ">";
 								break;
+              case 4:
+								tmp_value += document.getElementById('IPSETlist_table').rows[i].cells[j].innerHTML; // Field 5 is the 4th Col
+                //tmp_value += ">";
+								break
 							case 0:
 								tmp_value += document.getElementById('IPSETlist_table').rows[i].cells[j].innerHTML;
 								tmp_value += ">";
@@ -724,7 +729,7 @@
 						}
 						codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[3] + '</td>'; // Col3 is the 4th field
 						codeipset += '<td width="' + widthipset[3] + '">   </td>';
-						codeipset += '<td width="' + widthipset[4] + '">   </td>';
+            codeipset += '<td width="' + widthipset[4] + '">' + clientlist_col[4] + '</td>'; // Col4 is the 5th field Xentrk Hack for ipset iface
 						codeipset += '<td width="' + widthipset[5] + '">';
 						codeipset += '<input class="remove_btn" onclick="del_RowIPSET(this);" value=""/></td></tr>';
 					}
@@ -815,12 +820,6 @@
 				if (document.form.clientlist_DIM2.value == "SRC")
 					dimx += "S";
 			}
-			if (document.form.clientlist_DIM3.value != "") {
-				if (document.form.clientlist_DIM3.value == "DST")
-					dimx += "D";
-				if (document.form.clientlist_DIM3.value == "SRC")
-					dimx += "S";
-			}
 			if (dimx == "D")
 				dimx = "DST";
 			if (dimx == "S")
@@ -833,14 +832,15 @@
 				document.form.clientlist_ipAddr.select();
 				return false;
 			}
-			addRow(document.form.clientlist_IPSETipAddr, 0);
+      addRow(document.form.clientlist_IPSETipAddr, 0);
 			document.form.clientlist_dstipAddr.value = "0.0.0.0"
 			addRow(document.form.clientlist_dstipAddr, 0);
 			document.form.clientlist_IPSETName.value = dimx; // So use the IPSET name field to save the dimension e.g.DDS
 			addRow(document.form.clientlist_IPSETName, 0); // Fortunately addRow() wipes the GUI object for us ;-)
-			document.form.clientlist_DIM1.value = "DST";
-			document.form.clientlist_DIM2.value = "";
-			document.form.clientlist_DIM3.value = "";
+      document.form.clientlist_DIM1.value = "DST";
+      document.form.clientlist_DIM2.value = "";
+      addRow(document.form.clientlist_IPSETiface, 0); // Col4 is the 5th field Xentrk Hack for ipset iface
+			document.form.clientlist_IPSETiface.value = "VPN";
 			document.form.clientlist_IPSETName.focus();
 			document.form.clientlist_IPSETName.select();
 			showclientlist();
@@ -876,6 +876,8 @@
 				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[2].innerHTML;
 				clientlist_value += "&#62";
 				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[3].innerHTML;
+        clientlist_value += "&#62";
+				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[4].innerHTML;
 			}
 
 			clientlist_array = clientlist_value;
@@ -897,6 +899,8 @@
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[2].innerHTML;
 				clientlist_value += "&#62";
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[3].innerHTML;
+				clientlist_value += "&#62";
+				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[4].innerHTML; // Col4 is the 5th field Xentrk Hack for ipset iface
 			}
 			clientlist_array = clientlist_value;
 			if (clientlist_array == "")
@@ -1584,7 +1588,7 @@
 										<th>Source IP</th>
 										<th>Dim1</th>
 										<th>Dim2</th>
-										<th>Dim3</th>
+										<th>Iface</th>
 										<th>
 											Add / Delete
 										</th>
@@ -1612,11 +1616,11 @@
 											</select>
 										</td>
 										<td width="10%">
-											<select name="clientlist_DIM3" class="input_option">
-												<option value="DST">DST</option>
-												<option value="SRC">SRC</option>
-											</select>
-										</td>
+											<select name="clientlist_IPSETiface" class="input_option">
+												<option value="WAN">WAN</option>
+												<option value="VPN" selected>VPN</option>
+           	          </select>
+                    </td>
 										<td width="12%">
 											<div>
 												<input type="button" class="add_btn" onClick="addRow_Group2(100);" value="">

@@ -862,7 +862,7 @@
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[2].innerHTML;
 				clientlist_value += "&#62";
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[3].innerHTML;
-			}
+					}
 			var i = r.parentNode.parentNode.rowIndex;
 			document.getElementById('IPSETlist_table').deleteRow(i);
 			var num_rows = document.getElementById('IPSETlist_table').rows.length
@@ -876,12 +876,12 @@
 				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[2].innerHTML;
 				clientlist_value += "&#62";
 				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[3].innerHTML;
-        clientlist_value += "&#62";
-				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[4].innerHTML;
+  		  clientlist_value += "&#62";
+				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[4].innerHTML; // Col4 is the 5th field Xentrk Hack for ipset iface
+
 			}
 
 			clientlist_array = clientlist_value;
-
 			if (clientlist_array == "")
 				showclientlist();
 		}
@@ -899,13 +899,12 @@
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[2].innerHTML;
 				clientlist_value += "&#62";
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[3].innerHTML;
-				clientlist_value += "&#62";
-				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[4].innerHTML; // Col4 is the 5th field Xentrk Hack for ipset iface
 			}
 			clientlist_array = clientlist_value;
 			if (clientlist_array == "")
 				showclientlist();
 		}
+
 		//<!-- Martineau Hack 5 of 12 IPSET  processing ###################################################-->
 		function hideClients_Block(evt) {
 			if (typeof(evt) != "undefined") {

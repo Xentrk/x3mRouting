@@ -722,7 +722,8 @@
 						code += '<input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';
 					}
 					// Martineau Hack - Display non-VPN entries (assumed to be IPSETS) in new GUI table IPSET_list
-					else {
+					//else {
+          if ((clientlist_col[4] == "VPN") || (clientlist_col[4] == "WAN")) {
 						codeipset += '<tr id="row' + i + '">';
 						for (var j = 0; j < 2; j++) { // Only cols 0 and 1,  i.e. skip irrelevant dest IP (3rd field)
 							codeipset += '<td width="' + widthipset[j] + '">' + clientlist_col[j] + '</td>';
@@ -732,12 +733,12 @@
             codeipset += '<td width="' + widthipset[4] + '">' + clientlist_col[4] + '</td>'; // Col4 is the 5th field Xentrk Hack for ipset iface
 						codeipset += '<td width="' + widthipset[5] + '">';
 						codeipset += '<input class="remove_btn" onclick="del_RowIPSET(this);" value=""/></td></tr>';
+      			document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table // moving code here fixed issue with ipset being removed
 					}
 				}
 			}
 			code += '</table>';
 			document.getElementById("clientlist_Block").innerHTML = code;
-			document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table
 		}
 		//<!-- Martineau Hack ############################################################################-->
 		function addRow(obj, head) {
@@ -850,7 +851,6 @@
 
 			var clientlist_value = "";
 			var num_rows = document.getElementById('clientlist_table').rows.length
-			var num_rowsx = document.getElementById('IPSETlist_table').rows.length
 
 			for (k = 0; k < num_rows; k++) { // Copy existing true VPN rules
 
@@ -862,7 +862,7 @@
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[2].innerHTML;
 				clientlist_value += "&#62";
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[3].innerHTML;
-					}
+      }
 			var i = r.parentNode.parentNode.rowIndex;
 			document.getElementById('IPSETlist_table').deleteRow(i);
 			var num_rows = document.getElementById('IPSETlist_table').rows.length
@@ -878,7 +878,6 @@
 				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[3].innerHTML;
   		  clientlist_value += "&#62";
 				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[4].innerHTML; // Col4 is the 5th field Xentrk Hack for ipset iface
-
 			}
 
 			clientlist_array = clientlist_value;
@@ -887,7 +886,7 @@
 		}
 		//<!-- Martineau Hack ############################################################################-->
 		function del_Row(r) {
-			var i = r.parentNode.parentNode.rowIndex;
+	    var i = r.parentNode.parentNode.rowIndex;
 			document.getElementById('clientlist_table').deleteRow(i);
 			var clientlist_value = "";
 			for (k = 0; k < document.getElementById('clientlist_table').rows.length; k++) {
@@ -900,9 +899,10 @@
 				clientlist_value += "&#62";
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[3].innerHTML;
 			}
+
 			clientlist_array = clientlist_value;
 			if (clientlist_array == "")
-				showclientlist();
+			  showclientlist();
 		}
 
 		//<!-- Martineau Hack 5 of 12 IPSET  processing ###################################################-->

@@ -728,12 +728,13 @@
 						for (var j = 0; j < 2; j++) { // Only cols 0 and 1,  i.e. skip irrelevant dest IP (3rd field)
 							codeipset += '<td width="' + widthipset[j] + '">' + clientlist_col[j] + '</td>';
 						}
-						codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[3] + '</td>'; // Col3 is the 4th field
+						//codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[3] + '</td>'; // Col3 is the 4th field
+            codeipset += '<td width="' + widthipset[2] + '">DST</td>'; // Col3 is the 4th field
 						codeipset += '<td width="' + widthipset[3] + '">   </td>';
             codeipset += '<td width="' + widthipset[4] + '">' + clientlist_col[4] + '</td>'; // Col4 is the 5th field Xentrk Hack for ipset iface
 						codeipset += '<td width="' + widthipset[5] + '">';
 						codeipset += '<input class="remove_btn" onclick="del_RowIPSET(this);" value=""/></td></tr>';
-      			document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table // moving code here fixed issue with ipset being removed
+      			document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table // moving code here fixed issue with ipset entries being removed when performing a del/add to chg a normal vpn/wan entry
 					}
 				}
 			}
@@ -851,9 +852,7 @@
 
 			var clientlist_value = "";
 			var num_rows = document.getElementById('clientlist_table').rows.length
-
 			for (k = 0; k < num_rows; k++) { // Copy existing true VPN rules
-
 				clientlist_value += "&#60";
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[0].innerHTML;
 				clientlist_value += "&#62";

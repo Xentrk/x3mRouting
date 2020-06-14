@@ -728,8 +728,14 @@
 						for (var j = 0; j < 2; j++) { // Only cols 0 and 1,  i.e. skip irrelevant dest IP (3rd field)
 							codeipset += '<td width="' + widthipset[j] + '">' + clientlist_col[j] + '</td>';
 						}
-						//codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[3] + '</td>'; // Col3 is the 4th field
-            codeipset += '<td width="' + widthipset[2] + '">DST</td>'; // Col3 is the 4th field
+            //############# Xentrk Hack. When delete,update and add same ipset list, the DIM1 field was null for ipset entires not changed
+            if ((clientlist_col[2] == "DST") || (clientlist_col[2] == "SRC")) {
+              codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[2] + '</td>'; // Col3 is the 4th field
+            }
+            else {
+              codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[3] + '</td>'; // Col3 is the 4th field
+            }
+            //############## End Hack
 						codeipset += '<td width="' + widthipset[3] + '">   </td>';
             codeipset += '<td width="' + widthipset[4] + '">' + clientlist_col[4] + '</td>'; // Col4 is the 5th field Xentrk Hack for ipset iface
 						codeipset += '<td width="' + widthipset[5] + '">';
@@ -876,7 +882,7 @@
 				clientlist_value += "&#62";
 				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[3].innerHTML;
   		  clientlist_value += "&#62";
-				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[4].innerHTML; // Col4 is the 5th field Xentrk Hack for ipset iface
+				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[4].innerHTML; // Xentrk Hack for ipset iface
 			}
 
 			clientlist_array = clientlist_value;

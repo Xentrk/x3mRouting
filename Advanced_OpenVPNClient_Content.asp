@@ -730,7 +730,7 @@
 						}
             //############# Xentrk Hack. When delete,update and add same ipset list, the DIM1 field was null for ipset entires not changed
             if ((clientlist_col[2] == "DST") || (clientlist_col[2] == "SRC")) {
-              codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[2] + '</td>'; // Col3 is the 4th field
+              codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[2] + '</td>'; // ipsets that have not changed store DIM in the 3rd field
             }
             else {
               codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[3] + '</td>'; // Col3 is the 4th field
@@ -1541,7 +1541,7 @@
 									<thead>
 										<tr>
 											<!-- Martineau Hack 11 of 12 #####################################################################-->
-											<td colspan="5">Rules for routing client traffic through the tunnel (Max Limit : &nbsp;100) Patched by Martineau v2.01/Xentrk 384.12/14
+											<td colspan="5">Rules for routing client traffic through the tunnel (Max Limit : &nbsp;100) Customized by Martineau & Xentrk 
 												<!-- Martineau Hack -->
 											</td>
 											<!-- Martineau Hack ############################################################################-->

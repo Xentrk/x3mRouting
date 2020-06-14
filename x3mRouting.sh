@@ -1417,7 +1417,6 @@ if [ "$(echo "$@" | grep -c 'ipset_name=')" -gt 0 ]; then
   # Manual Method to create ipset list if IP address specified
   if [ -z "$2" ] || [ "$(echo "$@" | grep -c 'ip=')" -gt 0 ]; then
     Manual_Method $@
-    Create_Routing_Rules "$IPSET_NAME"
     Check_Nat_Start_For_Entries "$IPSET_NAME" "Manual" "$DIR"
     Exit_Routine
   fi

@@ -234,7 +234,7 @@
 			//showDropdownClientList('setIPSETIP', 'name>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
 			document.form.clientlist_DIM1.value = "DST";
 			document.form.clientlist_DIM2.value = "";
-			document.form.clientlist_DIM3.value = "";
+			//document.form.clientlist_DIM3.value = "";
 			//<!-- Martineau Hack ############################################################################-->
 			free_options(document.form.vpn_client_unit);
 			add_option(document.form.vpn_client_unit, "1: <% nvram_get("vpn_client1_desc"); %>", "1", (openvpn_unit == 1));
@@ -562,7 +562,12 @@
 								break;
 							case 3:
 								tmp_value += document.getElementById('IPSETlist_table').rows[i].cells[2].innerHTML; // Field 4 is the 3rd Col
+                tmp_value += ">";
 								break;
+              case 4:
+								tmp_value += document.getElementById('IPSETlist_table').rows[i].cells[j].innerHTML; // Field 5 is the 4th Col
+                //tmp_value += ">";
+								break
 							case 0:
 								tmp_value += document.getElementById('IPSETlist_table').rows[i].cells[j].innerHTML;
 								tmp_value += ">";
@@ -717,22 +722,30 @@
 						code += '<input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';
 					}
 					// Martineau Hack - Display non-VPN entries (assumed to be IPSETS) in new GUI table IPSET_list
-					else {
+					//else {
+          if ((clientlist_col[4] == "VPN") || (clientlist_col[4] == "WAN")) {
 						codeipset += '<tr id="row' + i + '">';
 						for (var j = 0; j < 2; j++) { // Only cols 0 and 1,  i.e. skip irrelevant dest IP (3rd field)
 							codeipset += '<td width="' + widthipset[j] + '">' + clientlist_col[j] + '</td>';
 						}
-						codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[3] + '</td>'; // Col3 is the 4th field
+            //############# Xentrk Hack. When delete,update and add same ipset list, the DIM1 field was null for ipset entires not changed
+            if ((clientlist_col[2] == "DST") || (clientlist_col[2] == "SRC")) {
+              codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[2] + '</td>'; // ipsets that have not changed store DIM in the 3rd field
+            }
+            else {
+              codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[3] + '</td>'; // Col3 is the 4th field
+            }
+            //############## End Hack
 						codeipset += '<td width="' + widthipset[3] + '">   </td>';
-						codeipset += '<td width="' + widthipset[4] + '">   </td>';
+            codeipset += '<td width="' + widthipset[4] + '">' + clientlist_col[4] + '</td>'; // Col4 is the 5th field Xentrk Hack for ipset iface
 						codeipset += '<td width="' + widthipset[5] + '">';
 						codeipset += '<input class="remove_btn" onclick="del_RowIPSET(this);" value=""/></td></tr>';
+      			document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table // moving code here fixed issue with ipset entries being removed when performing a del/add to chg a normal vpn/wan entry
 					}
 				}
 			}
 			code += '</table>';
 			document.getElementById("clientlist_Block").innerHTML = code;
-			document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table
 		}
 		//<!-- Martineau Hack ############################################################################-->
 		function addRow(obj, head) {
@@ -815,12 +828,6 @@
 				if (document.form.clientlist_DIM2.value == "SRC")
 					dimx += "S";
 			}
-			if (document.form.clientlist_DIM3.value != "") {
-				if (document.form.clientlist_DIM3.value == "DST")
-					dimx += "D";
-				if (document.form.clientlist_DIM3.value == "SRC")
-					dimx += "S";
-			}
 			if (dimx == "D")
 				dimx = "DST";
 			if (dimx == "S")
@@ -833,14 +840,15 @@
 				document.form.clientlist_ipAddr.select();
 				return false;
 			}
-			addRow(document.form.clientlist_IPSETipAddr, 0);
+      addRow(document.form.clientlist_IPSETipAddr, 0);
 			document.form.clientlist_dstipAddr.value = "0.0.0.0"
 			addRow(document.form.clientlist_dstipAddr, 0);
 			document.form.clientlist_IPSETName.value = dimx; // So use the IPSET name field to save the dimension e.g.DDS
 			addRow(document.form.clientlist_IPSETName, 0); // Fortunately addRow() wipes the GUI object for us ;-)
-			document.form.clientlist_DIM1.value = "DST";
-			document.form.clientlist_DIM2.value = "";
-			document.form.clientlist_DIM3.value = "";
+      document.form.clientlist_DIM1.value = "DST";
+      document.form.clientlist_DIM2.value = "";
+      addRow(document.form.clientlist_IPSETiface, 0); // Col4 is the 5th field Xentrk Hack for ipset iface
+			document.form.clientlist_IPSETiface.value = "VPN";
 			document.form.clientlist_IPSETName.focus();
 			document.form.clientlist_IPSETName.select();
 			showclientlist();
@@ -850,10 +858,7 @@
 
 			var clientlist_value = "";
 			var num_rows = document.getElementById('clientlist_table').rows.length
-			var num_rowsx = document.getElementById('IPSETlist_table').rows.length
-
 			for (k = 0; k < num_rows; k++) { // Copy existing true VPN rules
-
 				clientlist_value += "&#60";
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[0].innerHTML;
 				clientlist_value += "&#62";
@@ -862,7 +867,7 @@
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[2].innerHTML;
 				clientlist_value += "&#62";
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[3].innerHTML;
-			}
+      }
 			var i = r.parentNode.parentNode.rowIndex;
 			document.getElementById('IPSETlist_table').deleteRow(i);
 			var num_rows = document.getElementById('IPSETlist_table').rows.length
@@ -876,16 +881,17 @@
 				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[2].innerHTML;
 				clientlist_value += "&#62";
 				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[3].innerHTML;
+  		  clientlist_value += "&#62";
+				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[4].innerHTML; // Xentrk Hack for ipset iface
 			}
 
 			clientlist_array = clientlist_value;
-
 			if (clientlist_array == "")
 				showclientlist();
 		}
 		//<!-- Martineau Hack ############################################################################-->
 		function del_Row(r) {
-			var i = r.parentNode.parentNode.rowIndex;
+	    var i = r.parentNode.parentNode.rowIndex;
 			document.getElementById('clientlist_table').deleteRow(i);
 			var clientlist_value = "";
 			for (k = 0; k < document.getElementById('clientlist_table').rows.length; k++) {
@@ -898,10 +904,12 @@
 				clientlist_value += "&#62";
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[3].innerHTML;
 			}
+
 			clientlist_array = clientlist_value;
 			if (clientlist_array == "")
-				showclientlist();
+			  showclientlist();
 		}
+
 		//<!-- Martineau Hack 5 of 12 IPSET  processing ###################################################-->
 		function hideClients_Block(evt) {
 			if (typeof(evt) != "undefined") {
@@ -1533,7 +1541,7 @@
 									<thead>
 										<tr>
 											<!-- Martineau Hack 11 of 12 #####################################################################-->
-											<td colspan="5">Rules for routing client traffic through the tunnel (Max Limit : &nbsp;100) Patched by Martineau v2.01/Xentrk 384.12/14
+											<td colspan="5">Rules for routing client traffic through the tunnel (Max Limit : &nbsp;100) Customized by Martineau & Xentrk 
 												<!-- Martineau Hack -->
 											</td>
 											<!-- Martineau Hack ############################################################################-->
@@ -1584,7 +1592,7 @@
 										<th>Source IP</th>
 										<th>Dim1</th>
 										<th>Dim2</th>
-										<th>Dim3</th>
+										<th>Iface</th>
 										<th>
 											Add / Delete
 										</th>
@@ -1612,11 +1620,11 @@
 											</select>
 										</td>
 										<td width="10%">
-											<select name="clientlist_DIM3" class="input_option">
-												<option value="DST">DST</option>
-												<option value="SRC">SRC</option>
-											</select>
-										</td>
+											<select name="clientlist_IPSETiface" class="input_option">
+												<option value="WAN">WAN</option>
+												<option value="VPN" selected>VPN</option>
+           	          </select>
+                    </td>
 										<td width="12%">
 											<div>
 												<input type="button" class="add_btn" onClick="addRow_Group2(100);" value="">

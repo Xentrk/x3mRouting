@@ -36,7 +36,7 @@ Chk_IPSET_List_Ready() {
       break
     else
       sleep 1
-      logger -st "($(basename "$0"))" $$ "IPSET save/restore file $IPSET_NAME not available - wait time" $((MAX_TRIES - TRIES - 1))" secs left"
+      logger -st "($(basename "$0"))" $$ "IPSET list $IPSET_NAME does not exist- wait time" $((MAX_TRIES - TRIES - 1))" secs left"
       TRIES=$((TRIES + 1))
     fi
   done
@@ -103,21 +103,19 @@ create_client_list() {
 
     ################################## Martineau Hack process IPSET Lists
     if echo "$TARGET_ROUTE" | grep -oE "SRC|DST|^D|^S"; then
-
-      IPSET_NAME="$DESC"
-
+      my_logger "THE VALUE OF TARGET ROUTE: $TARGET_ROUTE"
       # Allow for 2-dimension and 3-dimension IPSETs.....
       case "$TARGET_ROUTE" in # TBA review static 'case' with a regexp? ;-)
       SRC | DST) DIM=$(echo "$TARGET_ROUTE" | tr '[A-Z]' '[a-z]') ;;
-      *) case $TARGET_ROUTE in
+      *) case "$TARGET_ROUTE" in
         DD) DIM="dst,dst" ;;
         SS) DIM="src,src" ;;
         DS) DIM="dst,src" ;;
         SD) DIM="src,dst" ;;
-        DDS) DIM="dst,dst,src" ;;
-        SSS) DIM="src,src,src" ;;
-        SSD) DIM="src,src,dst" ;;
-        DDD) DIM="dst,dst,dst" ;;
+          #DDS) DIM="dst,dst,src" ;; Xentrk only 2 dim allowed to support IFACE
+          #SSS) DIM="src,src,src" ;;
+          #SSD) DIM="src,src,dst" ;;
+          #DDD) DIM="dst,dst,dst" ;;
         esac ;;
       esac
 
@@ -155,34 +153,41 @@ create_client_list() {
 
       Chk_IPSET_List_Ready "$IPSET_NAME"
 
-      case "${VPN_UNIT}" in
-      1)
-        FWMARK=0x1000/0x1000
-        PRIO=9995
-        ;;
-      2)
-        FWMARK=0x2000/0x2000
-        PRIO=9994
-        ;;
-      3)
-        FWMARK=0x4000/0x4000
-        PRIO=9993
-        ;;
-      4)
-        FWMARK=0x7000/0x7000
-        PRIO=9992
-        ;;
-      5)
-        FWMARK=0x3000/0x3000
-        PRIO=9991
-        ;;
-      esac
+      TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 5)
+      my_logger "THE VALUE OF TARGET ROUTE 2b: $TARGET_ROUTE"
+      [ "$TARGET_ROUTE" = "WAN" ] && FWMARK=0x8000/0x8000 && PRIO=9990
+
+      IPSET_NAME="$DESC"
+
+      if [ "$TARGET_ROUTE" = "VPN" ]; then
+        case "$VPN_UNIT" in
+        1)
+          FWMARK=0x1000/0x1000
+          PRIO=9995
+          ;;
+        2)
+          FWMARK=0x2000/0x2000
+          PRIO=9994
+          ;;
+        3)
+          FWMARK=0x4000/0x4000
+          PRIO=9993
+          ;;
+        4)
+          FWMARK=0x7000/0x7000
+          PRIO=9992
+          ;;
+        5)
+          FWMARK=0x3000/0x3000
+          PRIO=9991
+          ;;
+        esac
+      fi
 
       if [ "$READY" -eq 0 ]; then
         #logger -st "($(basename "$0"))" $$ "Debugger VARS-> SRC:$SRC IPSET_NAME:$IPSET_NAME DIM:$DIM FWMARK:$FWMARK"
-        iptables -t mangle -D PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" "$DIM" -j MARK --set-mark "$FWMARK" 2>/dev/null
-        iptables -t mangle -A PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" "$DIM" -j MARK --set-mark "$FWMARK" 2>/dev/null
-        logger -st "($(basename "$0"))" $$ "Routing rules created for IPSET list $IPSET_NAME"
+        iptables -t mangle -D PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" "$DIM" -j MARK --set-mark "$FWMARK"
+        iptables -t mangle -A PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" "$DIM" -j MARK --set-mark "$FWMARK" && logger -st "($(basename "$0"))" $$ "Routing rules created for IPSET list $IPSET_NAME"
       else
         logger -st "($(basename "$0"))" $$ "IPSET save/restore file for IPSET list $IPSET_NAME not available. Unable to create routing rule."
       fi
@@ -256,16 +261,43 @@ purge_client_list() {
   5) FWMARK=0x3000 ;; # table 115
   esac
 
-  # $9 = SRC, $12=IPSET_NAME, $13=DIM
   #
   iptables -nvL PREROUTING -t mangle --line | grep "match-set" | grep "$FWMARK" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
     logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
     iptables -t mangle -D PREROUTING "$CHAIN_NUM"
   done
 
+  OLDIFS=$IFS
+  IFS="<"
+
+  #VPN_IP_LIST=$(nvram get vpn_client5_clientlist)
+
+  for ENTRY in $VPN_IP_LIST; do
+    if [ "$ENTRY" = "" ]; then
+      continue
+    fi
+    ################################ Bypass DummyVPN Entry
+    DESC=$(echo "$ENTRY" | cut -d ">" -f 1)
+    if [ "$(echo "$DESC" | cut -c1-8)" = "DummyVPN" ]; then
+      continue
+    fi
+
+    TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 5)
+
+    if [ "$TARGET_ROUTE" = "WAN" ]; then
+      IPSET_NAME="$DESC"
+      iptables -nvL PREROUTING -t mangle --line | grep "$IPSET_NAME" | grep "match-set" | grep "0x8000" | awk '{print $1}' | sort -nr | while read -r CHAIN_NUM; do
+        logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET list $IPSET_NAME"
+        iptables -t mangle -D PREROUTING $CHAIN_NUM
+      done
+    fi
+  done
+  IFS=$OLDIFS
+  # $9 = SRC, $12=IPSET_NAME, $13=DIM
   ###################### Xentrk Hack remove fwmark/bitmask for OpenVPN Client
   ip rule del fwmark "$FWMARK/$FWMARK" 2>/dev/null
   ############################################# Xentrk Hack
+
 }
 
 run_custom_script() {
@@ -321,8 +353,8 @@ Set_VPN_NVRAM_Vars() {
 
 # Begin
 case "$dev" in
-  tun11 | tun12 | tun13 | tun14 | tun15) Set_VPN_NVRAM_Vars ;;
-  *) run_custom_script && exit 0 ;;
+tun11 | tun12 | tun13 | tun14 | tun15) Set_VPN_NVRAM_Vars ;;
+*) run_custom_script && exit 0 ;;
 esac
 
 # webui reports that vpn_force changed while vpn client was down

@@ -315,14 +315,14 @@ init_table() {
   if [ "$VPN_REDIR" -eq 3 ]; then
     LANIFNAME=$(nvram get lan_ifname)
     ip route show table main dev "$LANIFNAME" | while read -r ROUTE; do
-      ip route add table "$VPN_TBL" "$ROUTE" dev "$LANIFNAME"
+      ip route add table "$VPN_TBL" $ROUTE dev "$LANIFNAME"
     done
     ip route show table main dev "$dev" | while read -r ROUTE; do
-      ip route add table "$VPN_TBL" "$ROUTE" dev "$dev"
+      ip route add table "$VPN_TBL" $ROUTE dev "$dev"
     done
   elif [ "$VPN_REDIR" -eq 2 ]; then
     ip route show table main | while read -r ROUTE; do
-      ip route add table "$VPN_TBL" "$ROUTE"
+      ip route add table "$VPN_TBL" $ROUTE
     done
   fi
 }

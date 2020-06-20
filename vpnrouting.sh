@@ -71,7 +71,7 @@ create_client_list() {
       TARGET_NAME="VPN client "$VPN_UNIT
     fi
     VPN_IP=$(echo "$ENTRY" | cut -d ">" -f 2)
-    if [ "$VPN_IP" != "0.0.0.0" ]; then
+    if [ "$VPN_IP" != "0.0.0.0" ] && [ "$VPN_IP" != "" ]; then
       SRCC="from"
       SRCA="$VPN_IP"
     else
@@ -79,7 +79,7 @@ create_client_list() {
       SRCA=""
     fi
     DST_IP=$(echo "$ENTRY" | cut -d ">" -f 3)
-    if [ "$DST_IP" != "0.0.0.0" ]; then
+    if [ "$DST_IP" != "0.0.0.0" ] && [ "$DST_IP" != "" ]; then
       DSTC="to"
       DSTA="$DST_IP"
     else

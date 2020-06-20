@@ -263,14 +263,13 @@ purge_client_list() {
 
   # delete PREROUTING rules for VPN Client Routing
   iptables -nvL PREROUTING -t mangle --line | grep "match-set" | grep "$FWMARK" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
-    logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
-    iptables -t mangle -D PREROUTING "$CHAIN_NUM"
+    iptables -t mangle -D PREROUTING "$CHAIN_NUM" && logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
   done
 
   # delete PREROUTING rules for VPN Client Bypass Routing
   iptables -nvL PREROUTING -t mangle --line | grep "match-set" | grep "0x8000" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
-    if [ "$(nvram show | grep clientlist | grep -c "$IPSET_NAME")" -eq 0 ]; then
-      iptables -t mangle -D PREROUTING "$CHAIN_NUM"
+    if [ "$(echo "$VPN_IP_LIST" | grep -c "$IPSET_NAME")" -eq 0 ]; then
+      iptables -t mangle -D PREROUTING "$CHAIN_NUM" && logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
     fi
   done
 

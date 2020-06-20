@@ -743,12 +743,12 @@
 						codeipset += '<td width="' + widthipset[4] + '">' + clientlist_col[4] + '</td>'; // Col4 is the 5th field Xentrk Hack for ipset iface
 						codeipset += '<td width="' + widthipset[5] + '">';
 						codeipset += '<input class="remove_btn" onclick="del_RowIPSET(this);" value=""/></td></tr>';
+						document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table
 					}
 				}
 			}
 			code += '</table>';
 			document.getElementById("clientlist_Block").innerHTML = code;
-			document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table
 		}
 		//<!-- Martineau Hack ############################################################################-->
 		function addRow(obj, head) {

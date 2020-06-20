@@ -261,39 +261,19 @@ purge_client_list() {
   5) FWMARK=0x3000 ;; # table 115
   esac
 
-  #
+  # delete PREROUTING rules for VPN Client Routing
   iptables -nvL PREROUTING -t mangle --line | grep "match-set" | grep "$FWMARK" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
     logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
     iptables -t mangle -D PREROUTING "$CHAIN_NUM"
   done
 
-  OLDIFS=$IFS
-  IFS="<"
-
-  #VPN_IP_LIST=$(nvram get vpn_client5_clientlist)
-
-  for ENTRY in $VPN_IP_LIST; do
-    if [ "$ENTRY" = "" ]; then
-      continue
-    fi
-    ################################ Bypass DummyVPN Entry
-    DESC=$(echo "$ENTRY" | cut -d ">" -f 1)
-    if [ "$(echo "$DESC" | cut -c1-8)" = "DummyVPN" ]; then
-      continue
-    fi
-
-    TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 5)
-
-    if [ "$TARGET_ROUTE" = "WAN" ]; then
-      IPSET_NAME="$DESC"
-      iptables -nvL PREROUTING -t mangle --line | grep "$IPSET_NAME" | grep "match-set" | grep "0x8000" | awk '{print $1}' | sort -nr | while read -r CHAIN_NUM; do
-        logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET list $IPSET_NAME"
-        iptables -t mangle -D PREROUTING $CHAIN_NUM
-      done
+  # delete PREROUTING rules for VPN Client Bypass Routing
+  iptables -nvL PREROUTING -t mangle --line | grep "match-set" | grep "0x8000" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
+    if [ "$(nvram show | grep clientlist | grep -c "$IPSET_NAME")" -eq 0 ]; then
+      iptables -t mangle -D PREROUTING "$CHAIN_NUM"
     fi
   done
-  IFS=$OLDIFS
-  # $9 = SRC, $12=IPSET_NAME, $13=DIM
+
   ###################### Xentrk Hack remove fwmark/bitmask for OpenVPN Client
   ip rule del fwmark "$FWMARK/$FWMARK" 2>/dev/null
   ############################################# Xentrk Hack

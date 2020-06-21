@@ -561,7 +561,7 @@
 					for (j = 0; j < item_num - 1; j++) {
 						switch (j) {
 							case 2:
-								tmp_value += "0.0.0.0>"; // Col3 is the IPSET DIM so should be saved as Field 4
+								tmp_value += ">"; //Used to be set to 0.0.0.0
 								break;
 							case 3:
 								tmp_value += document.getElementById('IPSETlist_table').rows[i].cells[2].innerHTML; // Field 4 is the 3rd Col
@@ -748,6 +748,7 @@
 				}
 			}
 			code += '</table>';
+      //document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table
 			document.getElementById("clientlist_Block").innerHTML = code;
 		}
 		//<!-- Martineau Hack ############################################################################-->
@@ -887,7 +888,6 @@
 			}
 
 			clientlist_array = clientlist_value;
-
 			if (clientlist_array == "")
 				showclientlist();
 		}

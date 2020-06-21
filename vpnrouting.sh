@@ -127,30 +127,30 @@ create_client_list() {
       DEST_IP="$VPN_IP"
       SRC="-s 0.0.0.0/0"
 
-      lanip_oct1=$(echo "$LAN_IP" | cut -d "." -f1)
-      lanip_oct2=$(echo "$LAN_IP" | cut -d "." -f2)
-      lanip_oct3=$(echo "$LAN_IP" | cut -d "." -f3)
+      if [ "$VPN_IP" != "0.0.0.0" ] && [ "$VPN_IP" != "" ]; then
+        lanip_oct1=$(echo "$LAN_IP" | cut -d "." -f1)
+        lanip_oct2=$(echo "$LAN_IP" | cut -d "." -f2)
+        lanip_oct3=$(echo "$LAN_IP" | cut -d "." -f3)
 
-      # Set SRC parm for iptables command if SRC ip address is a valid LAN IP
+        # Set SRC parm for iptables command if SRC ip address is a valid LAN IP
 
-      if echo "$DEST_IP" | grep -Eo '(([0-9]{1,3})\.){3}([0-9]{1,3}){1}' | grep -vE '25[6-9]|2[6-9][0-9]|[3-9][0-9][0-9]'; then
-        srcip_oct1=$(echo "$DEST_IP" | cut -d "." -f1)
-        srcip_oct2=$(echo "$DEST_IP" | cut -d "." -f2)
-        srcip_oct3=$(echo "$DEST_IP" | cut -d "." -f3)
-        srcip_oct4=$(echo "$DEST_IP" | cut -d "." -f4)
+        if echo "$DEST_IP" | grep -Eo '(([0-9]{1,3})\.){3}([0-9]{1,3}){1}' | grep -vE '25[6-9]|2[6-9][0-9]|[3-9][0-9][0-9]'; then
+          srcip_oct1=$(echo "$DEST_IP" | cut -d "." -f1)
+          srcip_oct2=$(echo "$DEST_IP" | cut -d "." -f2)
+          srcip_oct3=$(echo "$DEST_IP" | cut -d "." -f3)
+          srcip_oct4=$(echo "$DEST_IP" | cut -d "." -f4)
 
-        if [ "$srcip_oct1" -eq "$lanip_oct1" ]; then
-          if [ "$srcip_oct2" -eq "$lanip_oct2" ]; then
-            if [ "$srcip_oct3" -eq "$lanip_oct3" ]; then
-              if [ "$srcip_oct4" -gt 1 ] && [ "$srcip_oct4" -le 254 ]; then
-                SRC="-s $DEST_IP"
+          if [ "$srcip_oct1" -eq "$lanip_oct1" ]; then
+            if [ "$srcip_oct2" -eq "$lanip_oct2" ]; then
+              if [ "$srcip_oct3" -eq "$lanip_oct3" ]; then
+                if [ "$srcip_oct4" -gt 1 ] && [ "$srcip_oct4" -le 254 ]; then
+                  SRC="-s $DEST_IP"
+                fi
               fi
             fi
           fi
         fi
-
       fi
-
       Chk_IPSET_List_Ready "$IPSET_NAME"
 
       TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 5)

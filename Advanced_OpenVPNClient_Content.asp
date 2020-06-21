@@ -575,7 +575,9 @@
 								tmp_value += ">";
 								break
 							case 1:
-								tmp_value += document.getElementById('IPSETlist_table').rows[i].cells[j].innerHTML;
+								var field = document.getElementById('IPSETlist_table').rows[i].cells[j].innerHTML;
+								if (field == "0.0.0.0") field = "";
+								tmp_value += field;
 								tmp_value += ">";
 								break
 							default:
@@ -730,6 +732,9 @@
 					if ((clientlist_col[4] == "VPN") || (clientlist_col[4] == "WAN")) {
 						codeipset += '<tr id="row' + i + '">';
 						for (var j = 0; j < 2; j++) { // Only cols 0 and 1,  i.e. skip irrelevant dest IP (3rd field)
+							if ((j == 1 || j == 2) && clientlist_col[j] == "0.0.0.0")
+								clientlist_col[j] = "";
+							//code += '<td width="' + width[j] + '">' + clientlist_col[j] + '</td>';
 							codeipset += '<td width="' + widthipset[j] + '">' + clientlist_col[j] + '</td>';
 						}
 						//############# Xentrk Hack. When delete,update and add same ipset list, the DIM1 field was null for ipset entires not changed
@@ -743,12 +748,12 @@
 						codeipset += '<td width="' + widthipset[4] + '">' + clientlist_col[4] + '</td>'; // Col4 is the 5th field Xentrk Hack for ipset iface
 						codeipset += '<td width="' + widthipset[5] + '">';
 						codeipset += '<input class="remove_btn" onclick="del_RowIPSET(this);" value=""/></td></tr>';
-						document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table
+						//document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table
 					}
 				}
 			}
 			code += '</table>';
-      //document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table
+			document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table
 			document.getElementById("clientlist_Block").innerHTML = code;
 		}
 		//<!-- Martineau Hack ############################################################################-->
@@ -833,8 +838,6 @@
 			if (dimx == "S")
 				dimx = "SRC";
 			addRow(document.form.clientlist_IPSETName, 1);
-			if (document.form.clientlist_IPSETipAddr.value == "")
-				document.form.clientlist_IPSETipAddr.value = "0.0.0.0";
 			if (!validator.ipv4cidr(document.form.clientlist_ipAddr)) {
 				document.form.clientlist_ipAddr.focus();
 				document.form.clientlist_ipAddr.select();

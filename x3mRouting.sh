@@ -860,7 +860,7 @@ Manual_Method() {
   ############## Special Processing for 'ip=' parmameter
   if [ "$(echo "$@" | grep -c 'ip=')" -gt 0 ]; then
     IP=$(echo "$@" | sed -n "s/^.*ip=//p" | awk '{print $1}')
-    [ -s "$DIR/$IPSET_NAME" ] || true >"/opt/opt/tmp/$IPSET_NAME"
+    [ -s "$DIR/$IPSET_NAME" ] || true >"/opt/tmp/$IPSET_NAME"
     true >"/opt/tmp/${SCR_NAME}" # create tmp file for loop processing
     for IPv4 in $(echo "$IP" | tr ',' '\n'); do
       awk -v A="$IPv4" 'BEGIN {print A}' >>"/opt/tmp/${SCR_NAME}"

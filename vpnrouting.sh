@@ -154,7 +154,6 @@ create_client_list() {
       Chk_IPSET_List_Ready "$IPSET_NAME"
 
       TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 5)
-      my_logger "THE VALUE OF TARGET ROUTE 2b: $TARGET_ROUTE"
       [ "$TARGET_ROUTE" = "WAN" ] && FWMARK=0x8000/0x8000 && PRIO=9990
 
       IPSET_NAME="$DESC"
@@ -331,6 +330,8 @@ Set_VPN_NVRAM_Vars() {
 }
 
 # Begin
+logger -st "($(basename "$0"))" $$ "Starting routing policy configuration for client $VPN_UNIT"
+
 case "$dev" in
 tun11 | tun12 | tun13 | tun14 | tun15) Set_VPN_NVRAM_Vars ;;
 *) run_custom_script && exit 0 ;;
@@ -411,7 +412,7 @@ if [ "$script_type" = "route-up" ]; then
 fi # End route-up
 
 ip route flush cache
-my_logger "Completed routing policy configuration for client $VPN_UNIT"
+logger -st "($(basename "$0"))" $$ "Completed routing policy configuration for client $VPN_UNIT"
 run_custom_script
 
 exit 0

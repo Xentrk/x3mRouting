@@ -753,8 +753,9 @@
 				}
 			}
 			code += '</table>';
-			document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table
 			document.getElementById("clientlist_Block").innerHTML = code;
+			codeipset += '</table>';
+			document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table
 		}
 		//<!-- Martineau Hack ############################################################################-->
 		function addRow(obj, head) {

@@ -1340,10 +1340,9 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
         fi
       fi
     done
-
     # nat-start File
     NAT_START="/jffs/scripts/nat-start"
-    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $*"
+    SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $1 $2"
     if [ "$(echo $@ | grep -cw 'del')" -eq 0 ]; then
       if [ -s "$NAT_START" ]; then # file exists
         if [ "$(grep -c "$SCRIPT_ENTRY" "$NAT_START")" -eq 0 ]; then # if true, then no lines exist
@@ -1359,7 +1358,7 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
         chmod 755 "$NAT_START"
         logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
       fi
-    else
+    else # del flagged passed
       [ -s "$NAT_START" ] && sed "/$1 $2/d" "$NAT_START" >"$NAT_START.tmp" && mv "$NAT_START.tmp" "$NAT_START"
       logger -t "($(basename "$0"))" $$ "$SCRIPT_ENTRY entry deleted from $NAT_START"
       Check_For_Shebang "$NAT_START"

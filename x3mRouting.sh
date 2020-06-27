@@ -798,7 +798,6 @@ ASNUM_Parm() {
         if [ -z "$A" ]; then
           echo "Skipping invalid ASN: $NUMBER"
         else
-          Chk_Entware 60
           Create_Ipset_List "$IPSET_NAME" "ASN"
           Download_ASN_Ipset_List "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
         fi

@@ -1360,7 +1360,6 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
         logger -st "($(basename "$0"))" $$ "$SCRIPT_ENTRY added to $NAT_START"
       fi
     else
-      set -x
       [ -s "$NAT_START" ] && sed "/$1 $2/d" "$NAT_START" >"$NAT_START.tmp" && mv "$NAT_START.tmp" "$NAT_START"
       logger -t "($(basename "$0"))" $$ "$SCRIPT_ENTRY entry deleted from $NAT_START"
       Check_For_Shebang "$NAT_START"

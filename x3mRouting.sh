@@ -1008,7 +1008,7 @@ VPN_Server_to_VPN_Client() {
     # vpnserverX-up file
     if [ -s "$VPNC_UP_FILE" ]; then #file exists
       # POSTROUTING
-      CMD="awk '\$5 == \"POSTROUTING\" && \$11 == \"$IFACE\" && \$13 == \"MASQUERADE\" {next} {print \$0}' \"$VPNC_UP_FILE\" > \"$VPNC_UP_FILE.tmp\" && mv \"$VPNC_UP_FILE.tmp\" \"$VPNC_UP_FILE\""
+      CMD="awk '\$5 == \"POSTROUTING\" && \$9 == \"vpn_server${VPN_SERVER_INSTANCE}_sn)\\\"/24\"  && \$11 == \"$IFACE\" && \$13 == \"MASQUERADE\" {next} {print \$0}' \"$VPNC_UP_FILE\" > \"$VPNC_UP_FILE.tmp\" && mv \"$VPNC_UP_FILE.tmp\" \"$VPNC_UP_FILE\""
       eval "$CMD"
       logger -st "($(basename "$0"))" $$ "iptables entry for VPN Client ${VPN_CLIENT_INSTANCE} deleted from $VPNC_UP_FILE"
       Check_For_Shebang "$VPNC_UP_FILE"
@@ -1017,7 +1017,7 @@ VPN_Server_to_VPN_Client() {
     # vpnserverX-down file
     if [ -s "$VPNC_DOWN_FILE" ]; then #file exists
       # POSTROUTING
-      CMD="awk '\$5 == \"POSTROUTING\" && \$11 == \"$IFACE\" && \$13 == \"MASQUERADE\" {next} {print \$0}' \"$VPNC_DOWN_FILE\" > \"$VPNC_DOWN_FILE.tmp\" && mv \"$VPNC_DOWN_FILE.tmp\" \"$VPNC_DOWN_FILE\""
+      CMD="awk '\$5 == \"POSTROUTING\" && \$9 == \"vpn_server${VPN_SERVER_INSTANCE}_sn)\\\"/24\"  && \$11 == \"$IFACE\" && \$13 == \"MASQUERADE\" {next} {print \$0}' \"$VPNC_DOWN_FILE\" > \"$VPNC_DOWN_FILE.tmp\" && mv \"$VPNC_DOWN_FILE.tmp\" \"$VPNC_DOWN_FILE\""
       eval "$CMD"
       logger -st "($(basename "$0"))" $$ "iptables entry deleted VPN Client ${VPN_CLIENT_INSTANCE} from $VPNC_DOWN_FILE"
       Check_For_Shebang "$VPNC_DOWN_FILE"

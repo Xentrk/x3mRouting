@@ -68,7 +68,7 @@
 #
 # VPN Server to existing LAN routing rules for an IPSET list
 #
-# x3mRouting.sh {'server='1|2|both} {'ipset_name='} ['del']
+# x3mRouting.sh {'server='1|2|both} {'ipset_name='IPSET[,IPSET]...} ['del']
 #_____________________________________________________________________________________________________________
 
 # Print between line beginning with '#__' to first blank line inclusive (source: Martineau)

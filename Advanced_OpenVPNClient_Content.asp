@@ -910,6 +910,26 @@
 				clientlist_value += "&#62";
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[3].innerHTML;
 			}
+
+			if (clientlist_value == "") {
+				var num_rows = document.getElementById('IPSETlist_table').rows.length
+				for (k = 0; k < num_rows; k++) { // Now append the IPSET VPN rules
+					clientlist_value += "&#60";
+					clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[0].innerHTML;
+					clientlist_value += "&#62";
+					clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[1].innerHTML;
+					clientlist_value += "&#62";
+					clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[2].innerHTML;
+					clientlist_value += "&#62";
+					clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[3].innerHTML;
+					clientlist_value += "&#62";
+					clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[4].innerHTML;
+				}
+				if (clientlist_value != "") {
+					alert("A DummyVPN entry is required in order to Apply the changes")
+				}
+			}
+
 			clientlist_array = clientlist_value;
 			if (clientlist_array == "")
 				showclientlist();

@@ -1381,6 +1381,16 @@ if [ "$(echo "$@" | grep -c 'ipset_name=')" -gt 0 ]; then
     Exit_Routine
   fi
 
+  # Error_Exit if 'src=' parm specified
+  if [ "$(echo "$@" | grep -c 'src=')" -gt 0 ]; then
+    Error_Exit "The 'src=' parameter can't be used with the 'ipset_name=' parameter"
+  fi
+
+  # Error_Exit if 'src_range=' parm specified
+  if [ "$(echo "$@" | grep -c 'src_range=')" -gt 0 ]; then
+    Error_Exit "The 'src_range=' parameter can't be used with the 'ipset_name=' parameter"
+  fi
+
   # Check for 'dnsmasq=' parm
   if [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ]; then
     DNSMASQ_Parm $@

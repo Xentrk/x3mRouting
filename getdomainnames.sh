@@ -4,19 +4,23 @@ trap cleanup 1 2 3 6
 # Script: getdomainnames.sh
 # VERSION=2.0.0
 # Author: Xentrk
-# Date: 24-May-2020
+# Date: 28-June-2020
 #_______________________________________________________________________________________________________________
 #
-# This script will format the output stored in 'myfile' created using the command: tail -f dnsmasq.log > myfile
-# and save the output to myfile_domains. The file name 'myfile' is an example. You can enter any name.
+# This script will collect domain names mined from /opt/var/log/dnsmasq.log while accessing a website or
+# when streaming media.
 #
 # Usage Instructions:
-#  1. Enter a meaningful name for the file used to store the results.
+#
+#   sh getdomainnames.sh
+#
+#  1. You will be prompted for file used to store the results.
 #  2. Enter the IPv4 address of the LAN Client used to perform lookups.
 #  3. Access the streaming service and watch some videos for a few seconds and select each menu option to generate
 #     domain names.
 #  4. Type 'Ctrl-C' to exit
-#  5. The domain names collected will appear on the screen and stored in the /opt/var/log directory.
+#  5. The domain names collected will appear on the screen and also stored in the file you specified in the
+#     /opt/var/log directory.
 #_______________________________________________________________________________________________________________
 
 # Print between line beginning with '#_' to first blank line inclusive

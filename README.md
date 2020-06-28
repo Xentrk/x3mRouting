@@ -117,7 +117,6 @@ Running **x3mRouting** will automatically create the script entry in **/jffs/scr
 * [VPN Client Bypass Routing](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#vpn-client-bypass-routing)
 * [VPN Server to VPN Client Routing](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#vpn-server-to-vpn-client-routing-1)
 * [VPN Server to IPSET List Routing](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#vpn-server-to-ipset-list-routing)
-VPN Server to VPN Client, VPN Server to IPSET list and those who don't use the OpenVPN Client Screen.
 
 ##### IPSET Methods
 To create an IPSET list, x3mRouting requires that one of the following methods be specified.

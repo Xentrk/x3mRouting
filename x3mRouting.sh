@@ -467,33 +467,30 @@ Process_Src_Option() {
       DNSMASQ_Parm $@
       break
     fi
-
     # Check for 'autoscan=' parm
     if [ "$(echo "$@" | grep -c 'autoscan=')" -gt 0 ]; then
       Dnsmasq_Log_File
       Harvest_Domains $@
       break
     fi
-
     # check if 'asnum=' parm
     if [ "$(echo "$@" | grep -c 'asnum=')" -gt 0 ]; then
       ASNUM_Parm $@
       break
     fi
-
     # check if 'aws_region=' parm
     if [ "$(echo "$@" | grep -c 'aws_region=')" -gt 0 ]; then
       AWS_Region_Parm $@
       break
     fi
-    break
+    # Manual Method
+    if [ "$X3M_METHOD" = "Manual" ]; then
+      Manual_Method $@
+      break
+    fi
   done
 
   # Manual Method to create ipset list if IP address specified
-  if [ "$X3M_METHOD" = "Manual" ]; then
-    Manual_Method $@
-  fi
-
   if [ -n "$SRC" ]; then
     if [ "$X3M_METHOD" = "Manual" ]; then #
       SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $SRC_IFACE $DST_IFACE $IPSET_NAME src=${SRC}"
@@ -867,12 +864,10 @@ Manual_Method() {
           if [ -z "$A" ]; then
             printf '"%s" is not a valid CIDR address. Skipping entry.\n' "$IPv4"
           else
-            printf '"%s" is a valid CIDR\n' "$IPv4"
-            printf '%s\n' "$IPv4" >>"$DIR/$IPSET_NAME" #&& echo "Added IP address $IPv4"
+            printf '%s\n' "$IPv4" >>"$DIR/$IPSET_NAME" && printf '%s\n' "Successfully added CIDR $IPv4"
           fi
         else
-          printf '"%s" is a valid IPv4 address\n' "$IPv4"
-          printf '%s\n' "$IPv4" >>"$DIR/$IPSET_NAME" #&& echo "Added IP address $IPv4"
+          printf '%s\n' "$IPv4" >>"$DIR/$IPSET_NAME" && printf '%s\n' "Successfully added $IPv4"
         fi
       done <"/opt/tmp/${SCR_NAME}"
       rm "/opt/tmp/${SCR_NAME}"
@@ -1229,15 +1224,15 @@ Define_IFACE() {
 #set -x
 
 ## Begin ##
-SCR_NAME=$(basename "$0" | sed 's/.sh//')
-NAT_START="/jffs/scripts/nat-start"
-
 # Prevent duplicate processing
+SCR_NAME=$(basename "$0" | sed 's/.sh//')
 exec 9>"/tmp/${SCR_NAME}.lock" || exit 1
 flock 9 || exit 1
 trap 'rm -f /tmp/${SCR_NAME}.lock' EXIT
 
 logger -st "($(basename "$0"))" $$ Starting Script Execution $@
+
+NAT_START="/jffs/scripts/nat-start"
 
 # Check if user specified 'dir=' parameter
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
@@ -1472,7 +1467,7 @@ fi
 # Validate DST_IFACE and set destination TAG_MARK
 case "$DST_IFACE" in
 0)
-  TAG_MARK="$FWMARK_WAN" # Which Target WAN or VPN? Martineau Hack
+  TAG_MARK="$FWMARK_WAN"
   TARGET_DESC="WAN"
   ;;
 1)

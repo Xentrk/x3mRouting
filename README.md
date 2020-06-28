@@ -97,7 +97,8 @@ If an existing **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file exists,
 The routing rules for LAN Clients will automatically be applied upon a system boot. You only need to rerun **x3mRouting_client_nvram.sh** if you have made LAN Client interface assignment changes in the **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file.
 
 ### [2] OpenVPN Client Screen, OpenVPN Event & x3mRouting.sh Script
-[OpenVPN Client Screen](https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG/Policy_Routing_Screen.PNG)
+![Policy Routing Screen](https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG/Policy_Routing_Screen.PNG "Policy Routing Screen")
+
 #### OpenVPN Client Screen
 As part of this project, you can also choose to download and install a modified OpenVPN Client Screen to selectively route IPSET lists through a VPN Client.
 

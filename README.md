@@ -99,31 +99,25 @@ The routing rules for LAN Clients will automatically be applied upon a system bo
 ### [2] OpenVPN Client Screen, OpenVPN Event & x3mRouting.sh Script
 
 #### OpenVPN Client Screen
-As part of this project, you can also choose to download and install a modified OpenVPN Client Screen to selectively route IPSET lists thru a VPN Client. You can't use the screen to:
-* Bypass the VPN Client for an IPSET list and route to the WAN interface.
-* Apply an IPSET routing rule to a specific device.
-
-If you have these two requirements, see the usage instructions in [Option 3](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#3-openvpn-event--x3mroutingsh-script-1) below.
-
-[@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client Screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. I greatly appreciate his generosity in providing the modified code and allowing me to include it in the project.
+As part of this project, you can also choose to download and install a modified OpenVPN Client Screen to selectively route IPSET lists thru a VPN Client.
 
 ##### OpenVPN Client Screen ~ Policy Routing Section
-![Policy Routing Screen](https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG/Policy_Routing_Screen.PNG "Policy Routing Screen")
+[@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client Screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. The screen has been adapted for x3mRouting to allow the routing of IPSET lists to the WAN interface to support VPN Bypass Routing.
 
 ##### IPSET Dimensions
-The OpenVPN Client Screen accepts single and multiple dimension IPSET lists. See the [IPSET Man Page](http://ipset.netfilter.org/ipset.man.html) for information.
-
-![IPSET Dimensions](https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG/OpenVPN_Client_GUI.png "OpenVPN Client Screen")
-
-##### Video Tutorial
-
-A video tutorial on how to allow the use of IPSET lists via the Selective routing VPN Client Policy Routing Screen can be viewed on [Vimeo](https://vimeo.com/287067217).
+The OpenVPN Client Screen accepts single and two dimension IPSET lists. See the [IPSET Man Page](http://ipset.netfilter.org/ipset.man.html) for information. For most x3mRouting use cases, specify 'DST' as the first dimension and leave the second dimension empty to route an IPSET list to the VPN or WAN interface.
 
 ##### DummyVPN
-In the screen picture above, you will notice an entry for **DummyVPN1**. For the Selective routing of Ports/MACs and IPSETs, [@Martineau](https://www.snbforums.com/members/martineau.13215/) recommends creating a “dummy” VPN Client entry if you require the ability to exploit the **Accept DNS Configuration=Exclusive** option that only creates the appropriate DNSVPN iptables chain if the routing table isn't empty in the OpenVPN Client Screen. Use a valid IPv4 address for the DummyVPN entry that differs from your LAN IPv4 address range. I recommend using a [bogon IP address](https://ipinfo.io/bogon) for this purpose.   
+In the screen picture above, you will notice an entry for **DummyVPN1**. For the selective routing of IPSETs, creating a “dummy” VPN Client entry is required if no routing rules exist for LAN clients and you need to exploit the **Accept DNS Configuration=Exclusive** feature. The appropriate DNSVPN iptables chain rules will only get created if the routing table isn't empty in the OpenVPN Client Screen. Use a valid IPv4 address for the DummyVPN entry that differs from your LAN IPv4 address range. Use a [bogon IP address](https://ipinfo.io/bogon) for this purpose. Use the word "DummyVPN" as the first eight characters followed by the number of the VPN Client. This will prevent a Routing Policy Database Rule (RPDB) reservation from getting created for the DummyVPN entry.     
 
 #### OpenVPN Event & x3mRouting.sh Script
-Running **x3mRouting** will automatically perform the set-up. The features of **openvpn-event** are used to create the routing rule during a VPN Client up event and remove the routing rule during a VPN Client down event. **/jffs/scripts/nat-start** is used to execute the scripts at system boot or during a firewall restart event.
+Running **x3mRouting** will automatically create the script entry in **/jffs/scripts/nat-start/**. Placing the script entry in **/jffs/scripts/nat-start** will execute the scripts at system boot or during a firewall restart event. The features of **openvpn-event** are not used for the routing of IPSET lists entered in the modified OpenVPN Client Screen. It is installed to support the routing functions available in x3mRouting that don't require the use of the modified OpenVPN Client Screen:  
+
+* [VPN Client Routing](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#vpn-client-routing)
+* [VPN Client Bypass Routing](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#vpn-client-bypass-routing)
+* [VPN Server to VPN Client Routing](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#vpn-server-to-vpn-client-routing-1)
+* [VPN Server to IPSET List Routing](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#vpn-server-to-ipset-list-routing)
+VPN Server to VPN Client, VPN Server to IPSET list and those who don't use the OpenVPN Client Screen.
 
 ##### IPSET Methods
 To create an IPSET list, x3mRouting requires that one of the following methods be specified.

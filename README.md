@@ -97,7 +97,7 @@ If an existing **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file exists,
 The routing rules for LAN Clients will automatically be applied upon a system boot. You only need to rerun **x3mRouting_client_nvram.sh** if you have made LAN Client interface assignment changes in the **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file.
 
 ### [2] OpenVPN Client Screen, OpenVPN Event & x3mRouting.sh Script
-
+[OpenVPN Client Screen](https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG/Policy_Routing_Screen.PNG)
 #### OpenVPN Client Screen
 As part of this project, you can also choose to download and install a modified OpenVPN Client Screen to selectively route IPSET lists through a VPN Client.
 
@@ -111,7 +111,7 @@ The OpenVPN Client Screen accepts single and two dimension IPSET lists. See the 
 Note the **DummyVPN1** entry in the screen above. For the selective routing of IPSETs, creating a “dummy” VPN Client entry is required if no routing rules exist for LAN clients and you need to exploit the **Accept DNS Configuration=Exclusive** feature. The appropriate DNSVPN iptables chain rules will only get created if the routing table isn't empty in the OpenVPN Client Screen. Use a valid IPv4 address for the "DummyVPN" entry that differs from your LAN IPv4 address range. Use a [bogon IP address](https://ipinfo.io/bogon) for this purpose. Use the word "DummyVPN" as the first eight characters followed by the number of the VPN Client. This will prevent a Routing Policy Database Rule (RPDB) reservation from getting created for the DummyVPN entry.  
 
 ##### Caveat emptor
-The "dummy" VPN Client entry is also a work around solution for an issue with the modified screen. Applying changes to the screen will not work if there are no client entries in the client routing table. The "dummy" VPN Client entry in the routing client traffic tables solves the problem. 
+The "dummy" VPN Client entry is also a work around solution for an issue with the modified screen. Applying changes to the screen will not work if there are no client entries in the client routing table. The "dummy" VPN Client entry in the routing client traffic tables solves the problem.
 
 #### OpenVPN Event & x3mRouting.sh Script
 Running **x3mRouting** will automatically create the script entry in **/jffs/scripts/nat-start/**. Placing the script entry in **/jffs/scripts/nat-start** will execute the scripts at system boot or during a firewall restart event. The features of **openvpn-event** are not used for the routing of IPSET lists entered in the modified OpenVPN Client Screen. **openvpn-event** is installed to support the routing functions available in x3mRouting that don't require the use of the modified OpenVPN Client Screen:  
@@ -664,7 +664,7 @@ I want to acknowledge the following [snbforums](https://www.snbforums.com) membe
 
 As part of the ongoing collaboration, Martineau had modified a selective routing script I wrote for routing Netflix traffic and enhanced it by enabling the passing of parameters. The enhancements made the script more user friendly by eliminating the need for users to edit scripts to meet their use case requirements. The enhancements have been applied to all of the IPSET scripts.
 
-Martineau also contributed the modified **OpenVPN Client Screen**, the [Vimeo](https://vimeo.com/287067217) video and **Chk_Entware** function used in the project.
+Martineau also contributed the modified **OpenVPN Client Screen** and **Chk_Entware** function used in the project.
 
 * [Adamm](https://github.com/Adamm00) contributed the code for restoring the IPSET lists using the **awk** method and the **md5sum** check function to detect updated code on GitHub were also inspired by Adamm.
 

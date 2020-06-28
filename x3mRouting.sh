@@ -6,7 +6,7 @@
 # Script: x3mRouting.sh
 # VERSION=2.0.0
 # Author: Xentrk
-# Date: 27-June-2020
+# Date: 28-June-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -85,7 +85,6 @@ fi
 Chk_Entware() {
 
   # ARGS [wait attempts] [specific_entware_utility]
-
   READY=1          # Assume Entware Utilities are NOT available
   ENTWARE_UTILITY= # Specific Entware utility to search for
   MAX_TRIES=30
@@ -205,14 +204,14 @@ Create_Ipset_List() {
   if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" != "$IPSET_NAME" ]; then #does ipset list exist?
     if [ -s "$DIR/$IPSET_NAME" ]; then # does ipset restore file exist?
       if [ "$METHOD" = "DNSMASQ" ]; then
-        ipset restore -! <"$DIR/$IPSET_NAME" # Restore ipset list if restore file exists at $DIR/$1
+        ipset restore -! <"$DIR/$IPSET_NAME"
         logger -st "($(basename "$0"))" $$ IPSET restored: "$IPSET_NAME" from "$DIR/$IPSET_NAME"
       else
         ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
         logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME"
       fi
     else # method = ASN, MANUAL or AWS
-      ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create $1 ipset list from scratch
+      ipset create "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536 # No restore file, so create ipset list from scratch
       logger -st "($(basename "$0"))" $$ IPSET created: "$IPSET_NAME" hash:net family inet hashsize 1024 maxelem 65536
     fi
   fi
@@ -332,8 +331,6 @@ Check_Nat_Start_For_Entries() {
     SCRIPT_ENTRY="$SCRIPT_ENTRY dir=$DIR"
   fi
 
-  NAT_START="/jffs/scripts/nat-start"
-
   # nat-start File
   if [ -s "$NAT_START" ]; then
     if [ "$(grep -c "$SCRIPT_ENTRY" "$NAT_START")" -eq 0 ]; then # if true, then no lines exist
@@ -382,7 +379,6 @@ Check_Files_For_Entries() {
   IPTABLES_ADD_ENTRY="iptables -t mangle -A PREROUTING -i br0 -m set --match-set $IPSET_NAME dst -j MARK --set-mark $TAG_MARK"
   VPNC_UP_FILE="/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-up"
   VPNC_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-pre-down"
-  NAT_START="/jffs/scripts/nat-start"
 
   # VPN Client route-up File
   for IPTABLES_ENTRY in "$IPTABLES_DEL_ENTRY" "$IPTABLES_ADD_ENTRY"; do
@@ -490,6 +486,7 @@ Process_Src_Option() {
       AWS_Region_Parm $@
       break
     fi
+    break
   done
 
   # Manual Method to create ipset list if IP address specified
@@ -537,7 +534,6 @@ Process_Src_Option() {
 
   VPNC_UP_FILE="/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-up"
   VPNC_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-pre-down"
-  NAT_START="/jffs/scripts/nat-start"
 
   # nat-start File
   if [ -s "$NAT_START" ]; then
@@ -653,7 +649,7 @@ Load_MANUAL_Ipset_List() {
 # Download Amazon AWS json file
 Download_AMAZON() {
 
-  DIR="$1"
+  DIR=$1
 
   if [ -s "$DIR/ip-ranges.json" ]; then
     if [ "$(find "$DIR" -name "ip-ranges.json" -mtime +7 -print)" = "$DIR/ip-ranges.json" ]; then
@@ -708,7 +704,6 @@ Delete_Ipset_List() {
   fi
 
   # Check for IPSET entry in /jffs/scripts/nat-start and remove if found
-  NAT_START="/jffs/scripts/nat-start"
   if [ -s "$NAT_START" ]; then
     if [ "$(grep -c "$IPSET_NAME" "$NAT_START")" -ge 1 ]; then # if true, then one or more lines exist
       sed -i "/$IPSET_NAME/d" "$NAT_START"
@@ -906,7 +901,6 @@ VPN_Server_to_VPN_Client() {
   IPTABLES_ADD_ENTRY="iptables -t nat -A POSTROUTING -s \"\$(nvram get vpn_server${VPN_SERVER_INSTANCE}_sn)\"/24 -o $IFACE -j MASQUERADE"
   VPNC_UP_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-up"
   VPNC_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-pre-down"
-  NAT_START="/jffs/scripts/nat-start"
   POLICY_RULE_WITHOUT_NAME="${VPN_SERVER_SUBNET}>>VPN"
   POLICY_RULE="<VPN Server ${VPN_SERVER_INSTANCE}>${VPN_SERVER_SUBNET}>>VPN"
 
@@ -1231,10 +1225,12 @@ Define_IFACE() {
 }
 
 #==================== End of Functions  =====================================
-SCR_NAME=$(basename "$0" | sed 's/.sh//')
 # Uncomment the line below for debugging
 #set -x
+
 ## Begin ##
+SCR_NAME=$(basename "$0" | sed 's/.sh//')
+NAT_START="/jffs/scripts/nat-start"
 
 # Prevent duplicate processing
 exec 9>"/tmp/${SCR_NAME}.lock" || exit 1
@@ -1340,7 +1336,6 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
       fi
     done
     # nat-start File
-    NAT_START="/jffs/scripts/nat-start"
     SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $1 $2"
     if [ "$(echo $@ | grep -cw 'del')" -eq 0 ]; then
       if [ -s "$NAT_START" ]; then # file exists

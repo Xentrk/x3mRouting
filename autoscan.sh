@@ -3,15 +3,31 @@
 # Script: autoscan.sh
 # VERSION=1.0.0
 # Author: Xentrk
-# Date: 24-May-2020
-#
-# Description:
-#  Use this script to search for top level domain names that contain the keyword specified on the 'autoscan=' parm
-#  Usage example:
-#    sh autoscan.sh autoscan=disney
-#    sh autoscan.sh autoscan=netflix,nflx
+# Date: 28-June-2020
 #
 ####################################################################################################
+#_____________________________________________________________________________________________________________
+#
+# Description:
+#
+# Use this script to search for top level domain names that contain the keyword specified on the 'autoscan=' parm
+#
+# Usage examples:
+#
+#    sh autoscan.sh autoscan=disney
+#    sh autoscan.sh autoscan=netflix,nflx
+#_____________________________________________________________________________________________________________
+
+# Print between line beginning with '#__' to first blank line inclusive (source: Martineau)
+ShowHelp() {
+  awk '/^#__/{f=1} f{print; if (!NF) exit}' "$0" | more
+}
+
+# Need assistance!???
+if [ "$1" = "help" ] || [ "$1" = "-h" ]; then
+  ShowHelp
+  exit 0
+fi
 
 if [ ! -s "/opt/var/log/dnsmasq.log" ]; then
   printf '\nError: /opt/var/log/dnsmasq.log file does not exist\n' && printf '\nScript expects dnsmasq.log file to exist in /opt/var/log\n' && exit 1

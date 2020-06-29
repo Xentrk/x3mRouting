@@ -114,7 +114,7 @@ Note the **DummyVPN1** entry in the screen above. For the selective routing of I
 ##### Caveat Emptor
 The "dummy" VPN Client entry is also a work around solution for an issue with the modified screen. Applying changes to the screen will not work if there are IPSET entries in the IPSET routing table but no client entries in the client routing table. The "dummy" VPN Client entry in the routing client traffic tables solves the problem. If this condition is encountered, a warning message will be displayed.
 
-If you delete a LAN Client entry in the policy routing table, then add the same entry with a different interface, the IPSET lists in the policy routing table will disappear when the Add button is selected. The work around solution is to first apply the deletion entry. Then, add the revised entry and apply the change.
+If you delete a LAN Client entry in the policy routing table, then add another LAN Client entry before applying the change, the IPSET lists in the policy routing table will disappear when the Add button is selected. The work around solution is to first apply the deletion entry. Then, add the revised entry and apply the change.
 
 I welcome collaboration with other developers to help resolve these issues.
 #### OpenVPN Event & x3mRouting.sh Script

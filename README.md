@@ -617,11 +617,13 @@ to display the RPDB routing priority database rules for the VPN Server, VPN Serv
 
 #### IPTABLES Chains
 
-Enter the following command to display the IPTABLES Chains for the PREROUTING table:
+##### iptables mangle table PREROUTING Chain
+
+Enter the following command to display the PREROUTING IPTABLES Chains for the mangle table:
 
     iptables -nvL PREROUTING -t mangle --line
 
-The output will also display the number of packets and bytes traversing the iptables rule which can be used as confirmation that traffic is being routed according to the rule:
+The output will display the number of packets and bytes traversing the iptables rule for each IPSET list which can be used as confirmation that traffic is being routed properly:
 
     Chain PREROUTING (policy ACCEPT 5808K packets, 6404M bytes)
     num   pkts bytes target     prot opt in     out     source               destination
@@ -638,6 +640,24 @@ The output will also display the number of packets and bytes traversing the ipta
     11   27284 5635K MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set CBS_WEB dst MARK set 0x3000
     12       0     0 MARK       all  --  br0    *       0.0.0.0/0            0.0.0.0/0            match-set BBC dst MARK set 0x4000
 
+##### iptables nat table POSTROUTING Chain
+
+Enter the following command to display the POSTROUTING IPTABLES Chains for the nat table:
+
+    iptables -nvL POSTROUTING -t nat --line
+
+The output will display the number of packets and bytes traversing the iptables rule for the VPN Clients, VPN Server to VPN Client, and VPN Server to IPSET list routing which can be used as confirmation that traffic is being routed properly:
+
+    Chain POSTROUTING (policy ACCEPT 258 packets, 30946 bytes)
+    num   pkts bytes target     prot opt in     out     source               destination
+    1        0     0 MASQUERADE  all  --  *      tun15   192.168.1.0/24      0.0.0.0/0
+    2        0     0 MASQUERADE  all  --  *      tun14   192.168.1.0/24      0.0.0.0/0
+    3      127  9282 MASQUERADE  all  --  *      tun11   192.168.1.0/24      0.0.0.0/0
+    4        0     0 MASQUERADE  all  --  *      tun13   192.168.1.0/24      0.0.0.0/0
+    5     1121 60169 MASQUERADE  all  --  *      tun12   192.168.1.0/24      0.0.0.0/0
+    <snip>
+    10       0     0 MASQUERADE  all  --  *      tun11   10.8.0.0/24          0.0.0.0/0
+    11       0     0 MASQUERADE  all  --  *      tun15   10.16.0.0/24         0.0.0.0/0
 
 #### Ad Blockers
 If you use an ad blocker, some domains may require whitelisting for the streaming service to properly playback video.      

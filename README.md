@@ -425,6 +425,11 @@ x3mRouting server=1 ipset_name=PANDORA
 x3mRouting server=2 ipset_name=PANDORA
 x3mRouting server=both ipset_name=PANDORA
 ````
+
+Route from VPN Server 1 to the IPSET lists PANDORA and NETFLIX.
+````
+x3mRouting server=1 ipset_name=PANDORA,NETFLIX
+````
 ##### Requirements
 1. The IPSET list must exist!
 2. A PREROUTING rule must currently exist so the script can determine the VPN Client to route to!

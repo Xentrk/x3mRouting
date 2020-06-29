@@ -926,7 +926,8 @@
 					clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[4].innerHTML;
 				}
 				if (clientlist_value != "") {
-					alert("A DummyVPN entry is required in order to Apply the changes")
+					alert("A DummyVPN or LAN Client entry is required in order to Apply the changes");
+					alert("Refresh the browser to restore entries");
 				}
 			}
 

@@ -723,6 +723,7 @@ The command to access the **x3mRouting** menu has been changed from **x3mRouting
 
     have been removed and the features combined into one script called **x3mRouting.sh**.
   * The method used to create the IPSET list is passed to **x3mRouting.sh** as a parameter. If the ASN, Amazon AWS or dnsmasq parameter is not specified, **x3mRouting.sh** will default to the manual method.
+  * **x3mRouting** has been configured as a command in /opt/bin with a symbolic link to **/jffs/scripts/x3mRouting.sh*, allowing **/jffs/scripts/x3mRouting/x3mRouting.sh** to be run from any location without specifying the path or "sh" command.   
   * Running **x3mRouting** will automatically perform the set-up.
     * **/jffs/scripts/nat-start** is used to execute the scripts at system boot or during a firewall restart event.
     * The features of **openvpn-event** are used to create the routing rule during a VPN Client up event and remove the routing rule during a VPN Client down event when the source and destination interfaces are specified.

@@ -14,11 +14,11 @@ An alternative approach to automate and easily assign LAN clients to a WAN or VP
 
 ### 2. OpenVPN Client Screen, OpenVPN Event & x3mRouting.sh Script
 
-Provides the ability to create IPSET lists using the **x3mRouting.sh** script and selectively route the IPSET lists thru the VPN Client by entering the IPSET name in a modified [OpenVPN Client Screen](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#2-openvpn-client-screen-openvpn-event--x3mroutingsh-script-1). 
+Provides the ability to create IPSET lists using the **x3mRouting.sh** script and selectively route the IPSET lists thru the VPN Client by entering the IPSET name in a modified [OpenVPN Client Screen](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#2-openvpn-client-screen-openvpn-event--x3mroutingsh-script-1).
 
 ### 3. OpenVPN Event & x3mRouting.sh Script
 
-The [x3mRouing.sh](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#3-openvpn-event--x3mroutingsh-script-1) script provides the ability to
+The [x3mRouting.sh](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#3-openvpn-event--x3mroutingsh-script-1) script provides the ability to
 
   * Create and selectively route IPSET lists to the VPN Client interface for all traffic or specific devices.
   * Bypass a VPN Client interface for all traffic or specific devices.

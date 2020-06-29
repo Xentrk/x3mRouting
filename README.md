@@ -98,12 +98,14 @@ The routing rules for LAN Clients will automatically be applied upon a system bo
 #### OpenVPN Client Screen
 As part of this project, you can also choose to install a modified OpenVPN Client Screen to selectively route IPSET lists through a VPN Client. [@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client Screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. The screen has been adapted for x3mRouting to allow the routing of IPSET lists to the WAN interface to support VPN Bypass Routing.
 
+Starting with Asuswrt-Merlin 384.18, the default Source IP address is null. You can still specify "0.0.0.0" as the Source IP address on the screen. But it will be converted and stored as a null value to save nvram space. When the Source IP address is null, the routing rule will apply to all LAN Clients. Alternatively, you can specify a LAN Client IPv4 addresses or CIDR as the Source IP address for both LAN Clients and IPSET lists so the rule will only apply to the IPv4 addresses or CIDR specified. 
+
 ##### Advantages and Disadvantages of using the modified OpenVPN Client Screen
 If you prefer to use the modified OpenVPN Client Screen, create the IPSET list without specifying the source and destination interfaces. The IPSET list must then be entered in the policy routing section.
 
 If you create the IPSET list and specify the source and destination interfaces, no further action is required. **x3mRouting.sh** will automatically manage the IPSET routing rules using the features of **openvpn-event**.
 
-The advantage of the screen is that it provides a visual depiction of what IPSET lists are being routed or bypassed through the OpenVPN Client. The disadvantage is the extra step required to manually enter the IPSET list in the screen. Also, note the known issues and work around solutions in the [Caveat Emptor](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#caveat-emptor) section before making a decision on using the modified OpenVPN Client Screen.
+The advantage of the screen is that it provides a visual depiction of what IPSET lists are being routed or bypassed through the OpenVPN Client. The disadvantage is the extra step required to manually enter the IPSET list in the screen. Note the known issues and work around solutions in the [Caveat Emptor](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#caveat-emptor) section before making a decision on using the modified OpenVPN Client Screen.
 
 ##### IPSET Dimensions
 The OpenVPN Client Screen accepts single and two dimension IPSET lists. See the [IPSET Man Page](http://ipset.netfilter.org/ipset.man.html) for information. For most x3mRouting use cases, specify 'DST' as the first dimension and leave the second dimension empty to route an IPSET list to the VPN or WAN interface.

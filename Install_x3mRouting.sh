@@ -11,9 +11,9 @@ while true; do
         rm -rf /opt/bin/x3mRouting 2>/dev/null
       fi
     else
-     rm -rf /opt/bin/x3mRouting 2>/dev/null
-   fi
- fi
+      rm -rf /opt/bin/x3mRouting 2>/dev/null
+    fi
+  fi
   rm -rf /opt/bin/x3mMenu 2>/dev/null
   ln -s "/jffs/addons/x3mRouting/x3mRouting_Menu.sh" "/opt/bin/x3mMenu"
   x3mMenu

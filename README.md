@@ -100,20 +100,27 @@ The routing rules for LAN Clients will automatically be applied upon a system bo
 ![Policy Routing Screen](https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG/Policy_Routing_Screen.PNG "Policy Routing Screen")
 
 #### OpenVPN Client Screen
-As part of this project, you can also choose to download and install a modified OpenVPN Client Screen to selectively route IPSET lists through a VPN Client.
+As part of this project, you can also choose to install a modified OpenVPN Client Screen to selectively route IPSET lists through a VPN Client. [@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client Screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. The screen has been adapted for x3mRouting to allow the routing of IPSET lists to the WAN interface to support VPN Bypass Routing.
 
-##### OpenVPN Client Screen ~ Policy Routing Section
-[@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client Screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. The screen has been adapted for x3mRouting to allow the routing of IPSET lists to the WAN interface to support VPN Bypass Routing.
+##### Advantages and Disadvantages of using the modified OpenVPN Client Screen
+If you prefer to use the modified OpenVPN Client Screen, create the IPSET list without specifying the source and destination interfaces. The IPSET list must then be entered in the policy routing section.
+
+If you create the IPSET list and specify the source and destination interfaces, no further action is required. **x3mRouting.sh** will automatically manage the IPSET routing rules using the features of **openvpn-event**.
+
+The advantage of the screen is that it provides a visual depiction of what IPSET lists are being routed or bypassed through the OpenVPN Client. The disadvantage is the extra step required to manually enter the IPSET list in the screen. Also, note the known issues and work around solutions in the [Caveat Emptor](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#caveat-emptor) section before making a decision on using the modified OpenVPN Client Screen.
 
 ##### IPSET Dimensions
 The OpenVPN Client Screen accepts single and two dimension IPSET lists. See the [IPSET Man Page](http://ipset.netfilter.org/ipset.man.html) for information. For most x3mRouting use cases, specify 'DST' as the first dimension and leave the second dimension empty to route an IPSET list to the VPN or WAN interface.
 
 ##### DummyVPN
-Note the **DummyVPN1** entry in the screen above. For the selective routing of IPSETs, creating a “dummy” VPN Client entry is required if no routing rules exist for LAN clients and you need to exploit the **Accept DNS Configuration=Exclusive** feature. The appropriate DNSVPN iptables chain rules will only get created if the routing table isn't empty in the OpenVPN Client Screen. Use a valid IPv4 address for the "DummyVPN" entry that differs from your LAN IPv4 address range. Use a [bogon IP address](https://ipinfo.io/bogon) for this purpose. Use the word "DummyVPN" as the first eight characters followed by the number of the VPN Client. This will prevent a Routing Policy Database Rule (RPDB) reservation from getting created for the DummyVPN entry.  
+Note the **DummyVPN1** entry in the screen above. For the selective routing of IPSETs, creating a “dummy” VPN Client entry is required if no routing rules exist for LAN clients and you need to exploit the **Accept DNS Configuration=Exclusive** feature. The appropriate DNSVPN iptables chain rules will only get created if the routing table isn't empty in the OpenVPN Client Screen. Use a [bogon IP address](https://ipinfo.io/bogon) for this purpose. Use the word "DummyVPN" as the first eight characters followed by the number of the VPN Client. This will prevent a Routing Policy Database Rule (RPDB) reservation from getting created for the DummyVPN entry.  
 
-##### Caveat emptor
-The "dummy" VPN Client entry is also a work around solution for an issue with the modified screen. Applying changes to the screen will not work if there are no client entries in the client routing table. The "dummy" VPN Client entry in the routing client traffic tables solves the problem.
+##### Caveat Emptor
+The "dummy" VPN Client entry is also a work around solution for an issue with the modified screen. Applying changes to the screen will not work if there are IPSET entries in the IPSET routing table but no client entries in the client routing table. The "dummy" VPN Client entry in the routing client traffic tables solves the problem. If this condition is encountered, a warning message will be displayed.
 
+If you delete a LAN Client entry in the policy routing table, then add the same entry with a different interface, the IPSET lists in the policy routing table will disappear when the Add button is selected. The work around solution is to first apply the deletion entry. Then, add the revised entry and apply the change.
+
+I welcome collaboration with other developers to help resolve these issues.
 #### OpenVPN Event & x3mRouting.sh Script
 Running **x3mRouting** will automatically create the script entry in **/jffs/scripts/nat-start/**. Placing the script entry in **/jffs/scripts/nat-start** will execute the scripts at system boot or during a firewall restart event. The features of **openvpn-event** are not used for the routing of IPSET lists entered in the modified OpenVPN Client Screen. **openvpn-event** is installed to support the routing functions available in x3mRouting that don't require the use of the modified OpenVPN Client Screen:  
 
@@ -671,14 +678,16 @@ Martineau also contributed the modified **OpenVPN Client Screen** and **Chk_Entw
 
 * For the installation script, [Jack Yaz](https://github.com/jackyaz/spdMerlin) gave me permission to clone the code he used for the update code function (also inspired by Adamm) used on the [SpdMerlin](https://github.com/jackyaz/spdMerlin) project on GitHub.
 
-* Gratitude to the [thelonelycoder](https://www.snbforums.com/members/thelonelycoder.25480/), also known as the [Decoderman](https://github.com/decoderman) on GitHub, for his inspiration and ongoing support in my coding journey.
+* Gratitude to the [thelonelycoder](https://www.snbforums.com/members/thelonelycoder.25480/), also known as the [Decoderman](https://github.com/decoderman) on GitHub, for including x3mRouting in [amtm - the SNBForum Asuswrt-Merlin Terminal Menu](https://www.snbforums.com/threads/amtm-the-snbforum-asuswrt-merlin-terminal-menu.42415/).
 
 * Thank you to [RMerlin](https://www.snbforums.com/members/rmerlin.10954/) for the [Asuswrt-Merlin](https://github.com/RMerl/asuswrt-merlin.ng) firmware and helpful support on the [snbforums.com](https://www.snbforums.com/forums/asuswrt-merlin.42/) website. To learn more about Asuswrt-Merlin firmware for Asus routers, visit the project website at [https://www.asuswrt-merlin.net/](https://www.asuswrt-merlin.net/).
+
+* I want to also acknowledge the contributions of those who participated in the testing of x3mRouting Version 2.0.0: [Luizlp10](https://www.snbforums.com/members/luizlp10.66974/), [SomeWhereOverTheRainBow](https://www.snbforums.com/members/somewhereovertherainbow.64179/), [TechTinkerer](https://www.snbforums.com/members/techtinkerer.67560/), and [Torson](https://www.snbforums.com/members/torson.59919/)
 
 ## Version 2.0.0 Changes
 
 #### x3mRouting Menu
-The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now stored in **/jffs/addons/x3mRouting**. The command to access the **x3mRouting** menu has been changed from **x3mRouting** to **x3mMenu**. The x3mRouting menu update also fixes the issue of code output appearing when exiting the menu after performing a menu update.
+The command to access the **x3mRouting** menu has been changed from **x3mRouting** to **x3mMenu**. A patch was also applied to fix the issue of code output appearing when exiting the menu after performing an update to the x3mRouting menu.
 
 #### VPN Server and VPN Client Routing Script Changes
   * The separate scripts for:
@@ -691,10 +700,10 @@ The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now st
   * The method used to create the IPSET list is passed to **x3mRouting.sh** as a parameter. If the ASN, Amazon AWS or dnsmasq parameter is not specified, **x3mRouting.sh** will default to the manual method.
   * Running **x3mRouting** will automatically perform the set-up.
     * **/jffs/scripts/nat-start** is used to execute the scripts at system boot or during a firewall restart event.
-    * The features of **openvpn-event** are used to create the routing rule during a VPN Client up event and remove the routing rule during a VPN Client down event.
+    * The features of **openvpn-event** are used to create the routing rule during a VPN Client up event and remove the routing rule during a VPN Client down event when the source and destination interfaces are specified.
   * Simplified the ability to delete an IPSET list and associated routing rules, nat-start and openvpn-event files, and cru jobs for VPN Client IPSET routing rules by passing the 'ipset_name=' and 'del' parameters to x3mRouting.sh. Deleting VPN Server to VPN Client and VPN Server to IPSET list routing rules still require that all parameters used to create the routing rules be specified in addition to the 'del' parameter.
   * **VPN Server to VPN Client** routing feature of **x3mRouting.sh**
-    * The **x3mRouting.sh** script will create the required VPN Server nvram entry, eliminating the need to manually enter the VPN Server IP address in the OpenVPN Client Screen. The VPN Client will be restarted for the update to take effect. Once the restart has completed, you can view the entry in the OpenVPN Client Screen.
+    * The **x3mRouting.sh** script will create the required VPN Server nvram entry, eliminating the need to manually enter the VPN Server IP address in the OpenVPN Client Screen. The VPN Client will be restarted for the update to take effect.
   * **VPN Server to VPN Client** and **VPN Server to IPSET List**
     * The IP address of the VPN Server in the openvpn-event up/down scripts is no longer hard coded. Instead, the 'nvram get' command in the openvpn-event up/down scripts will be used to obtain the IP address of the VPN Server. This will eliminate the need to rerun the **x3mRouting.sh** script if the VPN Server IP address is changed.
     * Routing rules will now be applied during an VPN Client up event rather than a VPN Server up event. Based on user feedback, the routing from the VPN Server to the VPN Client would stop working after a VPN Client up/down event, even though the iptables rules were still in effect.
@@ -704,6 +713,7 @@ The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now st
       * one or more IPv4 address when creating an IPSET list.
       * one or more search criteria for domain names when using the 'autoscan' option.
       * that a routing rule to be applied to a single LAN IP addresses or IP address range.
+      * one or more IPSET lists for VPN Server to IPSET routing.
     * Added ability to display usage notes by passing the 'help' parameter
 ````
       x3mRouting help
@@ -712,6 +722,9 @@ The **x3mRouting** menu has been renamed to **x3mRouting_Menu.sh** and is now st
 #### LAN Client Routing Changes
   * The script **x3mRouting_client_config.sh** now stores the output file **x3mRouting_client_config** in **/jffs/scripts/x3mRouting** rather than **/jffs/configs**.
   * The script **x3mRouting_client_nvram.sh** now stores the nvram files in **/jffs/addons/x3mRouting** rather than **/jffs/configs**.
+
+#### x3mRouting Utility Files
+  * The x3mRouting utility files Advanced_OpenVPNClient_Content.asp, updown-client.sh, vpnrouting.sh, and x3mRouting_Menu.sh files are stored in **/jffs/addons/x3mRouting** rather than the project repository directory **/jffs/scripts/x3mRouting**. 
 
 ## Version 2.0.0 Update Process
 You won't be able to update to Version 2.0.0 using the existing **x3mRouting** Menu due to the installation menu changes described above.  

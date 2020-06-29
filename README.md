@@ -279,9 +279,9 @@ x3mRouting {src iface} (ALL|1|2|3|4|5)
 x3mRouting {'server='1|2|both} {'client='1|2|3|4|5} ['del']
 ````
 
-##### VPN Server to existing LAN routing rules for an IPSET list
+##### VPN Server to existing LAN routing rules for one or more IPSET lists
 ````
-x3mRouting {'server='1|2|both} {'ipset_name='} ['del']
+x3mRouting {'server='1|2|both} {'ipset_name='IPSET[,IPSET]...} ['del']
 ````
 
 #### x3mRouting Usage Examples

@@ -66,7 +66,7 @@
 # x3mRouting.sh	{'server='1|2|both} {'client='1|2|3|4|5} ['del']
 #_____________________________________________________________________________________________________________
 #
-# VPN Server to existing LAN routing rules for an IPSET list
+# VPN Server to existing LAN routing rules for one or more IPSET lists
 #
 # x3mRouting.sh {'server='1|2|both} {'ipset_name='IPSET[,IPSET]...} ['del']
 #_____________________________________________________________________________________________________________

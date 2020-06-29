@@ -25,6 +25,8 @@ The [x3mRouting.sh](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#3-op
   * Route VPN Server 1, 2 or both to one of the VPN Clients.
   * Selectively route VPN Server 1, 2 or both to the same routing rules as an IPSET.
 
+The features of **openvpn-event** are used to create the routing rule during a VPN Client up event and remove the routing rule during a VPN Client down event.
+
 ### 4. getdomainnames.sh & autoscan.sh Scripts
 These two scripts can be used to analyze the domain names being used for a website or streaming service.
 
@@ -98,7 +100,7 @@ The routing rules for LAN Clients will automatically be applied upon a system bo
 #### OpenVPN Client Screen
 As part of this project, you can also choose to install a modified OpenVPN Client Screen to selectively route IPSET lists through a VPN Client. [@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client Screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. The screen has been adapted for x3mRouting to allow the routing of IPSET lists to the WAN interface to support VPN Bypass Routing.
 
-Starting with Asuswrt-Merlin 384.18, the default Source IP address is null. You can still specify "0.0.0.0" as the Source IP address on the screen. But it will be converted and stored as a null value to save nvram space. When the Source IP address is null, the routing rule will apply to all LAN Clients. Alternatively, you can specify a LAN Client IPv4 addresses or CIDR as the Source IP address for both LAN Clients and IPSET lists so the rule will only apply to the IPv4 addresses or CIDR specified. 
+Starting with Asuswrt-Merlin 384.18, the default Source IP address is null. You can still specify "0.0.0.0" as the Source IP address on the screen. But it will be converted and stored as a null value to save nvram space. When the Source IP address is null, the routing rule will apply to all LAN Clients. Alternatively, you can specify a LAN Client IPv4 addresses or CIDR as the Source IP address for both LAN Clients and IPSET lists so the rule will only apply to the IPv4 addresses or CIDR specified.
 
 ##### Advantages and Disadvantages of using the modified OpenVPN Client Screen
 If you prefer to use the modified OpenVPN Client Screen, create the IPSET list without specifying the source and destination interfaces. The IPSET list must then be entered in the policy routing section.

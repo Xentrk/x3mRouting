@@ -14,11 +14,7 @@ An alternative approach to automate and easily assign LAN clients to a WAN or VP
 
 ### 2. OpenVPN Client Screen, OpenVPN Event & x3mRouting.sh Script
 
-Provides the ability to create IPSET lists using the **x3mRouting.sh** script and selectively route the IPSET lists thru the VPN Client by entering the IPSET name in a modified [OpenVPN Client Screen](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#2-openvpn-client-screen-openvpn-event--x3mroutingsh-script-1). The customized OpenVPN Client Screen is still a work in progress. You can't use the screen to:
-* Bypass the VPN Client for an IPSET list and route to the WAN interface
-* Apply an IPSET routing rule to a specific device
-
-If you have these two requirements, see the usage instructions in Option 3.
+Provides the ability to create IPSET lists using the **x3mRouting.sh** script and selectively route the IPSET lists thru the VPN Client by entering the IPSET name in a modified [OpenVPN Client Screen](https://github.com/Xentrk/x3mRouting/tree/x3mRouting-NG#2-openvpn-client-screen-openvpn-event--x3mroutingsh-script-1). 
 
 ### 3. OpenVPN Event & x3mRouting.sh Script
 
@@ -724,7 +720,7 @@ The command to access the **x3mRouting** menu has been changed from **x3mRouting
   * The script **x3mRouting_client_nvram.sh** now stores the nvram files in **/jffs/addons/x3mRouting** rather than **/jffs/configs**.
 
 #### x3mRouting Utility Files
-  * The x3mRouting utility files Advanced_OpenVPNClient_Content.asp, updown-client.sh, vpnrouting.sh, and x3mRouting_Menu.sh files are stored in **/jffs/addons/x3mRouting** rather than the project repository directory **/jffs/scripts/x3mRouting**. 
+  * The x3mRouting utility files Advanced_OpenVPNClient_Content.asp, updown-client.sh, vpnrouting.sh, and x3mRouting_Menu.sh files are stored in **/jffs/addons/x3mRouting** rather than the project repository directory **/jffs/scripts/x3mRouting**.
 
 ## Version 2.0.0 Update Process
 You won't be able to update to Version 2.0.0 using the existing **x3mRouting** Menu due to the installation menu changes described above.  

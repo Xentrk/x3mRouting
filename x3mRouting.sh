@@ -23,52 +23,52 @@
 #
 # Create IPSET List with Routing Rules:
 #
-# x3mRouting.sh {src iface} (ALL|1|2|3|4|5)
-#               {dst iface} (0|1|2|3|4|5)
-#               ** src/dst NOTES Start **
-#                 Valid SRC and DST Combinations
-#                 1) VPN Client Routing
-#                    - Use this SRC and DST combination to route all IPSET list traffic to a VPN Client:
-#                      ALL 1, ALL 2, ALL 3, ALL 4, ALL 5
-#                 2) VPN Bypass Routing
-#                    - Use this SRC and DST combination to bypass the VPN Client for an IPSET list and
-#                      route to the WAN interface:
-#                      1 0, 2 0, 3 0, 4 0, 5 0
-#               ** src/dst NOTES End **
-#               {ipset_name}
-#               ['autoscan='keyword1[,keyword2]...] # Scans for keywords and creates IPSET list using
-# 	                                            # the dnsmasq method
-#               ['asnum='asnum[,asnum]...] # ASN method
-#               ['aws_region='US[,EU]...]  # Amazon method
-#               ['dnsmasq='domain[,domain]...] # dnsmasq method
-#               ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
-#               ['src='src_ip]
-#               ['src_range='from_ip-to_ip]
-#               ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
-#               ['del']
+# x3mRouting {src iface} (ALL|1|2|3|4|5)
+#            {dst iface} (0|1|2|3|4|5)
+#            ** src/dst NOTES Start **
+#              Valid SRC and DST Combinations
+#              1) VPN Client Routing
+#                 - Use this SRC and DST combination to route all IPSET list traffic to a VPN Client:
+#                   ALL 1, ALL 2, ALL 3, ALL 4, ALL 5
+#              2) VPN Bypass Routing
+#                 - Use this SRC and DST combination to bypass the VPN Client for an IPSET list and
+#                   route to the WAN interface:
+#                   1 0, 2 0, 3 0, 4 0, 5 0
+#            ** src/dst NOTES End **
+#            {ipset_name}
+#            ['autoscan='keyword1[,keyword2]...] # Scans for keywords and creates IPSET list using
+# 	                                             # the dnsmasq method
+#            ['asnum='asnum[,asnum]...] # ASN method
+#            ['aws_region='US[,EU]...]  # Amazon method
+#            ['dnsmasq='domain[,domain]...] # dnsmasq method
+#            ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
+#            ['src='src_ip]
+#            ['src_range='from_ip-to_ip]
+#            ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
+#            ['del']
 #_____________________________________________________________________________________________________________
 #
 # Create IPSET List with no Routing Rules:
 #
-# x3mRouting.sh	{ipset_name=}
-#               ['autoscan='keyword1[,keyword2]...] # Scans for keywords and creates IPSET list using
-# 	                                            # the dnsmasq method
-#               ['asnum='asnum[,asnum]...] # ASN method
-#               ['aws_region='US[,EU]...]  # Amazon method
-#               ['dnsmasq='domain[,domain]...] # dnsmasq method
-#               ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
-#               ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
-#               ['del']
-#_____________________________________________________________________________________________________________
+# x3mRouting {ipset_name=}
+#            ['autoscan='keyword1[,keyword2]...] # Scans for keywords and creates IPSET list using
+# 	                                             # the dnsmasq method
+#            ['asnum='asnum[,asnum]...] # ASN method
+#            ['aws_region='US[,EU]...]  # Amazon method
+#            ['dnsmasq='domain[,domain]...] # dnsmasq method
+#            ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
+#            ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
+#            ['del']
+#____________________________________________________________________________________________________________
 #
 # VPN Server to VPN Client Routing:
 #
-# x3mRouting.sh	{'server='1|2|both} {'client='1|2|3|4|5} ['del']
+# x3mRouting {'server='1|2|both} {'client='1|2|3|4|5} ['del']
 #_____________________________________________________________________________________________________________
 #
 # VPN Server to existing LAN routing rules for one or more IPSET lists
 #
-# x3mRouting.sh {'server='1|2|both} {'ipset_name='IPSET[,IPSET]...} ['del']
+# x3mRouting {'server='1|2|both} {'ipset_name='IPSET[,IPSET]...} ['del']
 #_____________________________________________________________________________________________________________
 
 # Print between line beginning with '#__' to first blank line inclusive (source: Martineau)

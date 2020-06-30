@@ -63,5 +63,5 @@ fi
 
 if [ -s "/opt/var/log/dnsmasq.log" ]; then
   printf '\nPress Ctrl-C to stop logging\n'
-  tail -f /opt/var/log/dnsmasq.log >${OUTPUT_FILE}_tmp
+  tail -f /opt/var/log/dnsmasq.log >"${OUTPUT_FILE}_tmp"
 fi

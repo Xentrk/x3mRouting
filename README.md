@@ -391,7 +391,7 @@ x3mRouting 1 0 NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nf
 ````
 Route VPN Client 1 traffic from 192.168.1.152 matching IPSET list NETFLIX to WAN.
 ````
-x3mRouting 1 0 NETFLIX domain=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net src=192.168.1.152
+x3mRouting 1 0 NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net src=192.168.1.152
 ````
 ##### Manual Method
 

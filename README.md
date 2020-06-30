@@ -52,7 +52,6 @@ Please beware that Amazon Prime, BBC, Hulu and Netflix block known VPN servers. 
 Copy and paste the command below into an SSH session:
 
 ```
-
 sh -c "$(curl -sL https://raw.githubusercontent.com/Xentrk/x3mRouting/master/Install_x3mRouting.sh)"
 ```
 

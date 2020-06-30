@@ -906,7 +906,7 @@ Update_NewVersion() {
             # Determine if iptables rule is a VPN Server to VPN Client or VPN Server to IPSET List
             # Test for VPN Server to VPN Client
             VPN_IP_LIST=$(nvram get vpn_client"${VPN_CLIENT_INSTANCE}"_clientlist)
-            POLICY_RULE_WITHOUT_NAME="${VPN_SERVER_SN}>0.0.0.0>VPN"
+            POLICY_RULE_WITHOUT_NAME="${VPN_SERVER_SN}>>VPN"
             if [ "$(echo "$VPN_IP_LIST" | grep -c "$POLICY_RULE_WITHOUT_NAME")" -ge "1" ]; then
               # Confirmed VPN Server to VPN Client
               if [ "$(echo "$SERVER_FILE" | grep -c "up")" -gt "0" ]; then # only create script for vpnserverX-up file

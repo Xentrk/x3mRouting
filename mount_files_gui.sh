@@ -19,13 +19,13 @@
 logger -t "($(basename "$0"))" $$ Starting Script Execution
 
 if [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 0 ]; then
-  mount -o bind /jffs/scripts/x3mRouting/vpnrouting.sh /usr/sbin/vpnrouting.sh
+  mount -o bind /jffs/addons/x3mRouting/vpnrouting.sh /usr/sbin/vpnrouting.sh
 fi
 if [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 0 ]; then
-  mount -o bind /jffs/scripts/x3mRouting/updown-client.sh /usr/sbin/updown-client.sh
+  mount -o bind /jffs/addons/x3mRouting/updown-client.sh /usr/sbin/updown-client.sh
 fi
 if [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 0 ]; then
-  mount -o bind /jffs/scripts/x3mRouting/Advanced_OpenVPNClient_Content.asp /www/Advanced_OpenVPNClient_Content.asp
+  mount -o bind /jffs/addons/x3mRouting/Advanced_OpenVPNClient_Content.asp /www/Advanced_OpenVPNClient_Content.asp
 fi
 
 logger -t "($(basename "$0"))" $$ Completed Script Execution

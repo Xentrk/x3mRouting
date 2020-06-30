@@ -232,10 +232,10 @@
 			//showLANIPList("setClientIP"); // Martineau Hack - Pass the name of the function to call
 			//showLANIPList("setIPSETIP"); // Martineau Hack - Pass the name of the function to call
 			showDropdownClientList('setClientIP', 'name>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
-			showDropdownClientList('setIPSETIP', 'name>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
+			//showDropdownClientList('setIPSETIP', 'name>ip', 'all', 'ClientList_Block_PC', 'pull_arrow', 'online');
 			document.form.clientlist_DIM1.value = "DST";
 			document.form.clientlist_DIM2.value = "";
-			document.form.clientlist_DIM3.value = "";
+			//document.form.clientlist_DIM3.value = "";
 			//<!-- Martineau Hack ############################################################################-->
 			free_options(document.form.vpn_client_unit);
 			add_option(document.form.vpn_client_unit, "1: <% nvram_get("vpn_client1_desc"); %>", "1", (openvpn_unit == 1));
@@ -545,7 +545,9 @@
 			for (i = 0; i < rule_num; i++) {
 				tmp_value += "<";
 				for (j = 0; j < item_num - 1; j++) {
-					tmp_value += document.getElementById('clientlist_table').rows[i].cells[j].innerHTML;
+					var field = document.getElementById('clientlist_table').rows[i].cells[j].innerHTML;
+					if (field == "0.0.0.0") field = "";
+					tmp_value += field;
 					if (j != item_num - 2)
 						tmp_value += ">";
 				}
@@ -559,17 +561,23 @@
 					for (j = 0; j < item_num - 1; j++) {
 						switch (j) {
 							case 2:
-								tmp_value += "0.0.0.0>"; // Col3 is the IPSET DIM so should be saved as Field 4
+								tmp_value += ">"; //Used to be set to 0.0.0.0
 								break;
 							case 3:
 								tmp_value += document.getElementById('IPSETlist_table').rows[i].cells[2].innerHTML; // Field 4 is the 3rd Col
+								tmp_value += ">";
 								break;
+							case 4:
+								tmp_value += document.getElementById('IPSETlist_table').rows[i].cells[j].innerHTML; // Field 5 is the 4th Col
+								break
 							case 0:
 								tmp_value += document.getElementById('IPSETlist_table').rows[i].cells[j].innerHTML;
 								tmp_value += ">";
 								break
 							case 1:
-								tmp_value += document.getElementById('IPSETlist_table').rows[i].cells[j].innerHTML;
+								var field = document.getElementById('IPSETlist_table').rows[i].cells[j].innerHTML;
+								if (field == "0.0.0.0") field = "";
+								tmp_value += field;
 								tmp_value += ">";
 								break
 							default:
@@ -695,11 +703,11 @@
 			var code = "";
 			var width = ["24%", "29%", "25%", "10%", "12%"];
 			var codeipset = ""; // Martineau Hack - HTML code block for IPSET display
-			var widthipset = ["24%", "29%", "13%", "12%", "10%", "12%"]; // Martineau Hack - Columns for IPSETlient table
+			var widthipset = ["24%", "29%", "12%", "13%", "10%", "12%"]; // Martineau Hack - Columns for IPSETlient table
 			code += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="clientlist_table">';
 			codeipset += '<table width="100%" cellspacing="0" cellpadding="4" align="center" class="list_table" id="IPSETlist_table">';
 			if (clientlist_row.length == 1)
-				code += '<tr><td style="color:#FFCC00;" colspan="6">Total Guest</td></tr>';
+				code += '<tr><td style="color:#FFCC00;" colspan="6">No data in table.</td></tr>';
 			else {
 				for (var i = 1; i < clientlist_row.length; i++) {
 
@@ -709,6 +717,8 @@
 					if ((clientlist_col[3] == "VPN") || (clientlist_col[3] == "WAN")) { // Martineau Hack - Normal VPN/WAN routing
 						code += '<tr id="row' + i + '">';
 						for (var j = 0; j < clientlist_col.length; j++) {
+							if ((j == 1 || j == 2) && clientlist_col[j] == "0.0.0.0")
+								clientlist_col[j] = "";
 							code += '<td width="' + width[j] + '">' + clientlist_col[j] + '</td>';
 						}
 						if (j < 4) {
@@ -718,21 +728,33 @@
 						code += '<input class="remove_btn" onclick="del_Row(this);" value=""/></td></tr>';
 					}
 					// Martineau Hack - Display non-VPN entries (assumed to be IPSETS) in new GUI table IPSET_list
-					else {
+					//else {
+					if ((clientlist_col[4] == "VPN") || (clientlist_col[4] == "WAN")) {
 						codeipset += '<tr id="row' + i + '">';
 						for (var j = 0; j < 2; j++) { // Only cols 0 and 1,  i.e. skip irrelevant dest IP (3rd field)
+							if ((j == 1 || j == 2) && clientlist_col[j] == "0.0.0.0")
+								clientlist_col[j] = "";
+							//code += '<td width="' + width[j] + '">' + clientlist_col[j] + '</td>';
 							codeipset += '<td width="' + widthipset[j] + '">' + clientlist_col[j] + '</td>';
 						}
-						codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[3] + '</td>'; // Col3 is the 4th field
+						//############# Xentrk Hack. When delete,update and add same ipset list, the DIM1 field was null for ipset entires not changed
+						if ((clientlist_col[2] == "DST") || (clientlist_col[2] == "SRC")) {
+							codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[2] + '</td>'; // ipsets that have not changed store DIM in the 3rd field
+						} else {
+							codeipset += '<td width="' + widthipset[2] + '">' + clientlist_col[3] + '</td>'; // Col3 is the 4th field
+						}
+						//############## End Hack
 						codeipset += '<td width="' + widthipset[3] + '">   </td>';
-						codeipset += '<td width="' + widthipset[4] + '">   </td>';
+						codeipset += '<td width="' + widthipset[4] + '">' + clientlist_col[4] + '</td>'; // Col4 is the 5th field Xentrk Hack for ipset iface
 						codeipset += '<td width="' + widthipset[5] + '">';
 						codeipset += '<input class="remove_btn" onclick="del_RowIPSET(this);" value=""/></td></tr>';
+						//document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table
 					}
 				}
 			}
 			code += '</table>';
 			document.getElementById("clientlist_Block").innerHTML = code;
+			codeipset += '</table>';
 			document.getElementById("IPSETlist_Block").innerHTML = codeipset; // Martineau Hack - Update GUI with IPSET table
 		}
 		//<!-- Martineau Hack ############################################################################-->
@@ -749,15 +771,11 @@
 			var rule_num = document.getElementById('clientlist_table').rows.length;
 			var item_num = document.getElementById('clientlist_table').rows[0].cells.length;
 			if (rule_num >= upper) {
-				alert("Temporarily unable to get the latest firmware information. Please try again later. " + upper + " Band");
+				alert("This table only allows " + upper + " items!");
 				return false;
 			}
 			if (!validator.safeName(document.form.clientlist_deviceName))
 				return false;
-			if (document.form.clientlist_ipAddr.value == "")
-				document.form.clientlist_ipAddr.value = "0.0.0.0";
-			if (document.form.clientlist_dstipAddr.value == "")
-				document.form.clientlist_dstipAddr.value = "0.0.0.0";
 			if (!validator.ipv4cidr(document.form.clientlist_ipAddr)) {
 				document.form.clientlist_ipAddr.focus();
 				document.form.clientlist_ipAddr.select();
@@ -772,7 +790,7 @@
 				for (i = 0; i < rule_num; i++) {
 					if (document.form.clientlist_ipAddr.value.toLowerCase() == document.getElementById('clientlist_table').rows[i].cells[1].innerHTML.toLowerCase() &&
 						document.form.clientlist_dstipAddr.value.toLowerCase() == document.getElementById('clientlist_table').rows[i].cells[2].innerHTML.toLowerCase()) {
-						alert("Successfully added <span class='amesh_device_info'></span> to your AiMesh system, it will take a while to show up as connected in the AiMesh router list. " + "Osaka, Sapporo, Tokyo " + "Abu Dhabi, Muscat"); //<!-- Martineau Hack 3 of 8 -->
+						alert("This entry has been in list."); // <!-- Martineau Hack 3 of 8 -->
 						document.form.clientlist_ipAddr.focus();
 						document.form.clientlist_ipAddr.select();
 						return false;
@@ -792,7 +810,7 @@
 			var item_num = document.getElementById('clientlist_table').rows[0].cells.length;
 			var dimx = ""
 			if (rule_num >= upper) {
-				alert("Duplicate port number with HTTP and HTTPS WAN port setting. " + upper + " NAT (Network Address Translation) is a process used in routers to replace the address information of network packet with new address information. Typical applications for NAT is router which connect to LAN with the WAN. In LAN every network devices had a private IP(LAN IP) but there is only one public IP(WAN IP). To grant the network devices access to the Internet, the router replaces the private IP address of the sender with its own public IP address in all outgoing data packets. The router saves all necessary information in a table(NAT table) so that incoming data packets can then be assigned on the correct network device.");
+				alert("This table only allows " + upper + " items!");
 				return false;
 			}
 			if (document.form.clientlist_IPSETName.value == "")
@@ -816,19 +834,11 @@
 				if (document.form.clientlist_DIM2.value == "SRC")
 					dimx += "S";
 			}
-			if (document.form.clientlist_DIM3.value != "") {
-				if (document.form.clientlist_DIM3.value == "DST")
-					dimx += "D";
-				if (document.form.clientlist_DIM3.value == "SRC")
-					dimx += "S";
-			}
 			if (dimx == "D")
 				dimx = "DST";
 			if (dimx == "S")
 				dimx = "SRC";
 			addRow(document.form.clientlist_IPSETName, 1);
-			if (document.form.clientlist_IPSETipAddr.value == "")
-				document.form.clientlist_IPSETipAddr.value = "0.0.0.0";
 			if (!validator.ipv4cidr(document.form.clientlist_ipAddr)) {
 				document.form.clientlist_ipAddr.focus();
 				document.form.clientlist_ipAddr.select();
@@ -841,7 +851,8 @@
 			addRow(document.form.clientlist_IPSETName, 0); // Fortunately addRow() wipes the GUI object for us ;-)
 			document.form.clientlist_DIM1.value = "DST";
 			document.form.clientlist_DIM2.value = "";
-			document.form.clientlist_DIM3.value = "";
+			addRow(document.form.clientlist_IPSETiface, 0); // Col4 is the 5th field Xentrk Hack for ipset iface
+			document.form.clientlist_IPSETiface.value = "VPN";
 			document.form.clientlist_IPSETName.focus();
 			document.form.clientlist_IPSETName.select();
 			showclientlist();
@@ -851,7 +862,6 @@
 
 			var clientlist_value = "";
 			var num_rows = document.getElementById('clientlist_table').rows.length
-			var num_rowsx = document.getElementById('IPSETlist_table').rows.length
 
 			for (k = 0; k < num_rows; k++) { // Copy existing true VPN rules
 
@@ -877,10 +887,11 @@
 				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[2].innerHTML;
 				clientlist_value += "&#62";
 				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[3].innerHTML;
+				clientlist_value += "&#62";
+				clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[4].innerHTML;
 			}
 
 			clientlist_array = clientlist_value;
-
 			if (clientlist_array == "")
 				showclientlist();
 		}
@@ -899,6 +910,27 @@
 				clientlist_value += "&#62";
 				clientlist_value += document.getElementById('clientlist_table').rows[k].cells[3].innerHTML;
 			}
+
+			if (clientlist_value == "") {
+				var num_rows = document.getElementById('IPSETlist_table').rows.length
+				for (k = 0; k < num_rows; k++) { // Now append the IPSET VPN rules
+					clientlist_value += "&#60";
+					clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[0].innerHTML;
+					clientlist_value += "&#62";
+					clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[1].innerHTML;
+					clientlist_value += "&#62";
+					clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[2].innerHTML;
+					clientlist_value += "&#62";
+					clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[3].innerHTML;
+					clientlist_value += "&#62";
+					clientlist_value += document.getElementById('IPSETlist_table').rows[k].cells[4].innerHTML;
+				}
+				if (clientlist_value != "") {
+					alert("A DummyVPN or LAN Client entry is required in order to Apply the changes");
+					alert("Refresh the browser to restore entries");
+				}
+			}
+
 			clientlist_array = clientlist_value;
 			if (clientlist_array == "")
 				showclientlist();
@@ -1069,10 +1101,8 @@
 			</tr>
 			<tr>
 				<div style="margin-left:30px; margin-top:10px;">
-					<p>
-						An online update is available <span style="color:#FFCC00;">----- BEGIN xxx ----- </span>/<span style="color:#FFCC00;"> ----- END xxx -----</span>
-							Updating...
-								<p>Limit: 7999 characters per field
+					<p>Only paste the content of the <span style="color:#FFCC00;">----- BEGIN xxx ----- </span>/<span style="color:#FFCC00;"> ----- END xxx -----</span> block (including those two lines).
+						<p>Limit: 7999 characters per field
 				</div>
 				<div style="margin:5px;*margin-left:-5px;width: 730px; height: 2px;" class="splitLine"></div>
 			</tr>
@@ -1326,17 +1356,15 @@
 														<th>Server is on the same subnet</th>
 														<td>
 															<input type="radio" name="vpn_client_bridge" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_bridge", "1", "checked"); %>>
-															Static IP allows your PC to use a fixed IP address provided by your ISP.
-																<input type="radio" name="vpn_client_bridge" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_bridge", "0", "checked"); %>>
-																L2TP VPN connection requires username, password, some ISP require fixed IP address.
-																	<span id="client_bridge_warn_text">Warning: Cannot bridge distinct subnets. Will default to routed mode.</span>
+															<input type="radio" name="vpn_client_bridge" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_bridge", "0", "checked"); %>>
+															<span id="client_bridge_warn_text">Warning: Cannot bridge distinct subnets. Will default to routed mode.</span>
 														</td>
 													</tr>
 													<tr id="client_nat">
 														<th>Create NAT on tunnel</th>
 														<td>
 															<input type="radio" name="vpn_client_nat" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "1", "checked"); %>>Yes
-							                <input type="radio" name="vpn_client_nat" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "0", "checked"); %>>No
+															<input type="radio" name="vpn_client_nat" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_nat", "0", "checked"); %>>No
 															<span id="client_nat_warn_text">Routes must be configured manually.</span>
 														</td>
 													</tr>
@@ -1382,7 +1410,7 @@
 														<th>Username/Password Authentication</th>
 														<td>
 															<input type="radio" name="vpn_client_userauth" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_userauth", "1", "checked"); %>>Yes
-							<input type="radio" name="vpn_client_userauth" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_userauth", "0", "checked"); %>>No
+															<input type="radio" name="vpn_client_userauth" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_userauth", "0", "checked"); %>>No
 														</td>
 													</tr>
 													<tr id="client_username">
@@ -1403,8 +1431,8 @@
 															Username / Password Auth. Only
 														</th>
 														<td>
-                              <input type="radio" name="vpn_client_useronly" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_useronly", "1", "checked"); %>>Yes
-							                <input type="radio" name="vpn_client_useronly" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_useronly", "0", "checked"); %>>No
+															<input type="radio" name="vpn_client_useronly" class="input" value="1" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_useronly", "1", "checked"); %>>Yes
+															<input type="radio" name="vpn_client_useronly" class="input" value="0" onclick="update_visibility();" <% nvram_match_x("", "vpn_client_useronly", "0", "checked"); %>>No
 															<span id="client_ca_warn_text">Warning: You must define a Certificate Authority.</span>
 														</td>
 													</tr>
@@ -1509,7 +1537,7 @@
 										<th>Verify Server Certificate</th>
 										<td>
 											<input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="1" <% nvram_match_x("", "vpn_client_tlsremote", "1", "checked"); %>>Yes
-							<input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="0" <% nvram_match_x("", "vpn_client_tlsremote", "0", "checked"); %>>No
+											<input type="radio" name="vpn_client_tlsremote" class="input" onclick="update_visibility();" value="0" <% nvram_match_x("", "vpn_client_tlsremote", "0", "checked"); %>>No
 											<label style="padding-left:3em;" id="client_cn_label">Common name:</label><input type="text" maxlength="255" class="input_25_table" id="vpn_client_cn" name="vpn_client_cn" value="">
 										</td>
 									</tr>
@@ -1526,7 +1554,7 @@
 										<th>Block routed clients if tunnel goes down</th>
 										<td>
 											<input type="radio" name="vpn_client_enforce" class="input" value="1" <% nvram_match_x("", "vpn_client_enforce", "1", "checked"); %>>Yes
-							        <input type="radio" name="vpn_client_enforce" class="input" value="0" <% nvram_match_x("", "vpn_client_enforce", "0", "checked"); %>>No
+											<input type="radio" name="vpn_client_enforce" class="input" value="0" <% nvram_match_x("", "vpn_client_enforce", "0", "checked"); %>>No
 										</td>
 									</tr>
 								</table>
@@ -1534,7 +1562,7 @@
 									<thead>
 										<tr>
 											<!-- Martineau Hack 11 of 12 #####################################################################-->
-											<td colspan="5">Rules for routing client traffic through the tunnel (Max Limit : &nbsp;100) Patched by Martineau v2.01/Xentrk 384.12/14
+											<td colspan="5">Rules for routing client traffic through the tunnel (Max Limit : &nbsp;100) Patched by Martineau/Xentrk
 												<!-- Martineau Hack -->
 											</td>
 											<!-- Martineau Hack ############################################################################-->
@@ -1558,7 +1586,7 @@
 										<td width="29%">
 											<input type="text" class="input_18_table" maxlength="18" name="clientlist_ipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" onClick="hideClients_Block();" autocomplete="off" autocorrect="off"
 												autocapitalize="off">
-											<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="User in use:">
+											<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullLANIPList(this);" title="Select the device name.">
 											<div id="ClientList_Block_PC" class="clientlist_dropdown"></div>
 										</td>
 										<td width="25%">
@@ -1586,7 +1614,7 @@
 										<th>Source IP</th>
 										<th>Dim1</th>
 										<th>Dim2</th>
-										<th>Dim3</th>
+										<th>Iface</th>
 										<th>
 											Add / Delete
 										</th>
@@ -1597,8 +1625,7 @@
 										</td>
 										<td width="29%">
 											<input type="text" class="input_18_table" maxlength="18" name="clientlist_IPSETipAddr" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" autocomplete="off" autocorrect="off" autocapitalize="off">
-											<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullIPSETLANIPList(this);" title="Enable PPPoE relay allows devices in LAN to establish a individual PPPoE connections that passes through NAT." onmouseover="over_var=1;"
-												onmouseout="over_var=0;">
+											<!--<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullIPSETLANIPList(this);" title="Select the device name." onmouseover="over_var=1;" onmouseout="over_var=0;">-->
 											<div id="ClientList_Block_PC" class="ClientList_Block_PC"></div>
 										</td>
 										<td width="12%">
@@ -1614,44 +1641,45 @@
 											</select>
 										</td>
 										<td width="10%">
-											<select name="clientlist_DIM3" class="input_option">
-												<option value="DST">DST</option>
-												<option value="SRC">SRC</option>
+											<select name="clientlist_IPSETiface" class="input_option">
+												<option value="WAN">WAN</option>
+												<option value="VPN" selected>VPN</option>
 											</select>
 										</td>
-										<td width="12%">
-											<div>
-												<input type="button" class="add_btn" onClick="addRow_Group2(100);" value="">
-											</div>
-										</td>
-									</tr>
-								</table>
-								<div id="IPSETlist_Block"></div>
-								<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
-									<thead>
-										<tr>
-											<thead>
-												<tr>
-													<!-- Martineau Hack ############################################################################-->
-													<td>
-														Custom Configuration
-													</td>
-												</tr>
-											</thead>
-										<tr>
-											<td>
-												<textarea rows="8" class="textarea_ssh_table" spellcheck="false" style="width:99%;" id="vpn_client_custom_x" cols="55" maxlength="2047"></textarea>
-											</td>
-										</tr>
-								</table>
-								<div class="apply_gen">
-									<input type="button" id="restoreButton" class="button_gen" value="Default" onclick="defaultSettings();">
-									<input name="button" type="button" class="button_gen" onclick="applyRule(0);" value="Apply" />
+							</td>
+							<td width="12%">
+								<div>
+									<input type="button" class="add_btn" onClick="addRow_Group2(100);" value="">
 								</div>
 							</td>
 						</tr>
-						</tbody>
 					</table>
+					<div id="IPSETlist_Block"></div>
+					<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table" style="margin-top:8px;">
+						<thead>
+							<tr>
+								<thead>
+									<tr>
+										<!-- Martineau Hack ############################################################################-->
+										<td>
+											Custom Configuration
+										</td>
+									</tr>
+								</thead>
+							<tr>
+								<td>
+									<textarea rows="8" class="textarea_ssh_table" spellcheck="false" style="width:99%;" id="vpn_client_custom_x" cols="55" maxlength="2047"></textarea>
+								</td>
+							</tr>
+					</table>
+					<div class="apply_gen">
+						<input type="button" id="restoreButton" class="button_gen" value="Default" onclick="defaultSettings();">
+						<input name="button" type="button" class="button_gen" onclick="applyRule(0);" value="Apply" />
+					</div>
+				</td>
+			</tr>
+			</tbody>
+		</table>
 	</form>
 	</td>
 	</tr>

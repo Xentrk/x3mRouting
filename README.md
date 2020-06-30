@@ -53,7 +53,7 @@ Copy and paste the command below into an SSH session:
 
 ```
 
-sh -c "$(curl -sL sh -c "$(curl -sL https://raw.githubusercontent.com/Xentrk/x3mRouting/master/Install_x3mRouting.sh)")"
+sh -c "$(curl -sL https://raw.githubusercontent.com/Xentrk/x3mRouting/master/Install_x3mRouting.sh)"
 ```
 
 This command will download and install the installation menu **x3mRouting_Menu.sh** to the **/jffs/addons/x3mRouting** directory. The installation script is a menu with options to install the four options described below, including options to update or remove the x3mRouting files in **/jffs/scripts/x3mRouting**. To access the installation menu, type the command **x3mMenu**. Option **[7]  Update x3mRouting Menu** will only appear when a new installation menu is detected on the GitHub repository. Option **[u]  Update x3mRouting to Version 2.0.0** will only appear if you have the prior version of x3mRouting installed.

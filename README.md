@@ -724,7 +724,7 @@ The command to access the **x3mRouting** menu has been changed from **x3mRouting
     * VPN Server to IPSET routing (route_ipset_vpnserver.sh)
 
     have been removed and the features combined into one script called **x3mRouting.sh**.
-  * **x3mRouting** has been configured as a command with a symbolic link to **/jffs/scripts/x3mRouting.sh*. This allows **/jffs/scripts/x3mRouting/x3mRouting.sh** to be run from any location without specifying the path or "sh" command.
+  * **x3mRouting** has been configured as a command with a symbolic link to **/jffs/scripts/x3mRouting.sh**. This allows **x3mRouting** to be run from any location without specifying the path or "sh" command.
   * The method used to create the IPSET list is passed to **x3mRouting** as a parameter. If the ASN, Amazon AWS or dnsmasq parameter is not specified, **x3mRouting** will default to the manual method.
   * Running **x3mRouting** will automatically perform the set-up.
     * **/jffs/scripts/nat-start** is used to execute the scripts at system boot or during a firewall restart event.

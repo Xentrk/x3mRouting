@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 1-June-2020
+# Last Updated Date: 3-July-2020
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -620,8 +620,8 @@ Update_NewVersion() {
 
     FILE=$1
 
-    if [ "$(grep -c x3mRouting "$FILE")" -gt 0 ]; then
-      grep x3mRouting "$FILE" | while read -r LINE; do
+    if [ "$(grep -c "load_" "$FILE")" -gt 0 ]; then
+      grep "load_" "$FILE" | while read -r LINE; do
 
       # Skip comment lines
         LINETYPE=$(echo "$LINE" | awk  '{ string=substr($0, 1, 1); print string;}')

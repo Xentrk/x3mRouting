@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 3-July-2020
+# Last Updated Date: 4-July-2020
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -633,6 +633,7 @@ Update_NewVersion() {
         if [ "$(echo "$LINE" | grep  -c load_AMAZON_ipset_iface.sh)" -ge 1 ]; then
           LINE2=$(echo "$LINE" | sed 's/load_AMAZON_ipset_iface.sh/x3mRouting.sh/' | sed 's/ 1/ ALL 1/' | sed 's/ 2/ ALL 2/' | sed 's/ 3/ ALL 3/' | sed 's/ 4/ ALL 4/'| sed 's/ 5/ ALL 5/' | sed 's/ 0/ 1 0/')
           AWS_REGION=$(echo "$LINE2" | awk '{ print substr( $0, length($0) - 1, length($0) ) }')
+          [ "$AWS_REGION" = "AL" ] && AWS_REGION=GLOBAL
           LINE3=$(echo "$LINE2" | awk '{print $1, $2, $3, $4, $5}')
           LINE4="$LINE3 aws_region=$AWS_REGION"
           if [ "$(echo "$LINE4" | grep  -c "1 0")" -ge 1 ]; then

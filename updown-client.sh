@@ -9,14 +9,14 @@
 #  : Use $(...) notation instead of legacy backticked `...`.
 /usr/bin/logger -t "($(basename "$0"))" $$ "Starting custom /jffs/scripts/x3mRouting/updown-client.sh script execution"
 
-filedir=/etc/openvpn/dns
-filebase=$(echo "$filedir/$dev" | sed 's/\(tun\|tap\)1/client/')
-conffile=$filebase\.conf
-resolvfile=$filebase\.resolv
-dnsscript=$(echo /etc/openvpn/fw/"$dev"-dns\.sh | sed 's/\(tun\|tap\)1/client/')
-qosscript=$(echo /etc/openvpn/fw/"$dev"-qos\.sh | sed 's/\(tun\|tap\)1/client/')
-fileexists=
 instance=$(echo "$dev" | sed "s/tun1//")
+filedir="/etc/openvpn/client$instance"
+
+conffile=$filedir/client\.conf
+resolvfile=$filedir/client\.resolv
+dnsscript=$filedir/dns\.sh
+qosscript=$filedir/qos\.sh
+fileexists=
 serverips=
 searchdomains=
 
@@ -96,15 +96,9 @@ if [ "$instance" = "" ] || [ "$(nvram get vpn_client${instance}_adns)" -eq 0 ]; 
   exit 0
 fi
 
-if [ ! -d $filedir ]; then mkdir $filedir; fi
-if [ -f "$conffile" ]; then
-  rm "$conffile"
-  fileexists=1
-fi
-if [ -f "$resolvfile" ]; then
-  rm "$resolvfile"
-  fileexists=1
-fi
+if [ ! -d "$filedir" ]; then mkdir "$filedir"; fi
+if [ -f "$conffile" ]; then rm "$conffile"; fileexists=1; fi
+if [ -f "$resolvfile" ]; then rm "$resolvfile"; fileexists=1; fi
 
 if [ "$script_type" = "up" ]; then
   echo "#!/bin/sh" >>"$dnsscript"

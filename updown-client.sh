@@ -45,30 +45,35 @@ create_client_list() {
 
     VPN_IP=$(echo "$ENTRY" | cut -d ">" -f 2)
     if [ "$VPN_IP" != "0.0.0.0" ]; then
-      TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 4)
-      if [ "$TARGET_ROUTE" = "VPN" ]; then
-        echo /usr/sbin/iptables -t nat -A DNSVPN${instance} -s "$VPN_IP" -j DNAT --to-destination "$server" >>"$dnsscript"
-        /usr/bin/logger -t "openvpn-updown" "Forcing $VPN_IP to use DNS server $server"
+      if [ -n "$VPN_IP" ]; then
+        TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 4)
+        if [ "$TARGET_ROUTE" = "VPN" ]; then
+          echo /usr/sbin/iptables -t nat -A DNSVPN${instance} -s "$VPN_IP" -j DNAT --to-destination "$server" >>"$dnsscript"
+          /usr/bin/logger -t "openvpn-updown" "Forcing $VPN_IP to use DNS server $server"
+        else
+          echo /usr/sbin/iptables -t nat -I DNSVPN${instance} -s "$VPN_IP" -j RETURN >>"$dnsscript"
+          /usr/bin/logger -t "openvpn-updown" "Excluding $VPN_IP from forced DNS routing"
+        fi
       else
-        echo /usr/sbin/iptables -t nat -I DNSVPN${instance} -s "$VPN_IP" -j RETURN >>"$dnsscript"
-        /usr/bin/logger -t "openvpn-updown" "Excluding $VPN_IP from forced DNS routing"
+        IPSET_LIST=$(echo "$ENTRY" | cut -d ">" -f 1)
+        echo iptables -t nat -A DNSVPN${instance} -m set --match-set "$IPSET_LIST" src -i br0 -p tcp --dport 53 -j DNAT --to-destination "$server" >>"$dnsscript"
+        echo iptables -t nat -A DNSVPN${instance} -m set --match-set "$IPSET_LIST" src -i br0 -p udp --dport 53 -j DNAT --to-destination "$server" >>"$dnsscript"
+        /usr/bin/logger -t "openvpn-updown" "Forcing IPSET list $IPSET_LIST to use DNS server $server"
       fi
     fi
   done
   IFS=$OLDIFS
 }
 
-run_script_event(){
-	if [ -f /jffs/scripts/openvpn-event ]
-	then
-		if [ "$(nvram get jffs2_scripts)" = "0" ]
-		then
-			/usr/bin/logger -t "custom_script" "Found openvpn-event, but custom script execution is disabled!"
-		else
-			/usr/bin/logger -t "custom_script" "Running /jffs/scripts/openvpn-event (args: $*)"
-			/bin/sh /jffs/scripts/openvpn-event $*
-		fi
-	fi
+run_script_event() {
+  if [ -f /jffs/scripts/openvpn-event ]; then
+    if [ "$(nvram get jffs2_scripts)" = "0" ]; then
+      /usr/bin/logger -t "custom_script" "Found openvpn-event, but custom script execution is disabled!"
+    else
+      /usr/bin/logger -t "custom_script" "Running /jffs/scripts/openvpn-event (args: $*)"
+      /bin/sh /jffs/scripts/openvpn-event $*
+    fi
+  fi
 }
 
 ### Main
@@ -95,8 +100,14 @@ if [ "$instance" = "" ] || [ "$(nvram get vpn_client${instance}_adns)" -eq 0 ]; 
 fi
 
 if [ ! -d "$filedir" ]; then mkdir "$filedir"; fi
-if [ -f "$conffile" ]; then rm "$conffile"; fileexists=1; fi
-if [ -f "$resolvfile" ]; then rm "$resolvfile"; fileexists=1; fi
+if [ -f "$conffile" ]; then
+  rm "$conffile"
+  fileexists=1
+fi
+if [ -f "$resolvfile" ]; then
+  rm "$resolvfile"
+  fileexists=1
+fi
 
 if [ "$script_type" = "up" ]; then
   echo "#!/bin/sh" >>"$dnsscript"

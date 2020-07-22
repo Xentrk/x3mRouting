@@ -28,13 +28,11 @@ create_client_list() {
   for n in 1 2 3 4 5; do
     VPN_IP_LIST="${VPN_IP_LIST}$(nvram get vpn_client${instance}_clientlist${n})"
   done
-  logger -st "($(basename "$0"))" $$ "Value of VPN_IP_LIST @1 is $VPN_IP_LIST"
   # Concatentate /jffs/addons/x3mRouting/ovpncX.nvram file if it exists
   if [ -s "/jffs/addons/x3mRouting/ovpnc${instance}.nvram" ]; then
     VPN_IP_LIST="${VPN_IP_LIST}$(cat "/jffs/addons/x3mRouting/ovpnc${instance}.nvram")"
     logger -st "($(basename "$0"))" $$ "x3mRouting adding /jffs/addons/x3mRouting/ovpnc${instance}.nvram to VPN_IP_LIST"
   fi
-  logger -st "($(basename "$0"))" $$ "Value of VPN_IP_LIST @2 is $VPN_IP_LIST"
   #################### end of custom code
 
   OLDIFS=$IFS

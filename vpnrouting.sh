@@ -25,7 +25,7 @@ Chk_IPSET_List_Ready() {
   # ARGS [wait attempts] [specific_entware_utility]
   IPSET_NAME=$1
   READY=1 # Assume IPSET list is NOT available
-  MAX_TRIES=90
+  MAX_TRIES=120
 
   # Wait up to (default) 30 seconds to see if IPSET is available.....
   TRIES=0

@@ -156,8 +156,6 @@ create_client_list() {
       TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 5)
       [ "$TARGET_ROUTE" = "WAN" ] && FWMARK=0x8000/0x8000 && PRIO=9990
 
-      #IPSET_NAME="$DESC"
-
       if [ "$TARGET_ROUTE" = "VPN" ]; then
         case "$VPN_UNIT" in
         1)

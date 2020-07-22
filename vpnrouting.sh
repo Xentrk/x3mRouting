@@ -103,7 +103,6 @@ create_client_list() {
 
     ################################## Martineau Hack process IPSET Lists
     if echo "$TARGET_ROUTE" | grep -oE "SRC|DST|^D|^S"; then
-      my_logger "THE VALUE OF TARGET ROUTE: $TARGET_ROUTE"
       # Allow for 2-dimension and 3-dimension IPSETs.....
       case "$TARGET_ROUTE" in # TBA review static 'case' with a regexp? ;-)
       SRC | DST) DIM=$(echo "$TARGET_ROUTE" | tr '[A-Z]' '[a-z]') ;;
@@ -151,12 +150,13 @@ create_client_list() {
           fi
         fi
       fi
+      IPSET_NAME="$DESC"
       Chk_IPSET_List_Ready "$IPSET_NAME"
 
       TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 5)
       [ "$TARGET_ROUTE" = "WAN" ] && FWMARK=0x8000/0x8000 && PRIO=9990
 
-      IPSET_NAME="$DESC"
+      #IPSET_NAME="$DESC"
 
       if [ "$TARGET_ROUTE" = "VPN" ]; then
         case "$VPN_UNIT" in

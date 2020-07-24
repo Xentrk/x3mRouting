@@ -203,7 +203,7 @@ Check_Firmware_Version() {
   if [ "$buildno2" -lt 38419 ]; then
     echo "Invalid firmware version detected - $buildno. This option of x3mRouting requires version 384.19 and above."
     echo "You can force update x3mRouting by typing the word 'force' after the option number to force update (e.g. 1 force)"
-    echo "Perform an immediate update to a compatible firmware version immediately after the update of x3mRouting."
+    echo "Perform a 384.19+ firwmare update immediately after updating x3mRouting."
     echo
     echo "Press enter to continue"
     read -r

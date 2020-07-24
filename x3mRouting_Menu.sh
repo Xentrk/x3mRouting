@@ -134,6 +134,13 @@ Main_Menu() {
         Install_Done "OpenVPN Event and Shell Scripts"
         return 1
         ;;
+      "3 force")
+        mkdir -p "$LOCAL_REPO"
+        Install_x3mRouting_OpenVPN_Event
+        Install_x3mRouting_Shell_Scripts
+        Install_Done "OpenVPN Event and Shell Scripts"
+        return 1
+        ;;
       "3 del")
         Confirm_Removal_OPT3
         return 1
@@ -359,6 +366,9 @@ Remove_OPT3() {
 
   # Remove entries from /jffs/scripts/nat-start
   Remove_nat_start_Entries
+
+  # Remove entries from /jffs/scripts/firewall-start
+  Remove_firewall_start_Entries
 
   Remove_Prerouting_Rules
 
@@ -1425,6 +1435,7 @@ Install_x3mRouting_LAN_Clients() {
   Download_File "$ADDONS" "vpnrouting.sh"
   Download_File "$ADDONS" "updown-client.sh"
   Download_File "$ADDONS" "mount_files_lan.sh"
+  Download_File "$ADDONS" "x3mRouting_firewall_start.sh"
   Init_Start_Update "mount_files_lan.sh"
   sh /jffs/scripts/init-start
 }
@@ -1538,6 +1549,8 @@ Install_x3mRouting_Shell_Scripts() {
   Download_File "$LOCAL_REPO" "x3mRouting.sh"
   ln -s "/jffs/scripts/x3mRouting/x3mRouting.sh" "/opt/bin/x3mRouting"
   Check_Profile_Add
+  Firewall_Start_Update
+  echo
 
 }
 

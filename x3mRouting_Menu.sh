@@ -24,6 +24,7 @@ GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/x3mRouting-384.19
 LOCAL_REPO=/jffs/scripts/x3mRouting
 ADDONS=/jffs/addons/x3mRouting
 NAT_START=/jffs/scripts/nat-start
+FW_START=/jffs/scripts/firewall-start
 
 # Uncomment the line below for debugging
 #set -x
@@ -1196,7 +1197,6 @@ Remove_nat_start_Entries() {
 
 Remove_firewall_start_Entries() {
   # Remove entries from /jffs/scripts/firewall-start
-  FW_START=/jffs/scripts/firewall-start
   if [ -s "$FW_START" ]; then
     echo
     printf '%s%b%s%b%s\n\n' "Checking " "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE" " for x3mRouting script."
@@ -1378,21 +1378,21 @@ Init_Start_Update() {
 
 Firewall_Start_Update() {
 
-  FW_START_ENTRY="sh /jffs/addons/x3mRouting/x3mRouting_firewall_start # x3mRouting"
+  FW_START_ENTRY="sh /jffs/addons/x3mRouting/x3mRouting_firewall_start.sh # x3mRouting"
 
-  if [ -s "/jffs/scripts/firewall-start" ]; then # file exists
-    if ! grep -q "$FW_START_ENTRY" "/jffs/scripts/firewall-start"; then
-      awk '/#!\/bin\/sh/{print;print "$FW_START_ENTRY";next}1' "/jffs/scripts/firewall-start" > "/tmp/firewall_start" && mv "/tmp/firewall_start" "/jffs/scripts/firewall-start"
-      printf '\nUpdated %b/jffs/scripts/firewall-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
+  if [ -s "$FW_START" ]; then # file exists
+    if ! grep -q "$FW_START_ENTRY" "$FW_START"; then
+      awk '/#!\/bin\/sh/{print;print "$FW_START_ENTRY";next}1' "$FW_START" > "/tmp/firewall_start" && mv "/tmp/firewall_start" "$FW_START"
+      printf '\nUpdated %b%s%b\n' "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"
     else
-      printf '\nRequired x3mRouting firewall entry already exists in %b/jffs/scripts/firewall-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
-      printf '\nSkipping update of %b/jffs/scripts/firewall-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
+      printf '\nRequired x3mRouting firewall entry already exists in %b%s%b\n' "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"
+      printf '\nSkipping update of %b%s%b\n' "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"
     fi
   else
-    echo "#!/bin/sh" >/jffs/scripts/firewall-start
-    echo "FW_START_ENTRY" >>/jffs/scripts/firewall-start
-    chmod 0755 /jffs/scripts/firewall-start
-    printf 'Added required firewall entry to %b/jffs/scripts/firewall-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    echo "#!/bin/sh" >"$FW_START"
+    echo "FW_START_ENTRY" >>"$FW_START"
+    chmod 0755 "$FW_START"
+    printf 'Added required firewall entry to %b%s%b\n' "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"
   fi
 }
 

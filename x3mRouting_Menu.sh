@@ -1382,7 +1382,7 @@ Firewall_Start_Update() {
 
   if [ -s "$FW_START" ]; then # file exists
     if ! grep -q "$FW_START_ENTRY" "$FW_START"; then
-      awk '/#!\/bin\/sh/{print;print "$FW_START_ENTRY";next}1' "$FW_START" > "/tmp/firewall_start" && mv "/tmp/firewall_start" "$FW_START"
+      awk '/#!\/bin\/sh/{print;print "sh /jffs/addons/x3mRouting/x3mRouting_firewall_start.sh # x3mRouting";next}1' "$FW_START" > "/tmp/firewall_start" && mv "/tmp/firewall_start" "$FW_START"
       printf '\nUpdated %b%s%b\n' "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"
     else
       printf '\nRequired x3mRouting firewall entry already exists in %b%s%b\n' "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"

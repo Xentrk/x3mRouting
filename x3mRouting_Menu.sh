@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 4-July-2020
+# Last Updated Date: 24-July-2020
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -17,7 +17,7 @@
 # shellcheck disable=SC2028
 # shellcheck disable=SC2010 # need to us ls with a grep
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
-VERSION="2.0.0"
+VERSION="2.0.1"
 GIT_REPO="x3mRouting"
 GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/master"
 LOCAL_REPO=/jffs/scripts/x3mRouting
@@ -238,6 +238,9 @@ Remove_OPT2() {
 
   # Remove entries from /jffs/scripts/nat-start
   Remove_nat_start_Entries
+
+  # Remove entries from /jffs/scripts/firewall-start
+  Remove_firewall_start_Entries
 
   Remove_Prerouting_Rules
 
@@ -508,7 +511,7 @@ Migrate_Util_Files () {
 Update_Addons_Files() {
 
     # Check if version update
-    for FILE in mount_files_lan.sh mount_files_gui.sh; do
+    for FILE in mount_files_lan.sh mount_files_gui.sh x3mRouting_firewall_start; do
       if [ -s "$ADDONS/$FILE" ]; then
         localver=$(grep "VERSION=" "$ADDONS/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
         serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
@@ -524,7 +527,7 @@ Update_Addons_Files() {
   Remove_Mounts
 
   # Check if md5sum difference
-  for FILE in vpnrouting.sh updown-client.sh Advanced_OpenVPNClient_Content.asp ount_files_lan.sh mount_files_gui.sh; do
+  for FILE in vpnrouting.sh updown-client.sh Advanced_OpenVPNClient_Content.asp ount_files_lan.sh mount_files_gui.sh x3mRouting_firewall_start; do
     if [ -s "$ADDONS/$FILE" ]; then
       localmd5="$(md5sum "$ADDONS/$FILE" | awk '{print $1}')"
       remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
@@ -1177,6 +1180,20 @@ Remove_nat_start_Entries() {
   fi
 }
 
+Remove_firewall_start_Entries() {
+  # Remove entries from /jffs/scripts/firewall-start
+  FW_START=/jffs/scripts/firewall-start
+  if [ -s "$FW_START" ]; then
+    echo
+    printf '%s%b%s%b%s\n\n' "Checking " "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE" " for x3mRouting script."
+    if grep -q "x3mRouting" "$FW_START"; then # see if line exists
+      sed -i "\\~x3mRouting~d" "$FW_START"
+      printf '%b%s%b%s%b%s%b\n' "$COLOR_GREEN" "$PARM" "$COLOR_WHITE" " entry removed from " "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"
+    fi
+    Check_For_Shebang "/jffs/scripts/firewall-start"
+  fi
+}
+
 Remove_Symlinks() {
 
   if [ -s "/opt/bin/x3mRouting" ]; then
@@ -1224,6 +1241,9 @@ Remove_Existing_Installation() {
 
   # Remove entries from /jffs/scripts/nat-start
   Remove_nat_start_Entries
+
+  # Remove entries from /jffs/scripts/firewall-start
+  Remove_firewall_start_Entries
 
   # unmount vpnrouting, vpn gui and updown-client
   Remove_Mounts
@@ -1342,6 +1362,26 @@ Init_Start_Update() {
   fi
 }
 
+Firewall_Start_Update() {
+
+  FW_START_ENTRY="sh /jffs/addons/x3mRouting/x3mRouting_firewall_start # x3mRouting"
+
+  if [ -s "/jffs/scripts/firwall-start" ]; then # file exists
+    if ! grep -q "$FW_START_ENTRY" "/jffs/scripts/firewall-start"; then
+      awk '/#!\/bin\/sh/{print;print "$FW_START_ENTRY";next}1' "/jffs/scripts/firewall-start" > "/tmp/firewall_start" && mv "/tmp/firewall_start" "/jffs/scripts/firewall-start"
+      printf '\nUpdated %b/jffs/scripts/firewall-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    else
+      printf '\nRequired x3mRouting firewall entry already exists in %b/jffs/scripts/firewall-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
+      printf '\nSkipping update of %b/jffs/scripts/firewall-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    fi
+  else
+    echo "#!/bin/sh" >/jffs/scripts/firewall-start
+    echo "FW_START_ENTRY" >>/jffs/scripts/firewall-start
+    chmod 0755 /jffs/scripts/firewall-start
+    printf 'Added required firewall entry to %b/jffs/scripts/firewall-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
+  fi
+}
+
 Install_x3mRouting_LAN_Clients() {
 
   Download_File "$LOCAL_REPO" "x3mRouting_client_nvram.sh"
@@ -1445,10 +1485,12 @@ Install_x3mRouting_GUI() {
   Download_File "$ADDONS" "updown-client.sh"
   Download_File "$ADDONS" "Advanced_OpenVPNClient_Content.asp"
   Download_File "$ADDONS" "mount_files_gui.sh"
+  Download_File "$ADDONS" "x3mRouting_firewall_start.sh"
   Download_File "$LOCAL_REPO" "x3mRouting.sh"
   Init_Start_Update "mount_files_gui.sh"
   sh /jffs/scripts/init-start
   Check_Profile_Add
+  Firewall_Start_Update
   echo
 
 }

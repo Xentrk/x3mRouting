@@ -90,12 +90,31 @@ Main_Menu() {
         Install_Done "x3mRouting for LAN Clients"
         return 1
         ;;
+      "1 force")
+        mkdir -p "$LOCAL_REPO"
+        echo
+        Install_x3mRouting_LAN_Clients
+        printf '\n%s%b%s%b%s\n\n' "Creating " "$COLOR_GREEN" "$LOCAL_REPO//x3mRouting_client_rules" "$COLOR_WHITE" " file"
+       sh "$LOCAL_REPO/x3mRouting_client_config.sh"
+        Install_Done "x3mRouting for LAN Clients"
+        return 1
+        ;;
+
       "1 del")
         Confirm_Removal_OPT1
         return 1
         ;;
       2)
         Check_Firmware_Version
+        mkdir -p "$LOCAL_REPO"
+        printf '\n'
+        Install_x3mRouting_GUI
+        Install_x3mRouting_OpenVPN_Event
+        Install_x3mRouting_Shell_Scripts
+        Install_Done "GUI, OpenVPN Event and Shell Scripts"
+        return 1
+        ;;
+      "2 force")
         mkdir -p "$LOCAL_REPO"
         printf '\n'
         Install_x3mRouting_GUI
@@ -182,7 +201,10 @@ Check_Firmware_Version() {
   buildno=$(nvram get buildno)
   buildno2=$(echo "$buildno" | sed 's/\.//')
   if [ "$buildno2" -lt 38419 ]; then
-    echo "Invalid firmware version detected - $buildno. x3mRouting requires version 384.19 and above."
+    echo "Invalid firmware version detected - $buildno. This option of x3mRouting requires version 384.19 and above."
+    echo "You can force update x3mRouting by typing the word 'force' after the option number to force update (e.g. 1 force)"
+    echo "Perform an immediate update to a compatible firmware version immediately after the update of x3mRouting."
+    echo
     echo "Press enter to continue"
     read -r
     Welcome_Message

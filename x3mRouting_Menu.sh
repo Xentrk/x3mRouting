@@ -1380,7 +1380,7 @@ Firewall_Start_Update() {
 
   FW_START_ENTRY="sh /jffs/addons/x3mRouting/x3mRouting_firewall_start # x3mRouting"
 
-  if [ -s "/jffs/scripts/firwall-start" ]; then # file exists
+  if [ -s "/jffs/scripts/firewall-start" ]; then # file exists
     if ! grep -q "$FW_START_ENTRY" "/jffs/scripts/firewall-start"; then
       awk '/#!\/bin\/sh/{print;print "$FW_START_ENTRY";next}1' "/jffs/scripts/firewall-start" > "/tmp/firewall_start" && mv "/tmp/firewall_start" "/jffs/scripts/firewall-start"
       printf '\nUpdated %b/jffs/scripts/firewall-start%b\n' "$COLOR_GREEN" "$COLOR_WHITE"

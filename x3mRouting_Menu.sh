@@ -79,6 +79,7 @@ Main_Menu() {
 
     case "$MENU1" in
       1)
+        Check_Firmware_Version
         mkdir -p "$LOCAL_REPO"
         echo
         Install_x3mRouting_LAN_Clients
@@ -92,6 +93,7 @@ Main_Menu() {
         return 1
         ;;
       2)
+        Check_Firmware_Version
         mkdir -p "$LOCAL_REPO"
         printf '\n'
         Install_x3mRouting_GUI
@@ -172,6 +174,17 @@ Install_Done() {
   echo "Press enter to continue"
   read -r
   Welcome_Message
+}
+
+Check_Firmware_Version() {
+  buildno=$(nvram get buildno)
+  buildno2=$(echo "$buildno" | sed 's/\.//')
+  if [ "$buildno2" -lt 38419 ]; then
+    echo "Invalid firmware version detected - $buildno. x3mRouting requires version 384.19 and above."
+    echo "Press enter to continue"
+    read -r
+    Welcome_Message
+  fi
 }
 
 Remove_OPT1() {

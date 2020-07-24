@@ -526,7 +526,7 @@ Migrate_Util_Files () {
 Update_Addons_Files() {
 
     # Check if version update
-    for FILE in mount_files_lan.sh mount_files_gui.sh x3mRouting_firewall_start; do
+    for FILE in mount_files_lan.sh mount_files_gui.sh x3mRouting_firewall_start.sh; do
       if [ -s "$ADDONS/$FILE" ]; then
         localver=$(grep "VERSION=" "$ADDONS/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
         serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
@@ -542,7 +542,7 @@ Update_Addons_Files() {
   Remove_Mounts
 
   # Check if md5sum difference
-  for FILE in vpnrouting.sh updown-client.sh Advanced_OpenVPNClient_Content.asp ount_files_lan.sh mount_files_gui.sh x3mRouting_firewall_start; do
+  for FILE in vpnrouting.sh updown-client.sh Advanced_OpenVPNClient_Content.asp ount_files_lan.sh mount_files_gui.sh x3mRouting_firewall_start.sh; do
     if [ -s "$ADDONS/$FILE" ]; then
       localmd5="$(md5sum "$ADDONS/$FILE" | awk '{print $1}')"
       remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"

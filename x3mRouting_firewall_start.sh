@@ -3,7 +3,7 @@
 # Script: x3mRouting_firewall_start.sh
 # VERSION=1.0.0
 # Author: Xentrk
-# 24-July-2020
+# 25-July-2020
 #
 #####################################################################################################
 # Description:
@@ -17,12 +17,18 @@
 #
 #####################################################################################################
 
-for VPN_CLIENT in 1 2 3 4 5; do
-  CLIENT_STATE=$(nvram get vpn_client${VPN_CLIENT}_state)
-  case "$CLIENT_STATE" in
-  2)
-    service restart_vpnclient${VPN_CLIENT}
-    logger -st "($(basename "$0"))" $$ Restarted VPN Client "$VPN_CLIENT"
-    ;;
-  esac
-done
+if [ -s "/jffs/addons/x3mRouting/Advanced_OpenVPNClient_Content.asp" ]; then
+  for VPN_CLIENT in 1 2 3 4 5; do
+    CLIENT_STATE=$(nvram get vpn_client${VPN_CLIENT}_state)
+    case "$CLIENT_STATE" in
+    2)
+      service restart_vpnclient${VPN_CLIENT}
+      logger -st "($(basename "$0"))" $$ Restarted VPN Client "$VPN_CLIENT"
+      ;;
+    esac
+  done
+else
+  for VPN_CLIENT in 1 2 3 4 5; do
+    [ -s "/tmp/etc/openvpn/client${VPN_CLIENT}/dns.sh" ] && sh "/tmp/etc/openvpn/client${VPN_CLIENT}/dns.sh"
+  done
+fi

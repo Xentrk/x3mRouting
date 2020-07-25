@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 24-July-2020
+# Last Updated Date: 25-July-2020
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -87,6 +87,7 @@ Main_Menu() {
         Install_x3mRouting_LAN_Clients
         printf '\n%s%b%s%b%s\n\n' "Creating " "$COLOR_GREEN" "$LOCAL_REPO//x3mRouting_client_rules" "$COLOR_WHITE" " file"
         sh "$LOCAL_REPO/x3mRouting_client_config.sh"
+        Firewall_Start_Update
         Install_Done "x3mRouting for LAN Clients"
         return 1
         ;;
@@ -95,7 +96,8 @@ Main_Menu() {
         echo
         Install_x3mRouting_LAN_Clients
         printf '\n%s%b%s%b%s\n\n' "Creating " "$COLOR_GREEN" "$LOCAL_REPO//x3mRouting_client_rules" "$COLOR_WHITE" " file"
-       sh "$LOCAL_REPO/x3mRouting_client_config.sh"
+        sh "$LOCAL_REPO/x3mRouting_client_config.sh"
+        Firewall_Start_Update
         Install_Done "x3mRouting for LAN Clients"
         return 1
         ;;
@@ -111,6 +113,7 @@ Main_Menu() {
         Install_x3mRouting_GUI
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
+        Firewall_Start_Update
         Install_Done "GUI, OpenVPN Event and Shell Scripts"
         return 1
         ;;
@@ -120,6 +123,7 @@ Main_Menu() {
         Install_x3mRouting_GUI
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
+        Firewall_Start_Update
         Install_Done "GUI, OpenVPN Event and Shell Scripts"
         return 1
         ;;
@@ -131,6 +135,7 @@ Main_Menu() {
         mkdir -p "$LOCAL_REPO"
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
+        Firewall_Start_Update
         Install_Done "OpenVPN Event and Shell Scripts"
         return 1
         ;;
@@ -138,6 +143,7 @@ Main_Menu() {
         mkdir -p "$LOCAL_REPO"
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
+        Firewall_Start_Update
         Install_Done "OpenVPN Event and Shell Scripts"
         return 1
         ;;
@@ -228,11 +234,12 @@ Remove_OPT1() {
   # Remove ADDONS files
   [ -s "$ADDONS/mount_files_lan.sh" ] && rm -f "$ADDONS/mount_files_lan.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/mount_files_lan.sh" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found. Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed"
 
-  # only remove vpnrouting.sh and updown-client.sh if GUI is not being used.
+  # only remove x3mRouting_firewall_start.sh, vpnrouting.sh and updown-client.sh if GUI is not being used.
   if [ ! -s "$ADDONS/Advanced_OpenVPNClient_Content.asp" ]; then
-    for FILE in vpnrouting.sh updown-client.sh; do
+    for FILE in x3mRouting_firewall_start.sh vpnrouting.sh updown-client.sh; do
       if [ -s "$ADDONS/$FILE" ]; then
         case $FILE in
+          x3mRouting_firewall_start.sh) rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found. Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" ;;
           vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh && rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found. Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" ;;
           updown-client.sh) [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh && rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found. Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed";;
         esac
@@ -283,8 +290,8 @@ Remove_OPT2() {
   # Remove entries from /jffs/scripts/nat-start
   Remove_nat_start_Entries
 
-  # Remove entries from /jffs/scripts/firewall-start
-  Remove_firewall_start_Entries
+  # Only remove entries from /jffs/scripts/firewall-start if option 1 not installed
+  [ -s "$ADDONS/x3mRouting_client_config.sh" ] && Remove_firewall_start_Entries
 
   Remove_Prerouting_Rules
 
@@ -367,8 +374,8 @@ Remove_OPT3() {
   # Remove entries from /jffs/scripts/nat-start
   Remove_nat_start_Entries
 
-  # Remove entries from /jffs/scripts/firewall-start
-  Remove_firewall_start_Entries
+  # Only remove entries from /jffs/scripts/firewall-start if option 2 not installed
+  [ ! -s "$ADDONS/Advanced_OpenVPNClient_Content.asp" ] && Remove_firewall_start_Entries
 
   Remove_Prerouting_Rules
 
@@ -1537,7 +1544,6 @@ Install_x3mRouting_GUI() {
   Init_Start_Update "mount_files_gui.sh"
   sh /jffs/scripts/init-start
   Check_Profile_Add
-  Firewall_Start_Update
   echo
 
 }
@@ -1547,9 +1553,9 @@ Install_x3mRouting_Shell_Scripts() {
   Check_Requirements
   rm -rf "/opt/bin/x3mRouting" 2>/dev/null
   Download_File "$LOCAL_REPO" "x3mRouting.sh"
+  Download_File "$ADDONS" "x3mRouting_firewall_start.sh"
   ln -s "/jffs/scripts/x3mRouting/x3mRouting.sh" "/opt/bin/x3mRouting"
   Check_Profile_Add
-  Firewall_Start_Update
   echo
 
 }

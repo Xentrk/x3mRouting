@@ -1423,8 +1423,8 @@ Firewall_Start_Update() {
   else
     echo "#!/bin/sh" >"$FW_START"
     echo "FW_START_ENTRY" >>"$FW_START"
-    chmod 0755 "$FW_START"
-    printf 'Added required firewall entry to %b%s%b\n' "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"
+    chmod 755 "$FW_START"
+    printf 'Added required x3mRouting firewall-start entry to %b%s%b\n' "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"
   fi
 }
 

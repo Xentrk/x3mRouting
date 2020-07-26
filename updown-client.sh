@@ -39,27 +39,23 @@ create_client_list() {
   IFS="<"
 
   for ENTRY in $VPN_IP_LIST; do
-    if [ "$ENTRY" = "" ]; then
-      continue
-    fi
+    [ -z "$ENTRY" ] && continue
 
     VPN_IP=$(echo "$ENTRY" | cut -d ">" -f 2)
-    if [ "$VPN_IP" != "0.0.0.0" ]; then
-      if [ -n "$VPN_IP" ]; then
-        TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 4)
-        if [ "$TARGET_ROUTE" = "VPN" ]; then
-          echo /usr/sbin/iptables -t nat -A DNSVPN${instance} -s "$VPN_IP" -j DNAT --to-destination "$server" >>"$dnsscript"
-          /usr/bin/logger -t "openvpn-updown" "Forcing $VPN_IP to use DNS server $server"
-        else
-          echo /usr/sbin/iptables -t nat -I DNSVPN${instance} -s "$VPN_IP" -j RETURN >>"$dnsscript"
-          /usr/bin/logger -t "openvpn-updown" "Excluding $VPN_IP from forced DNS routing"
-        fi
+    if [ -n "$VPN_IP" ]; then
+      TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 4)
+      if [ "$TARGET_ROUTE" = "VPN" ]; then
+        echo /usr/sbin/iptables -t nat -A DNSVPN${instance} -s "$VPN_IP" -j DNAT --to-destination "$server" >>"$dnsscript"
+        /usr/bin/logger -t "openvpn-updown" "Forcing $VPN_IP to use DNS server $server"
       else
-        IPSET_LIST=$(echo "$ENTRY" | cut -d ">" -f 1)
-        echo iptables -t nat -A DNSVPN${instance} -m set --match-set "$IPSET_LIST" src -i br0 -p tcp --dport 53 -j DNAT --to-destination "$server" >>"$dnsscript"
-        echo iptables -t nat -A DNSVPN${instance} -m set --match-set "$IPSET_LIST" src -i br0 -p udp --dport 53 -j DNAT --to-destination "$server" >>"$dnsscript"
-        /usr/bin/logger -t "openvpn-updown" "Forcing IPSET list $IPSET_LIST to use DNS server $server"
+        echo /usr/sbin/iptables -t nat -I DNSVPN${instance} -s "$VPN_IP" -j RETURN >>"$dnsscript"
+        /usr/bin/logger -t "openvpn-updown" "Excluding $VPN_IP from forced DNS routing"
       fi
+    else
+      IPSET_LIST=$(echo "$ENTRY" | cut -d ">" -f 1)
+      echo iptables -t nat -A DNSVPN${instance} -m set --match-set "$IPSET_LIST" src -i br0 -p tcp --dport 53 -j DNAT --to-destination "$server" >>"$dnsscript"
+      echo iptables -t nat -A DNSVPN${instance} -m set --match-set "$IPSET_LIST" src -i br0 -p udp --dport 53 -j DNAT --to-destination "$server" >>"$dnsscript"
+      /usr/bin/logger -t "openvpn-updown" "Forcing IPSET list $IPSET_LIST to use DNS server $server"
     fi
   done
   IFS=$OLDIFS
@@ -94,20 +90,20 @@ if [ "$script_type" = "down" ]; then
   [ -f "$dnsscript" ] && rm "$dnsscript"
 fi
 
+if [ "$(nvram get vpn_client${instance}_adns)" -eq 2 ];	then
+		/sbin/service restart_dnsmasq &
+else
+		/sbin/service updateresolv &
+fi
+
 if [ "$instance" = "" ] || [ "$(nvram get vpn_client${instance}_adns)" -eq 0 ]; then
   run_script_event $*
   exit 0
 fi
 
 if [ ! -d "$filedir" ]; then mkdir "$filedir"; fi
-if [ -f "$conffile" ]; then
-  rm "$conffile"
-  fileexists=1
-fi
-if [ -f "$resolvfile" ]; then
-  rm "$resolvfile"
-  fileexists=1
-fi
+if [ -f "$conffile" ]; then rm "$conffile"; fileexists=1; fi
+if [ -f "$resolvfile" ]; then rm "$resolvfile"; fileexists=1; fi
 
 if [ "$script_type" = "up" ]; then
   echo "#!/bin/sh" >>"$dnsscript"
@@ -144,32 +140,22 @@ if [ "$script_type" = "up" ]; then
     echo /usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN${instance} >>"$dnsscript"
   fi
 
+  if [ -f $conffile ] || [ -f $resolvfile ] || [ -n "$fileexists" ];  then
+		if [ -f $dnsscript ]; then
+			chmod a+rx $dnsscript
+			/bin/sh $dnsscript
+		fi
+		/sbin/service updateresolv &
+	fi
+
   # QoS
   if [ "$(nvram get vpn_client${instance}_rgw)" -ge 1 ] && [ "$(nvram get qos_enable)" -eq 1 ] && [ "$(nvram get qos_type)" -eq 1 ]; then
     echo "#!/bin/sh" >>"$qosscript"
     echo /usr/sbin/iptables -t mangle -A POSTROUTING -o br0 -m mark --mark 0x40000000/0xc0000000 -j MARK --set-xmark 0x80000000/0xC0000000 >>"$qosscript"
+    chmod a+rx $qosscript
     /bin/sh "$qosscript"
   fi
 fi
-
-if [ -f "$conffile" ] || [ -f "$resolvfile" ] || [ -n "$fileexists" ]; then
-  if [ "$script_type" = "up" ]; then
-    if [ -f "$dnsscript" ]; then
-      /bin/sh "$dnsscript"
-    fi
-    /sbin/service updateresolv
-  elif [ "$script_type" = "down" ]; then
-    rm "$dnsscript"
-    if [ "$(nvram get vpn_client${instance}_adns)" = 2 ]; then
-      /sbin/service restart_dnsmasq
-    else
-      /sbin/service updateresolv
-    fi
-  fi
-fi
-
-rmdir $filedir
-rmdir /etc/openvpn
 
 run_script_event $*
 

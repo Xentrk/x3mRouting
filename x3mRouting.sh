@@ -4,9 +4,9 @@
 # shellcheck disable=SC2030 # Modification of IPSET_NAME is local (to subshell caused by pipeline).
 ####################################################################################################
 # Script: x3mRouting.sh
-# VERSION=2.0.0
+# VERSION=2.0.1
 # Author: Xentrk
-# Date: 28-June-2020
+# Date: 26-July-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -638,6 +638,7 @@ Load_MANUAL_Ipset_List() {
 
   IPSET_NAME=$1
   DIR=$2
+
   if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then #does ipset list exist?
     [ -s "$DIR/$IPSET_NAME" ] && awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   fi
@@ -878,8 +879,15 @@ Manual_Method() {
   fi
   ############## End of Special Processing for 'ip=' parameter
 
-  Create_Ipset_List "$IPSET_NAME" "MANUAL"
-  Load_MANUAL_Ipset_List "$IPSET_NAME" "$DIR"
+  if [ -s "$DIR/$IPSET_NAME" ]; then
+    if grep -q "create" "$DIR/$IPSET_NAME"; then
+      Error_Exit "ERROR! $DIR/$IPSET_NAME save/restore file is in dnsmasq format. The Manual Method requires IPv4 format."
+    fi
+    Create_Ipset_List "$IPSET_NAME" "MANUAL"
+    Load_MANUAL_Ipset_List "$IPSET_NAME" "$DIR"
+  else
+    Error_Exit "ERROR! The save/restore file $DIR/$IPSET_NAME does not exist."
+  fi
 }
 
 VPN_Server_to_VPN_Client() {

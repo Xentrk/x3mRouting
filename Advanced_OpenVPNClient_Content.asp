@@ -517,6 +517,7 @@
 						alert("You must provide a password.")
 						document.form.vpn_client_password.focus();
 						return false;
+				}
 			}
 
 			if (!validator.safeName(document.form.vpn_client_desc) ||

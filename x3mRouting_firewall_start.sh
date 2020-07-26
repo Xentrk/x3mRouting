@@ -27,8 +27,4 @@ if [ -s "/jffs/addons/x3mRouting/Advanced_OpenVPNClient_Content.asp" ]; then
       ;;
     esac
   done
-else
-  for VPN_CLIENT in 1 2 3 4 5; do
-    [ -s "/tmp/etc/openvpn/client${VPN_CLIENT}/dns.sh" ] && sh "/tmp/etc/openvpn/client${VPN_CLIENT}/dns.sh"
-  done
 fi

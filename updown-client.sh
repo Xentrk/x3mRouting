@@ -45,16 +45,16 @@ create_client_list() {
     if [ -n "$VPN_IP" ]; then
       TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 4)
       if [ "$TARGET_ROUTE" = "VPN" ]; then
-        echo /usr/sbin/iptables -t nat -A DNSVPN${instance} -s "$VPN_IP" -j DNAT --to-destination "$server" >>"$dnsscript"
+        echo "/usr/sbin/iptables -t nat -A DNSVPN${instance} -s $VPN_IP -j DNAT --to-destination $server" >>"$dnsscript"
         /usr/bin/logger -t "openvpn-updown" "Forcing $VPN_IP to use DNS server $server"
       else
-        echo /usr/sbin/iptables -t nat -I DNSVPN${instance} -s "$VPN_IP" -j RETURN >>"$dnsscript"
+        echo "/usr/sbin/iptables -t nat -I DNSVPN${instance} -s $VPN_IP -j RETURN" >>"$dnsscript"
         /usr/bin/logger -t "openvpn-updown" "Excluding $VPN_IP from forced DNS routing"
       fi
     else
       IPSET_LIST=$(echo "$ENTRY" | cut -d ">" -f 1)
-      echo iptables -t nat -A DNSVPN${instance} -m set --match-set "$IPSET_LIST" src -i br0 -p tcp --dport 53 -j DNAT --to-destination "$server" >>"$dnsscript"
-      echo iptables -t nat -A DNSVPN${instance} -m set --match-set "$IPSET_LIST" src -i br0 -p udp --dport 53 -j DNAT --to-destination "$server" >>"$dnsscript"
+      echo "iptables -t nat -A DNSVPN${instance} -m set --match-set $IPSET_LIST src -i br0 -p tcp --dport 53 -j DNAT --to-destination $server" >>"$dnsscript"
+      echo "iptables -t nat -A DNSVPN${instance} -m set --match-set $IPSET_LIST src -i br0 -p udp --dport 53 -j DNAT --to-destination $server" >>"$dnsscript"
       /usr/bin/logger -t "openvpn-updown" "Forcing IPSET list $IPSET_LIST to use DNS server $server"
     fi
   done
@@ -107,7 +107,7 @@ if [ -f "$resolvfile" ]; then rm "$resolvfile"; fileexists=1; fi
 
 if [ "$script_type" = "up" ]; then
   echo "#!/bin/sh" >>"$dnsscript"
-  echo /usr/sbin/iptables -t nat -N DNSVPN${instance} >>"$dnsscript"
+  echo "/usr/sbin/iptables -t nat -N DNSVPN${instance}" >>"$dnsscript"
 
   if [ "$(nvram get vpn_client${instance}_rgw)" -ge 2 ] && [ "$(nvram get vpn_client${instance}_adns)" -eq 3 ]; then
     setdns=0
@@ -136,8 +136,8 @@ if [ "$script_type" = "up" ]; then
   done
 
   if [ "$setdns" -eq 1 ]; then
-    echo /usr/sbin/iptables -t nat -I PREROUTING -p udp -m udp --dport 53 -j DNSVPN${instance} >>"$dnsscript"
-    echo /usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN${instance} >>"$dnsscript"
+    echo "/usr/sbin/iptables -t nat -I PREROUTING -p udp -m udp --dport 53 -j DNSVPN${instance}" >>"$dnsscript"
+    echo "/usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN${instance}" >>"$dnsscript"
   fi
 
   if [ -f $conffile ] || [ -f $resolvfile ] || [ -n "$fileexists" ];  then
@@ -151,7 +151,7 @@ if [ "$script_type" = "up" ]; then
   # QoS
   if [ "$(nvram get vpn_client${instance}_rgw)" -ge 1 ] && [ "$(nvram get qos_enable)" -eq 1 ] && [ "$(nvram get qos_type)" -eq 1 ]; then
     echo "#!/bin/sh" >>"$qosscript"
-    echo /usr/sbin/iptables -t mangle -A POSTROUTING -o br0 -m mark --mark 0x40000000/0xc0000000 -j MARK --set-xmark 0x80000000/0xC0000000 >>"$qosscript"
+    echo "/usr/sbin/iptables -t mangle -A POSTROUTING -o br0 -m mark --mark 0x40000000/0xc0000000 -j MARK --set-xmark 0x80000000/0xC0000000" >>"$qosscript"
     chmod a+rx $qosscript
     /bin/sh "$qosscript"
   fi

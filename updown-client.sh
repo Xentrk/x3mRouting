@@ -10,12 +10,12 @@
 /usr/bin/logger -t "($(basename "$0"))" $$ "Starting custom /jffs/scripts/x3mRouting/updown-client.sh script execution"
 
 instance=$(echo "$dev" | sed "s/tun1//")
-filedir="/etc/openvpn/client$instance"
+filedir="/etc/openvpn/client${instance}"
 
-conffile=$filedir/client\.conf
-resolvfile=$filedir/client\.resolv
-dnsscript=$filedir/dns\.sh
-qosscript=$filedir/qos\.sh
+conffile="$filedir/client.conf"
+resolvfile="$filedir/client.resolv"
+dnsscript="$filedir/dns.sh"
+qosscript="$filedir/qos.sh"
 fileexists=
 serverips=
 searchdomains=

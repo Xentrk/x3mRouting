@@ -1,7 +1,6 @@
 #!/bin/sh
 
-nvrgetbuild=$(nvram get buildno)
-buildno=$(echo "$nvrgetbuild" | sed 's/\.//')
+buildno=$(nvram get buildno | sed 's/\.//')
 if [ "$buildno" -lt 38419 ]; then
   branch="master"
   echo "Installing old x3mRouting version"

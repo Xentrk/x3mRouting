@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 25-July-2020
+# Last Updated Date: 5-August-2020
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -17,7 +17,7 @@
 # shellcheck disable=SC2028
 # shellcheck disable=SC2010 # need to us ls with a grep
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
-VERSION="2.0.1"
+VERSION="2.1.0"
 GIT_REPO="x3mRouting"
 #GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/master"
 GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/x3mRouting-384.19"
@@ -135,7 +135,6 @@ Main_Menu() {
         mkdir -p "$LOCAL_REPO"
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
-        Firewall_Start_Update
         Install_Done "OpenVPN Event and Shell Scripts"
         return 1
         ;;
@@ -143,7 +142,6 @@ Main_Menu() {
         mkdir -p "$LOCAL_REPO"
         Install_x3mRouting_OpenVPN_Event
         Install_x3mRouting_Shell_Scripts
-        Firewall_Start_Update
         Install_Done "OpenVPN Event and Shell Scripts"
         return 1
         ;;
@@ -153,7 +151,7 @@ Main_Menu() {
         ;;
       4)
         mkdir -p "$LOCAL_REPO"
-        for FILE in "getdomainnames.sh" "autoscan.sh"; do
+        for FILE in getdomainnames.sh autoscan.sh; do
           Download_File "$LOCAL_REPO" "$FILE"
         done
         echo
@@ -228,27 +226,61 @@ Remove_OPT1() {
 
   # Remove LOCAL_REPO files
   for FILE in x3mRouting_client_nvram.sh x3mRouting_client_config.sh x3mRouting_client_rules; do
-    [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found. Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
+    [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found."
   done
 
   # Remove ADDONS files
-  [ -s "$ADDONS/mount_files_lan.sh" ] && rm -f "$ADDONS/mount_files_lan.sh" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/mount_files_lan.sh" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found. Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed"
+  for FILE in mount_files_lan.sh updown-dns.sh; do
+    [ -s "$ADDONS/$FILE" ] && rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found."
+  done
 
-  # only remove x3mRouting_firewall_start.sh, vpnrouting.sh and updown-client.sh if GUI is not being used.
+  # only remove x3mRouting_firewall_start.sh and vpnrouting.sh if GUI is not being used.
   if [ ! -s "$ADDONS/Advanced_OpenVPNClient_Content.asp" ]; then
-    for FILE in x3mRouting_firewall_start.sh vpnrouting.sh updown-client.sh; do
+    for FILE in x3mRouting_firewall_start.sh vpnrouting.sh; do
       if [ -s "$ADDONS/$FILE" ]; then
         case $FILE in
-          x3mRouting_firewall_start.sh) rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found. Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" ;;
-          vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh && rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found. Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" ;;
-          updown-client.sh) [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh && rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" || printf '\n%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " not found. Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed";;
+          vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh && rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" ;;
+          x3mRouting_firewall_start.sh) rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" ;;
         esac
       fi
     done
   fi
 
+  # Only remove entries from /jffs/scripts/firewall-start if GUI option 2 not installed
+  [ ! -s "$ADDONS/Advanced_OpenVPNClient_Content.asp" ] && Remove_firewall_start_Entries
+
   for VPN_ID in 1 2 3 4 5; do
-    [ -s "$ADDONS/ovpnc${VPN_ID}.nvram" ] && rm -rf "$ADDONS/ovpnc${VPN_ID}.nvram" && service restart_vpnclient"$VPN_ID" && echo "Retarting VPN Client $VPN_ID to remove x3mRouting LAN Client Rules"
+    if [ -s "$ADDONS/ovpnc${VPN_ID}.nvram" ] && [ -s "$ADDONS/client${VPN_ID}_dns.sh" ]; then
+      rm -rf "$ADDONS/ovpnc${VPN_ID}.nvram"
+      rm -rf "$ADDONS/client${VPN_ID}_dns.sh"
+      service restart_vpnclient"$VPN_ID" && echo "Retarting VPN Client $VPN_ID to remove x3mRouting LAN Client Routing and DNS Rules"
+    fi
+
+    # Removing nvram files that don't use Accept DNS Configuration = Exclusive
+    [ -s "$ADDONS/ovpnc${VPN_ID}.nvram" ] && rm -rf "$ADDONS/ovpnc${VPN_ID}.nvram" && service restart_vpnclient"$VPN_ID" && echo "Retarting VPN Client $VPN_ID to remove x3mRouting LAN Client Routing Rules"
+
+    # shouldn't have this condition, but ..
+    [ -s "$ADDONS/client${VPN_ID}_dns.sh" ] && rm -rf "$ADDONS/client${VPN_ID}_dns.sh" && service restart_vpnclient"$VPN_ID" && echo "Retarting VPN Client $VPN_ID to remove x3mRouting LAN Client DNS Rules"
+
+    # check up/down openvpn-event files for entries
+    UP_ENTRY="sh $ADDONS_DIR/updown-dns.sh $VPN_ID up"
+    DOWN_ENTRY="sh $ADDONS_DIR/updown-dns.sh $VPN_ID down"
+    VPNC_UP_FILE="$REPO_DIR/vpnclient${VPN_ID}-route-up"
+    VPNC_DOWN_FILE="$REPO_DIR/vpnclient${VPN_ID}-route-pre-down"
+
+    if [ -s "$VPNC_UP_FILE" ]; then
+      if [ "$(grep -c "$UP_ENTRY" "$VPNC_UP_FILE")" -eq 1 ]; then
+        sed -i "\\~$ADDONS/updown-dns.sh~d"  "$VPNC_UP_FILE"
+        Check_For_Shebang "$VPNC_UP_FILE"
+      fi
+    fi
+
+    if [ -s "$VPNC_DOWN_FILE" ]; then
+      if [ "$(grep -c "$DOWN_ENTRY" "$VPNC_DOWN_FILE")" -eq 1 ]; then # only add if entry does not exist
+        sed -i "\\~$ADDONS/updown-dns.sh~d"  "$VPNC_DOWN_FILE" # add 'ipset=' domains entry to dnsmasq.conf.add
+        Check_For_Shebang "$VPNC_DOWN_FILE"
+      fi
+    fi
   done
 
   printf "\nPress enter to continue"
@@ -291,7 +323,7 @@ Remove_OPT2() {
   Remove_nat_start_Entries
 
   # Only remove entries from /jffs/scripts/firewall-start if option 1 not installed
-  [ -s "$ADDONS/x3mRouting_client_config.sh" ] && Remove_firewall_start_Entries
+  [ ! -s "$LOCAL_REPO/x3mRouting_client_config.sh" ] && Remove_firewall_start_Entries
 
   Remove_Prerouting_Rules
 
@@ -321,15 +353,14 @@ Remove_OPT2() {
   # Remove Advanced_OpenVPNClient_Content.asp file
   [ -s "$ADDONS/Advanced_OpenVPNClient_Content.asp" ] && [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ] && umount /www/Advanced_OpenVPNClient_Content.asp && rm -f "$ADDONS/Advanced_OpenVPNClient_Content.asp" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/Advanced_OpenVPNClient_Content.asp" "$COLOR_WHITE" " completed"
 
-  # Only remove vpnrouting.sh and updown-client.sh files if LAN Client Routing is not being used
+  # Only remove x3mRouting_firewall_start.sh and vpnrouting.sh if LAN Client Routing is not being used
   if [ ! -s "$LOCAL_REPO/x3mRouting_client_nvram.sh" ] && [ ! -s "$LOCAL_REPO/x3mRouting_client_config.sh" ]; then
-    for FILE in vpnrouting.sh updown-client.sh; do
+    for FILE in x3mRouting_firewall_start.sh vpnrouting.sh; do
       if [ -s "$ADDONS/$FILE" ]; then
         case $FILE in
-          vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh && rm -f "$ADDONS/$FILE";;
-          updown-client.sh) [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh && rm -f "$ADDONS/$FILE" ;;
+          vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh && rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed" ;;
+          x3mRouting_firewall_start.sh) rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed";;
         esac
-        rm -f "$ADDONS/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/$FILE" "$COLOR_WHITE" " completed"
       fi
     done
   fi
@@ -373,9 +404,6 @@ Remove_OPT3() {
 
   # Remove entries from /jffs/scripts/nat-start
   Remove_nat_start_Entries
-
-  # Only remove entries from /jffs/scripts/firewall-start if option 2 not installed
-  [ ! -s "$ADDONS/Advanced_OpenVPNClient_Content.asp" ] && Remove_firewall_start_Entries
 
   Remove_Prerouting_Rules
 
@@ -501,6 +529,15 @@ Confirm_Update() {
     case "$CONFIRM_UPDATE_OPTION" in
     1)
       echo
+      # install x3mRouting_firewall_start.sh if option 1 or 2 installed.
+      if [ -s "$ADDONS_DIR/Advanced_OpenVPNClient_Content.asp" ] || [ -s "$REPO_DIR/x3mRouting_client_config.sh" ]; then
+        if [ ! -f "$ADDONS_DIR/x3mRouting_firewall_start.sh" ]; then
+          Download_File "$ADDONS" "x3mRouting_firewall_start.sh"
+          Firewall_Start_Update
+        fi
+      else # remove for opt 3 users if installed in earlier versions of 394.19 test branch
+        Remove_firewall_start_Entries
+      fi
       Update_Repo_Files
       Update_Addons_Files
       break
@@ -519,7 +556,6 @@ Confirm_Update() {
 Remove_Mounts () {
 
   [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh
-  [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh
   [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ] && umount /www/Advanced_OpenVPNClient_Content.asp
 
 }
@@ -532,11 +568,10 @@ Migrate_Util_Files () {
 
   [ -s "/jffs/configs/x3mRouting_client_config" ] && mv "/jffs/configs/x3mRouting_client_config" "$ADDONS/x3mRouting_client_config"
 
-  for FILE in vpnrouting.sh updown-client.sh Advanced_OpenVPNClient_Content.asp mount_files_lan.sh mount_files_gui.sh; do
+  for FILE in vpnrouting.sh Advanced_OpenVPNClient_Content.asp mount_files_lan.sh mount_files_gui.sh; do
     if [ -s "$LOCAL_REPO/$FILE" ]; then
       case "$FILE" in
         vpnrouting.sh) [ "$(df | grep -c "/usr/sbin/vpnrouting.sh")" -eq 1 ] && umount /usr/sbin/vpnrouting.sh && [ -s "$LOCAL_REPO/$FILE" ] && mv "$LOCAL_REPO/$FILE" "$ADDONS/$FILE" ;;
-        updown-client.sh) [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh && [ -s "$LOCAL_REPO/$FILE" ] && mv "$LOCAL_REPO/$FILE" "$ADDONS/$FILE" ;;
         Advanced_OpenVPNClient_Content.asp) [ "$(df | grep -c "/www/Advanced_OpenVPNClient_Content.asp")" -eq 1 ] && umount /www/Advanced_OpenVPNClient_Content.asp && [ -s "$LOCAL_REPO/$FILE" ] && mv "$LOCAL_REPO/$FILE" "$ADDONS/$FILE" ;;
         mount_files_lan.sh | mount_files_gui.sh) [ -s "$LOCAL_REPO/$FILE" ] && mv "$LOCAL_REPO/$FILE" "$ADDONS/$FILE" && sed 's/scripts/addons/' "$ADDONS/$FILE" > "/tmp/$FILE" && mv "/tmp/$FILE" "$ADDONS/$FILE" && chmod 755 "$ADDONS/$FILE" ;;
       esac
@@ -564,24 +599,37 @@ Migrate_Util_Files () {
 ### and https://github.com/jackyaz/spdMerlin - credit to Jack Yaz
 Update_Addons_Files() {
 
-    # Check if version update
-    for FILE in mount_files_lan.sh mount_files_gui.sh x3mRouting_firewall_start.sh; do
-      if [ -s "$ADDONS/$FILE" ]; then
-        localver=$(grep "VERSION=" "$ADDONS/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
-        serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
-        if [ "$localver" != "$serverver" ]; then
-          printf 'New version of %b%s%b available - updating to %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
-          Download_File "$ADDONS" "$FILE"
-        else
-          printf 'No new version of %b%s%b to update - latest is %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
-        fi
+  FLAG=no
+
+  # updown-client.sh removal for 384.19 Beta 1+, install updown-dns.sh if LAN Client Routing option installed
+  if [ -s "$ADDONS/updown-client.sh" ]; then
+    [ "$(df | grep -c "/usr/sbin/updown-client.sh")" -eq 1 ] && umount /usr/sbin/updown-client.sh
+    rm -rf "$ADDONS/updown-client.sh"
+    if [ -s "$LOCAL_REPO/x3mRouting_client_nvram.sh" ] || [ -s "$LOCAL_REPO/x3mRouting_client_config.sh" ]; then
+      # only download if LAN Clients option installed
+      Download_File "$ADDONS" updown-dns.sh
+      FLAG=yes # need to rerun x3mRouting_client_nvram.sh if ovpncX.nvram files exist later on in the update process
+    fi
+  fi
+
+  # Check if version update
+  for FILE in mount_files_lan.sh mount_files_gui.sh updown-dns.sh x3mRouting_firewall_start.sh; do
+    if [ -s "$ADDONS/$FILE" ]; then
+      localver=$(grep "VERSION=" "$ADDONS/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
+      serverver=$(/usr/sbin/curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
+      if [ "$localver" != "$serverver" ]; then
+        printf 'New version of %b%s%b available - updating to %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
+        Download_File "$ADDONS" "$FILE"
+      else
+        printf 'No new version of %b%s%b to update - latest is %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
       fi
-    done
+    fi
+  done
 
   Remove_Mounts
 
   # Check if md5sum difference
-  for FILE in vpnrouting.sh updown-client.sh Advanced_OpenVPNClient_Content.asp ount_files_lan.sh mount_files_gui.sh x3mRouting_firewall_start.sh; do
+  for FILE in mount_files_lan.sh mount_files_gui.sh updown-dns.sh x3mRouting_firewall_start.sh vpnrouting.sh Advanced_OpenVPNClient_Content.asp ; do
     if [ -s "$ADDONS/$FILE" ]; then
       localmd5="$(md5sum "$ADDONS/$FILE" | awk '{print $1}')"
       remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
@@ -593,6 +641,16 @@ Update_Addons_Files() {
       fi
     fi
   done
+
+  if [ "$FLAG" = "yes" ]; then
+  # Need to run x3mRouting_client_nvram.sh to create required entries in VPN up/down files if client nvram files exist
+    if [ -s "$ADDONS_DIR/ovpnc1.nvram" ] || [ -s "$ADDONS_DIR/ovpnc2.nvram" ] || [ -s "$ADDONS_DIR/ovpnc3.nvram" ] || [ -s "$ADDONS_DIR/ovpnc4.nvram" ] || [ -s "$ADDONS_DIR/ovpnc5.nvram" ]; then
+      sh "$LOCAL_REPO/x3mRouting_client_nvram.sh"
+      for VPN_CLIENT in 1 2 3 4 5; do
+        [ -s "$ADDONS_DIR/client{$VPN_CLIENT}_dns.sh" ] && sh "$ADDONS_DIR/client{$VPN_CLIENT}_dns.sh"
+      done
+    fi
+  fi
 
   # Remount Files
   for FILE in mount_files_lan.sh mount_files_gui.sh; do
@@ -830,7 +888,7 @@ Update_NewVersion() {
         read -r "OPTION"
         case "$OPTION" in
           1)
-            rm "$CLIENTX_FILE"
+            rm -rf "$CLIENTX_FILE"
             printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " file deleted"
             break
             ;;
@@ -903,7 +961,7 @@ Update_NewVersion() {
     echo "Check for and remove any obsolete files..."
     echo
     for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
-      [ -f "$LOCAL_REPO/$OLD_FILE" ] && rm "$LOCAL_REPO/$OLD_FILE" && printf '%s%b%s%b%s\n' "Obsolete " "$COLOR_GREEN" "$LOCAL_REPO/$OLD_FILE" "$COLOR_WHITE" " file deleted" || printf '%s%b%s%b%s' "Obsolete " "$COLOR_GREEN" "$LOCAL_REPO/$OLD_FILE" "$COLOR_WHITE" "  file does not exist"
+      [ -f "$LOCAL_REPO/$OLD_FILE" ] && rm -rf "$LOCAL_REPO/$OLD_FILE" && printf '%s%b%s%b%s\n' "Obsolete " "$COLOR_GREEN" "$LOCAL_REPO/$OLD_FILE" "$COLOR_WHITE" " file deleted" || printf '%s%b%s%b%s' "Obsolete " "$COLOR_GREEN" "$LOCAL_REPO/$OLD_FILE" "$COLOR_WHITE" "  file does not exist"
     done
 
   }
@@ -1076,7 +1134,7 @@ Update_NewVersion() {
     printf '%s%b%s%b%s\n' "Please review the "  "$COLOR_GREEN" "$CONV_FILE" "$COLOR_WHITE" " script before running"
   else
     printf '%b%s%b%s%b%s%b%s\n' "$COLOR_GREEN" "$CONV_FILE" "$COLOR_WHITE" " script not created. No valid x3mRouting entries found in" "$COLOR_GREEN" "$NAT_START"  "$COLOR_WHITE" " or vpnclientX- route-up files."
-    rm "$CONV_FILE"
+    rm -rf "$CONV_FILE"
   fi
 
   # DO NOT Give user the option to remove the prior verson of any x3mRouting entries found in $NAT_START or vpnclientX-route-up files"
@@ -1138,7 +1196,7 @@ Check_For_Shebang() {
       read -r "OPTION"
       case "$OPTION" in
         1)
-          rm "$CLIENTX_FILE"
+          rm -rf "$CLIENTX_FILE"
           printf '%b%s%b%s\n' "$COLOR_GREEN" "$CLIENTX_FILE" "$COLOR_WHITE" " file deleted"
           break
           ;;
@@ -1250,7 +1308,7 @@ Remove_firewall_start_Entries() {
 Remove_Symlinks() {
 
   if [ -s "/opt/bin/x3mRouting" ]; then
-    if ! rm "/opt/bin/x3mRouting" >/dev/null 2>&1; then
+    if ! rm -rf "/opt/bin/x3mRouting" >/dev/null 2>&1; then
       printf '\nError trying to remove %b"/opt/bin/x3mRouting"%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
     else
       printf '\n%b"/opt/bin/x3mRouting"%b x3mRouting symbolic link file removed\n' "$COLOR_GREEN" "$COLOR_WHITE"
@@ -1258,7 +1316,7 @@ Remove_Symlinks() {
   fi
 
   if [ -s "/opt/bin/x3mMenu" ]; then
-    if ! rm "/opt/bin/x3mMenu" >/dev/null 2>&1; then
+    if ! rm -rf "/opt/bin/x3mMenu" >/dev/null 2>&1; then
       printf '\nError trying to remove %b"/opt/bin/x3mMenu"%b\n' "$COLOR_GREEN" "$COLOR_WHITE"
     else
       printf '\n%b"/opt/bin/x3mMenu"%b x3mMenu symbolic link file removed\n' "$COLOR_GREEN" "$COLOR_WHITE"
@@ -1440,7 +1498,7 @@ Install_x3mRouting_LAN_Clients() {
   Download_File "$LOCAL_REPO" "x3mRouting_client_nvram.sh"
   Download_File "$LOCAL_REPO" "x3mRouting_client_config.sh"
   Download_File "$ADDONS" "vpnrouting.sh"
-  Download_File "$ADDONS" "updown-client.sh"
+  Download_File "$ADDONS" "updown-dns.sh"
   Download_File "$ADDONS" "mount_files_lan.sh"
   Download_File "$ADDONS" "x3mRouting_firewall_start.sh"
   Init_Start_Update "mount_files_lan.sh"
@@ -1536,7 +1594,6 @@ Install_x3mRouting_GUI() {
 
   Check_Requirements
   Download_File "$ADDONS" "vpnrouting.sh"
-  Download_File "$ADDONS" "updown-client.sh"
   Download_File "$ADDONS" "Advanced_OpenVPNClient_Content.asp"
   Download_File "$ADDONS" "mount_files_gui.sh"
   Download_File "$ADDONS" "x3mRouting_firewall_start.sh"
@@ -1553,7 +1610,6 @@ Install_x3mRouting_Shell_Scripts() {
   Check_Requirements
   rm -rf "/opt/bin/x3mRouting" 2>/dev/null
   Download_File "$LOCAL_REPO" "x3mRouting.sh"
-  Download_File "$ADDONS" "x3mRouting_firewall_start.sh"
   ln -s "/jffs/scripts/x3mRouting/x3mRouting.sh" "/opt/bin/x3mRouting"
   Check_Profile_Add
   echo

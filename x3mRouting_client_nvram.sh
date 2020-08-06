@@ -3,7 +3,7 @@
 # Script: x3mRouting_rules.sh
 # VERSION=2.0.0
 # Author: Xentrk
-# 23-May-2020
+# Date: 5-August-2020
 #
 #####################################################################################################
 # Description:
@@ -12,13 +12,47 @@
 #
 #####################################################################################################
 
-# Uncomment the line below for debugging
-# set -x
-
 Cleanup_OLD_LAN_Client_Routes() {
   for VPN_ID in 1 2 3 4 5; do
-    [ -f "$ADDON_DIR/ovpnc${VPN_ID}.nvram" ] && rm -rf "$ADDON_DIR/ovpnc${VPN_ID}.nvram"
+    [ -f "$ADDONS_DIR/ovpnc${VPN_ID}.nvram" ] && rm -rf "$ADDONS_DIR/ovpnc${VPN_ID}.nvram"
   done
+
+}
+
+Openvpn_Event_Entries() {
+
+  VPN_ID=$1
+  UP_ENTRY="sh $ADDONS_DIR/updown-dns.sh $VPN_ID up"
+  DOWN_ENTRY="sh $ADDONS_DIR/updown-dns.sh $VPN_ID down"
+  VPNC_UP_FILE="$REPO_DIR/vpnclient${VPN_ID}-route-up"
+  VPNC_DOWN_FILE="$REPO_DIR/vpnclient${VPN_ID}-route-pre-down"
+
+  if [ -s "$VPNC_UP_FILE" ]; then
+    if [ "$(grep -c "$UP_ENTRY" "$VPNC_UP_FILE")" -eq 0 ]; then
+      echo "$UP_ENTRY" >>"$VPNC_UP_FILE"
+    fi
+  else
+    true >"$VPNC_UP_FILE"
+    {
+      printf '%s\n' "#!/bin/sh"
+      printf '%s\n' "$UP_ENTRY"
+    } >"$VPNC_UP_FILE"
+  fi
+
+  if [ -s "$VPNC_DOWN_FILE" ]; then
+    if [ "$(grep -c "$DOWN_ENTRY" "$VPNC_DOWN_FILE")" -eq 0 ]; then # only add if entry does not exist
+      echo "$DOWN_ENTRY" >>"$VPNC_DOWN_FILE" # add 'ipset=' domains entry to dnsmasq.conf.add
+    fi
+  else
+    true >"$VPNC_DOWN_FILE"
+    {
+      printf '%s\n' "#!/bin/sh"
+      printf '%s\n' "$DOWN_ENTRY"
+    } >"$VPNC_DOWN_FILE"
+  fi
+
+  [ -s "$VPNC_UP_FILE" ] && chmod 755 "$VPNC_UP_FILE"
+  [ -s "$VPNC_DOWN_FILE" ] && chmod 755 "$VPNC_DOWN_FILE"
 
 }
 
@@ -49,50 +83,23 @@ Create_LAN_Client_Routes() {
   done <"$CONFIG_FILE"
   IFS=$OLDIFS
 
-  # OVPNC1 clients
-  if [ -s "/tmp/ovpnc1.$$" ]; then
-    awk '{ print }' ORS='' <"/tmp/ovpnc1.$$" >"$ADDON_DIR/ovpnc1.nvram"
-    echo "Created nvram file for OpenVPN Client 1" && echo "Restarting OpenVPN Client 1 to apply assignments"
-    service restart_vpnclient1
-    rm /tmp/ovpnc1.$$
-  fi
+  for VPN_ID in 1 2 3 4 5; do
+    if [ -s "/tmp/ovpnc${VPN_ID}.$$" ]; then
+      awk '{ print }' ORS='' <"/tmp/ovpnc${VPN_ID}.$$" >"$ADDONS_DIR/ovpnc${VPN_ID}.nvram"
+      Openvpn_Event_Entries "$VPN_ID"
+      echo "Created nvram file for OpenVPN Client $VPN_ID" && echo "Restarting OpenVPN Client $VPN_ID to apply assignments"
+      service restart_vpnclient${VPN_ID}
+      rm /tmp/ovpnc${VPN_ID}.$$
+    fi
+  done
 
-  # OVPNC2 clients
-  if [ -s "/tmp/ovpnc2.$$" ]; then
-    awk '{ print }' ORS='' <"/tmp/ovpnc2.$$" >"$ADDON_DIR/ovpnc2.nvram"
-    echo "Created nvram file for OpenVPN Client 2" && echo "Restarting OpenVPN Client 2 to apply assignments"
-    service restart_vpnclient2
-    rm -rf /tmp/ovpnc2.$$
-  fi
-
-  # OVPNC3 clients
-  if [ -s "/tmp/ovpnc3.$$" ]; then
-    awk '{ print }' ORS='' <"/tmp/ovpnc3.$$" >"$ADDON_DIR/ovpnc3.nvram"
-    echo "Created nvram file for OpenVPN Client 3" && echo "Restarting OpenVPN Client 3 to apply assignments"
-    service restart_vpnclient3
-    rm -rf /tmp/ovpnc3.$$
-  fi
-
-  # OVPNC4 clients
-  if [ -s "/tmp/ovpnc4.$$" ]; then
-    awk '{ print }' ORS='' <"/tmp/ovpnc4.$$" >"$ADDON_DIR/ovpnc4.nvram"
-    echo "Created nvram file for OpenVPN Client 4" && echo "Restarting OpenVPN Client 4 to apply assignments"
-    service restart_vpnclient4
-    rm -rf /tmp/ovpnc4.$$
-  fi
-
-  # OVPNC5 clients
-  if [ -s "/tmp/ovpnc5.$$" ]; then
-    awk '{ print }' ORS='' <"/tmp/ovpnc5.$$" >"$ADDON_DIR/ovpnc5.nvram"
-    echo "Created nvram file for OpenVPN Client 5" && echo "Restarting OpenVPN Client 5 to apply assignments"
-    service restart_vpnclient5
-    rm -rf /tmp/ovpnc5.$$
-  fi
 }
 
 # End of functions
 # Begin
-ADDON_DIR=/jffs/addons/x3mRouting
+ADDONS_DIR=/jffs/addons/x3mRouting
+REPO_DIR=/jffs/scripts/x3mRouting
+
 Cleanup_OLD_LAN_Client_Routes
 Create_LAN_Client_Routes
 echo "Script completed"

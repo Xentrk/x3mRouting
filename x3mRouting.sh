@@ -605,16 +605,26 @@ Download_ASN_Ipset_List() {
   NUMBER=$3
   DIR=$4
 
-  if [ ! -s "$DIR/$IPSET_NAME" ]; then
-    true >"$DIR/$IPSET_NAME"
-  fi
-
   STATUS=$(curl --retry 3 -sL -o "$DIR/${IPSET_NAME}_tmp" -w '%{http_code}' https://ipinfo.io/"${ASN}")
 
-  if [ "$STATUS" -eq 200 ]; then # curl succedded
+  if [ "$STATUS" -eq 200 ]; then # curl succeded
     grep -E "a href.*$NUMBER\/" "$DIR/${IPSET_NAME}_tmp" | grep -v ":" | sed 's|^.*<a href="/'"$ASN"'/||' | sed 's|" >||' >>"$DIR/$IPSET_NAME"
     sort -gt '/' -k 1 "$DIR/$IPSET_NAME" | sort -ut '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4n >"$DIR/${IPSET_NAME}_tmp"
     mv "$DIR/${IPSET_NAME}_tmp" "$DIR/$IPSET_NAME"
+    sed -i '/^$/d'  "$DIR/$IPSET_NAME"
+    # check for non valid lines here.
+    while read -r LINE; do
+      REGEX="(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+      if echo "$LINE" | grep -Pq "$REGEX"; then
+        USE_BKUP_FLAG=No
+      else
+        USE_BKUP_FLAG=Yes
+        break
+      fi
+    done < "$DIR/$IPSET_NAME"
+    if [ "$USE_BKUP_FLAG" = "Yes" ]; then
+      cp "$DIR/$IPSET_NAME.bkup" "$DIR/$IPSET_NAME"
+    fi
     awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   else
     STATUS=$(curl --retry 3 -sL -o "$DIR/${IPSET_NAME}_tmp" -w '%{http_code}' https://api.hackertarget.com/aslookup/?q="$ASN")
@@ -623,9 +633,24 @@ Download_ASN_Ipset_List() {
       awk '{ print $1 }' "$DIR/${IPSET_NAME}_tmp" | grep -v "$NUMBER" >>"$DIR/$IPSET_NAME"
       sort -gt '/' -k 1 "$DIR/$IPSET_NAME" | sort -ut '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4n >"$DIR/${IPSET_NAME}_tmp"
       mv "$DIR/${IPSET_NAME}_tmp" "$DIR/$IPSET_NAME"
+      sed -i '/^$/d'  "$DIR/$IPSET_NAME"
+      # check for non valid lines here.
+      while read -r LINE; do
+        REGEX="(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+        if echo "$LINE" | grep -Pq "$REGEX"; then
+          USE_BKUP_FLAG=No
+        else
+          USE_BKUP_FLAG=Yes
+          break
+        fi
+      done < "$DIR/$IPSET_NAME"
+      if [ "$USE_BKUP_FLAG" = "Yes" ]; then
+        cp "$DIR/$IPSET_NAME.bkup" "$DIR/$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "Unexpected data found in  $DIR/$IPSET_NAME. Restoring IPSET list from backup."
+      fi
       awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
-    elif [ -s "$DIR/$IPSET_NAME" ]; then
-      logger -st "($(basename "$0"))" $$ "Download of ASN IPv4 addresses failed. Defaulting to current file."
+    elif [ -s "$DIR/$IPSET_NAME.bkup" ]; then
+      logger -st "($(basename "$0"))" $$ "Download of ASN IPv4 addresses failed. Restoring IPSET list from backup"
+      cp "$DIR/$IPSET_NAME.bkup" "$DIR/$IPSET_NAME"
       awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
     else
       Error_Exit "Download of ASN IPv4 addresses failed with curl error code: $STATUS"
@@ -778,8 +803,15 @@ DNSMASQ_Parm() {
 
 ASNUM_Parm() {
 
-  ASN=$(echo "$@" | sed -n "s/^.*asnum=//p" | awk '{print $1}' | tr ',' '\n')
   true >"/opt/tmp/${SCR_NAME}"
+
+  if [ -s "$DIR/$IPSET_NAME" ]; then
+    mv "$DIR/$IPSET_NAME" "$DIR/$IPSET_NAME.bkup" # create backup to restore from if download fails
+    true >"$DIR/$IPSET_NAME" # wipe clean before loading save/restore file.
+  fi
+
+  ASN=$(echo "$@" | sed -n "s/^.*asnum=//p" | awk '{print $1}' | tr ',' '\n')
+
   for ASN in $ASN; do
     awk -v A="$ASN" 'BEGIN {print A}' >>"/opt/tmp/${SCR_NAME}"
     while read -r ASN; do

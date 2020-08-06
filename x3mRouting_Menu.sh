@@ -263,8 +263,8 @@ Remove_OPT1() {
     [ -s "$ADDONS/client${VPN_ID}_dns.sh" ] && rm -rf "$ADDONS/client${VPN_ID}_dns.sh" && service restart_vpnclient"$VPN_ID" && echo "Retarting VPN Client $VPN_ID to remove x3mRouting LAN Client DNS Rules"
 
     # check up/down openvpn-event files for entries
-    UP_ENTRY="sh $ADDONS_DIR/updown-dns.sh $VPN_ID up"
-    DOWN_ENTRY="sh $ADDONS_DIR/updown-dns.sh $VPN_ID down"
+    UP_ENTRY="sh $ADDONS/updown-dns.sh $VPN_ID up"
+    DOWN_ENTRY="sh $ADDONS/updown-dns.sh $VPN_ID down"
     VPNC_UP_FILE="$REPO_DIR/vpnclient${VPN_ID}-route-up"
     VPNC_DOWN_FILE="$REPO_DIR/vpnclient${VPN_ID}-route-pre-down"
 
@@ -530,8 +530,8 @@ Confirm_Update() {
     1)
       echo
       # install x3mRouting_firewall_start.sh if option 1 or 2 installed.
-      if [ -s "$ADDONS_DIR/Advanced_OpenVPNClient_Content.asp" ] || [ -s "$REPO_DIR/x3mRouting_client_config.sh" ]; then
-        if [ ! -f "$ADDONS_DIR/x3mRouting_firewall_start.sh" ]; then
+      if [ -s "$ADDONS/Advanced_OpenVPNClient_Content.asp" ] || [ -s "$REPO_DIR/x3mRouting_client_config.sh" ]; then
+        if [ ! -f "$ADDONS/x3mRouting_firewall_start.sh" ]; then
           Download_File "$ADDONS" "x3mRouting_firewall_start.sh"
           Firewall_Start_Update
         fi
@@ -644,10 +644,10 @@ Update_Addons_Files() {
 
   if [ "$FLAG" = "yes" ]; then
   # Need to run x3mRouting_client_nvram.sh to create required entries in VPN up/down files if client nvram files exist
-    if [ -s "$ADDONS_DIR/ovpnc1.nvram" ] || [ -s "$ADDONS_DIR/ovpnc2.nvram" ] || [ -s "$ADDONS_DIR/ovpnc3.nvram" ] || [ -s "$ADDONS_DIR/ovpnc4.nvram" ] || [ -s "$ADDONS_DIR/ovpnc5.nvram" ]; then
+    if [ -s "$ADDONS/ovpnc1.nvram" ] || [ -s "$ADDONS/ovpnc2.nvram" ] || [ -s "$ADDONS/ovpnc3.nvram" ] || [ -s "$ADDONS/ovpnc4.nvram" ] || [ -s "$ADDONS/ovpnc5.nvram" ]; then
       sh "$LOCAL_REPO/x3mRouting_client_nvram.sh"
       for VPN_CLIENT in 1 2 3 4 5; do
-        [ -s "$ADDONS_DIR/client{$VPN_CLIENT}_dns.sh" ] && sh "$ADDONS_DIR/client{$VPN_CLIENT}_dns.sh"
+        [ -s "$ADDONS/client{$VPN_CLIENT}_dns.sh" ] && sh "$ADDONS/client{$VPN_CLIENT}_dns.sh"
       done
     fi
   fi

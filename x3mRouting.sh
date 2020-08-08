@@ -194,6 +194,43 @@ Check_Dnsmasq() {
   fi
 }
 
+# check if /jffs/configs/dnsmasq.conf.add contains 'ipset=' entry for the domains
+Check_Dnsmasq_Logging() {
+
+  if [ -s "/tmp/etc/dnsmasq.conf" ]; then
+    for CONFIG_OPT in log-async log-queries log-facility; do
+      if grep -q "$CONFIG_OPT" "/tmp/etc/dnsmasq.conf"; then
+        LOG_FLAG=Yes
+      else
+        LOG_FLAG=No
+        break
+      fi
+    done
+    if [ "$LOG_FLAG" = "No" ]; then
+      logger -st "($(basename "$0"))" $$ "dnsmasq logging is not enabled. Enabling dnsmasq logging"
+      if [ -s "/jffs/configs/dnsmasq.conf.add" ]; then # dnsmasq.conf.add file exists
+        for CONFIG_OPT in log-async log-queries log-facility=/opt/var/log/dnsmasg.log; do
+          if [ "$(grep -q "$CONFIG_OPT" "/jffs/configs/dnsmasq.conf.add")" ]; then # only add if entry does not exist
+            echo "$CONFIG_OPT" >>/jffs/configs/dnsmasq.conf.add # add dnsmasq log entry to dnsmasq.conf.add
+          fi
+        done
+        service restart_dnsmasq 2>/dev/null
+        logger -st "($(basename "$0"))" $$ "dnsmasq logging is now enabled. Log file location is /opt/var/log/dnsmasg.log"
+      else
+        true >/jffs/configs/dnsmasq.conf.add
+        {
+          echo log-async
+          echo log-queries
+          echo log-facility=/opt/var/log/dnsmasg.log
+        }>>/jffs/configs/dnsmasq.conf.add
+        service restart_dnsmasq 2>/dev/null
+        logger -st "($(basename "$0"))" $$ "dnsmasq logging is now enabled. Log file location is /opt/var/log/dnsmasg.log"
+      fi
+    fi
+  fi
+
+}
+
 Create_Ipset_List() {
 
   IPSET_NAME=$1
@@ -592,6 +629,7 @@ Process_DNSMASQ() {
   DNSMASQ_ENTRY=$2
   DIR=$3
 
+  Check_Dnsmasq_Logging
   Check_Dnsmasq "$DNSMASQ_ENTRY"
   Create_Ipset_List "$IPSET_NAME" "DNSMASQ"
   Check_Restore_File_Age "$IPSET_NAME" "$DIR"
@@ -623,7 +661,7 @@ Download_ASN_Ipset_List() {
       fi
     done < "$DIR/$IPSET_NAME"
     if [ "$USE_BKUP_FLAG" = "Yes" ]; then
-      cp "$DIR/$IPSET_NAME.bkup" "$DIR/$IPSET_NAME"
+      cp "$DIR/$IPSET_NAME.bkup" "$DIR/$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "Unexpected data found in  $DIR/$IPSET_NAME. Restoring IPSET list from backup."
     fi
     awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   else

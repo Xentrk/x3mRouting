@@ -6,7 +6,7 @@
 # Script: x3mRouting.sh
 # VERSION=2.0.1
 # Author: Xentrk
-# Date: 26-July-2020
+# Date: 8-August-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -192,43 +192,6 @@ Check_Dnsmasq() {
     logger -st "($(basename "$0"))" $$ "ipset=$DNSMASQ_ENTRY" added to "/jffs/configs/dnsmasq.conf.add"
     service restart_dnsmasq 2>/dev/null
   fi
-}
-
-# check if /jffs/configs/dnsmasq.conf.add contains 'ipset=' entry for the domains
-Check_Dnsmasq_Logging() {
-
-  if [ -s "/tmp/etc/dnsmasq.conf" ]; then
-    for CONFIG_OPT in log-async log-queries log-facility; do
-      if grep -q "$CONFIG_OPT" "/tmp/etc/dnsmasq.conf"; then
-        LOG_FLAG=Yes
-      else
-        LOG_FLAG=No
-        break
-      fi
-    done
-    if [ "$LOG_FLAG" = "No" ]; then
-      logger -st "($(basename "$0"))" $$ "dnsmasq logging is not enabled. Enabling dnsmasq logging"
-      if [ -s "/jffs/configs/dnsmasq.conf.add" ]; then # dnsmasq.conf.add file exists
-        for CONFIG_OPT in log-async log-queries log-facility=/opt/var/log/dnsmasg.log; do
-          if [ "$(grep -q "$CONFIG_OPT" "/jffs/configs/dnsmasq.conf.add")" ]; then # only add if entry does not exist
-            echo "$CONFIG_OPT" >>/jffs/configs/dnsmasq.conf.add # add dnsmasq log entry to dnsmasq.conf.add
-          fi
-        done
-        service restart_dnsmasq 2>/dev/null
-        logger -st "($(basename "$0"))" $$ "dnsmasq logging is now enabled. Log file location is /opt/var/log/dnsmasg.log"
-      else
-        true >/jffs/configs/dnsmasq.conf.add
-        {
-          echo log-async
-          echo log-queries
-          echo log-facility=/opt/var/log/dnsmasg.log
-        }>>/jffs/configs/dnsmasq.conf.add
-        service restart_dnsmasq 2>/dev/null
-        logger -st "($(basename "$0"))" $$ "dnsmasq logging is now enabled. Log file location is /opt/var/log/dnsmasg.log"
-      fi
-    fi
-  fi
-
 }
 
 Create_Ipset_List() {
@@ -629,7 +592,6 @@ Process_DNSMASQ() {
   DNSMASQ_ENTRY=$2
   DIR=$3
 
-  Check_Dnsmasq_Logging
   Check_Dnsmasq "$DNSMASQ_ENTRY"
   Create_Ipset_List "$IPSET_NAME" "DNSMASQ"
   Check_Restore_File_Age "$IPSET_NAME" "$DIR"

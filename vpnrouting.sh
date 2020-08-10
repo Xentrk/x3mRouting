@@ -326,8 +326,6 @@ Set_VPN_NVRAM_Vars() {
 }
 
 # Begin
-logger -st "($(basename "$0"))" $$ "Starting routing policy configuration for client $VPN_UNIT"
-
 case "$dev" in
 tun11 | tun12 | tun13 | tun14 | tun15) Set_VPN_NVRAM_Vars ;;
 *) run_custom_script && exit 0 ;;
@@ -407,7 +405,6 @@ if [ "$script_type" = "route-up" ]; then
 fi # End route-up
 
 ip route flush cache
-logger -st "($(basename "$0"))" $$ "Completed routing policy configuration for client $VPN_UNIT"
 run_custom_script
 
 exit 0

@@ -9,10 +9,8 @@
 # -- SC2021: Don't use [] around classes in tr, it replaces literal square brackets.
 
 PARAM=$*
-if [ "$PARAM" = "" ]; then
-  # Add paramaters equivalent to those passed for up command
-  PARAM="$dev $tun_mtu $link_mtu $ifconfig_local $ifconfig_remote"
-fi
+# Add paramaters equivalent to those passed for up command
+[ -z "$PARAM" ] && PARAM="$dev $tun_mtu $link_mtu $ifconfig_local $ifconfig_remote"
 
 my_logger() {
   if [ "$VPN_LOGGING" -gt "3" ]; then
@@ -25,7 +23,7 @@ Chk_IPSET_List_Ready() {
   # ARGS [wait attempts] [specific_entware_utility]
   IPSET_NAME=$1
   READY=1 # Assume IPSET list is NOT available
-  MAX_TRIES=60
+  MAX_TRIES=120
 
   # Wait up to (default) 30 seconds to see if IPSET is available.....
   TRIES=0
@@ -49,9 +47,7 @@ create_client_list() {
   IFS="<"
 
   for ENTRY in $VPN_IP_LIST; do
-    if [ "$ENTRY" = "" ]; then
-      continue
-    fi
+    [ -z "$ENTRY" ] && continue
     TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 4)
     ################################ Bypass DummyVPN Entry
     DESC=$(echo "$ENTRY" | cut -d ">" -f 1)
@@ -71,7 +67,7 @@ create_client_list() {
       TARGET_NAME="VPN client "$VPN_UNIT
     fi
     VPN_IP=$(echo "$ENTRY" | cut -d ">" -f 2)
-    if [ "$VPN_IP" != "0.0.0.0" ] && [ "$VPN_IP" != "" ]; then
+    if [ "$VPN_IP" != "0.0.0.0" ] && [ -n "$VPN_IP" ]; then
       SRCC="from"
       SRCA="$VPN_IP"
     else
@@ -79,14 +75,14 @@ create_client_list() {
       SRCA=""
     fi
     DST_IP=$(echo "$ENTRY" | cut -d ">" -f 3)
-    if [ "$DST_IP" != "0.0.0.0" ] && [ "$DST_IP" != "" ]; then
+    if [ "$DST_IP" != "0.0.0.0" ] && [ -n "$DST_IP" ]; then
       DSTC="to"
       DSTA="$DST_IP"
     else
       DSTC=""
       DSTA=""
     fi
-    if [ "$SRCC" != "" ] || [ "$DSTC" != "" ]; then
+    if [ -n "$SRCC" ] || [ -n "$DSTC" ]; then
       #################################################################
       ## prevent creating ip rule for ipset lists here
       ## Example Value of ENTRY is: CBS>192.168.4.1>0.0.0.0>DD
@@ -103,7 +99,6 @@ create_client_list() {
 
     ################################## Martineau Hack process IPSET Lists
     if echo "$TARGET_ROUTE" | grep -oE "SRC|DST|^D|^S"; then
-      my_logger "THE VALUE OF TARGET ROUTE: $TARGET_ROUTE"
       # Allow for 2-dimension and 3-dimension IPSETs.....
       case "$TARGET_ROUTE" in # TBA review static 'case' with a regexp? ;-)
       SRC | DST) DIM=$(echo "$TARGET_ROUTE" | tr '[A-Z]' '[a-z]') ;;
@@ -151,12 +146,11 @@ create_client_list() {
           fi
         fi
       fi
+      IPSET_NAME="$DESC"
       Chk_IPSET_List_Ready "$IPSET_NAME"
 
       TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 5)
       [ "$TARGET_ROUTE" = "WAN" ] && FWMARK=0x8000/0x8000 && PRIO=9990
-
-      IPSET_NAME="$DESC"
 
       if [ "$TARGET_ROUTE" = "VPN" ]; then
         case "$VPN_UNIT" in
@@ -292,10 +286,12 @@ init_table() {
   # Fill it with copy of existing main table
   if [ "$VPN_REDIR" -eq 3 ]; then
     LANIFNAME=$(nvram get lan_ifname)
-    ip route show table main dev "$LANIFNAME" | while read -r ROUTE; do
+    ip route show table main dev "$LANIFNAME" | while read -r ROUTE
+    do
       ip route add table "$VPN_TBL" $ROUTE dev "$LANIFNAME"
     done
-    ip route show table main dev "$dev" | while read -r ROUTE; do
+    ip route show table main dev "$dev" | while read -r ROUTE
+    do
       ip route add table "$VPN_TBL" $ROUTE dev "$dev"
     done
   elif [ "$VPN_REDIR" -eq 2 ]; then
@@ -330,8 +326,6 @@ Set_VPN_NVRAM_Vars() {
 }
 
 # Begin
-logger -st "($(basename "$0"))" $$ "Starting routing policy configuration for client $VPN_UNIT"
-
 case "$dev" in
 tun11 | tun12 | tun13 | tun14 | tun15) Set_VPN_NVRAM_Vars ;;
 *) run_custom_script && exit 0 ;;
@@ -339,7 +333,6 @@ esac
 
 # webui reports that vpn_force changed while vpn client was down
 if [ "$script_type" = "rmupdate" ]; then
-  #logger "..script_type=> rmupdate"
   my_logger "Refreshing policy rules for client $VPN_UNIT"
   purge_client_list
 
@@ -393,11 +386,11 @@ if [ "$script_type" = "route-up" ]; then
   create_client_list
 
   # Setup table default route
-  if [ "$VPN_IP_LIST" != "" ]; then
+  if [ -n "$VPN_IP_LIST" ]; then
     if [ "$VPN_FORCE" -eq 1 ]; then
       /usr/bin/logger -t "openvpn-routing" "Tunnel re-established, restoring WAN access to clients"
     fi
-    if [ "$route_net_gateway" != "" ]; then
+    if [ -n "$route_net_gateway" ]; then
       ip route del default table "$VPN_TBL"
       ip route add default via "$route_vpn_gateway" table "$VPN_TBL"
     else
@@ -405,14 +398,13 @@ if [ "$script_type" = "route-up" ]; then
     fi
   fi
 
-  if [ "$route_net_gateway" != "" ]; then
+  if [ -n "$route_net_gateway" ]; then
     ip route del default
     ip route add default via "$route_net_gateway"
   fi
 fi # End route-up
 
 ip route flush cache
-logger -st "($(basename "$0"))" $$ "Completed routing policy configuration for client $VPN_UNIT"
 run_custom_script
 
 exit 0

@@ -1,6 +1,6 @@
 #!/bin/sh
 ####################################################################################################
-# Script: x3mRouting_rules.sh
+# Script: Install_x3mRouting.sh
 # VERSION=2.1.0
 # Author: Xentrk
 # Date: 6-August-2020

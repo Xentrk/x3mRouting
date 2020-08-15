@@ -760,7 +760,7 @@ You won't be able to update to Version 2.0.0 using the existing **x3mRouting** M
   1.  Copy and paste the command below into an SSH session to download the new x3mRouting menu.
 
 ````
-sh -c "$(curl -sL https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting/Install_x3mRouting.sh)"
+sh -c "$(curl -sL https://raw.githubusercontent.com/Xentrk/x3mRouting/master/Install_x3mRouting.sh)"
 ````
   2.  After the download of the x3mRouting Installation Menu has completed, select the **[u]  Update x3mRouting to Version 2.0.0** option.
 

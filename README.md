@@ -6,19 +6,19 @@
 ## Introduction
 **x3mRouting** includes selective routing features for LAN Clients, OpenVPN Clients and OpenVPN Servers.
 
-If coming from the first generation of x3mRouting, please read the updated instructions below to become familiar with the new features and usage instructions. Refer to the [Version 2.0.0 Changes](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#version-200-changes) section for a description of the changes and the [Version 2.0.0 Update Process](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#version-200-update-process) section for the update instructions.
+If coming from the first generation of x3mRouting, please read the updated instructions below to become familiar with the new features and usage instructions. Refer to the [Version 2.0.0 Changes](https://github.com/Xentrk/x3mRouting#version-200-changes) section for a description of the changes and the [Version 2.0.0 Update Process](https://github.com/Xentrk/x3mRouting#version-200-update-process) section for the update instructions.
 
 ### 1. LAN Client Routing
 
-An alternative approach to automate and easily assign LAN clients to a WAN or VPN Client interface. This option eliminates the need to enter the LAN Client information and IP addresses in the OpenVPN Client Screen. The [LAN Clients Routing](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#1-lan-client-routing-1) option can be used by itself or with one of the two options below.
+An alternative approach to automate and easily assign LAN clients to a WAN or VPN Client interface. This option eliminates the need to enter the LAN Client information and IP addresses in the OpenVPN Client Screen. The [LAN Clients Routing](https://github.com/Xentrk/x3mRouting#1-lan-client-routing-1) option can be used by itself or with one of the two options below.
 
 ### 2. OpenVPN Client Screen, OpenVPN Event & x3mRouting Script
 
-Provides the ability to create IPSET lists using the **x3mRouting** script and selectively route the IPSET lists thru the VPN Client by entering the IPSET name in a modified [OpenVPN Client Screen](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#2-openvpn-client-screen-openvpn-event--x3mrouting-script-1).
+Provides the ability to create IPSET lists using the **x3mRouting** script and selectively route the IPSET lists thru the VPN Client by entering the IPSET name in a modified [OpenVPN Client Screen](https://github.com/Xentrk/x3mRouting#2-openvpn-client-screen-openvpn-event--x3mrouting-script-1).
 
 ### 3. OpenVPN Event & x3mRouting Script
 
-The [x3mRouting](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#3-openvpn-event--x3mroutingsh-script-1) script provides the ability to
+The [x3mRouting](https://github.com/Xentrk/x3mRouting#3-openvpn-event--x3mroutingsh-script-1) script provides the ability to
 
   * Create and selectively route IPSET lists to the VPN Client interface for all traffic or specific devices.
   * Bypass a VPN Client interface for all traffic or specific devices.
@@ -30,9 +30,9 @@ The features of **openvpn-event** are used to create the routing rule during a V
 ### 4. getdomainnames.sh & autoscan.sh Scripts
 These two scripts can be used to analyze the domain names being used for a website or streaming service.
 
-The [getdomainnames.sh](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#getdomainnamessh-script) script will create a uniquely sorted list of domain names gathered from **dnsmasq.log** that you collect by accessing a website or streaming service. Use the script to help determine the domain names used by a website or streaming service.
+The [getdomainnames.sh](https://github.com/Xentrk/x3mRouting#getdomainnamessh-script) script will create a uniquely sorted list of domain names gathered from **dnsmasq.log** that you collect by accessing a website or streaming service. Use the script to help determine the domain names used by a website or streaming service.
 
-The [autoscan.sh](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#autoscansh-script) script is used to search for one or more terms in **dnsmasq.log**. It will return the top level domain names if there is a match.
+The [autoscan.sh](https://github.com/Xentrk/x3mRouting#autoscansh-script) script is used to search for one or more terms in **dnsmasq.log**. It will return the top level domain names if there is a match.
 
 ## Support
 For help and support, please visit the Asuswrt-Merlin x3mRouting support thread on [snbforums.com](https://www.snbforums.com/threads/x3mrouting-selective-routing-for-asuswrt-merlin-firmware.57793/#post-506675).
@@ -107,7 +107,7 @@ If you prefer to use the modified OpenVPN Client Screen, create the IPSET list w
 
 If you create the IPSET list and specify the source and destination interfaces, no further action is required. **x3mRouting** will automatically manage the IPSET routing rules using the features of **openvpn-event**.
 
-The advantage of the screen is that it provides a visual depiction of what IPSET lists are being routed or bypassed through the OpenVPN Client. The disadvantage is the extra step required to manually enter the IPSET list in the screen. Note the known issues and work around solutions in the [Caveat Emptor](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#caveat-emptor) section before making a decision on using the modified OpenVPN Client Screen.
+The advantage of the screen is that it provides a visual depiction of what IPSET lists are being routed or bypassed through the OpenVPN Client. The disadvantage is the extra step required to manually enter the IPSET list in the screen. Note the known issues and work around solutions in the [Caveat Emptor](https://github.com/Xentrk/x3mRouting#caveat-emptor) section before making a decision on using the modified OpenVPN Client Screen.
 
 ##### IPSET Dimensions
 The OpenVPN Client Screen accepts single and two dimension IPSET lists. See the [IPSET Man Page](http://ipset.netfilter.org/ipset.man.html) for information. For most x3mRouting use cases, specify 'DST' as the first dimension and leave the second dimension empty to route an IPSET list to the VPN or WAN interface.
@@ -124,20 +124,20 @@ I welcome collaboration with other developers to help resolve these issues.
 #### OpenVPN Event & x3mRouting Script
 Running **x3mRouting** will automatically create the script entry in **/jffs/scripts/nat-start/**. Placing the script entry in **/jffs/scripts/nat-start** will execute the scripts at system boot or during a firewall restart event. The features of **openvpn-event** are not used for the routing of IPSET lists entered in the modified OpenVPN Client Screen. **openvpn-event** is installed to support the routing functions available in x3mRouting that don't require the use of the modified OpenVPN Client Screen:  
 
-* [VPN Client Routing](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#vpn-client-routing)
-* [VPN Client Bypass Routing](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#vpn-client-bypass-routing)
-* [VPN Server to VPN Client Routing](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#vpn-server-to-vpn-client-routing-1)
-* [VPN Server to IPSET List Routing](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#vpn-server-to-ipset-list-routing)
+* [VPN Client Routing](https://github.com/Xentrk/x3mRouting#vpn-client-routing)
+* [VPN Client Bypass Routing](https://github.com/Xentrk/x3mRouting#vpn-client-bypass-routing)
+* [VPN Server to VPN Client Routing](https://github.com/Xentrk/x3mRouting#vpn-server-to-vpn-client-routing-1)
+* [VPN Server to IPSET List Routing](https://github.com/Xentrk/x3mRouting#vpn-server-to-ipset-list-routing)
 
 ##### IPSET Methods
 To create an IPSET list, x3mRouting requires that one of the following methods be specified.
 
-* [AMAZON AWS Region Method](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#amazon-aws-region-method-1)
-* [ASN Method](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#asn-method-1)
-* [dnsmasq Method](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#dnsmasq-method-1)
-* [dnsmasq Method with autoscan](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#dnsmasq-method-with-autosccan)
+* [AMAZON AWS Region Method](https://github.com/Xentrk/x3mRouting#amazon-aws-region-method-1)
+* [ASN Method](https://github.com/Xentrk/x3mRouting#asn-method-1)
+* [dnsmasq Method](https://github.com/Xentrk/x3mRouting#dnsmasq-method-1)
+* [dnsmasq Method with autoscan](https://github.com/Xentrk/x3mRouting#dnsmasq-method-with-autosccan)
 
-If no method is specified, x3mRouting will default to the [Manual Method](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#manual-method-1). You can also manually create an IPSET list using the [Manual Method with 'ip='](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#manual-method-with-ip).
+If no method is specified, x3mRouting will default to the [Manual Method](https://github.com/Xentrk/x3mRouting#manual-method-1). You can also manually create an IPSET list using the [Manual Method with 'ip='](https://github.com/Xentrk/x3mRouting#manual-method-with-ip).
 
 #### Create an IPSET List with no Routing Rules Usage Notes
 You must specify the 'ipset_name=' parameter when no routing rules are specified. Use the OpenVPN Client Screen to create the routing rules.
@@ -201,12 +201,12 @@ Running **x3mRouting** will automatically perform the set-up. The features of **
 #### IPSET Methods
 To create an IPSET list, x3mRouting requires that one of the following methods be specified
 
-* [AMAZON AWS Region Method](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#amazon-aws-region-method-1)
-* [ASN Method](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#asn-method-1)
-* [dnsmasq Method](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#dnsmasq-method-1)
-* [dnsmasq Method with autoscan](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#dnsmasq-method-with-autosccan)
+* [AMAZON AWS Region Method](https://github.com/Xentrk/x3mRouting#amazon-aws-region-method-1)
+* [ASN Method](https://github.com/Xentrk/x3mRouting#asn-method-1)
+* [dnsmasq Method](https://github.com/Xentrk/x3mRouting#dnsmasq-method-1)
+* [dnsmasq Method with autoscan](https://github.com/Xentrk/x3mRouting#dnsmasq-method-with-autosccan)
 
-If no method is specified, x3mRouting will default to the [Manual Method](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#manual-method-1). You can also manually create an IPSET list using the [Manual Method with 'ip='](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#manual-method-with-ip).
+If no method is specified, x3mRouting will default to the [Manual Method](https://github.com/Xentrk/x3mRouting#manual-method-1). You can also manually create an IPSET list using the [Manual Method with 'ip='](https://github.com/Xentrk/x3mRouting#manual-method-with-ip).
 
 Optional **'src='** and **'src_range='** parameters provides the option to specify the source IP address or source IP address ranges of LAN devices you want the routing rules to be applied to.
 
@@ -286,13 +286,13 @@ x3mRouting {'server='1|2|both} {'ipset_name='IPSET[,IPSET]...} ['del']
 
 #### x3mRouting Usage Examples
 Usage examples are provided below for the following routing functions:  
-  * [VPN Client Routing](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#vpn-client-routing)
-  * [VPN Client Bypass Routing](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#vpn-client-bypass-routing)
-  * [VPN Server to VPN Client Routing](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#vpn-server-to-vpn-client-routing-1)
-  * [VPN Server to IPSET List Routing](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#vpn-server-to-ipset-list-routing)
-  * [Delete an IPSET List, all Routing Rules and cru Jobs](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#delete-an-ipset-list-all-routing-rules-and-cru-jobs)
-  * [Delete a VPN Server to VPN Client Routing Rule](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#delete-a-vpn-server-to-vpn-client-routing-rule)
-  * [Delete a VPN Server to IPSET list Routing Rule](https://github.com/Xentrk/x3mRouting3/tree/x3mRouting-384.19#delete-a-vpn-server-to-ipset-list-routing-rule)
+  * [VPN Client Routing](https://github.com/Xentrk/x3mRouting#vpn-client-routing)
+  * [VPN Client Bypass Routing](https://github.com/Xentrk/x3mRouting#vpn-client-bypass-routing)
+  * [VPN Server to VPN Client Routing](https://github.com/Xentrk/x3mRouting#vpn-server-to-vpn-client-routing-1)
+  * [VPN Server to IPSET List Routing](https://github.com/Xentrk/x3mRouting#vpn-server-to-ipset-list-routing)
+  * [Delete an IPSET List, all Routing Rules and cru Jobs](https://github.com/Xentrk/x3mRouting#delete-an-ipset-list-all-routing-rules-and-cru-jobs)
+  * [Delete a VPN Server to VPN Client Routing Rule](https://github.com/Xentrk/x3mRouting#delete-a-vpn-server-to-vpn-client-routing-rule)
+  * [Delete a VPN Server to IPSET list Routing Rule](https://github.com/Xentrk/x3mRouting#delete-a-vpn-server-to-ipset-list-routing-rule)
 
 #### VPN Client Routing
 Use this approach to route IPSET traffic to a VPN Client.

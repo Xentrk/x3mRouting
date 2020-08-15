@@ -19,7 +19,7 @@
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
 VERSION="2.1.0"
 GIT_REPO="x3mRouting"
-BRANCH="x3mRouting-384.19"
+BRANCH="master"
 # Change branch to master after merge
 GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/$BRANCH"
 LOCAL_REPO=/jffs/scripts/x3mRouting

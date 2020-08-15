@@ -19,7 +19,7 @@
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
 VERSION="2.0.0"
 GIT_REPO="x3mRouting"
-GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/master"
+GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/x3mRouting-384.18"
 LOCAL_REPO=/jffs/scripts/x3mRouting
 ADDONS=/jffs/addons/x3mRouting
 NAT_START=/jffs/scripts/nat-start

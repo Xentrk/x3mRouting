@@ -95,7 +95,7 @@ If an existing **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file exists,
 The routing rules for LAN Clients will automatically be applied upon a system boot. You only need to rerun **x3mRouting_client_nvram.sh** if you have made LAN Client interface assignment changes in the **/jffs/scripts/x3mRouting/x3mRouting_client_rules** file.
 
 ### [2] OpenVPN Client Screen, OpenVPN Event & x3mRouting Script
-![Policy Routing Screen](https://github.com/Xentrk/x3mRouting/blob/x3mRouting-NG/Policy_Routing_Screen.PNG "Policy Routing Screen")
+![Policy Routing Screen](https://github.com/Xentrk/x3mRouting/blob/x3mRouting/Policy_Routing_Screen.PNG "Policy Routing Screen")
 
 #### OpenVPN Client Screen
 As part of this project, you can also choose to install a modified OpenVPN Client Screen to selectively route IPSET lists through a VPN Client. [@Martineau](https://www.snbforums.com/members/martineau.13215/) coded the revisions to the OpenVPN Client Screen as a proof of concept on how the Policy Rules section could be modified to incorporate the selective routing of IPSET lists. The screen has been adapted for x3mRouting to allow the routing of IPSET lists to the WAN interface to support VPN Bypass Routing.
@@ -681,7 +681,7 @@ The installation menu **x3mMenu** will display a menu with the options to instal
 | --- | :---: | :---: | :---: | :---: |
 |x3mRouting_client_nvram.sh         | X |   |   |   |
 |x3mRouting_client_config.sh        | X |   |   |   |
-|updown-client.sh                   | X | X |   |   |
+|updown-dns.sh                      | X | X |   |   |
 |vpnrouting.sh                      | X | X |   |   |
 |mount_files_lan.sh                 | X |   |   |   |
 |mount_files_gui.sh                 |   | X |   |   |
@@ -752,7 +752,7 @@ The command to access the **x3mRouting** menu has been changed from **x3mRouting
   * The script **x3mRouting_client_nvram.sh** now stores the nvram files in **/jffs/addons/x3mRouting** rather than **/jffs/configs**.
 
 #### x3mRouting Utility Files
-  * The x3mRouting utility files Advanced_OpenVPNClient_Content.asp, updown-client.sh, vpnrouting.sh, and x3mRouting_Menu.sh files are stored in **/jffs/addons/x3mRouting** rather than the project repository directory **/jffs/scripts/x3mRouting**.
+  * The x3mRouting utility files Advanced_OpenVPNClient_Content.asp, updown-dns.sh, vpnrouting.sh, and x3mRouting_Menu.sh files are stored in **/jffs/addons/x3mRouting** rather than the project repository directory **/jffs/scripts/x3mRouting**.
 
 ## Version 2.0.0 Update Process
 You won't be able to update to Version 2.0.0 using the existing **x3mRouting** Menu due to the installation menu changes described above.  
@@ -760,7 +760,7 @@ You won't be able to update to Version 2.0.0 using the existing **x3mRouting** M
   1.  Copy and paste the command below into an SSH session to download the new x3mRouting menu.
 
 ````
-sh -c "$(curl -sL https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-NG/Install_x3mRouting.sh)"
+sh -c "$(curl -sL https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting/Install_x3mRouting.sh)"
 ````
   2.  After the download of the x3mRouting Installation Menu has completed, select the **[u]  Update x3mRouting to Version 2.0.0** option.
 

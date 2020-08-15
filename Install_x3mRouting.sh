@@ -12,6 +12,11 @@
 #
 #####################################################################################################
 
+GIT_REPO="x3mRouting"
+BRANCH="x3mRouting-384.19"
+# Change branch to master after merge
+GITHUB_DIR="https://raw.githubusercontent.com/Xentrk/$GIT_REPO/$BRANCH"
+
 Chk_Entware() {
 
   # ARGS [wait attempts] [specific_entware_utility]
@@ -65,7 +70,7 @@ fi
 while true; do
   echo "Downloading, please wait patiently..."
   mkdir -p /jffs/addons/x3mRouting
-  /usr/sbin/curl -s --retry 3 https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-384.19/x3mRouting_Menu.sh -o /jffs/addons/x3mRouting/x3mRouting_Menu.sh
+  /usr/sbin/curl -s --retry 3 $GITHUB_DIR/x3mRouting_Menu.sh -o /jffs/addons/x3mRouting/x3mRouting_Menu.sh
   chmod 755 /jffs/addons/x3mRouting/x3mRouting_Menu.sh
   # Remove old link or alias if exist
   if [ "$(/opt/bin/find /opt/bin/ -maxdepth 1 -type l -ls | grep -c "/opt/bin/x3mRouting -> /jffs/scripts/x3mRouting/x3mRouting.sh")" -eq 0 ]; then

@@ -210,16 +210,23 @@ Install_Done() {
 }
 
 Check_Firmware_Version() {
-  buildno=$(nvram get buildno)
-  buildno2=$(echo "$buildno" | sed 's/\.//')
-  if [ "$buildno2" -lt 38419 ]; then
-    echo "Invalid firmware version detected - $buildno. This option of x3mRouting requires version 384.19 and above."
-    echo "You can force update x3mRouting by typing the word 'force' after the option number to force update (e.g. 1 force)"
-    echo "Perform a 384.19+ firwmare update immediately after updating x3mRouting."
-    echo
-    echo "Press enter to continue"
-    read -r
-    Welcome_Message
+  buildno=$(nvram get buildno | sed 's/\.//')
+  if [ "$buildno" -lt 38419 ]; then
+    echo "Invalid firmware version detected - $(nvram get buildno). This option of x3mRouting requires version 384.19 and above."
+    echo "You can force update x3mRouting by typing the word 'force' below."
+    echo "You must perform a 384.19+ firwmare update immediately after updating x3mRouting."
+    printf '\n%s%b%s%b' "Press enter to continue or the word 'force' to override" "$COLOR_GREEN"  " ==> " "$COLOR_WHITE"
+    while true; do
+      read -r "USER_OPT"
+      case "$USER_OPT" in
+      force)
+        return
+        ;;
+      *)
+        Welcome_Message
+        ;;
+      esac
+    done
   fi
 }
 
@@ -963,7 +970,7 @@ Update_NewVersion() {
     echo
     for OLD_FILE in load_MANUAL_ipset.sh load_ASN_ipset.sh load_DNSMASQ_ipset.sh load_AMAZON_ipset.sh load_MANUAL_ipset_iface.sh load_ASN_ipset_iface.sh load_DNSMASQ_ipset_iface.sh load_AMAZON_ipset_iface.sh route_all_vpnserver.sh route_ipset_vpnserver.sh; do
       if [ -f "$LOCAL_REPO/$OLD_FILE" ]; then
-        rm "$LOCAL_REPO/$OLD_FILE" 
+        rm "$LOCAL_REPO/$OLD_FILE"
         printf '%s%b%s%b%s\n' "Obsolete " "$COLOR_GREEN" "$LOCAL_REPO/$OLD_FILE" "$COLOR_WHITE" " file deleted"
       else
         printf '%s%b%s%b%s\n' "Obsolete " "$COLOR_GREEN" "$LOCAL_REPO/$OLD_FILE" "$COLOR_WHITE" "  file does not exist"

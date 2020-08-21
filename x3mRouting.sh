@@ -4,9 +4,9 @@
 # shellcheck disable=SC2030 # Modification of IPSET_NAME is local (to subshell caused by pipeline).
 ####################################################################################################
 # Script: x3mRouting.sh
-# VERSION=2.0.1
+# VERSION=2.1.0
 # Author: Xentrk
-# Date: 8-August-2020
+# Date: 21-August-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -463,7 +463,7 @@ Process_Src_Option() {
   # Create the IPSET list first!
   while true; do
     # Check for 'dnsmasq=' parm
-    if [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ]; then
+    if [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ] || [ "$(echo "$@" | grep -c 'domain_file=')" -gt 0 ]; then
       DNSMASQ_Parm $@
       break
     fi
@@ -794,7 +794,19 @@ Delete_Ipset_List() {
 
 DNSMASQ_Parm() {
 
-  DOMAINS=$(echo "$@" | sed -n "s/^.*dnsmasq=//p" | awk '{print $1}')
+  if [ "$(echo "$@" | grep -c "domain_file=")" -eq 1 ]; then
+     DOMAIN_FILE=$(echo "$@" | sed -n "s/^.*domain_file=//p" | awk '{print $1}')
+     if [ -s "$DOMAIN_FILE" ]; then
+       while read -r DOMAINS; do
+         COMMA_DOMAINS_LIST="$COMMA_DOMAINS_LIST,$DOMAINS"
+       done < "$DOMAIN_FILE"
+       DOMAINS="$(echo "$COMMA_DOMAINS_LIST" | sed 's/^,*//;')"
+     fi
+     sed -i "\~$IPSET_NAME~d" /jffs/configs/dnsmasq.conf.add
+  fi
+  if  [ "$(echo "$@" | grep -c "dnsmasq=")" -eq 1 ]; then
+    DOMAINS=$(echo "$@" | sed -n "s/^.*dnsmasq=//p" | awk '{print $1}')
+  fi
   DOMAINS_LIST=$(echo "$DOMAINS" | sed 's/,$//' | tr ',' '/')
   DNSMASQ_ENTRY="/$DOMAINS_LIST/$IPSET_NAME"
   Process_DNSMASQ "$IPSET_NAME" "$DNSMASQ_ENTRY" "$DIR"
@@ -1422,7 +1434,7 @@ if [ "$(echo "$@" | grep -c 'ipset_name=')" -gt 0 ]; then
   fi
 
   # Check for 'dnsmasq=' parm
-  if [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ]; then
+  if [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ] || [ "$(echo "$@" | grep -c 'domain_file=')" -gt 0 ]; then
     DNSMASQ_Parm $@
     Check_Nat_Start_For_Entries "$IPSET_NAME" "dnsmasq=$DOMAINS" "$DIR"
     Exit_Routine
@@ -1550,7 +1562,7 @@ if [ "$(echo "$@" | grep -c 'src=')" -gt 0 ] || [ "$(echo "$@" | grep -c 'src_ra
 fi
 
 # Check for 'dnsmasq' parm which indicates DNSMASQ method & make sure 'autoscan' parm is not passed!
-if [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ]; then
+if [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ] || [ "$(echo "$@" | grep -c 'domain_file=')" -gt 0 ]; then
   DNSMASQ_Parm $@
   Create_Routing_Rules "$IPSET_NAME"
   Check_Files_For_Entries "$SRC_IFACE" "$DST_IFACE" "$IPSET_NAME" "dnsmasq=$DOMAINS" "$DIR"

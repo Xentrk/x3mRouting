@@ -5,7 +5,7 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ## Introduction
-**x3mRouting** includes selective routing features for LAN Clients, OpenVPN Clients and OpenVPN Servers. This version is compatible with the 384.19 Asuswrt-Merlin firmware. 
+**x3mRouting** includes selective routing features for LAN Clients, OpenVPN Clients and OpenVPN Servers. This version is compatible with the 384.19 Asuswrt-Merlin firmware.
 
 If coming from the first generation of x3mRouting, please read the updated instructions below to become familiar with the new features and usage instructions. Refer to the [Version 2.0.0 Changes](https://github.com/Xentrk/x3mRouting#version-200-changes) section for a description of the changes and the [Version 2.0.0 Update Process](https://github.com/Xentrk/x3mRouting#version-200-update-process) section for the update instructions.
 
@@ -137,6 +137,7 @@ To create an IPSET list, x3mRouting requires that one of the following methods b
 * [ASN Method](https://github.com/Xentrk/x3mRouting#asn-method-1)
 * [dnsmasq Method](https://github.com/Xentrk/x3mRouting#dnsmasq-method-1)
 * [dnsmasq Method with autoscan](https://github.com/Xentrk/x3mRouting#dnsmasq-method-with-autosccan)
+* [dnsmasq Method with the 'dnsmasq_file=' parameter](https://github.com/Xentrk/x3mRouting#dnsmasq-method-with-the-'dnsmasq_file='-parameter)
 
 If no method is specified, x3mRouting will default to the [Manual Method](https://github.com/Xentrk/x3mRouting#manual-method-1). You can also manually create an IPSET list using the [Manual Method with 'ip='](https://github.com/Xentrk/x3mRouting#manual-method-with-ip).
 
@@ -150,6 +151,7 @@ x3mRouting {ipset_name=}
            ['asnum='asnum[,asnum]...] # ASN method
            ['aws_region='US[,EU]...]  # Amazon method
            ['dnsmasq='domain[,domain]...] # dnsmasq method
+           ['domain_file='] # Equivalent to dnsmasq method
            ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
            ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
            ['del']
@@ -175,6 +177,11 @@ x3mRouting ipset_name=NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso
 Search **dnsmasq.log** file for domains that contain the keyword "amazon" and create the IPSET list AMAZON from the domains collected using the dnsmasq method. You can view the domains collected by looking at the corresponding entry in **/jffs/configs/dnsmasq.conf.add** or by looking at the script entry in **/jffs/scripts/nat-start**
 ````
 x3mRouting AMAZON autoscan=amazon
+````
+##### dnsmasq Method with the 'dnsmasq_file=' parameter
+Rather than specify the top level domains in a list, you can enter them in a file.
+````
+x3mRouting ipset_name=NETFLIX dnsmasq_file=/jffs/scripts/x3mRouting/NETFLIX_DOMAINS
 ````
 ##### Manual Method
 
@@ -206,6 +213,7 @@ To create an IPSET list, x3mRouting requires that one of the following methods b
 * [ASN Method](https://github.com/Xentrk/x3mRouting#asn-method-1)
 * [dnsmasq Method](https://github.com/Xentrk/x3mRouting#dnsmasq-method-1)
 * [dnsmasq Method with autoscan](https://github.com/Xentrk/x3mRouting#dnsmasq-method-with-autosccan)
+* [dnsmasq Method with 'domain_file=' parameter](https://github.com/Xentrk/x3mRouting#dnsmasq-method-with-'domain_file='-parameter)
 
 If no method is specified, x3mRouting will default to the [Manual Method](https://github.com/Xentrk/x3mRouting#manual-method-1). You can also manually create an IPSET list using the [Manual Method with 'ip='](https://github.com/Xentrk/x3mRouting#manual-method-with-ip).
 
@@ -233,6 +241,13 @@ You must specify the **'dnsmasq='** parameter and one or more domain names separ
 ##### dnsmasq Method with autosccan
 This method will search **dnsmasq.log** for domain names that match the search criteria specified on the **'autoscan='** parameter. One or more search criteria can be provided using a comma delimited list. The domains collected will be used to create an IPSET list using the dnsmasq method.
 
+##### dnsmasq Method with 'dnsmasq_file=' parameter
+Rather than specifying the domain names in a list, you can specify a file location using the 'dnsmasq_file=' parameter. The format of the file is one top level domain name per line.
+````
+domain1.com
+domain2.com
+domain3.com
+````
 ##### Manual Method
 The manual method is used to create IPSET lists from a file in the backup/restore directory containing the IPv4 addresses and/or IPv4 CIDR format that you created manually, either using an editor, script or other method to populate the file with IPv4 addresses.
 
@@ -268,6 +283,7 @@ x3mRouting {src iface} (ALL|1|2|3|4|5)
            ['asnum='asnum[,asnum]...] # ASN method
            ['aws_region='US[,EU]...]  # Amazon method
            ['dnsmasq='domain[,domain]...]  # dnsmasq method
+           ['dnsmasq_file='/path/to/file]  # Equivalent to dnsmasq method
            ['ip='ip[,ip][,cidr]...]  # Equivalent to manual method
            ['src='src_ip]  # Apply rule to IP address
            ['src_range='from_ip-to_ip]  # Apply rule to IP address range
@@ -340,7 +356,11 @@ x3mRouting ALL 1 AMAZON autoscan=amazon
 
 Search **dnsmasq.log** file for domains that contain the keywords "amazonaws", "netflix" and "nflx" and create the IPSET list AMZ_NFLX using the dnsmasq method.
 
-    x3mRouting ALL 1 AMZ_NFLX autoscan=amazonaws,netflix,nflx
+##### dnsmasq Method with the 'dnsmasq_file=' parameter.
+Rather than specify the top level domains in a list, you can enter them in a file.
+````
+x3mRouting ALL 1 NETFLIX dnsmasq_file=/jffs/scripts/x3mRouting/NETFLIX_DOMAINS
+````
 
 ##### Manual Method
 
@@ -393,6 +413,10 @@ x3mRouting 1 0 NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nf
 Route VPN Client 1 traffic from 192.168.1.152 matching IPSET list NETFLIX to WAN.
 ````
 x3mRouting 1 0 NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso.net,nflxvideo.net src=192.168.1.152
+````
+Route VPN Client 1 traffic from 192.168.1.152 matching IPSET list NETFLIX to WAN created from domains stored in /jffs/scripts/NETFLIX_DOMAINS.
+````
+x3mRouting 1 0 NETFLIX dnsmasq_file=/jffs/scripts/NETFLIX_DOMAINS src=192.168.1.152
 ````
 ##### Manual Method
 

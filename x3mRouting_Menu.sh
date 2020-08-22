@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 17-August-2020
+# Last Updated Date: 22-August-2020
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -17,7 +17,7 @@
 # shellcheck disable=SC2028
 # shellcheck disable=SC2010 # need to us ls with a grep
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
-VERSION="2.1.0"
+VERSION="2.2.0"
 GIT_REPO="x3mRouting"
 BRANCH="master"
 # Change branch to master after merge

@@ -151,7 +151,7 @@ x3mRouting {ipset_name=}
            ['asnum='asnum[,asnum]...] # ASN method
            ['aws_region='US[,EU]...]  # Amazon method
            ['dnsmasq='domain[,domain]...] # dnsmasq method
-           ['domain_file='] # Equivalent to dnsmasq method
+           ['dnsmasq_file='] # Equivalent to dnsmasq method
            ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
            ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
            ['del']
@@ -213,7 +213,7 @@ To create an IPSET list, x3mRouting requires that one of the following methods b
 * [ASN Method](https://github.com/Xentrk/x3mRouting#asn-method-1)
 * [dnsmasq Method](https://github.com/Xentrk/x3mRouting#dnsmasq-method-1)
 * [dnsmasq Method with autoscan](https://github.com/Xentrk/x3mRouting#dnsmasq-method-with-autosccan)
-* [dnsmasq Method with 'domain_file=' parameter](https://github.com/Xentrk/x3mRouting#dnsmasq-method-with-'domain_file='-parameter)
+* [dnsmasq Method with 'dnsmasq_file=' parameter](https://github.com/Xentrk/x3mRouting#dnsmasq-method-with-'dnsmasq_file='-parameter)
 
 If no method is specified, x3mRouting will default to the [Manual Method](https://github.com/Xentrk/x3mRouting#manual-method-1). You can also manually create an IPSET list using the [Manual Method with 'ip='](https://github.com/Xentrk/x3mRouting#manual-method-with-ip).
 

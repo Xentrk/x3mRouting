@@ -6,7 +6,7 @@
 # Script: x3mRouting.sh
 # VERSION=2.1.0
 # Author: Xentrk
-# Date: 21-August-2020
+# Date: 22-August-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -41,6 +41,7 @@
 #            ['asnum='asnum[,asnum]...] # ASN method
 #            ['aws_region='US[,EU]...]  # Amazon method
 #            ['dnsmasq='domain[,domain]...] # dnsmasq method
+#            ['dnsmasq_file='/path/to/file] # dnsmasq method
 #            ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
 #            ['src='src_ip]
 #            ['src_range='from_ip-to_ip]
@@ -56,6 +57,7 @@
 #            ['asnum='asnum[,asnum]...] # ASN method
 #            ['aws_region='US[,EU]...]  # Amazon method
 #            ['dnsmasq='domain[,domain]...] # dnsmasq method
+#            ['dnsmasq_file='/path/to/file] # dnsmasq method
 #            ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
 #            ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
 #            ['del']
@@ -456,6 +458,9 @@ Process_Src_Option() {
   elif [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ]; then
     DOMAINS=$(echo "$@" | sed -n "s/^.*dnsmasq=//p" | awk '{print $1}')
     X3M_METHOD="dnsmasq=${DOMAINS}"
+  elif [ "$(echo "$@" | grep -c 'dnsmasq_file=')" -gt 0 ]; then
+    DNSMASQ_FILE=$(echo "$@" | sed -n "s/^.*dnsmasq_file=//p" | awk '{print $1}')
+    X3M_METHOD="dnsmasq_file=${DNSMASQ_FILE}"
   else
     X3M_METHOD="Manual"
   fi
@@ -615,7 +620,7 @@ Download_ASN_Ipset_List() {
     # check for non valid lines here.
     while read -r LINE; do
       REGEX="(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
-      if echo "$LINE" | grep -Pq "$REGEX"; then
+      if echo "$LINE" | grep -Eq "$REGEX"; then
         USE_BKUP_FLAG=No
       else
         USE_BKUP_FLAG=Yes
@@ -637,7 +642,7 @@ Download_ASN_Ipset_List() {
       # check for non valid lines here.
       while read -r LINE; do
         REGEX="(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
-        if echo "$LINE" | grep -Pq "$REGEX"; then
+        if echo "$LINE" | grep -Eq "$REGEX"; then
           USE_BKUP_FLAG=No
         else
           USE_BKUP_FLAG=Yes
@@ -1434,9 +1439,16 @@ if [ "$(echo "$@" | grep -c 'ipset_name=')" -gt 0 ]; then
   fi
 
   # Check for 'dnsmasq=' parm
-  if [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ] || [ "$(echo "$@" | grep -c 'dnsmasq_file=')" -gt 0 ]; then
+  if [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ]; then
     DNSMASQ_Parm $@
     Check_Nat_Start_For_Entries "$IPSET_NAME" "dnsmasq=$DOMAINS" "$DIR"
+    Exit_Routine
+  fi
+
+  # Check for 'dnsmasq_file=' parm
+  if  [ "$(echo "$@" | grep -c 'dnsmasq_file=')" -gt 0 ]; then
+    DNSMASQ_Parm $@
+    Check_Nat_Start_For_Entries "$IPSET_NAME" "dnsmasq_file=$DNSMASQ_FILE" "$DIR"
     Exit_Routine
   fi
 
@@ -1562,10 +1574,18 @@ if [ "$(echo "$@" | grep -c 'src=')" -gt 0 ] || [ "$(echo "$@" | grep -c 'src_ra
 fi
 
 # Check for 'dnsmasq' parm which indicates DNSMASQ method & make sure 'autoscan' parm is not passed!
-if [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ] || [ "$(echo "$@" | grep -c 'dnsmasq_file=')" -gt 0 ]; then
+if [ "$(echo "$@" | grep -c 'dnsmasq=')" -gt 0 ]; then
   DNSMASQ_Parm $@
   Create_Routing_Rules "$IPSET_NAME"
   Check_Files_For_Entries "$SRC_IFACE" "$DST_IFACE" "$IPSET_NAME" "dnsmasq=$DOMAINS" "$DIR"
+  Exit_Routine
+fi
+
+# Check for 'dnsmasq_file' parm
+if [ "$(echo "$@" | grep -c 'dnsmasq_file=')" -gt 0 ]; then
+  DNSMASQ_Parm $@
+  Create_Routing_Rules "$IPSET_NAME"
+  Check_Files_For_Entries "$SRC_IFACE" "$DST_IFACE" "$IPSET_NAME" "dnsmasq_file=$DNSMASQ_FILE" "$DIR"
   Exit_Routine
 fi
 

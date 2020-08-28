@@ -62,7 +62,7 @@ if [ "$script_type" = "route-up" ]; then
   [ -s /jffs/addons/x3mRouting/x3mvpnrouting.sh ] && sh /jffs/addons/x3mRouting/x3mvpnrouting.sh "$VPN_UNIT" up
 fi
 
-if [ "$script_type" = "route-pre-down"
+if [ "$script_type" = "route-pre-down" ]; then
   [ -s /jffs/addons/x3mRouting/updown-dns.sh ] && sh /jffs/addons/x3mRouting/updown-dns.sh "$VPN_UNIT" down
   [ -s /jffs/addons/x3mRouting/x3mvpnrouting.sh ] && sh /jffs/addons/x3mRouting/x3mvpnrouting.sh "$VPN_UNIT" down
 fi

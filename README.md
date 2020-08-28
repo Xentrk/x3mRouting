@@ -1,5 +1,5 @@
 # x3mRouting ~ Selective Routing for Asuswrt-Merlin Firmware
-## Version 2.2.0 (22 August, 2020)
+## Version 2.3.0 (28 August, 2020)
 [![Build Status](https://travis-ci.com/Xentrk/x3mRouting.svg?branch=master)](https://travis-ci.com/Xentrk/x3mRouting)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/561d1570ed1f4d6aab76bba172f6b31f)](https://www.codacy.com/app/Xentrk/x3mRouting?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Xentrk/x3mRouting&amp;utm_campaign=Badge_Grade)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -706,9 +706,8 @@ The installation menu **x3mMenu** will display a menu with the options to instal
 | --- | :---: | :---: | :---: | :---: |
 |x3mRouting_client_nvram.sh         | X |   |   |   |
 |x3mRouting_client_config.sh        | X |   |   |   |
-|updown-dns.sh                      | X | X |   |   |
-|vpnrouting.sh                      | X | X |   |   |
-|mount_files_lan.sh                 | X |   |   |   |
+|updown-dns.sh                      | X |   |   |   |
+|x3mvpnrouting.sh                   | X | X |   |   |
 |mount_files_gui.sh                 |   | X |   |   |
 |Advanced_OpenVPNClient_Content.asp |   | X |   |   |
 |x3mRouting.sh                      |   | X | X |   |
@@ -718,7 +717,7 @@ The installation menu **x3mMenu** will display a menu with the options to instal
 
 ## Acknowledgements
 I want to acknowledge the following [snbforums](https://www.snbforums.com) members who helped make this project possible.
-* [Martineau](https://www.snbforums.com/members/martineau.13215/) has, and continues to be, very generous in sharing his VPN and Selective Routing expertise with me over the past several years. This project was only made possible through his support and collaboration. Through his guidance, I was able to navigate through the maze of of the firmware's **vpnrouting.sh** script and enhance it to create a much cleaner implementation of my selective routing requirements when compared to the method I had been using previously.
+* [Martineau](https://www.snbforums.com/members/martineau.13215/) has, and continues to be, very generous in sharing his VPN and Selective Routing expertise with me over the past several years. This project was only made possible through his support and collaboration.
 
 As part of the ongoing collaboration, Martineau had modified a selective routing script I wrote for routing Netflix traffic and enhanced it by enabling the passing of parameters. The enhancements made the script more user friendly by eliminating the need for users to edit scripts to meet their use case requirements. The enhancements have been applied to all of the IPSET scripts.
 
@@ -732,7 +731,7 @@ Martineau also contributed the modified **OpenVPN Client Screen** and **Chk_Entw
 
 * Thank you to [RMerlin](https://www.snbforums.com/members/rmerlin.10954/) for the [Asuswrt-Merlin](https://github.com/RMerl/asuswrt-merlin.ng) firmware and helpful support on the [snbforums.com](https://www.snbforums.com/forums/asuswrt-merlin.42/) website. To learn more about Asuswrt-Merlin firmware for Asus routers, visit the project website at [https://www.asuswrt-merlin.net/](https://www.asuswrt-merlin.net/).
 
-* I appreciate the collaboration with [Maghuro](https://github.com/maghuro/) who provided testing support for HND routers and contributed patches to accommodate the handling of the VPN Client clientlist nvram parms. His contributions especially helped optimize the code for **vpnrouting.sh** and **x3mRouting.sh**.
+* I appreciate the collaboration with [Maghuro](https://github.com/maghuro/) who provided testing support for HND routers and contributed patches to accommodate the handling of the VPN Client clientlist nvram parms.
 
 * I want to also acknowledge the contributions of those who participated in the testing of x3mRouting Version 2.0.0: [Luizlp10](https://www.snbforums.com/members/luizlp10.66974/), [SomeWhereOverTheRainBow](https://www.snbforums.com/members/somewhereovertherainbow.64179/), [TechTinkerer](https://www.snbforums.com/members/techtinkerer.67560/), and [Torson](https://www.snbforums.com/members/torson.59919/)
 
@@ -777,7 +776,7 @@ The command to access the **x3mRouting** menu has been changed from **x3mRouting
   * The script **x3mRouting_client_nvram.sh** now stores the nvram files in **/jffs/addons/x3mRouting** rather than **/jffs/configs**.
 
 #### x3mRouting Utility Files
-  * The x3mRouting utility files Advanced_OpenVPNClient_Content.asp, updown-dns.sh, vpnrouting.sh, and x3mRouting_Menu.sh files are stored in **/jffs/addons/x3mRouting** rather than the project repository directory **/jffs/scripts/x3mRouting**.
+  * The x3mRouting utility files Advanced_OpenVPNClient_Content.asp, updown-dns.sh, x3mvpnrouting.sh, and x3mRouting_Menu.sh files are stored in **/jffs/addons/x3mRouting** rather than the project repository directory **/jffs/scripts/x3mRouting**.
 
 ## Version 2.0.0 Update Process
 You won't be able to update to Version 2.0.0 using the existing **x3mRouting** Menu due to the installation menu changes described above.  

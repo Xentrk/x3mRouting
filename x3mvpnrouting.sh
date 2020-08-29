@@ -1,10 +1,12 @@
 #!/bin/sh
+###########################################################################################################
+# Script: x3mvpnrouting.sh
+# VERSION=1.0.0
+# Author: Xentrk
+# Date: 29-August-2020
+############################################################################################################
 # shellcheck disable=SC2086
 # -- Disabled quote for processing array variable PARAM on line 274
-# shellcheck disable=SC2154
-# -- SC2154: dev is referenced but not assigned. (stay true to firmware for these warnings!)
-# shellcheck disable=SC2018
-# shellcheck disable=SC2019
 # shellcheck disable=SC2021
 # -- SC2021: Don't use [] around classes in tr, it replaces literal square brackets.
 
@@ -312,17 +314,17 @@ case "$INSTANCE" in
 1 | 2 | 3 | 4 | 5) Set_VPN_Vars ;;
 esac
 
-if [ "$SCRIPT_TYPE" = "down" ]; then
+if [ "$SCRIPT_TYPE" = "route-pre-down" ]; then
   purge_client_list
   if [ "$VPN_FORCE" -eq 1 ] && [ "$VPN_REDIR" -ge 2 ]; then
     create_client_list
   fi
-fi # End route down
+fi
 
-if [ "$SCRIPT_TYPE" = "up" ]; then
+if [ "$SCRIPT_TYPE" = "route-up" ]; then
   purge_client_list
   create_client_list
-fi # End route-up
+fi
 
 /usr/bin/logger -st "x3mRouting" "Configuring policy rules for client $VPN_UNIT"
 

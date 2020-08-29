@@ -48,14 +48,14 @@ create_client_list() {
 
 ### Begin
 
-if [ "$SCRIPT_TYPE" = "up" ]; then
+if [ "$SCRIPT_TYPE" = "route-up" ]; then
   if [ "$(nvram get vpn_client"${INSTANCE}"_rgw)" -ge 2 ] && [ "$(nvram get vpn_client"${INSTANCE}"_adns)" -eq 3 ]; then
     create_client_list
     [ -s "$DNSSCRIPT" ] && sed -i '1s~^~#!/bin/sh\n~' "$DNSSCRIPT" && chmod 755 "$DNSSCRIPT" && sh "$DNSSCRIPT"
   fi
 fi
 
-if [ "$SCRIPT_TYPE" = "down" ]; then
+if [ "$SCRIPT_TYPE" = "route-pre-down" ]; then
   [ -s "$DNSSCRIPT" ] && rm "$DNSSCRIPT"
 fi
 

@@ -3,7 +3,7 @@
 # Script: openvpn-event
 # VERSION=2.0.0
 # Author: John9527, Martineau, Xentrk
-# Last Updated Date: 28-August-2020
+# Last Updated Date: 29-August-2020
 #
 # Description:
 #   Original Script by John9527:
@@ -56,16 +56,8 @@ vpn_script_name="vpn$vpn_name-$script_type"
 vpn_script_log="/tmp/vpn${vpn_name}_state"
 
 VPN_UNIT=$(echo "$dev" | awk '{ string=substr($0, 5, 5); print string; }')
-
-if [ "$script_type" = "route-up" ]; then
-  [ -s /jffs/addons/x3mRouting/updown-dns.sh ] && sh /jffs/addons/x3mRouting/updown-dns.sh "$VPN_UNIT" up
-  [ -s /jffs/addons/x3mRouting/x3mvpnrouting.sh ] && sh /jffs/addons/x3mRouting/x3mvpnrouting.sh "$VPN_UNIT" up
-fi
-
-if [ "$script_type" = "route-pre-down" ]; then
-  [ -s /jffs/addons/x3mRouting/updown-dns.sh ] && sh /jffs/addons/x3mRouting/updown-dns.sh "$VPN_UNIT" down
-  [ -s /jffs/addons/x3mRouting/x3mvpnrouting.sh ] && sh /jffs/addons/x3mRouting/x3mvpnrouting.sh "$VPN_UNIT" down
-fi
+[ -s /jffs/addons/x3mRouting/updown-dns.sh ] && sh /jffs/addons/x3mRouting/updown-dns.sh "$VPN_UNIT" "$script_type"
+[ -s /jffs/addons/x3mRouting/x3mvpnrouting.sh ] && sh /jffs/addons/x3mRouting/x3mvpnrouting.sh "$VPN_UNIT" "$script_type"
 
 # Check script state
 vpn_script_state=$(cat $vpn_script_log 2>/dev/null)

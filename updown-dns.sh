@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: updown-dns.sh
-# VERSION=1.0.0
+# VERSION=1.1.0
 # Author: Xentrk
-# Date: 4-August-2020
+# Date: 29-August-2020
 #
 # Description: This script will create the appropriate VPN DNS Strict or Exclusive rules for LAN clients
 # specified using the LAN Client Routing feature (Option 1 x3mRouting Menu)

@@ -55,7 +55,7 @@ esac
 vpn_script_name="vpn$vpn_name-$script_type"
 vpn_script_log="/tmp/vpn${vpn_name}_state"
 
-VPN_UNIT=$(echo "$1" | awk '{ string=substr($0, 5, 5); print string; }')
+VPN_UNIT=$(echo "$dev" | awk '{ string=substr($0, 5, 5); print string; }')
 
 if [ "$script_type" = "route-up" ]; then
   [ -s /jffs/addons/x3mRouting/updown-dns.sh ] && sh /jffs/addons/x3mRouting/updown-dns.sh "$VPN_UNIT" up

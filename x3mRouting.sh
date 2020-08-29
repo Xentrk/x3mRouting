@@ -734,7 +734,7 @@ Delete_Ipset_List() {
   # Check for IPSET entry in /jffs/scripts/nat-start and remove if found
   if [ -s "$NAT_START" ]; then
     if [ "$(grep -c "$IPSET_NAME " "$NAT_START")" -ge 1 ]; then # if true, then one or more lines exist
-      sed -i "/$IPSET_NAME/d" "$NAT_START"
+      sed -i "/$IPSET_NAME /d" "$NAT_START"
       logger -st "($(basename "$0"))" $$ "Script entry for $IPSET_NAME deleted from $NAT_START"
       Check_For_Shebang "$NAT_START"
     fi

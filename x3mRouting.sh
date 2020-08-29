@@ -610,27 +610,24 @@ Download_ASN_Ipset_List() {
   NUMBER=$3
   DIR=$4
 
-  STATUS=$(curl --retry 3 -sL -o "$DIR/${IPSET_NAME}_tmp" -w '%{http_code}' https://ipinfo.io/"${ASN}" )
-
-  if [ "$STATUS" -eq 200 ]; then # curl succeded
-    grep -E "a href.*$NUMBER\/" "$DIR/${IPSET_NAME}_tmp" | grep -v ":" | sed 's|^.*<a href="/'"$ASN"'/||' | sed 's|" >||' >>"$DIR/$IPSET_NAME"
+  ASN_File_Edits() {
     sort -gt '/' -k 1 "$DIR/$IPSET_NAME" | sort -ut '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4n >"$DIR/${IPSET_NAME}_tmp"
     sed -i '/^$/d' "$DIR/${IPSET_NAME}_tmp"
     REGEX="(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
     grep -Eq "$REGEX" "$DIR/${IPSET_NAME}_tmp" >"$DIR/$IPSET_NAME"
     rm "$DIR/${IPSET_NAME}_tmp"
     awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
+  }
+
+  STATUS=$(curl --retry 3 -sL -o "$DIR/${IPSET_NAME}_tmp" -w '%{http_code}' https://ipinfo.io/"${ASN}" )
+  if [ "$STATUS" -eq 200 ]; then # curl succeded
+    grep -E "a href.*$NUMBER\/" "$DIR/${IPSET_NAME}_tmp" | grep -v ":" | sed 's|^.*<a href="/'"$ASN"'/||' | sed 's|" >||' >>"$DIR/$IPSET_NAME"
+    ASN_File_Edits
   else
     STATUS=$(curl --retry 3 -sL -o "$DIR/${IPSET_NAME}_tmp" -w '%{http_code}' https://api.hackertarget.com/aslookup/?q="$ASN")
     if [ "$STATUS" -eq 200 ]; then
       awk '{ print $1 }' "$DIR/${IPSET_NAME}_tmp" | grep -v "$NUMBER" >>"$DIR/$IPSET_NAME"
-      sort -gt '/' -k 1 "$DIR/$IPSET_NAME" | sort -ut '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4n >"$DIR/${IPSET_NAME}_tmp"
-      sed -i '/^$/d' "$DIR/${IPSET_NAME}_tmp"
-      # check for non valid lines here.
-      REGEX="(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
-      grep -Eq "$REGEX" "$DIR/${IPSET_NAME}_tmp" >"$DIR/$IPSET_NAME" 
-      rm "$DIR/${IPSET_NAME}_tmp"
-      awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
+      ASN_File_Edits
     else
       Error_Exit "Download of ASN IPv4 addresses failed with curl error code: $STATUS"
     fi

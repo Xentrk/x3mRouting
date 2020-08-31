@@ -614,7 +614,7 @@ Download_ASN_Ipset_List() {
     sort -gt '/' -k 1 "$DIR/$IPSET_NAME" | sort -ut '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4n >"$DIR/${IPSET_NAME}_tmp"
     sed -i '/^$/d' "$DIR/${IPSET_NAME}_tmp"
     REGEX="(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
-    grep -Eq "$REGEX" "$DIR/${IPSET_NAME}_tmp" >"$DIR/$IPSET_NAME"
+    grep -oE "$REGEX" "$DIR/${IPSET_NAME}_tmp" >"$DIR/$IPSET_NAME"
     rm "$DIR/${IPSET_NAME}_tmp"
     awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
   }

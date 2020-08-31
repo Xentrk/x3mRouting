@@ -50,11 +50,6 @@ create_client_list() {
   # Xentrk: modified prior and updated to use fwmark/bitmask format
   logger -st "($(basename "$0"))" $$ "x3mRouting Checking Custom fwmark/bitmask"
 
-  if [ "$(ip rule | grep -c "from all fwmark 0x8000/0x8000 lookup main")" -eq "0" ]; then
-    ip rule add from 0/0 fwmark 0x8000/0x8000 table 254 prio 9990
-    logger -st "($(basename "$0"))" $$ "x3mRouting Adding WAN0 RPDB fwmark rule 0x8000/0x8000 prio 9990"
-  fi
-
   ############################# Create ip rule fwmark/bitmask for OpenVPN Client Table
   case "${VPN_UNIT}" in
   1)
@@ -79,10 +74,6 @@ create_client_list() {
     ;;
   esac
 
-  if [ "$(ip rule | grep -c "from all fwmark $FWMARK")" -eq "0" ]; then
-    ip rule add from 0/0 fwmark "$FWMARK" table "11${VPN_UNIT}" prio "$PRIO"
-    logger -st "($(basename "$0"))" $$ "x3mRouting Adding OVPNC${VPN_UNIT} RPDB fwmark rule $FWMARK prio $PRIO"
-  fi
   ################################################################################################################
 
   OLDIFS=$IFS
@@ -194,6 +185,10 @@ create_client_list() {
       TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 5)
 
       if [ "$TARGET_ROUTE" = "WAN" ]; then
+        if [ "$(ip rule | grep -c "from all fwmark 0x8000/0x8000 lookup main")" -eq "0" ]; then
+          ip rule add from 0/0 fwmark 0x8000/0x8000 table 254 prio 9990
+          logger -st "($(basename "$0"))" $$ "x3mRouting Adding WAN0 RPDB fwmark rule 0x8000/0x8000 prio 9990"
+        fi
         FWMARK=0x8000/0x8000
         PRIO=9990
       fi
@@ -221,6 +216,11 @@ create_client_list() {
           PRIO=9991
           ;;
         esac
+      fi
+
+      if [ "$(ip rule | grep -c "from all fwmark $FWMARK")" -eq "0" ]; then
+        ip rule add from 0/0 fwmark "$FWMARK" table "11${VPN_UNIT}" prio "$PRIO"
+        logger -st "($(basename "$0"))" $$ "x3mRouting Adding OVPNC${VPN_UNIT} RPDB fwmark rule $FWMARK prio $PRIO"
       fi
 
       if [ "$READY" -eq 0 ]; then
@@ -276,9 +276,13 @@ purge_client_list() {
   done
 
   ###################### Xentrk Hack remove fwmark/bitmask for OpenVPN Client
+  # VPN Client
   ip rule del fwmark "$FWMARK/$FWMARK" && logger -t "($(basename "$0"))" $$ "Deleting fwmark $FWMARK/$FWMARK"
-  ############################################# Xentrk Hack
-
+  # WAN
+  FWMARK_FLAG=$(iptables -nvL PREROUTING -t mangle --line | grep -m 1 "0x8000" | awk '{print $16}')
+  if [ -z "$FWMARK_FLAG"  ]; then
+    ip rule del prio 9990 2>/dev/null && logger -t "($(basename "$0"))" $$ "Deleting fwmark 0x8000/0x8000"
+  fi
 }
 
 Set_VPN_Vars() {

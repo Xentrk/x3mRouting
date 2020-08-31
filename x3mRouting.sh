@@ -1,12 +1,9 @@
 #!/bin/sh
-# shellcheck disable=SC2031 # IPSET_NAME was modified in a subshell. That change might be lost.
-# shellcheck disable=SC2068 # Double quote array expansions to avoid re-splitting elements.
-# shellcheck disable=SC2030 # Modification of IPSET_NAME is local (to subshell caused by pipeline).
 ####################################################################################################
 # Script: x3mRouting.sh
 # VERSION=2.2.0
 # Author: Xentrk
-# Date: 29-August-2020
+# Date: 31-August-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -15,6 +12,9 @@
 #   Chk_Entware function and code to process the passing of parms written by Martineau
 #
 ####################################################################################################
+# shellcheck disable=SC2031 # IPSET_NAME was modified in a subshell. That change might be lost.
+# shellcheck disable=SC2068 # Double quote array expansions to avoid re-splitting elements.
+# shellcheck disable=SC2030 # Modification of IPSET_NAME is local (to subshell caused by pipeline).
 #_____________________________________________________________________________________________________________
 #
 # Required parameters are listed inside the braces: { }

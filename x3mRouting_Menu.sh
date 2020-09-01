@@ -578,7 +578,7 @@ Migrate_Util_Files () {
     if grep -q "$LOCAL_REPO/$FILE" "/jffs/scripts/init-start"; then
       OLD_ENTRY="$LOCAL_REPO/$FILE"
       NEW_ENTRY="$ADDONS/$FILE"
-      sed "s|$OLD_ENTRY|$NEW_ENTRY|" "/jffs/scripts/init-start" > "/tmp/init-start" && mv "/tmp/init-start" "/jffs/scripts/init-start" && chmod 755 "/jffs/scripts/init-start"
+      sed -i "s|$OLD_ENTRY|$NEW_ENTRY|" "/jffs/scripts/init-start"
     fi
   fi
 
@@ -624,8 +624,8 @@ Update_Addons_Files() {
     if grep -q "$PARM" "/jffs/scripts/init-start"; then # see if line exists
       sed -i "\\~$PARM~d" "/jffs/scripts/init-start"
       printf '%b%s%b%s%b%s%b\n' "$COLOR_GREEN" "$PARM" "$COLOR_WHITE" " entry removed from " "$COLOR_GREEN" "/jffs/scripts/init-start" "$COLOR_WHITE"
+      Check_For_Shebang /jffs/scripts/init-start
     fi
-    Check_For_Shebang /jffs/scripts/init-start
   fi
 
   # Check if version update

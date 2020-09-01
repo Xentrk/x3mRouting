@@ -60,7 +60,6 @@ Create_LAN_Client_Routes() {
 # End of functions
 # Begin
 ADDONS_DIR=/jffs/addons/x3mRouting
-REPO_DIR=/jffs/scripts/x3mRouting
 
 Cleanup_OLD_LAN_Client_Routes
 Create_LAN_Client_Routes

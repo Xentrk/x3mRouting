@@ -1,19 +1,21 @@
 #!/bin/sh
+###########################################################################################################
+# Script: x3mvpnrouting.sh
+# VERSION=1.0.0
+# Author: Xentrk
+# Date: 29-August-2020
+############################################################################################################
 # shellcheck disable=SC2086
 # -- Disabled quote for processing array variable PARAM on line 274
-# shellcheck disable=SC2154
-# -- SC2154: dev is referenced but not assigned. (stay true to firmware for these warnings!)
-# shellcheck disable=SC2018
-# shellcheck disable=SC2019
 # shellcheck disable=SC2021
 # -- SC2021: Don't use [] around classes in tr, it replaces literal square brackets.
 
-PARAM=$*
+#PARAM=$*
 # Add paramaters equivalent to those passed for up command
-[ -z "$PARAM" ] && PARAM="$dev $tun_mtu $link_mtu $ifconfig_local $ifconfig_remote"
+#[ -z "$PARAM" ] && PARAM="$dev $tun_mtu $link_mtu $ifconfig_local $ifconfig_remote"
 
 my_logger() {
-  if [ "$VPN_LOGGING" -gt "3" ]; then
+  if [ "$VPN_LOGGING" -gt "2" ]; then
     /usr/bin/logger -t "openvpn-routing" "$1"
   fi
 }
@@ -43,6 +45,37 @@ Chk_IPSET_List_Ready() {
 }
 
 create_client_list() {
+
+  ########################################################################################## Modified Martineau Hack 1 of 5
+  # Xentrk: modified prior and updated to use fwmark/bitmask format
+  logger -st "($(basename "$0"))" $$ "x3mRouting Checking Custom fwmark/bitmask"
+
+  ############################# Create ip rule fwmark/bitmask for OpenVPN Client Table
+  case "${VPN_UNIT}" in
+  1)
+    FWMARK=0x1000/0x1000
+    PRIO=9995
+    ;;
+  2)
+    FWMARK=0x2000/0x2000
+    PRIO=9994
+    ;;
+  3)
+    FWMARK=0x4000/0x4000
+    PRIO=9993
+    ;;
+  4)
+    FWMARK=0x7000/0x7000
+    PRIO=9992
+    ;;
+  5)
+    FWMARK=0x3000/0x3000
+    PRIO=9991
+    ;;
+  esac
+
+  ################################################################################################################
+
   OLDIFS=$IFS
   IFS="<"
 
@@ -150,7 +183,15 @@ create_client_list() {
       Chk_IPSET_List_Ready "$IPSET_NAME"
 
       TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 5)
-      [ "$TARGET_ROUTE" = "WAN" ] && FWMARK=0x8000/0x8000 && PRIO=9990
+
+      if [ "$TARGET_ROUTE" = "WAN" ]; then
+        if [ "$(ip rule | grep -c "from all fwmark 0x8000/0x8000 lookup main")" -eq "0" ]; then
+          ip rule add from 0/0 fwmark 0x8000/0x8000 table 254 prio 9990
+          logger -st "($(basename "$0"))" $$ "x3mRouting Adding WAN0 RPDB fwmark rule 0x8000/0x8000 prio 9990"
+        fi
+        FWMARK=0x8000/0x8000
+        PRIO=9990
+      fi
 
       if [ "$TARGET_ROUTE" = "VPN" ]; then
         case "$VPN_UNIT" in
@@ -177,6 +218,11 @@ create_client_list() {
         esac
       fi
 
+      if [ "$(ip rule | grep -c "from all fwmark $FWMARK")" -eq "0" ]; then
+        ip rule add from 0/0 fwmark "$FWMARK" table "11${VPN_UNIT}" prio "$PRIO"
+        logger -st "($(basename "$0"))" $$ "x3mRouting Adding OVPNC${VPN_UNIT} RPDB fwmark rule $FWMARK prio $PRIO"
+      fi
+
       if [ "$READY" -eq 0 ]; then
         #logger -st "($(basename "$0"))" $$ "Debugger VARS-> SRC:$SRC IPSET_NAME:$IPSET_NAME DIM:$DIM FWMARK:$FWMARK"
         iptables -t mangle -D PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" "$DIM" -j MARK --set-mark "$FWMARK"
@@ -190,44 +236,7 @@ create_client_list() {
 
   done
   IFS=$OLDIFS
-  ########################################################################################## Modified Martineau Hack 1 of 5
-  # Xentrk: modified prior and updated to use fwmark/bitmask format
-  logger -st "($(basename "$0"))" $$ "x3mRouting Checking Custom fwmark/bitmask"
 
-  if [ "$(ip rule | grep -c "from all fwmark 0x8000/0x8000 lookup main")" -eq "0" ]; then
-    ip rule add from 0/0 fwmark 0x8000/0x8000 table 254 prio 9990
-    logger -st "($(basename "$0"))" $$ "x3mRouting Adding WAN0 RPDB fwmark rule 0x8000/0x8000 prio 9990"
-  fi
-
-  ############################# Create ip rule fwmark/bitmask for OpenVPN Client Table
-  case "${VPN_UNIT}" in
-  1)
-    FWMARK=0x1000/0x1000
-    PRIO=9995
-    ;;
-  2)
-    FWMARK=0x2000/0x2000
-    PRIO=9994
-    ;;
-  3)
-    FWMARK=0x4000/0x4000
-    PRIO=9993
-    ;;
-  4)
-    FWMARK=0x7000/0x7000
-    PRIO=9992
-    ;;
-  5)
-    FWMARK=0x3000/0x3000
-    PRIO=9991
-    ;;
-  esac
-
-  if [ "$(ip rule | grep -c "from all fwmark $FWMARK")" -eq "0" ]; then
-    ip rule add from 0/0 fwmark "$FWMARK" table "11${VPN_UNIT}" prio "$PRIO"
-    logger -st "($(basename "$0"))" $$ "x3mRouting Adding OVPNC${VPN_UNIT} RPDB fwmark rule $FWMARK prio $PRIO"
-  fi
-  ################################################################################################################
 }
 
 purge_client_list() {
@@ -267,43 +276,18 @@ purge_client_list() {
   done
 
   ###################### Xentrk Hack remove fwmark/bitmask for OpenVPN Client
-  ip rule del fwmark "$FWMARK/$FWMARK" 2>/dev/null
-  ############################################# Xentrk Hack
-
-}
-
-run_custom_script() {
-  if [ -f /jffs/scripts/openvpn-event ]; then
-    /usr/bin/logger -t "custom_script" "Running /jffs/scripts/openvpn-event (args: $PARAM)"
-    /bin/sh /jffs/scripts/openvpn-event $PARAM
+  # VPN Client
+  ip rule del fwmark "$FWMARK/$FWMARK" && logger -t "($(basename "$0"))" $$ "Deleting fwmark $FWMARK/$FWMARK"
+  # WAN
+  FWMARK_FLAG=$(iptables -nvL PREROUTING -t mangle --line | grep -m 1 "0x8000" | awk '{print $16}')
+  if [ -z "$FWMARK_FLAG"  ]; then
+    ip rule del prio 9990 2>/dev/null && logger -t "($(basename "$0"))" $$ "Deleting fwmark 0x8000/0x8000"
   fi
 }
 
-init_table() {
-  my_logger "Creating VPN routing table (mode $VPN_REDIR)"
-  ip route flush table "$VPN_TBL"
+Set_VPN_Vars() {
 
-  # Fill it with copy of existing main table
-  if [ "$VPN_REDIR" -eq 3 ]; then
-    LANIFNAME=$(nvram get lan_ifname)
-    ip route show table main dev "$LANIFNAME" | while read -r ROUTE
-    do
-      ip route add table "$VPN_TBL" $ROUTE dev "$LANIFNAME"
-    done
-    ip route show table main dev "$dev" | while read -r ROUTE
-    do
-      ip route add table "$VPN_TBL" $ROUTE dev "$dev"
-    done
-  elif [ "$VPN_REDIR" -eq 2 ]; then
-    ip route show table main | while read -r ROUTE; do
-      ip route add table "$VPN_TBL" $ROUTE
-    done
-  fi
-}
-
-Set_VPN_NVRAM_Vars() {
-
-  VPN_UNIT=$(echo "$dev" | awk '{ string=substr($0, 5, 5); print string; }')
+  VPN_UNIT=$INSTANCE
   VPN_IP_LIST="$(nvram get vpn_client"$VPN_UNIT"_clientlist)"
   for n in 1 2 3 4 5; do
     VPN_IP_LIST="${VPN_IP_LIST}$(nvram get vpn_client"$VPN_UNIT"_clientlist$n)"
@@ -326,85 +310,28 @@ Set_VPN_NVRAM_Vars() {
 }
 
 # Begin
-case "$dev" in
-tun11 | tun12 | tun13 | tun14 | tun15) Set_VPN_NVRAM_Vars ;;
-*) run_custom_script && exit 0 ;;
+
+INSTANCE=$1
+SCRIPT_TYPE=$2
+
+case "$INSTANCE" in
+1 | 2 | 3 | 4 | 5) Set_VPN_Vars ;;
 esac
 
-# webui reports that vpn_force changed while vpn client was down
-if [ "$script_type" = "rmupdate" ]; then
-  my_logger "Refreshing policy rules for client $VPN_UNIT"
+if [ "$SCRIPT_TYPE" = "route-pre-down" ]; then
   purge_client_list
-
   if [ "$VPN_FORCE" -eq 1 ] && [ "$VPN_REDIR" -ge 2 ]; then
-    init_table
-    my_logger "Tunnel down - VPN client access blocked"
-    ip route del default table "$VPN_TBL"
-    ip route add prohibit default table "$VPN_TBL"
     create_client_list
-  else
-    my_logger "Allow WAN access to all VPN clients"
-    ip route flush table "$VPN_TBL"
   fi
-  ip route flush cache
-  exit 0
 fi
 
-if [ "$script_type" = "route-up" ] && [ "$VPN_REDIR" -lt 2 ]; then
-  my_logger "Skipping, client $VPN_UNIT not in routing policy mode"
-  run_custom_script
-  exit 0
-fi
-
-/usr/bin/logger -t "openvpn-routing" "Configuring policy rules for client $VPN_UNIT"
-
-if [ "$script_type" = "route-pre-down" ]; then
-  purge_client_list
-
-  if [ "$VPN_FORCE" -eq 1 ] && [ "$VPN_REDIR" -ge 2 ]; then
-    /usr/bin/logger -t "openvpn-routing" "Tunnel down - VPN client access blocked"
-    ip route change prohibit default table"$VPN_TBL"
-    create_client_list
-  else
-    ip route flush table "$VPN_TBL"
-    my_logger "Flushing client routing table"
-  fi
-fi # End route down
-
-if [ "$script_type" = "route-up" ]; then
-  init_table
-
-  # Delete existing VPN routes that were pushed by server on table main
-  NET_LIST=$(ip route show | awk '$2=="via" && $3==ENVIRON["route_vpn_gateway"] && $4=="dev" && $5==ENVIRON["dev"] {print $1}')
-  for NET in $NET_LIST; do
-    ip route del "$NET" dev "$dev"
-    my_logger "Removing route for $NET to $dev from main routing table"
-  done
-
-  # Update policy rules
+if [ "$SCRIPT_TYPE" = "route-up" ]; then
   purge_client_list
   create_client_list
+fi
 
-  # Setup table default route
-  if [ -n "$VPN_IP_LIST" ]; then
-    if [ "$VPN_FORCE" -eq 1 ]; then
-      /usr/bin/logger -t "openvpn-routing" "Tunnel re-established, restoring WAN access to clients"
-    fi
-    if [ -n "$route_net_gateway" ]; then
-      ip route del default table "$VPN_TBL"
-      ip route add default via "$route_vpn_gateway" table "$VPN_TBL"
-    else
-      /usr/bin/logger -t "openvpn-routing" "WARNING: no VPN gateway provided, routing might not work properly!"
-    fi
-  fi
+/usr/bin/logger -st "x3mRouting" "Configuring policy rules for client $VPN_UNIT"
 
-  if [ -n "$route_net_gateway" ]; then
-    ip route del default
-    ip route add default via "$route_net_gateway"
-  fi
-fi # End route-up
-
-ip route flush cache
-run_custom_script
+logger -st "($(basename "$0"))" $$ "Completed routing policy configuration for client $VPN_UNIT"
 
 exit 0

@@ -1,12 +1,9 @@
 #!/bin/sh
-# shellcheck disable=SC2031 # IPSET_NAME was modified in a subshell. That change might be lost.
-# shellcheck disable=SC2068 # Double quote array expansions to avoid re-splitting elements.
-# shellcheck disable=SC2030 # Modification of IPSET_NAME is local (to subshell caused by pipeline).
 ####################################################################################################
 # Script: x3mRouting.sh
-# VERSION=2.1.0
+# VERSION=2.2.0
 # Author: Xentrk
-# Date: 22-August-2020
+# Date: 31-August-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -15,6 +12,9 @@
 #   Chk_Entware function and code to process the passing of parms written by Martineau
 #
 ####################################################################################################
+# shellcheck disable=SC2031 # IPSET_NAME was modified in a subshell. That change might be lost.
+# shellcheck disable=SC2068 # Double quote array expansions to avoid re-splitting elements.
+# shellcheck disable=SC2030 # Modification of IPSET_NAME is local (to subshell caused by pipeline).
 #_____________________________________________________________________________________________________________
 #
 # Required parameters are listed inside the braces: { }
@@ -610,53 +610,24 @@ Download_ASN_Ipset_List() {
   NUMBER=$3
   DIR=$4
 
-  STATUS=$(curl --retry 3 -sL -o "$DIR/${IPSET_NAME}_tmp" -w '%{http_code}' https://ipinfo.io/"${ASN}")
+  ASN_File_Edits() {
+    sort -gt '/' -k 1 "$DIR/$IPSET_NAME" | sort -ut '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4n >"$DIR/${IPSET_NAME}_tmp"
+    sed -i '/^$/d' "$DIR/${IPSET_NAME}_tmp"
+    REGEX="(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+    grep -oE "$REGEX" "$DIR/${IPSET_NAME}_tmp" >"$DIR/$IPSET_NAME"
+    rm "$DIR/${IPSET_NAME}_tmp"
+    awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
+  }
 
+  STATUS=$(curl --retry 3 -sL -o "$DIR/${IPSET_NAME}_tmp" -w '%{http_code}' https://ipinfo.io/"${ASN}" )
   if [ "$STATUS" -eq 200 ]; then # curl succeded
     grep -E "a href.*$NUMBER\/" "$DIR/${IPSET_NAME}_tmp" | grep -v ":" | sed 's|^.*<a href="/'"$ASN"'/||' | sed 's|" >||' >>"$DIR/$IPSET_NAME"
-    sort -gt '/' -k 1 "$DIR/$IPSET_NAME" | sort -ut '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4n >"$DIR/${IPSET_NAME}_tmp"
-    mv "$DIR/${IPSET_NAME}_tmp" "$DIR/$IPSET_NAME"
-    sed -i '/^$/d'  "$DIR/$IPSET_NAME"
-    # check for non valid lines here.
-    while read -r LINE; do
-      REGEX="(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
-      if echo "$LINE" | grep -Eq "$REGEX"; then
-        USE_BKUP_FLAG=No
-      else
-        USE_BKUP_FLAG=Yes
-        break
-      fi
-    done < "$DIR/$IPSET_NAME"
-    if [ "$USE_BKUP_FLAG" = "Yes" ]; then
-      cp "$DIR/$IPSET_NAME.bkup" "$DIR/$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "Unexpected data found in  $DIR/$IPSET_NAME. Restoring IPSET list from backup."
-    fi
-    awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
+    ASN_File_Edits
   else
     STATUS=$(curl --retry 3 -sL -o "$DIR/${IPSET_NAME}_tmp" -w '%{http_code}' https://api.hackertarget.com/aslookup/?q="$ASN")
     if [ "$STATUS" -eq 200 ]; then
-      # Curl succeded
       awk '{ print $1 }' "$DIR/${IPSET_NAME}_tmp" | grep -v "$NUMBER" >>"$DIR/$IPSET_NAME"
-      sort -gt '/' -k 1 "$DIR/$IPSET_NAME" | sort -ut '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4n >"$DIR/${IPSET_NAME}_tmp"
-      mv "$DIR/${IPSET_NAME}_tmp" "$DIR/$IPSET_NAME"
-      sed -i '/^$/d'  "$DIR/$IPSET_NAME"
-      # check for non valid lines here.
-      while read -r LINE; do
-        REGEX="(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
-        if echo "$LINE" | grep -Eq "$REGEX"; then
-          USE_BKUP_FLAG=No
-        else
-          USE_BKUP_FLAG=Yes
-          break
-        fi
-      done < "$DIR/$IPSET_NAME"
-      if [ "$USE_BKUP_FLAG" = "Yes" ]; then
-        cp "$DIR/$IPSET_NAME.bkup" "$DIR/$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "Unexpected data found in  $DIR/$IPSET_NAME. Restoring IPSET list from backup."
-      fi
-      awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
-    elif [ -s "$DIR/$IPSET_NAME.bkup" ]; then
-      logger -st "($(basename "$0"))" $$ "Download of ASN IPv4 addresses failed. Restoring IPSET list from backup"
-      cp "$DIR/$IPSET_NAME.bkup" "$DIR/$IPSET_NAME"
-      awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
+      ASN_File_Edits
     else
       Error_Exit "Download of ASN IPv4 addresses failed with curl error code: $STATUS"
     fi
@@ -733,8 +704,9 @@ Delete_Ipset_List() {
 
   # Check for IPSET entry in /jffs/scripts/nat-start and remove if found
   if [ -s "$NAT_START" ]; then
-    if [ "$(grep -c "$IPSET_NAME" "$NAT_START")" -ge 1 ]; then # if true, then one or more lines exist
-      sed -i "/$IPSET_NAME/d" "$NAT_START"
+    if [ "$(grep -c "$IPSET_NAME " "$NAT_START")" -ge 1 ]; then # if true, then one or more lines exist
+      sed -i "/$IPSET_NAME /d" "$NAT_START"
+      sed -i "/ipset=$IPSET_NAME/d" "$NAT_START"
       logger -st "($(basename "$0"))" $$ "Script entry for $IPSET_NAME deleted from $NAT_START"
       Check_For_Shebang "$NAT_START"
     fi
@@ -746,15 +718,15 @@ Delete_Ipset_List() {
     VPNC_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-pre-down"
     if [ -s "$VPNC_UP_FILE" ]; then # file exists
       # Note: not passing del entry
-      if [ "$(grep -c "$IPSET_NAME" "$VPNC_UP_FILE")" -ge 1 ]; then # if true, then one or more lines exist
-        sed -i "/$IPSET_NAME/d" "$VPNC_UP_FILE"
+      if [ "$(grep -c "$IPSET_NAME " "$VPNC_UP_FILE")" -ge 1 ]; then # if true, then one or more lines exist
+        sed -i "/$IPSET_NAME /d" "$VPNC_UP_FILE"
         logger -st "($(basename "$0"))" $$ "ipset $IPSET_NAME entry deleted from $VPNC_UP_FILE"
         Check_For_Shebang "$VPNC_UP_FILE"
       fi
     fi
     if [ -s "$VPNC_DOWN_FILE" ]; then # file exists
-      if [ "$(grep -c "$IPSET_NAME" "$VPNC_DOWN_FILE")" -ge 1 ]; then # if true, then one or more lines exist
-        sed -i "/$IPSET_NAME/d" "$VPNC_DOWN_FILE"
+      if [ "$(grep -c "$IPSET_NAME " "$VPNC_DOWN_FILE")" -ge 1 ]; then # if true, then one or more lines exist
+        sed -i "/$IPSET_NAME /d" "$VPNC_DOWN_FILE"
         logger -st "($(basename "$0"))" $$ "ipset $IPSET_NAME entry deleted from $VPNC_DOWN_FILE"
         Check_For_Shebang "$VPNC_DOWN_FILE"
       fi
@@ -767,32 +739,38 @@ Delete_Ipset_List() {
     logger -st "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
   fi
 
-  #Define_IFACE "$IPSET_NAME"
+  FWMARK=$(iptables -nvL PREROUTING -t mangle --line | grep -m 1 "$IPSET_NAME " | awk '{print $16}')
 
   # Delete PREROUTING Rules for Normal IPSET routing
-  iptables -nvL PREROUTING -t mangle --line | grep "br0" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
+  iptables -nvL PREROUTING -t mangle --line | grep "br0" | grep "$IPSET_NAME " | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
     logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
     iptables -t mangle -D PREROUTING "$CHAIN_NUM"
   done
 
   # Delete PREROUTING Rule for VPN Server to IPSET & POSTROUTING Rule
-  VPN_SERVER_TUN="$(iptables -nvL PREROUTING -t mangle --line | grep "tun21" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $7}')"
-
-  [ -z "$VPN_SERVER_TUN" ] && VPN_SERVER_TUN="$(iptables -nvL PREROUTING -t mangle --line | grep "tun22" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $7}')"
-
-  # Delete PREROUTING Rule
-  [ -n "$VPN_SERVER_TUN" ] && iptables -nvL PREROUTING -t mangle --line | grep "$VPN_SERVER_TUN" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
-    logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
-    iptables -t mangle -D PREROUTING "$CHAIN_NUM"
+  for SERVER_TUN in tun21 tun22; do
+    SERVER=$(echo "$SERVER_TUN" | awk '{ string=substr($0, 5, 5); print string; }')
+    TUN="$(iptables -nvL PREROUTING -t mangle --line | grep "$SERVER_TUN" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $7}')"
+    if [ -n "$TUN" ]; then
+      Define_IFACE "$IPSET_NAME"
+      VPN_CLIENT_INSTANCE=$(echo "$IFACE" | awk '{ string=substr($0, 5, 5); print string; }')
+      VPN_Server_to_IPSET "$SERVER" "$VPN_CLIENT_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK" "del"
+    fi
   done
 
   # Delete POSTROUTING Rule
-  [ -n "$VPN_SERVER_TUN" ] && SERVER_UNIT="$(echo "$VPN_SERVER_TUN" | awk '{ string=substr($0, 5, 5); print string; }')"
-  [ -n "$SERVER_UNIT" ] && iptables -t nat -D POSTROUTING -s "$(nvram get vpn_server"${SERVER_UNIT}"_sn)"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
+  #[ -n "$VPN_SERVER_TUN" ] && SERVER_UNIT="$(echo "$VPN_SERVER_TUN" | awk '{ string=substr($0, 5, 5); print string; }')"
+  #[ -n "$SERVER_UNIT" ] && iptables -t nat -D POSTROUTING -s "$(nvram get vpn_server"${SERVER_UNIT}"_sn)"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
 
   # Destroy the IPSET list
   if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then
     ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || $$ "IPSET $IPSET_NAME deleted!" || Error_Exit "Error attempting to delete IPSET $IPSET_NAME!"
+  fi
+
+  # Delete the fmwark priority if no IPSET lists are using it
+  FWMARK_FLAG=$(iptables -nvL PREROUTING -t mangle --line | grep -m 1 "$FWMARK" | awk '{print $16}')
+  if [ -z "$FWMARK_FLAG"  ]; then
+    ip rule del fwmark "$FWMARK/$FWMARK" 2>/dev/null && logger -t "($(basename "$0"))" $$ "Deleting fwmark $FWMARK/$FWMARK"
   fi
 
 }
@@ -1257,7 +1235,7 @@ Check_Second_Parm() {
 Define_IFACE() {
 
   ### Define interface/bitmask to route traffic to. Use existing PREROUTING rule for IPSET to determine FWMARK.
-  FWMARK=$(iptables -nvL PREROUTING -t mangle --line | grep "br0" | grep "$IPSET_NAME" | awk '{print $16}')
+  FWMARK=$(iptables -nvL PREROUTING -t mangle --line | grep "br0" | grep -m 1 " $IPSET_NAME" | awk '{print $16}')
 
   [ -n "$FWMARK" ] || Error_Exit "Error! Mandatory PREROUTING rule for IPSET name $IPSET_NAME does not exist."
 

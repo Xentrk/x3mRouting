@@ -19,43 +19,6 @@ Cleanup_OLD_LAN_Client_Routes() {
 
 }
 
-Openvpn_Event_Entries() {
-
-  VPN_ID=$1
-  UP_ENTRY="sh $ADDONS_DIR/updown-dns.sh $VPN_ID up"
-  DOWN_ENTRY="sh $ADDONS_DIR/updown-dns.sh $VPN_ID down"
-  VPNC_UP_FILE="$REPO_DIR/vpnclient${VPN_ID}-route-up"
-  VPNC_DOWN_FILE="$REPO_DIR/vpnclient${VPN_ID}-route-pre-down"
-
-  if [ -s "$VPNC_UP_FILE" ]; then
-    if [ "$(grep -c "$UP_ENTRY" "$VPNC_UP_FILE")" -eq 0 ]; then
-      echo "$UP_ENTRY" >>"$VPNC_UP_FILE"
-    fi
-  else
-    true >"$VPNC_UP_FILE"
-    {
-      printf '%s\n' "#!/bin/sh"
-      printf '%s\n' "$UP_ENTRY"
-    } >"$VPNC_UP_FILE"
-  fi
-
-  if [ -s "$VPNC_DOWN_FILE" ]; then
-    if [ "$(grep -c "$DOWN_ENTRY" "$VPNC_DOWN_FILE")" -eq 0 ]; then # only add if entry does not exist
-      echo "$DOWN_ENTRY" >>"$VPNC_DOWN_FILE" # add 'ipset=' domains entry to dnsmasq.conf.add
-    fi
-  else
-    true >"$VPNC_DOWN_FILE"
-    {
-      printf '%s\n' "#!/bin/sh"
-      printf '%s\n' "$DOWN_ENTRY"
-    } >"$VPNC_DOWN_FILE"
-  fi
-
-  [ -s "$VPNC_UP_FILE" ] && chmod 755 "$VPNC_UP_FILE"
-  [ -s "$VPNC_DOWN_FILE" ] && chmod 755 "$VPNC_DOWN_FILE"
-
-}
-
 Create_LAN_Client_Routes() {
 
   CONFIG_FILE="/jffs/scripts/x3mRouting/x3mRouting_client_rules"
@@ -86,7 +49,6 @@ Create_LAN_Client_Routes() {
   for VPN_ID in 1 2 3 4 5; do
     if [ -s "/tmp/ovpnc${VPN_ID}.$$" ]; then
       awk '{ print }' ORS='' <"/tmp/ovpnc${VPN_ID}.$$" >"$ADDONS_DIR/ovpnc${VPN_ID}.nvram"
-      Openvpn_Event_Entries "$VPN_ID"
       echo "Created nvram file for OpenVPN Client $VPN_ID" && echo "Restarting OpenVPN Client $VPN_ID to apply assignments"
       service restart_vpnclient${VPN_ID}
       rm /tmp/ovpnc${VPN_ID}.$$

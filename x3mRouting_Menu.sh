@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 1-September-2020
+# Last Updated Date: 2-September-2020
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -659,9 +659,10 @@ Update_Addons_Files() {
   done
 
   # check up/down openvpn-event files for entries updown-dns.sh entries and remove if exist
+  printf '\n%s\n' "Examining contents of VPN Client Up/Down files for deprecated 'updown-dns.sh' entries."
   for VPN_ID in 1 2 3 4 5; do
-    VPNC_UP_FILE="$REPO_DIR/vpnclient${VPN_ID}-route-up"
-    VPNC_DOWN_FILE="$REPO_DIR/vpnclient${VPN_ID}-route-pre-down"
+    VPNC_UP_FILE="$LOCAL_REPO/vpnclient${VPN_ID}-route-up"
+    VPNC_DOWN_FILE="$LOCAL_REPO/vpnclient${VPN_ID}-route-pre-down"
 
     if [ -s "$VPNC_UP_FILE" ]; then
       if grep -q "updown-dns.sh" "$VPNC_UP_FILE"; then

@@ -1,9 +1,9 @@
 #!/bin/sh
 ###########################################################################################################
 # Script: x3mvpnrouting.sh
-# VERSION=1.0.0
+# VERSION=1.1.0
 # Author: Xentrk
-# Date: 29-August-2020
+# Date: 3-September-2020
 ############################################################################################################
 # shellcheck disable=SC2086
 # -- Disabled quote for processing array variable PARAM on line 274
@@ -185,12 +185,12 @@ create_client_list() {
       TARGET_ROUTE=$(echo "$ENTRY" | cut -d ">" -f 5)
 
       if [ "$TARGET_ROUTE" = "WAN" ]; then
-        if [ "$(ip rule | grep -c "from all fwmark 0x8000/0x8000 lookup main")" -eq "0" ]; then
-          ip rule add from 0/0 fwmark 0x8000/0x8000 table 254 prio 9990
-          logger -st "($(basename "$0"))" $$ "x3mRouting Adding WAN0 RPDB fwmark rule 0x8000/0x8000 prio 9990"
-        fi
         FWMARK=0x8000/0x8000
         PRIO=9990
+        ip rule del fwmark "$FWMARK" 2>/dev/null
+        ip rule add from 0/0 fwmark 0x8000/0x8000 table 254 prio "$PRIO"
+        ip route flush cache
+        logger -st "($(basename "$0"))" $$ "x3mRouting Adding WAN0 RPDB fwmark rule 0x8000/0x8000 prio 9990"
       fi
 
       if [ "$TARGET_ROUTE" = "VPN" ]; then
@@ -218,11 +218,11 @@ create_client_list() {
         esac
       fi
 
-      if [ "$(ip rule | grep -c "from all fwmark $FWMARK")" -eq "0" ]; then
-        ip rule add from 0/0 fwmark "$FWMARK" table "11${VPN_UNIT}" prio "$PRIO"
-        logger -st "($(basename "$0"))" $$ "x3mRouting Adding OVPNC${VPN_UNIT} RPDB fwmark rule $FWMARK prio $PRIO"
-      fi
-
+      ip rule del fwmark "$FWMARK" 2>/dev/null
+      ip rule add from 0/0 fwmark "$FWMARK" table "11${VPN_UNIT}" prio "$PRIO"
+      ip route flush cache
+      logger -st "($(basename "$0"))" $$ "x3mRouting Adding OVPNC${VPN_UNIT} RPDB fwmark rule $FWMARK prio $PRIO"
+      
       if [ "$READY" -eq 0 ]; then
         #logger -st "($(basename "$0"))" $$ "Debugger VARS-> SRC:$SRC IPSET_NAME:$IPSET_NAME DIM:$DIM FWMARK:$FWMARK"
         iptables -t mangle -D PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" "$DIM" -j MARK --set-mark "$FWMARK"

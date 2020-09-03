@@ -149,13 +149,11 @@ Set_IP_Rule() {
   case "$VPN_ID" in
   0)
     ip rule del fwmark "$TAG_MARK" 2>/dev/null
-    ip route flush cache
     ip rule add from 0/0 fwmark "$TAG_MARK" table 254 prio 9990
     ip route flush cache
     ;;
   1)
     ip rule del fwmark "$TAG_MARK" 2>/dev/null
-    ip route flush cache
     ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
     ip route flush cache
     ;;
@@ -166,19 +164,16 @@ Set_IP_Rule() {
     ;;
   3)
     ip rule del fwmark "$TAG_MARK" 2>/dev/null
-    ip route flush cache
     ip rule add from 0/0 fwmark "$TAG_MARK" table 113 prio 9993
     ip route flush cache
     ;;
   4)
     ip rule del fwmark "$TAG_MARK" 2>/dev/null
-    ip route flush cache
     ip rule add from 0/0 fwmark "$TAG_MARK" table 114 prio 9992
     ip route flush cache
     ;;
   5)
     ip rule del fwmark "$TAG_MARK" 2>/dev/null
-    ip route flush cache
     ip rule add from 0/0 fwmark "$TAG_MARK" table 115 prio 9991
     ip route flush cache
     ;;

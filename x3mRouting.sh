@@ -705,33 +705,33 @@ Delete_Ipset_List() {
 
   # Check /jffs/configs/dnsmasq.conf.add for IPSET entry and remove if found
   if [ -s /jffs/configs/dnsmasq.conf.add ]; then
-    logger -st "($(basename "$0"))" $$ "Checking /jffs/configs/dnsmasq.conf.add..."
+    logger -t "($(basename "$0"))" $$ "Checking /jffs/configs/dnsmasq.conf.add..."
     if [ "$(grep -cw "$IPSET_NAME" "/jffs/configs/dnsmasq.conf.add")" -ge 1 ]; then # if true, then one or more lines exist
       sed -i "/^ipset.*${IPSET_NAME}$/d" /jffs/configs/dnsmasq.conf.add
-      logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted from /jffs/configs/dnsmasq.conf.add"
+      logger -t "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted from /jffs/configs/dnsmasq.conf.add"
       service restart_dnsmasq 2>/dev/null
     else
-      logger -st "($(basename "$0"))" $$ "no references for IPSET $IPSET_NAME found in /jffs/configs/dnsmasq.conf.add"
+      logger -t "($(basename "$0"))" $$ "no references for IPSET $IPSET_NAME found in /jffs/configs/dnsmasq.conf.add"
     fi
   fi
 
   # Check for IPSET entry in /jffs/scripts/nat-start and remove if found
   if [ -s "$NAT_START" ]; then
-    logger -st "($(basename "$0"))" $$ "Checking $NAT_START..."
+    logger -t "($(basename "$0"))" $$ "Checking $NAT_START..."
     if [ "$(grep -cw "$IPSET_NAME" "$NAT_START")" -ge 1 ]; then # if true, then one or more lines exist
       sed -i "\~\b$IPSET_NAME\b~d" "$NAT_START"
-      logger -st "($(basename "$0"))" $$ "Script entry for $IPSET_NAME deleted from $NAT_START"
+      logger -t "($(basename "$0"))" $$ "Script entry for $IPSET_NAME deleted from $NAT_START"
       Check_For_Shebang "$NAT_START"
     else
-      logger -st "($(basename "$0"))" $$ "No $IPSET_NAME references found in $NAT_START"
+      logger -t "($(basename "$0"))" $$ "No $IPSET_NAME references found in $NAT_START"
     fi
 
     if [ "$(grep -cw "ipset_name=$IPSET_NAME" "$NAT_START")" -ge 1 ]; then
       sed -i "\~\bipset_name=$IPSET_NAME\b~d" "$NAT_START"
-      logger -st "($(basename "$0"))" $$ "Script entry for $IPSET_NAME deleted from $NAT_START"
+      logger -t "($(basename "$0"))" $$ "Script entry for $IPSET_NAME deleted from $NAT_START"
       Check_For_Shebang "$NAT_START"
     else
-      logger -st "($(basename "$0"))" $$ "No $IPSET_NAME references found in $NAT_START"
+      logger -t "($(basename "$0"))" $$ "No $IPSET_NAME references found in $NAT_START"
     fi
   fi
 
@@ -740,44 +740,44 @@ Delete_Ipset_List() {
     VPNC_UP_FILE="/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-up"
     VPNC_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPNID}-route-pre-down"
     if [ -s "$VPNC_UP_FILE" ]; then # file exists
-      logger -st "($(basename "$0"))" $$ "Checking $VPNC_UP_FILE..."
+      logger -t "($(basename "$0"))" $$ "Checking $VPNC_UP_FILE..."
       # Note: not passing del entry
       if [ "$(grep -cw "$IPSET_NAME" "$VPNC_UP_FILE")" -ge 1 ]; then # if true, then one or more lines exist
         sed -i "\~\b $IPSET_NAME\b~d" "$VPNC_UP_FILE"
-        logger -st "($(basename "$0"))" $$ "ipset $IPSET_NAME entry deleted from $VPNC_UP_FILE"
+        logger -t "($(basename "$0"))" $$ "ipset $IPSET_NAME entry deleted from $VPNC_UP_FILE"
         Check_For_Shebang "$VPNC_UP_FILE"
       else
-        logger -st "($(basename "$0"))" $$ "No $IPSET_NAME references found in $VPNC_UP_FILE"
+        logger -t "($(basename "$0"))" $$ "No $IPSET_NAME references found in $VPNC_UP_FILE"
       fi
     fi
     if [ -s "$VPNC_DOWN_FILE" ]; then # file exists
       if [ "$(grep -cw "$IPSET_NAME" "$VPNC_DOWN_FILE")" -ge 1 ]; then # if true, then one or more lines exist
         sed -i "\~\b $IPSET_NAME\b~d" "$VPNC_DOWN_FILE"
-        logger -st "($(basename "$0"))" $$ "ipset $IPSET_NAME entry deleted from $VPNC_DOWN_FILE"
+        logger -t "($(basename "$0"))" $$ "ipset $IPSET_NAME entry deleted from $VPNC_DOWN_FILE"
         Check_For_Shebang "$VPNC_DOWN_FILE"
       else
-        logger -st "($(basename "$0"))" $$ "No $IPSET_NAME references found in $VPNC_DOWN_FILE"
+        logger -t "($(basename "$0"))" $$ "No $IPSET_NAME references found in $VPNC_DOWN_FILE"
       fi
     fi
   done
 
   #Check_Cron_Job
-  logger -st "($(basename "$0"))" $$ "Checking crontab..."
+  logger -t "($(basename "$0"))" $$ "Checking crontab..."
   if cru l | grep "$IPSET_NAME" 2>/dev/null; then
     cru d "$IPSET_NAME" "0 2 * * * ipset save $IPSET_NAME" 2>/dev/null
-    logger -st "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
+    logger -t "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
   fi
 
   FWMARK=$(iptables -nvL PREROUTING -t mangle --line | grep -m 1 "$IPSET_NAME " | awk '{print $16}')
 
   # Delete PREROUTING Rules for Normal IPSET routing
-  logger -st "($(basename "$0"))" $$ "Checking PREROUTING iptables rules..."
+  logger -t "($(basename "$0"))" $$ "Checking PREROUTING iptables rules..."
   iptables -nvL PREROUTING -t mangle --line | grep "br0" | grep "$IPSET_NAME " | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
     iptables -t mangle -D PREROUTING "$CHAIN_NUM" && logger -t "($(basename "$0"))" $$ "Deleted PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
   done
 
   # Delete PREROUTING Rule for VPN Server to IPSET & POSTROUTING Rule
-  logger -st "($(basename "$0"))" $$ "Checking POSTROUTNG iptables rules..."
+  logger -t "($(basename "$0"))" $$ "Checking POSTROUTNG iptables rules..."
   for SERVER_TUN in tun21 tun22; do
     SERVER=$(echo "$SERVER_TUN" | awk '{ string=substr($0, 5, 5); print string; }')
     TUN="$(iptables -nvL PREROUTING -t mangle --line | grep "$SERVER_TUN" | grep "$IPSET_NAME" | grep "match-set" | awk '{print $7}')"
@@ -789,7 +789,7 @@ Delete_Ipset_List() {
   done
 
   # Destroy the IPSET list
-  logger -st "($(basename "$0"))" $$ "Checking if IPSET list $IPSET_NAME exists..."
+  logger -t "($(basename "$0"))" $$ "Checking if IPSET list $IPSET_NAME exists..."
   if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then
     ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || $$ "IPSET $IPSET_NAME deleted!" || Error_Exit "Error attempting to delete IPSET $IPSET_NAME!"
   fi
@@ -800,7 +800,7 @@ Delete_Ipset_List() {
     ip rule del fwmark "$FWMARK/$FWMARK" 2>/dev/null && logger -t "($(basename "$0"))" $$ "Deleting fwmark $FWMARK/$FWMARK"
   fi
 
-  logger -st "($(basename "$0"))" $$ "Checking if IPSET backup file exists..."
+  logger -t "($(basename "$0"))" $$ "Checking if IPSET backup file exists..."
   if [ -s "$DIR/$IPSET_NAME" ]; then
     while true; do
       printf '\n%b%s%b\n' "$COLOR_RED" "DANGER ZONE!" "$COLOR_WHITE"

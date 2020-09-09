@@ -617,7 +617,7 @@ Download_ASN_Ipset_List() {
   STATUS=$(curl --retry 3 -sL -o "$DIR/${IPSET_NAME}_tmp" -w '%{http_code}' https://ipinfo.io/"${ASN}")
 
   if [ "$STATUS" -eq 200 ]; then # curl succeded
-    grep -E "a href.*$NUMBER\/" "$DIR/${IPSET_NAME}_tmp" | grep -v ":" | sed 's|^.*<a href="/'"$ASN"'/||' | sed 's|" >||' >>"$DIR/$IPSET_NAME"
+    grep -E "a href.*$NUMBER\/" "$DIR/${IPSET_NAME}_tmp" | grep -v ":" | sed 's|0.0.0.0\/0||' | sed 's|^.*<a href="/'"$ASN"'/||' | sed 's|" >||' >>"$DIR/$IPSET_NAME"
     sort -gt '/' -k 1 "$DIR/$IPSET_NAME" | sort -ut '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4n >"$DIR/${IPSET_NAME}_tmp"
     mv "$DIR/${IPSET_NAME}_tmp" "$DIR/$IPSET_NAME"
     sed -i '/^$/d' "$DIR/$IPSET_NAME"

@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting.sh
-# VERSION=2.3.1
+# VERSION=2.3.2
 # Author: Xentrk
-# Date: 9-September-2020
+# Date: 10-September-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -611,60 +611,9 @@ Download_ASN_Ipset_List() {
 
   IPSET_NAME=$1
   ASN=$2
-  NUMBER=$3
-  DIR=$4
 
-  #STATUS=$(curl --retry 3 -sL -o "$DIR/${IPSET_NAME}_tmp" -w '%{http_code}' https://ipinfo.io/"${ASN}")
-
-  #if [ "$STATUS" -eq 200 ]; then # curl succeded
-  #  grep -E "a href.*$NUMBER\/" "$DIR/${IPSET_NAME}_tmp" | grep -v ":" | sed 's|0.0.0.0\/0||' | sed 's|^.*<a href="/'"$ASN"'/||' | sed 's|" >||' >>"$DIR/$IPSET_NAME"
-  #  sort -gt '/' -k 1 "$DIR/$IPSET_NAME" | sort -ut '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4n >"$DIR/${IPSET_NAME}_tmp"
-  #  mv "$DIR/${IPSET_NAME}_tmp" "$DIR/$IPSET_NAME"
-  #  sed -i '/^$/d' "$DIR/$IPSET_NAME"
-    # check for non valid lines here.
-  #  while read -r LINE; do
-  #    REGEX="(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
-  #    if echo "$LINE" | grep -Eq "$REGEX"; then
-  #      USE_BKUP_FLAG=No
-  #    else
-  #      USE_BKUP_FLAG=Yes
-  #      break
-  #    fi
-#    done <"$DIR/$IPSET_NAME"
-#    if [ "$USE_BKUP_FLAG" = "Yes" ]; then
-#      cp "$DIR/$IPSET_NAME.bkup" "$DIR/$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "Unexpected data found in  $DIR/$IPSET_NAME. Restoring IPSET list from backup."
-#    fi
-#    awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
-#  else
-    STATUS=$(curl --retry 3 -sL -o "$DIR/${IPSET_NAME}_tmp" -w '%{http_code}' https://api.hackertarget.com/aslookup/?q="$ASN")
-    if [ "$STATUS" -eq 200 ]; then
-      # Curl succeded
-      awk '{ print $1 }' "$DIR/${IPSET_NAME}_tmp" | grep -v "$NUMBER" >>"$DIR/$IPSET_NAME"
-      sort -gt '/' -k 1 "$DIR/$IPSET_NAME" | sort -ut '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4n >"$DIR/${IPSET_NAME}_tmp"
-      mv "$DIR/${IPSET_NAME}_tmp" "$DIR/$IPSET_NAME"
-      sed -i '/^$/d' "$DIR/$IPSET_NAME"
-      # check for non valid lines here.
-      while read -r LINE; do
-        REGEX="(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
-        if echo "$LINE" | grep -Eq "$REGEX"; then
-          USE_BKUP_FLAG=No
-        else
-          USE_BKUP_FLAG=Yes
-          break
-        fi
-      done <"$DIR/$IPSET_NAME"
-      if [ "$USE_BKUP_FLAG" = "Yes" ]; then
-        cp "$DIR/$IPSET_NAME.bkup" "$DIR/$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "Unexpected data found in  $DIR/$IPSET_NAME. Restoring IPSET list from backup."
-      fi
-      awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
-#    elif [ -s "$DIR/$IPSET_NAME.bkup" ]; then
-#      logger -st "($(basename "$0"))" $$ "Download of ASN IPv4 addresses failed. Restoring IPSET list from backup"
-#      cp "$DIR/$IPSET_NAME.bkup" "$DIR/$IPSET_NAME"
-#      awk '{print "add '"$IPSET_NAME"' " $1}' "$DIR/$IPSET_NAME" | ipset restore -!
-#    else
-#      Error_Exit "Download of ASN IPv4 addresses failed with curl error code: $STATUS"
-    fi
-#  fi
+  # curl code source ~ https://github.com/Adamm00/IPSet_ASUS/blob/master/firewall.sh
+  curl -fsL --retry 3 --connect-timeout 3 "https://api.hackertarget.com/aslookup/?q=$ASN" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}' | awk '{printf "add '"$IPSET_NAME"' %s\n", $1 }' | awk '!x[$0]++' | ipset restore -!
 
 }
 
@@ -792,13 +741,19 @@ Delete_Ipset_List() {
     logger -t "($(basename "$0"))" $$ CRON schedule deleted: "#$IPSET_NAME#" "'0 2 * * * ipset save $IPSET_NAME'"
   fi
 
-  FWMARK=$(iptables -nvL PREROUTING -t mangle --line | grep -m 1 "$IPSET_NAME " | awk '{print $16}')
-
-  # Delete PREROUTING Rules for Normal IPSET routing
   logger -t "($(basename "$0"))" $$ "Checking PREROUTING iptables rules..."
-  iptables -nvL PREROUTING -t mangle --line | grep "br0" | grep "$IPSET_NAME " | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
-    iptables -t mangle -D PREROUTING "$CHAIN_NUM" && logger -t "($(basename "$0"))" $$ "Deleted PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
-  done
+  FWMARK=$(iptables -nvL PREROUTING -t mangle --line | grep -m 1 "$IPSET_NAME " | awk '{print $16}' | tr -d '\r')
+  if [ -n "$FWMARK" ]; then
+    # Delete PREROUTING Rules for Normal IPSET routing
+    iptables -nvL PREROUTING -t mangle --line | grep "br0" | grep "$IPSET_NAME " | grep "match-set" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
+      iptables -t mangle -D PREROUTING "$CHAIN_NUM" && logger -t "($(basename "$0"))" $$ "Deleted PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
+    done
+    # Delete the fmwark priority if no IPSET lists are using it
+    FWMARK_FLAG=$(iptables -nvL PREROUTING -t mangle --line | grep -m 1 "$FWMARK" | awk '{print $16}' | tr -d '\r' ' ')
+    if [ -z "$FWMARK_FLAG" ]; then
+      ip rule del fwmark "$FWMARK/$FWMARK" 2>/dev/null && logger -t "($(basename "$0"))" $$ "Deleting fwmark $FWMARK/$FWMARK"
+    fi
+  fi
 
   # Delete PREROUTING Rule for VPN Server to IPSET & POSTROUTING Rule
   logger -t "($(basename "$0"))" $$ "Checking POSTROUTNG iptables rules..."
@@ -816,12 +771,6 @@ Delete_Ipset_List() {
   logger -t "($(basename "$0"))" $$ "Checking if IPSET list $IPSET_NAME exists..."
   if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then
     ipset destroy "$IPSET_NAME" && logger -st "($(basename "$0"))" $$ "IPSET $IPSET_NAME deleted!" || $$ "IPSET $IPSET_NAME deleted!" || Error_Exit "Error attempting to delete IPSET $IPSET_NAME!"
-  fi
-
-  # Delete the fmwark priority if no IPSET lists are using it
-  FWMARK_FLAG=$(iptables -nvL PREROUTING -t mangle --line | grep -m 1 "$FWMARK" | awk '{print $16}')
-  if [ -z "$FWMARK_FLAG" ]; then
-    ip rule del fwmark "$FWMARK/$FWMARK" 2>/dev/null && logger -t "($(basename "$0"))" $$ "Deleting fwmark $FWMARK/$FWMARK"
   fi
 
   logger -t "($(basename "$0"))" $$ "Checking if IPSET backup file exists..."
@@ -872,78 +821,69 @@ DNSMASQ_Parm() {
 
 ASNUM_Parm() {
 
-  true >"/opt/tmp/${SCR_NAME}"
-
   if [ -s "$DIR/$IPSET_NAME" ]; then
     mv "$DIR/$IPSET_NAME" "$DIR/$IPSET_NAME.bkup" # create backup to restore from if download fails
     true >"$DIR/$IPSET_NAME"                      # wipe clean before loading save/restore file.
   fi
 
-  ASN=$(echo "$@" | sed -n "s/^.*asnum=//p" | awk '{print $1}' | tr ',' '\n')
+  ASN=$(echo "$@" | sed -n "s/^.*asnum=//p" | awk '{print $1}' | tr ',' ' ')
 
   for ASN in $ASN; do
-    awk -v A="$ASN" 'BEGIN {print A}' >>"/opt/tmp/${SCR_NAME}"
-    while read -r ASN; do
-      PREFIX=$(printf '%-.2s' "$ASN")
-      NUMBER="$(echo "$ASN" | sed 's/^AS//')"
-      if [ "$PREFIX" = "AS" ]; then
-        # Check for valid Number and skip if bad
-        A=$(echo "$NUMBER" | grep -oE '^\-?[0-9]+$')
-        if [ -z "$A" ]; then
-          echo "Skipping invalid ASN: $NUMBER"
-        else
-          Create_Ipset_List "$IPSET_NAME" "ASN"
-          Download_ASN_Ipset_List "$IPSET_NAME" "$ASN" "$NUMBER" "$DIR"
-        fi
+    PREFIX=$(printf '%-.2s' "$ASN")
+    NUMBER="$(echo "$ASN" | sed 's/^AS//')"
+    if [ "$PREFIX" = "AS" ]; then
+      # Check for valid Number and skip if bad
+      A=$(echo "$NUMBER" | grep -oE '^\-?[0-9]+$')
+      if [ -z "$A" ]; then
+        echo "Skipping invalid ASN: $NUMBER"
       else
-        Error_Exit "Invalid Prefix specified: $PREFIX. Valid value is 'AS'"
+        Create_Ipset_List "$IPSET_NAME" "ASN"
+        Download_ASN_Ipset_List "$IPSET_NAME" "$ASN"
       fi
-    done <"/opt/tmp/${SCR_NAME}"
+    else
+      Error_Exit "Invalid Prefix specified: $PREFIX. Valid value is 'AS'"
+    fi
   done
-  rm "/opt/tmp/${SCR_NAME}"
+
 }
 
 AWS_Region_Parm() {
 
-  AWS_REGION=$(echo "$@" | sed -n "s/^.*aws_region=//p" | awk '{print $1}' | tr ',' '\n')
-  true >"/opt/tmp/${SCR_NAME}" # create tmp file for loop processing
+  AWS_REGION=$(echo "$@" | sed -n "s/^.*aws_region=//p" | awk '{print $1}' | tr ',' ' ')
   for AWS_REGION in $AWS_REGION; do
-    awk -v A="$AWS_REGION" 'BEGIN {print A}' >>"/opt/tmp/${SCR_NAME}"
-    while read -r AWS_REGION; do
-      case "$AWS_REGION" in
-      AP)
-        REGION="ap-east-1 ap-northeast-1 ap-northeast-2 ap-northeast-3 ap-south-1 ap-southeast-1 ap-southeast-2"
-        ;;
-      CA)
-        REGION="ca-central-1"
-        ;;
-      CN)
-        REGION="cn-north-1 cn-northwest-1"
-        ;;
-      EU)
-        REGION="eu-central-1 eu-north-1 eu-west-1 eu-west-2 eu-west-3"
-        ;;
-      SA)
-        REGION="sa-east-1"
-        ;;
-      US)
-        REGION="us-east-1 us-east-2 us-west-1 us-west-2"
-        ;;
-      GV)
-        REGION="us-gov-east-1 us-gov-west-1"
-        ;;
-      GLOBAL)
-        REGION="GLOBAL"
-        ;;
-      *)
-        Error_Exit "Invalid AMAZON region specified: $AWS_REGION. Valid values are: AP CA CN EU SA US GV GLOBAL"
-        ;;
-      esac
-      Create_Ipset_List "$IPSET_NAME" "AWS"
-      Load_AWS_Ipset_List "$IPSET_NAME" "$REGION" "$DIR"
-    done <"/opt/tmp/${SCR_NAME}"
-    rm "/opt/tmp/${SCR_NAME}"
+    case "$AWS_REGION" in
+    AP)
+      REGION="ap-east-1 ap-northeast-1 ap-northeast-2 ap-northeast-3 ap-south-1 ap-southeast-1 ap-southeast-2"
+      ;;
+    CA)
+      REGION="ca-central-1"
+      ;;
+    CN)
+      REGION="cn-north-1 cn-northwest-1"
+      ;;
+    EU)
+      REGION="eu-central-1 eu-north-1 eu-west-1 eu-west-2 eu-west-3"
+      ;;
+    SA)
+      REGION="sa-east-1"
+      ;;
+    US)
+      REGION="us-east-1 us-east-2 us-west-1 us-west-2"
+      ;;
+    GV)
+      REGION="us-gov-east-1 us-gov-west-1"
+      ;;
+    GLOBAL)
+      REGION="GLOBAL"
+      ;;
+    *)
+      Error_Exit "Invalid AMAZON region specified: $AWS_REGION. Valid values are: AP CA CN EU SA US GV GLOBAL"
+      ;;
+    esac
+    Create_Ipset_List "$IPSET_NAME" "AWS"
+    Load_AWS_Ipset_List "$IPSET_NAME" "$REGION" "$DIR"
   done
+
 }
 
 Manual_Method() {

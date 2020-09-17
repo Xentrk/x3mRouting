@@ -808,7 +808,7 @@ DNSMASQ_Parm() {
       done <"$DNSMASQ_FILE"
       DOMAINS="$(echo "$COMMA_DOMAINS_LIST" | sed 's/^,*//;')"
     fi
-    sed -i "\~$IPSET_NAME~d" /jffs/configs/dnsmasq.conf.add
+    sed -i "\~ipset=.*$IPSET_NAME~d" /jffs/configs/dnsmasq.conf.add
   fi
   if [ "$(echo "$@" | grep -c "dnsmasq=")" -eq 1 ]; then
     DOMAINS=$(echo "$@" | sed -n "s/^.*dnsmasq=//p" | awk '{print $1}')

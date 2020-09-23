@@ -406,10 +406,10 @@ Check_Files_For_Entries() {
   # VPN Client route-pre-down File
   if [ -s "$VPNC_DOWN_FILE" ]; then
     if [ "$(grep -cw "$IPTABLES_DEL_ENTRY" "$VPNC_DOWN_FILE")" -eq 0 ]; then # if true, then no lines exist
-      echo "$IPTABLES_DEL_ENTRY" >>"$VPNC_DOWN_FILE" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
+      echo "$IPTABLES_DEL_ENTRY" >>"$VPNC_DOWN_FILE" # add $SCRIPT_ENTRY to $VPNC_DOWN_FILE
       logger -st "($(basename "$0"))" $$ "$IPTABLES_DEL_ENTRY added to $VPNC_DOWN_FILE"
     fi
-  else # file does not exist, create VPNC_UP_FILE
+  else # file does not exist, create VPNC_DOWN_FILE
     true >"$VPNC_DOWN_FILE"
     {
       printf '%s\n' "#!/bin/sh"

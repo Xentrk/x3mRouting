@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting.sh
-# VERSION=2.3.4
+# VERSION=2.3.5
 # Author: Xentrk
-# Date: 23-September-2020
+# Date: 24-September-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -1609,7 +1609,7 @@ if [ "$(echo "$@" | grep -c 'aws_region=')" -gt 0 ]; then
 fi
 
 # Manual Method to create ipset list if IP address specified
-if [ -z "$4" ] || [ "$(echo "$@" | grep -c 'ip=')" -gt 0 ]; then
+if [ -z "$4" ] || [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ] || [ "$(echo "$@" | grep -c 'ip=')" -gt 0 ]; then
   Manual_Method $@
   Create_Routing_Rules "$IPSET_NAME"
   Check_Files_For_Entries "$SRC_IFACE" "$DST_IFACE" "$IPSET_NAME" "Manual" "$DIR"

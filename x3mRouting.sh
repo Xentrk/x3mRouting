@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting.sh
-# VERSION=2.3.5
+# VERSION=2.3.6
 # Author: Xentrk
-# Date: 24-September-2020
+# Date: 25-September-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -1317,7 +1317,7 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
     *) Error_Exit "ERROR 'client=$VPN_CLIENT_INSTANCE' reference should be a 1-5" ;;
     esac
 
-    if [ "$(echo $@ | grep -c 'del')" -ge 1 ]; then
+    if [ "$(echo $@ | grep -cw 'del')" -ge 1 ]; then
       if [ "$SERVER" = "both" ]; then
         for SERVER in 1 2; do
           VPN_Server_to_VPN_Client "$SERVER" "$IFACE" "$VPN_CLIENT_INSTANCE" "del"
@@ -1361,7 +1361,7 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
       tun15) VPN_CLIENT_INSTANCE=5 ;;
       esac
 
-      if [ "$(echo $@ | grep -c 'del')" -ge 1 ]; then
+      if [ "$(echo $@ | grep -cw 'del')" -ge 1 ]; then
         if [ "$SERVER" = "both" ]; then
           for SERVER in 1 2; do
             VPN_Server_to_IPSET "$SERVER" "$VPN_CLIENT_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK" "del"
@@ -1381,7 +1381,7 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
     done
     # nat-start File
     SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $1 $2"
-    if [ "$(echo $@ | grep -c 'del')" -eq 0 ]; then
+    if [ "$(echo $@ | grep -cw 'del')" -eq 0 ]; then
       if [ -s "$NAT_START" ]; then # file exists
         if [ "$(grep -cw "$SCRIPT_ENTRY" "$NAT_START")" -eq 0 ]; then # if true, then no lines exist
           echo "$SCRIPT_ENTRY" >>"$NAT_START" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
@@ -1415,7 +1415,7 @@ fi
 if [ "$(echo "$@" | grep -c 'ipset_name=')" -gt 0 ]; then
   IPSET_NAME=$(echo "$@" | sed -n "s/^.*ipset_name=//p" | awk '{print $1}') # ipset name
 
-  if [ "$(echo "$@" | grep -c 'del')" -gt 0 ]; then
+  if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
     Delete_Ipset_List "$IPSET_NAME" "$DIR"
     Exit_Routine
   fi
@@ -1554,7 +1554,7 @@ esac
 Set_IP_Rule "$DST_IFACE"
 
 # Check if delete option specified
-if [ "$(echo "$@" | grep -c 'del')" -gt 0 ]; then
+if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
   Delete_Ipset_List "$IPSET_NAME" "$DIR"
   Exit_Routine
 fi

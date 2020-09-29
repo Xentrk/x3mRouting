@@ -1,8 +1,8 @@
 #!/bin/sh
-####################################################################################################  
+####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 3-September-2020
+# Last Updated Date: 29-September-2020
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -17,7 +17,7 @@
 # shellcheck disable=SC2028
 # shellcheck disable=SC2010 # need to us ls with a grep
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
-VERSION="2.3.0"
+VERSION="2.4.0"
 GIT_REPO="x3mRouting"
 BRANCH="master"
 # Change branch to master after merge
@@ -62,7 +62,7 @@ Main_Menu() {
     printf '%b[1]%b  Install LAN Client Routing\n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '%b[2]%b  Install OpenVPN Client GUI, OpenVPN Event & x3mRouting.sh Script\n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '%b[3]%b  Install OpenVPN Event & x3mRouting.sh Script\n' "$COLOR_GREEN" "$COLOR_WHITE"
-    printf '%b[4]%b  Install getdomainnames.sh & autoscan.sh Scripts\n' "$COLOR_GREEN" "$COLOR_WHITE"
+    printf '%b[4]%b  Install x3mRouting Utility Scripts\n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '%b[5]%b  Check for updates to existing x3mRouting installation\n' "$COLOR_GREEN" "$COLOR_WHITE"
     printf '%b[6]%b  Remove x3mRouting Repository\n' "$COLOR_GREEN" "$COLOR_WHITE"
     localmd5="$(md5sum "$ADDONS/x3mRouting_Menu.sh" | awk '{print $1}')"
@@ -159,6 +159,7 @@ Main_Menu() {
         done
         echo
         printf '%s%b%s%b%s%b%s%b%s\n\n' "Installation of " "$COLOR_GREEN" "getdomainnames.sh" "$COLOR_WHITE" " and " "$COLOR_GREEN" "autoscan.sh" "$COLOR_WHITE" " completed"
+        Install_ASN_Lookup_Tool
         echo "Press enter to continue"
         read -r
         Welcome_Message
@@ -209,6 +210,35 @@ Install_Done() {
   echo "Press enter to continue"
   read -r
   Welcome_Message
+}
+
+Install_ASN_Lookup_Tool() {
+
+  Chk_Entware 30
+
+  if [ "$READY" -eq 1 ]; then
+    echo "You must first install Entware before proceeding"
+    printf 'Exiting %s\n' "$(basename "$0")"
+    exit 1
+  fi
+
+  for ENTWARE_PACKAGE in bash host mtr whois; do
+    echo "Checking if $ENTWARE_PACKAGE is installed..."
+    Chk_Entware $ENTWARE_PACKAGE 30
+    if [ "$READY" -eq 1 ]; then
+      echo "Unable to install entware package $ENTWARE_PACKAGE"
+      printf 'Exiting %s\n' "$(basename "$0")"
+      exit 1
+    fi
+  done
+
+  echo "Downloading ASN Lookup Utility..."
+  mkdir -p /jffs/addons/x3mRouting
+  [ -s /opt/bin/asn ] && rm /opt/bin/asn
+  /usr/sbin/curl -s --retry 3 https://raw.githubusercontent.com/Xentrk/asn/master/asn -o /jffs/addons/x3mRouting/asn
+  chmod 755 /jffs/addons/x3mRouting/asn &&  ln -s "/jffs/addons/x3mRouting/asn" "/opt/bin/asn"
+  printf '%s%b%s%b%s\n\n' "Installation of the " "$COLOR_GREEN" "ASN Lookup Tool" "$COLOR_WHITE" " completed"
+
 }
 
 Check_Firmware_Version() {
@@ -456,6 +486,9 @@ Remove_OPT4() {
     [ -s "$LOCAL_REPO/$FILE" ] && rm -f "$LOCAL_REPO/$FILE" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$LOCAL_REPO/$FILE" "$COLOR_WHITE" " completed"
   done
 
+  # ASN Lookup Utility
+  [ -s "$ADDONS/asn" ] && rm -f /opt/bin/asn && rm -f "$ADDONS/asn" && printf '\n%s%b%s%b%s\n' "Removal of " "$COLOR_GREEN" "$ADDONS/asn" "$COLOR_WHITE" " completed"
+
   printf "\nPress enter to continue"
   read -r
   Welcome_Message
@@ -625,6 +658,28 @@ Update_Addons_Files() {
       sed -i "\\~$PARM~d" "/jffs/scripts/init-start"
       printf '%b%s%b%s%b%s%b\n' "$COLOR_GREEN" "$PARM" "$COLOR_WHITE" " entry removed from " "$COLOR_GREEN" "/jffs/scripts/init-start" "$COLOR_WHITE"
       Check_For_Shebang /jffs/scripts/init-start
+    fi
+  fi
+
+  # Check if ASN Lookup Utility installed
+  FILE=asn
+  if [ -s "$ADDONS/$FILE" ]; then
+    localver=$(grep "VERSION=" "$ADDONS/$FILE" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
+    serverver=$(/usr/sbin/curl -fsL --retry 3 "https://raw.githubusercontent.com/Xentrk/asn/master/asn" | grep "VERSION=" | grep -m1 -oE '[0-9]{1,2}([.][0-9]{1,2})([.][0-9]{1,2})')
+    if [ "$localver" != "$serverver" ]; then
+      printf 'New version of %b%s%b available - updating to %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
+      Install_ASN_Lookup_Tool
+    else
+      printf 'No new version of %b%s%b to update - latest is %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$serverver"
+    fi
+
+    localmd5="$(md5sum "$ADDONS/$FILE" | awk '{print $1}')"
+    remotemd5="$(curl -fsL --retry 3 "https://raw.githubusercontent.com/Xentrk/asn/master/asn" | md5sum | awk '{print $1}')"
+    if [ "$localmd5" != "$remotemd5" ]; then
+      printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " does not match - downloading"
+      Install_ASN_Lookup_Tool
+    else
+      printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " matches GitHub repo file."
     fi
   fi
 
@@ -1438,6 +1493,10 @@ Chk_Entware() {
           # Not all Entware utilities exists as a stand-alone package e.g. 'find' is in package 'findutils'
           if [ -d /opt ] && [ -n "$(find /opt/ -name "$ENTWARE_UTILITY")" ]; then
             READY="0" # Specific Entware utility found
+          else
+            opkg install "$ENTWARE_UTILITY"
+            READY="0"
+            break
           fi
         fi
       else

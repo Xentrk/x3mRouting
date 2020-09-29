@@ -29,13 +29,17 @@ The [x3mRouting](https://github.com/Xentrk/x3mRouting#3-openvpn-event--x3mroutin
 The features of **openvpn-event** are used to create the routing rule during a VPN Client up event and remove the routing rule during a VPN Client down event.
 
 ### 4. x3mRouting Utility Scripts
-These two scripts can be used to analyze the domain names being used for a website or streaming service.
+These scripts and tools can be used to analyze the domain names being used for a website or streaming service.
 
 The [getdomainnames.sh](https://github.com/Xentrk/x3mRouting#getdomainnamessh-script) script will create a uniquely sorted list of domain names gathered from **dnsmasq.log** that you collect by accessing a website or streaming service. Use the script to help determine the domain names used by a website or streaming service.
 
 The [autoscan.sh](https://github.com/Xentrk/x3mRouting#autoscansh-script) script is used to search for one or more terms in **dnsmasq.log**. It will return the top level domain names if there is a match.
 
-The [ASN Lookup Tool](https://github.com/Xentrk/asn) is used to search ASN/IPv4/IPv6/Prefix/ASPath/Organization lookup.
+The [ASN Lookup Tool](https://github.com/Xentrk/asn) is used to search ASN/IPv4/IPv6/Prefix/ASPath/Organization lookup.  
+
+The ASN Lookup Tool will perform an AS path trace (using mtr in raw mode and retrieving AS data from the results) for single IPs or DNS results, optionally reporting detailed data for each hop, such as organization/network name, geographic location, etc.
+
+It is also possible to search by organization name in order to retrieve a list of IPv4/6 network ranges related to a given company. A multiple choice menu will be presented if more than one organization matches the search query. See the usage instructions on the [ASN Lookup Tool README](https://github.com/Xentrk/asn).
 
 ## Support
 For help and support, please visit the Asuswrt-Merlin x3mRouting support thread on [snbforums.com](https://www.snbforums.com/threads/x3mrouting-selective-routing-for-asuswrt-merlin-firmware.57793/#post-506675).
@@ -532,7 +536,7 @@ nflxso.net
 nflxvideo.net
 ````
 
-#### The [ASN Lookup Tool](https://github.com/Xentrk/asn) is used to search ASN/IPv4/IPv6/Prefix/ASPath/Organization lookup. 
+#### The [ASN Lookup Tool](https://github.com/Xentrk/asn) is used to search ASN/IPv4/IPv6/Prefix/ASPath/Organization lookup.
 
 ## Helpful Tips, Validation and Troubleshooting
 
@@ -718,6 +722,7 @@ The installation menu **x3mMenu** will display a menu with the options to instal
 |openvpn-event                      |   | X | X |   |
 |getdomainnames.sh                  |   |   |   | X |
 |autoscan.sh                        |   |   |   | X |
+|asn                                |   |   |   | X |
 
 ## Acknowledgements
 I want to acknowledge the following [snbforums](https://www.snbforums.com) members who helped make this project possible.

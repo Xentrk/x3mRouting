@@ -1,5 +1,5 @@
 # x3mRouting ~ Selective Routing for Asuswrt-Merlin Firmware
-## Version 2.3.0 (1 September, 2020)
+## Version 2.4.0 (29 September, 2020)
 [![Build Status](https://travis-ci.com/Xentrk/x3mRouting.svg?branch=master)](https://travis-ci.com/Xentrk/x3mRouting)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/561d1570ed1f4d6aab76bba172f6b31f)](https://www.codacy.com/app/Xentrk/x3mRouting?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Xentrk/x3mRouting&amp;utm_campaign=Badge_Grade)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -28,12 +28,14 @@ The [x3mRouting](https://github.com/Xentrk/x3mRouting#3-openvpn-event--x3mroutin
 
 The features of **openvpn-event** are used to create the routing rule during a VPN Client up event and remove the routing rule during a VPN Client down event.
 
-### 4. getdomainnames.sh & autoscan.sh Scripts
+### 4. x3mRouting Utility Scripts
 These two scripts can be used to analyze the domain names being used for a website or streaming service.
 
 The [getdomainnames.sh](https://github.com/Xentrk/x3mRouting#getdomainnamessh-script) script will create a uniquely sorted list of domain names gathered from **dnsmasq.log** that you collect by accessing a website or streaming service. Use the script to help determine the domain names used by a website or streaming service.
 
 The [autoscan.sh](https://github.com/Xentrk/x3mRouting#autoscansh-script) script is used to search for one or more terms in **dnsmasq.log**. It will return the top level domain names if there is a match.
+
+The [ASN Lookup Tool](https://github.com/Xentrk/asn) is used to search ASN/IPv4/IPv6/Prefix/ASPath/Organization lookup.
 
 ## Support
 For help and support, please visit the Asuswrt-Merlin x3mRouting support thread on [snbforums.com](https://www.snbforums.com/threads/x3mrouting-selective-routing-for-asuswrt-merlin-firmware.57793/#post-506675).
@@ -477,7 +479,7 @@ VPN Server to IPSET list routing rules require the VPN Server and IPSET name to 
 x3mRouting server=1 ipset_name=PANDORA del
 ````
 
-### [4] getdomainnames.sh and autoscan.sh Scripts
+### [4] x3mRouting Utility Scripts
 #### getdomainnames.sh Script
 **getdomainnames.sh** script will create a uniquely sorted list of domain names from **dnsmasq.log** that you collected by accessing a website or streaming service. Use the script when analyzing domains used by a website or streaming service. The script requires that the **dnsmasq.log** file exists in the **/opt/var/log** directory. You must first enable dnsmasq logging if it's not enabled using the instructions below. You can also enabling dnsmasq logging by installing [Diversion, the Router Ad-Blocker for Asuswrt-Merlin](https://diversion.ch/).
 
@@ -529,6 +531,8 @@ nflximg.net
 nflxso.net
 nflxvideo.net
 ````
+
+#### The [ASN Lookup Tool](https://github.com/Xentrk/asn) is used to search ASN/IPv4/IPv6/Prefix/ASPath/Organization lookup. 
 
 ## Helpful Tips, Validation and Troubleshooting
 
@@ -775,8 +779,8 @@ The command to access the **x3mRouting** menu has been changed from **x3mRouting
   * The script **x3mRouting_client_config.sh** now stores the output file **x3mRouting_client_config** in **/jffs/scripts/x3mRouting** rather than **/jffs/configs**.
   * The script **x3mRouting_client_nvram.sh** now stores the nvram files in **/jffs/addons/x3mRouting** rather than **/jffs/configs**.
 
-#### x3mRouting Utility Files
-  * The x3mRouting utility files Advanced_OpenVPNClient_Content.asp, updown-dns.sh, x3mvpnrouting.sh, and x3mRouting_Menu.sh files are stored in **/jffs/addons/x3mRouting** rather than the project repository directory **/jffs/scripts/x3mRouting**.
+#### x3mRouting Support Files
+  * The x3mRouting support files Advanced_OpenVPNClient_Content.asp, updown-dns.sh, x3mvpnrouting.sh, and x3mRouting_Menu.sh files are stored in **/jffs/addons/x3mRouting** rather than the project repository directory **/jffs/scripts/x3mRouting**.
 
 ## Version 2.0.0 Update Process
 You won't be able to update to Version 2.0.0 using the existing **x3mRouting** Menu due to the installation menu changes described above.  

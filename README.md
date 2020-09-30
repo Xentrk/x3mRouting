@@ -538,7 +538,8 @@ nflxso.net
 nflxvideo.net
 ````
 ##### ASN Lookup Tool Usage Instructions
-[ASN Lookup Tool Usage Instructions](https://github.com/Xentrk/asn) to search ASN/IPv4/IPv6/Prefix/ASPath/Organization.
+Search for ASN/IPv4/IPv6/Prefix/ASPath/Organization.
+[ASN Lookup Tool Usage Instructions](https://github.com/Xentrk/asn)
 
 ## Helpful Tips, Validation and Troubleshooting
 

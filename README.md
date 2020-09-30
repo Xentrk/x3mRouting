@@ -537,8 +537,8 @@ nflximg.net
 nflxso.net
 nflxvideo.net
 ````
-
-#### The [ASN Lookup Tool](https://github.com/Xentrk/asn) is used to search ASN/IPv4/IPv6/Prefix/ASPath/Organization lookup.
+##### ASN Lookup Tool Usage Instructions
+[ASN Lookup Tool Usage Instructions](https://github.com/Xentrk/asn) to search ASN/IPv4/IPv6/Prefix/ASPath/Organization.
 
 ## Helpful Tips, Validation and Troubleshooting
 

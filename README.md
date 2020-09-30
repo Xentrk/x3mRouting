@@ -41,6 +41,8 @@ The ASN Lookup Tool will perform an AS path trace (using mtr in raw mode and ret
 
 It is also possible to search by organization name in order to retrieve a list of IPv4/6 network ranges related to a given company. A multiple choice menu will be presented if more than one organization matches the search query. See the usage instructions on the [ASN Lookup Tool README](https://github.com/Xentrk/asn).
 
+The entware packages [bash](https://linux.die.net/man/1/bash), [bind-host](https://linux.die.net/man/1/host), [mtr](https://linux.die.net/man/8/mtr) and [whois](https://linux.die.net/man/1/whois) will be installed.
+
 ## Support
 For help and support, please visit the Asuswrt-Merlin x3mRouting support thread on [snbforums.com](https://www.snbforums.com/threads/x3mrouting-selective-routing-for-asuswrt-merlin-firmware.57793/#post-506675).
 

@@ -222,7 +222,7 @@ Install_ASN_Lookup_Tool() {
     exit 1
   fi
 
-  for ENTWARE_PACKAGE in bash host mtr whois; do
+  for ENTWARE_PACKAGE in bash bind-host mtr whois; do
     echo "Checking if $ENTWARE_PACKAGE is installed..."
     Chk_Entware $ENTWARE_PACKAGE 30
     if [ "$READY" -eq 1 ]; then

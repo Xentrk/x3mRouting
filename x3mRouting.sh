@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting.sh
-# VERSION=2.3.6
+# VERSION=2.3.7
 # Author: Xentrk
-# Date: 25-September-2020
+# Date: 12-October-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -704,7 +704,7 @@ Delete_Ipset_List() {
       logger -t "($(basename "$0"))" $$ "Script entry for $IPSET_NAME deleted from $NAT_START"
       Check_For_Shebang "$NAT_START"
     else
-      logger -t "($(basename "$0"))" $$ "No $IPSET_NAME references found in $NAT_START"
+      logger -t "($(basename "$0"))" $$ "No ipset_name=$IPSET_NAME references found in $NAT_START"
     fi
   fi
 
@@ -1473,6 +1473,15 @@ if [ "$(echo "$@" | grep -c 'ipset_name=')" -gt 0 ]; then
     Manual_Method $@
     Check_Nat_Start_For_Entries "$IPSET_NAME" "Manual" "$DIR"
     Exit_Routine
+  fi
+
+  # Manual Method to create ipset list if IP address specified
+  if [ -s "$DIR/$IPSET_NAME" ]; then
+    Manual_Method $@
+    Check_Nat_Start_For_Entries "$IPSET_NAME" "Manual" "$DIR"
+    Exit_Routine
+  else
+    Error_Exit "ERROR! The save/restore file $DIR/$IPSET_NAME does not exist."
   fi
 
   # If I reached this point, I have encountered a value I don't expect

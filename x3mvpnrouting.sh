@@ -187,10 +187,11 @@ create_client_list() {
       if [ "$TARGET_ROUTE" = "WAN" ]; then
         FWMARK=0x8000/0x8000
         PRIO=9990
-        ip rule del fwmark "$FWMARK" 2>/dev/null
-        ip rule add from 0/0 fwmark 0x8000/0x8000 table 254 prio "$PRIO"
-        ip route flush cache
-        logger -st "($(basename "$0"))" $$ "x3mRouting Adding WAN0 RPDB fwmark rule 0x8000/0x8000 prio 9990"
+
+        if [ "$(ip rule | grep -cm 1 "$FWMARK")" -eq 0 ]; then
+          ip rule add from 0/0 fwmark 0x8000/0x8000 table 254 prio "$PRIO" && logger -st "($(basename "$0"))" $$ "x3mRouting Adding WAN0 RPDB fwmark rule 0x8000/0x8000 prio 9990"
+          ip route flush cache
+        fi
       fi
 
       if [ "$TARGET_ROUTE" = "VPN" ]; then
@@ -218,11 +219,11 @@ create_client_list() {
         esac
       fi
 
-      ip rule del fwmark "$FWMARK" 2>/dev/null
-      ip rule add from 0/0 fwmark "$FWMARK" table "11${VPN_UNIT}" prio "$PRIO"
-      ip route flush cache
-      logger -st "($(basename "$0"))" $$ "x3mRouting Adding OVPNC${VPN_UNIT} RPDB fwmark rule $FWMARK prio $PRIO"
-      
+      if [ "$(ip rule | grep -cm 1 "$FWMARK")" -eq 0 ]; then
+        ip rule add from 0/0 fwmark "$FWMARK" table "11${VPN_UNIT}" prio "$PRIO" && logger -st "($(basename "$0"))" $$ "x3mRouting Adding OVPNC${VPN_UNIT} RPDB fwmark rule $FWMARK prio $PRIO"
+        ip route flush cache
+      fi
+
       if [ "$READY" -eq 0 ]; then
         #logger -st "($(basename "$0"))" $$ "Debugger VARS-> SRC:$SRC IPSET_NAME:$IPSET_NAME DIM:$DIM FWMARK:$FWMARK"
         iptables -t mangle -D PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" "$DIM" -j MARK --set-mark "$FWMARK"

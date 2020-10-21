@@ -1,9 +1,9 @@
 #!/bin/sh
 ###########################################################################################################
 # Script: x3mvpnrouting.sh
-# VERSION=1.1.0
+# VERSION=1.2.0
 # Author: Xentrk
-# Date: 3-September-2020
+# Date: 22-October-2020
 ############################################################################################################
 # shellcheck disable=SC2086
 # -- Disabled quote for processing array variable PARAM on line 274

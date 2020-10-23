@@ -3,7 +3,7 @@
 # Script: x3mRouting.sh
 # VERSION=2.3.8 TEST
 # Author: Xentrk
-# Date: 21-October-2020
+# Date: 23-October-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -113,7 +113,7 @@ Check_Lock() {
 	echo "$@" > /tmp/x3mRouting.lock
 	echo "$$" >> /tmp/x3mRouting.lock
 	date +%s >> /tmp/x3mRouting.lock
-	lockx3m="true"
+	lockx3mRouting="true"
 }
 
 Chk_Entware() {
@@ -292,14 +292,14 @@ Create_Routing_Rules() {
 
 Exit_Routine() {
 
-  if [ "$lockx3m" = "true" ]; then rm -rf "/tmp/x3mRouting.lock"; fi
+  if [ "$lockx3mRouting" = "true" ]; then rm -rf "/tmp/x3mRouting.lock"; fi
   logger -st "($(basename "$0"))" $$ Completed Script Execution
   exit 0
 }
 
 Error_Exit() {
 
-  if [ "$lockx3m" = "true" ]; then rm -rf "/tmp/x3mRouting.lock"; fi
+  if [ "$lockx3mRouting" = "true" ]; then rm -rf "/tmp/x3mRouting.lock"; fi
   error_str="$*"
   logger -st "($(basename "$0"))" $$ "$error_str"
   exit 1
@@ -370,7 +370,11 @@ Check_Nat_Start_For_Entries() {
   fi
 
   if [ "$DIR" != "/opt/tmp" ]; then
-    SCRIPT_ENTRY="$SCRIPT_ENTRY dir=$DIR"
+    if [ "$(echo "$@" | grep -c 'asnum=')" -gt 0 ]; then
+      SCRIPT_ENTRY="$SCRIPT_ENTRY"
+    else
+      SCRIPT_ENTRY="$SCRIPT_ENTRY dir=$DIR"
+    fi
   fi
 
   # nat-start File
@@ -857,11 +861,6 @@ DNSMASQ_Parm() {
 
 ASNUM_Parm() {
 
-  if [ -s "$DIR/$IPSET_NAME" ]; then
-    mv "$DIR/$IPSET_NAME" "$DIR/$IPSET_NAME.bkup" # create backup to restore from if download fails
-    true >"$DIR/$IPSET_NAME"                      # wipe clean before loading save/restore file.
-  fi
-
   ASN=$(echo "$@" | sed -n "s/^.*asnum=//p" | awk '{print $1}' | tr ',' ' ')
 
   for ASN in $ASN; do
@@ -1305,23 +1304,21 @@ Define_IFACE() {
 }
 
 #==================== End of Functions  =====================================
-# Uncomment the line below for debugging
-#set -x
-
 ## Begin ##
-# Prevent duplicate processing
-SCR_NAME=$(basename "$0" | sed 's/.sh//')
-#exec 9>"/tmp/${SCR_NAME}.lock" || exit 1
-#flock 9 || exit 1
-#trap 'rm -f /tmp/${SCR_NAME}.lock' EXIT
-
 logger -st "($(basename "$0"))" $$ Starting Script Execution $@
 Check_Lock "$@"
+SCR_NAME=$(basename "$0" | sed 's/.sh//')
 NAT_START="/jffs/scripts/nat-start"
 
 # Check if user specified 'dir=' parameter
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
-  DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
+  if [ "$(echo "$@" | grep -c 'asnum=')" -gt 0 ]; then
+    logger -st "($(basename "$0"))" $$ "ASN Method stores IPv4 addresses in memory. Ignoring 'dir=' parm" location.
+    # set DIR to default location and ignore when writing to nat-start in Check_Nat_Start_For_Entries function
+    DIR="/opt/tmp"
+  else
+    DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
+  fi
 else
   DIR="/opt/tmp"
 fi

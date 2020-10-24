@@ -1,9 +1,9 @@
 #!/bin/sh
 ###########################################################################################################
 # Script: x3mvpnrouting.sh
-# VERSION=1.1.0
+# VERSION=1.2.0
 # Author: Xentrk
-# Date: 3-September-2020
+# Date: 22-October-2020
 ############################################################################################################
 # shellcheck disable=SC2086
 # -- Disabled quote for processing array variable PARAM on line 274
@@ -16,7 +16,7 @@
 
 my_logger() {
   if [ "$VPN_LOGGING" -gt "2" ]; then
-    /usr/bin/logger -t "openvpn-routing" "$1"
+    /usr/bin/logger -st "($(basename "$0"))" "$1"
   fi
 }
 
@@ -48,8 +48,6 @@ create_client_list() {
 
   ########################################################################################## Modified Martineau Hack 1 of 5
   # Xentrk: modified prior and updated to use fwmark/bitmask format
-  logger -st "($(basename "$0"))" $$ "x3mRouting Checking Custom fwmark/bitmask"
-
   ############################# Create ip rule fwmark/bitmask for OpenVPN Client Table
   case "${VPN_UNIT}" in
   1)
@@ -187,42 +185,17 @@ create_client_list() {
       if [ "$TARGET_ROUTE" = "WAN" ]; then
         FWMARK=0x8000/0x8000
         PRIO=9990
-        ip rule del fwmark "$FWMARK" 2>/dev/null
-        ip rule add from 0/0 fwmark 0x8000/0x8000 table 254 prio "$PRIO"
+        if [ "$(ip rule | grep -cm 1 "$FWMARK")" -eq 0 ]; then
+          ip rule add from 0/0 fwmark 0x8000/0x8000 table 254 prio "$PRIO" && logger -st "($(basename "$0"))" $$ "x3mRouting Adding WAN0 RPDB fwmark rule 0x8000/0x8000 prio 9990"
+          ip route flush cache
+        fi
+      fi
+
+      if [ "$(ip rule | grep -cm 1 "$FWMARK")" -eq 0 ]; then
+        ip rule add from 0/0 fwmark "$FWMARK" table "11${VPN_UNIT}" prio "$PRIO" && logger -st "($(basename "$0"))" $$ "x3mRouting Adding OVPNC${VPN_UNIT} RPDB fwmark rule $FWMARK prio $PRIO"
         ip route flush cache
-        logger -st "($(basename "$0"))" $$ "x3mRouting Adding WAN0 RPDB fwmark rule 0x8000/0x8000 prio 9990"
       fi
 
-      if [ "$TARGET_ROUTE" = "VPN" ]; then
-        case "$VPN_UNIT" in
-        1)
-          FWMARK=0x1000/0x1000
-          PRIO=9995
-          ;;
-        2)
-          FWMARK=0x2000/0x2000
-          PRIO=9994
-          ;;
-        3)
-          FWMARK=0x4000/0x4000
-          PRIO=9993
-          ;;
-        4)
-          FWMARK=0x7000/0x7000
-          PRIO=9992
-          ;;
-        5)
-          FWMARK=0x3000/0x3000
-          PRIO=9991
-          ;;
-        esac
-      fi
-
-      ip rule del fwmark "$FWMARK" 2>/dev/null
-      ip rule add from 0/0 fwmark "$FWMARK" table "11${VPN_UNIT}" prio "$PRIO"
-      ip route flush cache
-      logger -st "($(basename "$0"))" $$ "x3mRouting Adding OVPNC${VPN_UNIT} RPDB fwmark rule $FWMARK prio $PRIO"
-      
       if [ "$READY" -eq 0 ]; then
         #logger -st "($(basename "$0"))" $$ "Debugger VARS-> SRC:$SRC IPSET_NAME:$IPSET_NAME DIM:$DIM FWMARK:$FWMARK"
         iptables -t mangle -D PREROUTING "$SRC" -i br0 -m set --match-set "$IPSET_NAME" "$DIM" -j MARK --set-mark "$FWMARK"
@@ -237,6 +210,18 @@ create_client_list() {
   done
   IFS=$OLDIFS
 
+  # Restore FWMARKS used by IPSET lists that got removed when VPN was in down state
+  # WAN
+  if [ "$(ip rule | grep -cm 1 "0x8000/0x8000")" -eq 0 ]; then
+      ip rule add from 0/0 fwmark "0x8000/0x8000" table 254 prio 9990 && logger -st "($(basename "$0"))" $$ "Created fwmark 0x8000/0x8000"
+      ip route flush cache
+  fi
+  # VPN Client
+  if [ "$(ip rule | grep -cm 1 "$FWMARK")" -eq 0 ]; then
+    ip rule add from 0/0 fwmark "$FWMARK" table ovpnc"${VPN_UNIT}" prio "$PRIO" && logger -st "($(basename "$0"))" $$ "Created fwmark $FWMARK"
+    ip route flush cache
+  fi
+
 }
 
 purge_client_list() {
@@ -245,11 +230,11 @@ purge_client_list() {
     if [ "$PRIO" -ge "$START_PRIO" ] && [ "$PRIO" -le "$END_PRIO" ]; then
       ########################################################################################## Martineau Hack 2 of 5
       if [ "$PRIO" -eq "9990" ]; then
-        logger -t "($(basename "$0"))" $$ "Skipping deletion of rule $PRIO unoffically reserved for WAN fwmark 0x8000/0x8000"
+        logger -st "($(basename "$0"))" $$ "Skipping deletion of rule $PRIO unoffically reserved for WAN fwmark 0x8000/0x8000"
       else
         #################################################################################################################
         ip rule del prio "$PRIO"
-        logger -t "($(basename "$0"))" $$ "Removing rule $PRIO from routing policy"
+        logger -st "($(basename "$0"))" $$ "Removing rule $PRIO from routing policy"
       fi
     fi
   done
@@ -265,24 +250,21 @@ purge_client_list() {
 
   # delete PREROUTING rules for VPN Client Routing
   iptables -nvL PREROUTING -t mangle --line | grep "match-set" | grep "$FWMARK" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
-    iptables -t mangle -D PREROUTING "$CHAIN_NUM" && logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
+    iptables -t mangle -D PREROUTING "$CHAIN_NUM" && logger -st "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
   done
 
   # delete PREROUTING rules for VPN Client Bypass Routing
   iptables -nvL PREROUTING -t mangle --line | grep "match-set" | grep "0x8000" | awk '{print $1, $12}' | sort -nr | while read -r CHAIN_NUM IPSET_NAME; do
     if [ "$(nvram show | grep vpn_client_clientlist | grep -c "$IPSET_NAME")" -eq 1 ] && [ "$(echo "$VPN_IP_LIST" | grep -c "$IPSET_NAME")" -eq 0 ]; then
-      iptables -t mangle -D PREROUTING "$CHAIN_NUM" && logger -t "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
+      iptables -t mangle -D PREROUTING "$CHAIN_NUM" && logger -st "($(basename "$0"))" $$ "Deleting PREROUTING Chain $CHAIN_NUM for IPSET List $IPSET_NAME"
     fi
   done
 
   ###################### Xentrk Hack remove fwmark/bitmask for OpenVPN Client
   # VPN Client
-  ip rule del fwmark "$FWMARK/$FWMARK" && logger -t "($(basename "$0"))" $$ "Deleting fwmark $FWMARK/$FWMARK"
-  # WAN
-  FWMARK_FLAG=$(iptables -nvL PREROUTING -t mangle --line | grep -m 1 "0x8000" | awk '{print $16}')
-  if [ -z "$FWMARK_FLAG"  ]; then
-    ip rule del prio 9990 2>/dev/null && logger -t "($(basename "$0"))" $$ "Deleting fwmark 0x8000/0x8000"
-  fi
+  ip rule del fwmark "$FWMARK/$FWMARK" && logger -st "($(basename "$0"))" $$ "00 Deleting fwmark $FWMARK/$FWMARK"
+  # WAN fwmark 0x8000\0x8000 is not removed!
+
 }
 
 Set_VPN_Vars() {

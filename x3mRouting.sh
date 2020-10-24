@@ -1,15 +1,18 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting.sh
-# VERSION=2.3.7
+# VERSION=2.3.8
 # Author: Xentrk
-# Date: 12-October-2020
+# Date: 23-October-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
 #   on-going support and collaboration on this project!
 #
 #   Chk_Entware function and code to process the passing of parms written by Martineau
+#
+#   Thanks to Addamm00, author of Skynet, for the Check_Lock and Kill_Lock functions to prevent concurrent processing.
+#   Source code can be found at https://github.com/Adamm00/IPSet_ASUS
 #
 ####################################################################################################
 # shellcheck disable=SC2031 # IPSET_NAME was modified in a subshell. That change might be lost.
@@ -88,6 +91,31 @@ COLOR_RED='\033[0;31m'
 COLOR_WHITE='\033[0m'
 COLOR_GREEN='\e[0;32m'
 
+Kill_Lock() {
+	if [ -f "/tmp/x3mRouting.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/x3mRouting.lock)" ]; then
+		logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/x3mRouting.lock)) (pid=$(sed -n '2p' /tmp/x3mRouting.lock))"
+		logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/x3mRouting.lock)" '$1 == pid')"
+		kill "$(sed -n '2p' /tmp/x3mRouting.lock)"
+		rm -rf /tmp/x3mRouting.lock
+		echo
+	fi
+}
+
+Check_Lock() {
+	if [ -f "/tmp/x3mRouting.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/x3mRouting.lock)" ] && [ "$(sed -n '2p' /tmp/x3mRouting.lock)" != "$$" ]; then
+		if [ "$(($(date +%s) - $(sed -n '3p' /tmp/x3mRouting.lock)))" -gt "1800" ]; then
+			Kill_Lock
+		else
+			logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/x3mRouting.lock)) (pid=$(sed -n '2p' /tmp/x3mRouting.lock)) - Exiting (cpid=$$)"
+			echo; exit 1
+		fi
+	fi
+	echo "$@" > /tmp/x3mRouting.lock
+	echo "$$" >> /tmp/x3mRouting.lock
+	date +%s >> /tmp/x3mRouting.lock
+	lockx3mRouting="true"
+}
+
 Chk_Entware() {
 
   # ARGS [wait attempts] [specific_entware_utility]
@@ -148,34 +176,40 @@ Set_IP_Rule() {
 
   case "$VPN_ID" in
   0)
-    ip rule del fwmark "$TAG_MARK" 2>/dev/null
-    ip rule add from 0/0 fwmark "$TAG_MARK" table 254 prio 9990
-    ip route flush cache
+    if [ "$(ip rule | grep -cm 1 "$TAG_MARK")" -eq 0 ]; then
+      ip rule add from 0/0 fwmark "$TAG_MARK" table 254 prio 9990 && logger -st "($(basename "$0"))" $$ "Created fwmark $TAG_MARK"
+      ip route flush cache
+    fi
     ;;
   1)
-    ip rule del fwmark "$TAG_MARK" 2>/dev/null
-    ip rule add from 0/0 fwmark "$TAG_MARK" table 111 prio 9995
-    ip route flush cache
+    if [ "$(ip rule | grep -cm 1 "$TAG_MARK")" -eq 0 ]; then
+      ip rule add from 0/0 fwmark "$TAG_MARK" table ovpnc1 prio 9995 && logger -st "($(basename "$0"))" $$ "Created fwmark $TAG_MARK"
+      ip route flush cache
+    fi
     ;;
   2)
-    ip rule del fwmark "$TAG_MARK" 2>/dev/null
-    ip rule add from 0/0 fwmark "$TAG_MARK" table 112 prio 9994
-    ip route flush cache
+    if [ "$(ip rule | grep -cm 1 "$TAG_MARK")" -eq 0 ]; then
+      ip rule add from 0/0 fwmark "$TAG_MARK" table ovpnc2 prio 9994 && logger -st "($(basename "$0"))" $$ "Created fwmark $TAG_MARK"
+      ip route flush cache
+    fi
     ;;
   3)
-    ip rule del fwmark "$TAG_MARK" 2>/dev/null
-    ip rule add from 0/0 fwmark "$TAG_MARK" table 113 prio 9993
-    ip route flush cache
+    if [ "$(ip rule | grep -cm 1 "$TAG_MARK")" -eq 0 ]; then
+      ip rule add from 0/0 fwmark "$TAG_MARK" table ovpnc3 prio 9993 && logger -st "($(basename "$0"))" $$ "Created fwmark $TAG_MARK"
+      ip route flush cache
+    fi
     ;;
   4)
-    ip rule del fwmark "$TAG_MARK" 2>/dev/null
-    ip rule add from 0/0 fwmark "$TAG_MARK" table 114 prio 9992
-    ip route flush cache
+    if [ "$(ip rule | grep -cm 1 "$TAG_MARK")" -eq 0 ]; then
+      ip rule add from 0/0 fwmark "$TAG_MARK" table ovpnc4 prio 9992 && logger -st "($(basename "$0"))" $$ "Created fwmark $TAG_MARK"
+      ip route flush cache
+    fi
     ;;
   5)
-    ip rule del fwmark "$TAG_MARK" 2>/dev/null
-    ip rule add from 0/0 fwmark "$TAG_MARK" table 115 prio 9991
-    ip route flush cache
+    if [ "$(ip rule | grep -cm 1 "$TAG_MARK")" -eq 0 ]; then
+      ip rule add from 0/0 fwmark "$TAG_MARK" table ovpnc5 prio 9991 && logger -st "($(basename "$0"))" $$ "Created fwmark $TAG_MARK"
+      ip route flush cache
+    fi
     ;;
   *)
     Error_Exit "ERROR $1 should be 0-WAN or 1-5=VPN"
@@ -258,12 +292,14 @@ Create_Routing_Rules() {
 
 Exit_Routine() {
 
+  if [ "$lockx3mRouting" = "true" ]; then rm -rf "/tmp/x3mRouting.lock"; fi
   logger -st "($(basename "$0"))" $$ Completed Script Execution
   exit 0
 }
 
 Error_Exit() {
 
+  if [ "$lockx3mRouting" = "true" ]; then rm -rf "/tmp/x3mRouting.lock"; fi
   error_str="$*"
   logger -st "($(basename "$0"))" $$ "$error_str"
   exit 1
@@ -334,7 +370,11 @@ Check_Nat_Start_For_Entries() {
   fi
 
   if [ "$DIR" != "/opt/tmp" ]; then
-    SCRIPT_ENTRY="$SCRIPT_ENTRY dir=$DIR"
+    if [ "$(echo "$@" | grep -c 'asnum=')" -gt 0 ]; then
+      SCRIPT_ENTRY="$SCRIPT_ENTRY"
+    else
+      SCRIPT_ENTRY="$SCRIPT_ENTRY dir=$DIR"
+    fi
   fi
 
   # nat-start File
@@ -751,7 +791,7 @@ Delete_Ipset_List() {
     # Delete the fmwark priority if no IPSET lists are using it
     FWMARK_FLAG=$(iptables -nvL PREROUTING -t mangle --line | grep -m 1 "$FWMARK" | awk '{print $16}' | tr -d '\r' ' ')
     if [ -z "$FWMARK_FLAG" ]; then
-      ip rule del fwmark "$FWMARK/$FWMARK" 2>/dev/null && logger -t "($(basename "$0"))" $$ "Deleting fwmark $FWMARK/$FWMARK"
+      ip rule del fwmark "$FWMARK/$FWMARK" 2>/dev/null && logger -t "($(basename "$0"))" $$ "Deleted fwmark $FWMARK/$FWMARK"
     fi
   fi
 
@@ -820,11 +860,6 @@ DNSMASQ_Parm() {
 }
 
 ASNUM_Parm() {
-
-  if [ -s "$DIR/$IPSET_NAME" ]; then
-    mv "$DIR/$IPSET_NAME" "$DIR/$IPSET_NAME.bkup" # create backup to restore from if download fails
-    true >"$DIR/$IPSET_NAME"                      # wipe clean before loading save/restore file.
-  fi
 
   ASN=$(echo "$@" | sed -n "s/^.*asnum=//p" | awk '{print $1}' | tr ',' ' ')
 
@@ -1269,23 +1304,21 @@ Define_IFACE() {
 }
 
 #==================== End of Functions  =====================================
-# Uncomment the line below for debugging
-#set -x
-
 ## Begin ##
-# Prevent duplicate processing
-SCR_NAME=$(basename "$0" | sed 's/.sh//')
-exec 9>"/tmp/${SCR_NAME}.lock" || exit 1
-flock 9 || exit 1
-trap 'rm -f /tmp/${SCR_NAME}.lock' EXIT
-
 logger -st "($(basename "$0"))" $$ Starting Script Execution $@
-
+Check_Lock "$@"
+SCR_NAME=$(basename "$0" | sed 's/.sh//')
 NAT_START="/jffs/scripts/nat-start"
 
 # Check if user specified 'dir=' parameter
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
-  DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
+  if [ "$(echo "$@" | grep -c 'asnum=')" -gt 0 ]; then
+    logger -st "($(basename "$0"))" $$ "ASN Method stores IPv4 addresses in memory. Ignoring 'dir=' parm" location.
+    # set DIR to default location and ignore when writing to nat-start in Check_Nat_Start_For_Entries function
+    DIR="/opt/tmp"
+  else
+    DIR=$(echo "$@" | sed -n "s/^.*dir=//p" | awk '{print $1}') # v1.2 Mount point/directory for backups
+  fi
 else
   DIR="/opt/tmp"
 fi

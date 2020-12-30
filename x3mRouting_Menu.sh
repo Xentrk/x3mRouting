@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 29-September-2020
+# Last Updated Date: 30-December-2020
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -17,7 +17,7 @@
 # shellcheck disable=SC2028
 # shellcheck disable=SC2010 # need to us ls with a grep
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
-VERSION="2.4.0"
+VERSION="2.4.1"
 GIT_REPO="x3mRouting"
 BRANCH="master"
 # Change branch to master after merge
@@ -243,6 +243,9 @@ Install_ASN_Lookup_Tool() {
 
 Check_Firmware_Version() {
   buildno=$(nvram get buildno | sed 's/\.//')
+  if [ "$buildno" -ge 3861 ]; then
+    return
+  fi
   if [ "$buildno" -lt 38419 ]; then
     echo "Invalid firmware version detected - $(nvram get buildno). This option of x3mRouting requires version 384.19 and above."
     echo "You can force update x3mRouting by typing the word 'force' below."

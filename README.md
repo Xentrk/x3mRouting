@@ -1,11 +1,11 @@
 # x3mRouting ~ Selective Routing for Asuswrt-Merlin Firmware
-## Version 2.4.0 (29 September, 2020)
+## Version 2.4.1 (30 December, 2020)
 [![Build Status](https://travis-ci.com/Xentrk/x3mRouting.svg?branch=master)](https://travis-ci.com/Xentrk/x3mRouting)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/561d1570ed1f4d6aab76bba172f6b31f)](https://www.codacy.com/app/Xentrk/x3mRouting?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Xentrk/x3mRouting&amp;utm_campaign=Badge_Grade)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ## Introduction
-**x3mRouting** includes selective routing features for LAN Clients, OpenVPN Clients and OpenVPN Servers. This version is compatible with the 384.19 Asuswrt-Merlin firmware.
+**x3mRouting** includes selective routing features for LAN Clients, OpenVPN Clients and OpenVPN Servers. This version is compatible with the 384.19 and 386.x Asuswrt-Merlin firmware versions.
 
 If coming from the first generation of x3mRouting, please read the updated instructions below to become familiar with the new features and usage instructions. Refer to the [Version 2.0.0 Changes](https://github.com/Xentrk/x3mRouting#version-200-changes) section for a description of the changes and the [Version 2.0.0 Update Process](https://github.com/Xentrk/x3mRouting#version-200-update-process) section for the update instructions.
 

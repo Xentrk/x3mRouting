@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting.sh
-# VERSION=2.3.8
+# VERSION=2.3.9
 # Author: Xentrk
-# Date: 23-October-2020
+# Date: 30-December-2020
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -92,28 +92,37 @@ COLOR_WHITE='\033[0m'
 COLOR_GREEN='\e[0;32m'
 
 Kill_Lock() {
-	if [ -f "/tmp/x3mRouting.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/x3mRouting.lock)" ]; then
-		logger -st "($(basename "$0"))" "[*] Killing Locked Processes ($(sed -n '1p' /tmp/x3mRouting.lock)) (pid=$(sed -n '2p' /tmp/x3mRouting.lock))"
-		logger -st "($(basename "$0"))" "[*] $(ps | awk -v pid="$(sed -n '2p' /tmp/x3mRouting.lock)" '$1 == pid')"
-		kill "$(sed -n '2p' /tmp/x3mRouting.lock)"
-		rm -rf /tmp/x3mRouting.lock
-		echo
-	fi
+  if [ -f "/tmp/x3mRouting.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/x3mRouting.lock)" ]; then
+    logger -st "($(basename "$0"))" "$$ Killing Locked Processes ($(sed -n '1p' /tmp/x3mRouting.lock)) (pid=$(sed -n '2p' /tmp/x3mRouting.lock))"
+    logger -st "($(basename "$0"))" "$$ $(ps | awk -v pid="$(sed -n '2p' /tmp/x3mRouting.lock)" '$1 == pid')"
+    kill "$(sed -n '2p' /tmp/x3mRouting.lock)"
+    rm -rf /tmp/x3mRouting.lock
+    echo
+  fi
 }
 
 Check_Lock() {
-	if [ -f "/tmp/x3mRouting.lock" ] && [ -d "/proc/$(sed -n '2p' /tmp/x3mRouting.lock)" ] && [ "$(sed -n '2p' /tmp/x3mRouting.lock)" != "$$" ]; then
-		if [ "$(($(date +%s) - $(sed -n '3p' /tmp/x3mRouting.lock)))" -gt "1800" ]; then
-			Kill_Lock
-		else
-			logger -st "($(basename "$0"))" "[*] Lock File Detected ($(sed -n '1p' /tmp/x3mRouting.lock)) (pid=$(sed -n '2p' /tmp/x3mRouting.lock)) - Exiting (cpid=$$)"
-			echo; exit 1
-		fi
-	fi
-	echo "$@" > /tmp/x3mRouting.lock
-	echo "$$" >> /tmp/x3mRouting.lock
-	date +%s >> /tmp/x3mRouting.lock
-	lockx3mRouting="true"
+
+  TRIES=0
+  MAX_TRIES=60
+
+  while [ "$TRIES" -lt "$MAX_TRIES" ]; do
+    if [ -f "/tmp/x3mRouting.lock" ]; then
+      logger -st "($(basename "$0"))" "$$ x3mRouting Lock File in use by PID $(sed -n '2p' /tmp/x3mRouting.lock) - wait time $(((MAX_TRIES*3) - (TRIES*3) - 3)) secs left"
+      sleep 3
+      TRIES=$((TRIES + 1))
+      if [ "$TRIES" -eq $((MAX_TRIES - 1)) ]; then # automatically kill lock once MAX_TRIES is reached
+        Kill_Lock
+      fi
+    else
+      echo "$@" >/tmp/x3mRouting.lock
+      echo "$$" >>/tmp/x3mRouting.lock
+      date +%s >>/tmp/x3mRouting.lock
+      lockx3mRouting="true"
+      TRIES="$MAX_TRIES"
+    fi
+  done
+
 }
 
 Chk_Entware() {
@@ -370,9 +379,7 @@ Check_Nat_Start_For_Entries() {
   fi
 
   if [ "$DIR" != "/opt/tmp" ]; then
-    if [ "$(echo "$@" | grep -c 'asnum=')" -gt 0 ]; then
-      SCRIPT_ENTRY="$SCRIPT_ENTRY"
-    else
+    if [ "$(echo "$@" | grep -c 'asnum=')" -eq 0 ]; then
       SCRIPT_ENTRY="$SCRIPT_ENTRY dir=$DIR"
     fi
   fi

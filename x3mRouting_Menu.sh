@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 30-December-2020
+# Last Updated Date: 31-December-2020
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -243,7 +243,8 @@ Install_ASN_Lookup_Tool() {
 
 Check_Firmware_Version() {
   buildno=$(nvram get buildno | sed 's/\.//')
-  if [ "$buildno" -ge 3861 ]; then
+  buildmajor=$(nvram get buildno | awk '{ string=substr($0, 1, 3); print string;}')
+  if [ "$buildmajor" -ge 386 ]; then
     return
   fi
   if [ "$buildno" -lt 38419 ]; then

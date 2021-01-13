@@ -1,21 +1,29 @@
 #!/bin/sh
 ####################################################################################################
 # Script: autoscan.sh
-# VERSION=1.0.0
+# VERSION=1.2.0
 # Author: Xentrk
-# Date: 28-June-2020
+# Date: 13-January-2021
 #
 ####################################################################################################
 #_____________________________________________________________________________________________________________
 #
 # Description:
 #
-# Use this script to search for top level domain names that contain the keyword specified on the 'autoscan=' parm
+# Used to identify and analyze domain names queried by dnsmasq for selective routing purposes.
+# Output is displayed in IPSET format followed by the Fully Qualified Domain Name (FQDN).
 #
+# Script can also be used to list the Fully Qualified Domain Name(FQDN) added to the IPSET list using the 'ipset_name=' parm
 # Usage examples:
 #
-#    sh autoscan.sh autoscan=disney
-#    sh autoscan.sh autoscan=netflix,nflx
+# Display query records
+#   sh autoscan.sh scan=disney
+#   sh autoscan.sh scan=netflix,nflx
+#   sh autoscan.sh scan=hbo,hbomax
+#
+# Display Fully Qualified Domain Name(FQDN) added to IPSET list
+#   sh autoscan.sh ipset_name=HBOMAX
+#   sh autoscan.sh ipset_name=NETFLIX,HBOMAX
 #_____________________________________________________________________________________________________________
 
 # Print between line beginning with '#__' to first blank line inclusive (source: Martineau)
@@ -33,17 +41,56 @@ if [ ! -s "/opt/var/log/dnsmasq.log" ]; then
   printf '\nError: /opt/var/log/dnsmasq.log file does not exist\n' && printf '\nScript expects dnsmasq.log file to exist in /opt/var/log\n' && exit 1
 fi
 
-[ "$(echo "$@" | grep -c "autoscan=")" -eq 0 ] && echo "Expecting 'autoscan=' parm" && exit 1
+if [ "$(echo "$@" | grep -c "scan=")" -eq 1 ]; then
 
-SCAN_SPACE_LIST=$(echo "$@" | sed -n "s/^.*autoscan=//p" | awk '{print $1}' | tr ',' ' ')
+  SCAN_SPACE_LIST=$(echo "$@" | sed -n "s/^.*scan=//p" | awk '{print $1}' | tr ',' ' ')
 
-true >/opt/tmp/DOMAIN_LIST
+  true >/opt/tmp/DOMAIN_LIST
 
-for TOP_LEVEL_DOMAIN in $SCAN_SPACE_LIST; do
-  SCAN_LIST=$(grep "$TOP_LEVEL_DOMAIN" "/opt/var/log/dnsmasq.log" | grep query | awk '{print $(NF-2)}' | awk -F\. '{print $(NF-1) FS $NF}' | sort | uniq)
-  [ -n "$SCAN_LIST" ] && echo "$SCAN_LIST" >>/opt/tmp/DOMAIN_LIST
-done
-echo
-cat /opt/tmp/DOMAIN_LIST
-echo
-rm -rf /opt/tmp/DOMAIN_LIST
+  for TOP_LEVEL_DOMAIN in $SCAN_SPACE_LIST; do
+    SCAN_LIST=$(grep "query" "/opt/var/log/dnsmasq.log" | grep "$TOP_LEVEL_DOMAIN" | awk '{print $(NF-2)}' | awk -F\. '{print $(NF-1) FS $NF}' | sort | uniq)
+    [ -n "$SCAN_LIST" ] && echo "$SCAN_LIST" >>/opt/tmp/DOMAIN_LIST
+  done
+  echo
+  echo "IPSET Format"
+  echo "-------------------------------------"
+  cat /opt/tmp/DOMAIN_LIST | sort -u
+  echo
+  rm -rf /opt/tmp/DOMAIN_LIST
+
+  #if [ "$1" = "long" ] || [ "$1" = "-l" ]; then
+  true >/opt/tmp/DOMAIN_LIST
+
+  for TOP_LEVEL_DOMAIN in $SCAN_SPACE_LIST; do
+    SCAN_LIST=$(grep "$TOP_LEVEL_DOMAIN" "/opt/var/log/dnsmasq.log" | grep query | awk '{print $6}' | sort | uniq)
+    [ -n "$SCAN_LIST" ] && echo "$SCAN_LIST" >>/opt/tmp/DOMAIN_LIST
+  done
+  echo
+  echo "FQDN Format"
+  echo "-------------------------------------"
+  cat /opt/tmp/DOMAIN_LIST | sort -u
+  echo
+  rm -rf /opt/tmp/DOMAIN_LIST
+  exit
+fi
+
+if [ "$(echo "$@" | grep -c "ipset_name=")" -eq 1 ]; then
+
+  true >/opt/tmp/DOMAIN_LIST
+
+  IPSETS=$(echo "$@" | sed -n "s/^.*ipset_name=//p" | awk '{print $1}' | tr ',' ' ')
+  for IPSET_NAME in $IPSETS; do
+    if [ "$(ipset list -n "$IPSET_NAME" 2>/dev/null)" = "$IPSET_NAME" ]; then #does ipset list exist?
+      echo
+      echo "FQDN added to $IPSET_NAME"
+      echo "-------------------------------------"
+      grep -w "$IPSET_NAME" /opt/var/log/dnsmasq.log | awk '{print $9}' | sort -u
+      echo
+    else
+      echo "IPSET '$IPSET_NAME' does not exist"
+      echo
+    fi
+  done
+else
+  echo "Expecting 'autoscan=' or 'scan=' parm" && exit 1
+fi

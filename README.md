@@ -29,11 +29,11 @@ The [x3mRouting](https://github.com/Xentrk/x3mRouting#3-openvpn-event--x3mroutin
 The features of **openvpn-event** are used to create the routing rule during a VPN Client up event and remove the routing rule during a VPN Client down event.
 
 ### 4. x3mRouting Utility Scripts
-These scripts and tools can be used to analyze the domain names being used for a website or streaming service.
+The **x3mRouting Utility Scripts** scripts and tools can be used to analyze the domain names being used for a website or streaming service to assist with determining the best x3mRouting method to use.
 
 The [getdomainnames.sh](https://github.com/Xentrk/x3mRouting#getdomainnamessh-script) script will create a uniquely sorted list of domain names gathered from **dnsmasq.log** that you collect by accessing a website or streaming service. Use the script to help determine the domain names used by a website or streaming service.
 
-The [autoscan.sh](https://github.com/Xentrk/x3mRouting#autoscansh-script) script will list the domain names query records for a website or streaming service in **dnsmasq.log**. It will return a summary of the top level domain names in IPSET dnsmasq format followed by a list of the query records in Fully Qualified Domain Names (FQDN) format. Similarly, the script can be used to display the dnsmasq reply records in FQDN format whose IPv4 addresses were added to the IPSET list.
+The [autoscan.sh](https://github.com/Xentrk/x3mRouting#autoscansh-script) script will list the domain name query records for a website or streaming service found in **dnsmasq.log**. **autoscan.sh** will return a summary of the top level domain names in IPSET dnsmasq format followed by a list of the query records in Fully Qualified Domain Names (FQDN) format. Similarly, the script can also be used to display the dnsmasq reply records in FQDN format for those IPv4 addresses that were added to the IPSET list.
 
 The [ASN Lookup Tool](https://github.com/Xentrk/asn) is used to search ASN/IPv4/IPv6/Prefix/ASPath/Organization lookup.  
 
@@ -514,7 +514,10 @@ service restart_dnsmasq
 7. The domain names collected will appear on the screen. They are also stored in the file you specified in the **/opt/var/log** directory for future reference.
 
 #### autoscan.sh Script
-**autoscan.sh** can be used to search for terms in **dnsmasq.log** and return the top level domain names when a match is found. You can specify one or  more search term by separating the search terms with a comma. The top level domain names the script returns can be specified when using the **dnsmasq** method.
+**autoscan.sh** can be used to search for terms in **dnsmasq.log**. You can specify one or more search term by separating the search terms with a comma.
+
+The **autoscan.sh** script will list the domain name query records for a website or streaming service found in **dnsmasq.log**. **autoscan.sh** will return a summary of the top level domain names in IPSET dnsmasq format followed by a list of the query records in Fully Qualified Domain Names (FQDN) format. Similarly, the script can also be used to display the dnsmasq reply records in FQDN format for those IPv4 addresses that were added to the IPSET list.
+
 ##### autoscan.sh Usage Notes
 
 Display query records

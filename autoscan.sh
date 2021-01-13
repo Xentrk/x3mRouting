@@ -3,7 +3,7 @@
 # Script: autoscan.sh
 # VERSION=1.2.0
 # Author: Xentrk
-# Date: 13-January-2021
+# Date: 12-January-2021
 #
 ####################################################################################################
 #_____________________________________________________________________________________________________________
@@ -54,7 +54,7 @@ if [ "$(echo "$@" | grep -c "scan=")" -eq 1 ]; then
   echo
   echo "IPSET Format"
   echo "-------------------------------------"
-  cat /opt/tmp/DOMAIN_LIST | sort -u
+  grep . /opt/tmp/DOMAIN_LIST | sort -u
   echo
   rm -rf /opt/tmp/DOMAIN_LIST
 
@@ -68,7 +68,7 @@ if [ "$(echo "$@" | grep -c "scan=")" -eq 1 ]; then
   echo
   echo "FQDN Format"
   echo "-------------------------------------"
-  cat /opt/tmp/DOMAIN_LIST | sort -u
+  grep . /opt/tmp/DOMAIN_LIST | sort -u
   echo
   rm -rf /opt/tmp/DOMAIN_LIST
   exit

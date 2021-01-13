@@ -33,7 +33,7 @@ These scripts and tools can be used to analyze the domain names being used for a
 
 The [getdomainnames.sh](https://github.com/Xentrk/x3mRouting#getdomainnamessh-script) script will create a uniquely sorted list of domain names gathered from **dnsmasq.log** that you collect by accessing a website or streaming service. Use the script to help determine the domain names used by a website or streaming service.
 
-The [autoscan.sh](https://github.com/Xentrk/x3mRouting#autoscansh-script) script is used to search for one or more terms in **dnsmasq.log**. It will return the top level domain names if there is a match.
+The [autoscan.sh](https://github.com/Xentrk/x3mRouting#autoscansh-script) script will list the domain names query records for a website or streaming service in **dnsmasq.log**. It will return a summary of the top level domain names in IPSET dnsmasq format followed by a list of the query records in Fully Qualified Domain Names (FQDN) format. Similarly, the script can be used to display the dnsmasq reply records in FQDN format whose IPv4 addresses were added to the IPSET list.
 
 The [ASN Lookup Tool](https://github.com/Xentrk/asn) is used to search ASN/IPv4/IPv6/Prefix/ASPath/Organization lookup.  
 
@@ -515,28 +515,71 @@ service restart_dnsmasq
 
 #### autoscan.sh Script
 **autoscan.sh** can be used to search for terms in **dnsmasq.log** and return the top level domain names when a match is found. You can specify one or  more search term by separating the search terms with a comma. The top level domain names the script returns can be specified when using the **dnsmasq** method.
+##### autoscan.sh Usage Notes
 
+Display query records
 ````
-sh autoscan.sh autoscan=disney
-
-demdex.net
-disney-plus.net
-disney.com
-disney.io
-disneyplus.com
-footprint.net
-go.com
+sh autoscan.sh scan=disney
+sh autoscan.sh scan=netflix,nflx
+sh autoscan.sh scan=hbo,hbomax
 ````
 
+Display Fully Qualified Domain Name(FQDN) added to IPSET list
 ````
-sh autoscan.sh autoscan=netflix,nflx
+sh autoscan.sh ipset_name=HBOMAX
+sh autoscan.sh ipset_name=NETFLIX,HBOMAX
+````
 
-netflix.com
-nflxext.com
-nflximg.net
-nflxso.net
-nflxvideo.net
+##### autoscan.sh Usage Example
+*Scan dnsmasq log for query records that contain "hbo".*
 ````
+sh autoscan.sh scan=hbo
+
+IPSET Format
+-------------------------------------
+hbo.com
+hbomax.com
+warnermediacdn.com
+
+FQDN Format
+-------------------------------------
+artist.api.cdn.hbo.com
+comet.api.hbo.com
+commerce.api.hbo.com
+dash.pro42.akm.cdn.hbomax.com
+dash.pro42.cf.cdn.hbomax.com
+hbomax-images.warnermediacdn.com
+hbomax.com
+markers.api.hbo.com
+media.fly.cdn.hbomax.com
+telegraph.api.hbo.com
+www.hbomax.com
+````
+
+*Display the domain name reply records whose IPv4 addresses were added to the IPSET list specified*
+````
+sh autoscan.sh ipset_name=HBOMAX
+
+FQDN added to HBOMAX
+-------------------------------------
+a1806.dscr.akamai.net
+a1915.dscf1.akamai.net
+a1928.dscw143.akamai.net
+a1928.dscw143.akamai.net.0.1.cn.akamaitech.net
+a1944.dscw16.akamai.net
+a1952.dscf1.akamai.net
+a1992.dscr.akamai.net
+clips-media-ctl.warnermediacdn.com.c.footprint.net
+d2axx2wgfxkml4.cloudfront.net
+dash.pro42.lv3.cdn.hbomax.com.c.footprint.net
+dualstack.hbo.map.fastly.net
+dualstack.hbo2.map.fastly.net
+e12596.dscj.akamaiedge.net
+e34379.a.akamaiedge.net
+markers.api.hbo.com
+telegraph.api.hbo.com
+````
+
 ##### ASN Lookup Tool Usage Instructions
 Search for ASN/IPv4/IPv6/Prefix/ASPath/Organization.
 [ASN Lookup Tool Usage Instructions](https://github.com/Xentrk/asn)

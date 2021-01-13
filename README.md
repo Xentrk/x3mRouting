@@ -531,7 +531,7 @@ sh autoscan.sh ipset_name=NETFLIX,HBOMAX
 ````
 
 ##### autoscan.sh Usage Example
-*Scan dnsmasq log for query records that contain "hbo".*
+Scan dnsmasq log for query records that contain "hbo".
 ````
 sh autoscan.sh scan=hbo
 
@@ -556,7 +556,7 @@ telegraph.api.hbo.com
 www.hbomax.com
 ````
 
-*Display the domain name reply records whose IPv4 addresses were added to the IPSET list specified*
+Display the domain name reply records whose IPv4 addresses were added to the IPSET list specified
 ````
 sh autoscan.sh ipset_name=HBOMAX
 

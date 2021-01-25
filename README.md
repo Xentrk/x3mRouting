@@ -184,7 +184,7 @@ x3mRouting ipset_name=NETFLIX dnsmasq=netflix.com,nflxext.com,nflximg.net,nflxso
 ##### dnsmasq Method with autoscan
 Search **dnsmasq.log** file for domains that contain the keyword "amazon" and create the IPSET list AMAZON from the domains collected using the dnsmasq method. You can view the domains collected by looking at the corresponding entry in **/jffs/configs/dnsmasq.conf.add** or by looking at the script entry in **/jffs/scripts/nat-start**
 ````
-x3mRouting AMAZON autoscan=amazon
+x3mRouting ipset_name=AMAZON autoscan=amazon
 ````
 ##### dnsmasq Method with the 'dnsmasq_file=' parameter
 Rather than specify the top level domains in a list, you can enter them in a file.
@@ -199,7 +199,7 @@ x3mRouting ipset_name=BBC
 ````
 Create IPSET list WIMIPCOM created from the IPv4 addresses provided.
 ````
-x3mRouting WIMIPCOM ip=104.27.198.90,104.27.199.90
+x3mRouting ipset_name=WIMIPCOM ip=104.27.198.90,104.27.199.90
 ````
 Create IPSET list BBC using the manual method. Use the 'dir=' location as the backup/restore location
 ````
@@ -241,7 +241,7 @@ Optional **'src='** and **'src_range='** parameters provides the option to speci
 * GLOBAL - Global
 
 ##### ASN Method
-x3mRouting will create an IPSET list using the [AS Number](https://www.apnic.net/get-ip/faqs/asn/) specified using the **'asnum='** parameter and one or more valid AS numbers separated by a comma. The IPv4 addresses are downloaded from [ipinfo.io](https://ipinfo.io/). ipinfo.io may require whitelisting if you use an ad-blocker program. If x3mRouting is unable to download the IP addresses from ipinfo.io, it will attempt to download using the aslookup tool on [api.hackertarget.com/aslookup/](https://api.hackertarget.com/aslookup/).
+x3mRouting will create an IPSET list using the [AS Number](https://www.apnic.net/get-ip/faqs/asn/) specified using the **'asnum='** parameter and one or more valid AS numbers separated by a comma. The IPv4 addresses are downloaded from [api.hackertarget.com/aslookup/](https://api.hackertarget.com/aslookup/).
 
 ##### dnsmasq Method
 You must specify the **'dnsmasq='** parameter and one or more domain names separated by a comma.

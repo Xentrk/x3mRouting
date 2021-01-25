@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: autoscan.sh
-# VERSION=1.2.0
+# VERSION=1.2.1
 # Author: Xentrk
-# Date: 12-January-2021
+# Date: 16-January-2021
 #
 ####################################################################################################
 #_____________________________________________________________________________________________________________
@@ -48,7 +48,7 @@ if [ "$(echo "$@" | grep -c "scan=")" -eq 1 ]; then
   true >/opt/tmp/DOMAIN_LIST
 
   for TOP_LEVEL_DOMAIN in $SCAN_SPACE_LIST; do
-    SCAN_LIST=$(grep "query" "/opt/var/log/dnsmasq.log" | grep "$TOP_LEVEL_DOMAIN" | awk '{print $(NF-2)}' | awk -F\. '{print $(NF-1) FS $NF}' | sort | uniq)
+    SCAN_LIST=$(grep -F "query[A]" "/opt/var/log/dnsmasq.log" | grep "$TOP_LEVEL_DOMAIN" | awk '{print $(NF-2)}' | awk -F\. '{print $(NF-1) FS $NF}' | sort | uniq)
     [ -n "$SCAN_LIST" ] && echo "$SCAN_LIST" >>/opt/tmp/DOMAIN_LIST
   done
   echo
@@ -62,7 +62,7 @@ if [ "$(echo "$@" | grep -c "scan=")" -eq 1 ]; then
   true >/opt/tmp/DOMAIN_LIST
 
   for TOP_LEVEL_DOMAIN in $SCAN_SPACE_LIST; do
-    SCAN_LIST=$(grep "$TOP_LEVEL_DOMAIN" "/opt/var/log/dnsmasq.log" | grep query | awk '{print $6}' | sort | uniq)
+    SCAN_LIST=$(grep -F "query[A]" "/opt/var/log/dnsmasq.log" | grep "$TOP_LEVEL_DOMAIN" | grep -F "query[A]" | awk '{print $6}' | sort -u)
     [ -n "$SCAN_LIST" ] && echo "$SCAN_LIST" >>/opt/tmp/DOMAIN_LIST
   done
   echo
@@ -84,7 +84,7 @@ if [ "$(echo "$@" | grep -c "ipset_name=")" -eq 1 ]; then
       echo
       echo "FQDN added to $IPSET_NAME"
       echo "-------------------------------------"
-      grep -w "$IPSET_NAME" /opt/var/log/dnsmasq.log | awk '{print $9}' | sort -u
+      grep -w "$IPSET_NAME" /opt/var/log/dnsmasq.log | grep -v "([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4}" | awk '{print $9}' | sort -u
       echo
     else
       echo "IPSET '$IPSET_NAME' does not exist"

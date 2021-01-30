@@ -241,7 +241,7 @@ Optional **'src='** and **'src_range='** parameters provides the option to speci
 * GLOBAL - Global
 
 ##### ASN Method
-x3mRouting will create an IPSET list using the [AS Number](https://www.apnic.net/get-ip/faqs/asn/) specified using the **'asnum='** parameter and one or more valid AS numbers separated by a comma. The IPv4 addresses are downloaded from [api.hackertarget.com/aslookup/](https://api.hackertarget.com/aslookup/).
+x3mRouting will create an IPSET list using the [AS Number](https://www.apnic.net/get-ip/faqs/asn/) specified using the **'asnum='** parameter and one or more valid AS numbers separated by a comma. The IPv4 addresses are downloaded from [bgpview.io/](https://bgpview.io/).
 
 ##### dnsmasq Method
 You must specify the **'dnsmasq='** parameter and one or more domain names separated by a comma.

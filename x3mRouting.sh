@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting.sh
-# VERSION=2.3.9
+# VERSION=2.3.10
 # Author: Xentrk
-# Date: 30-December-2020
+# Date: 30-January-2021
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -659,8 +659,7 @@ Download_ASN_Ipset_List() {
   IPSET_NAME=$1
   ASN=$2
 
-  # curl code source ~ https://github.com/Adamm00/IPSet_ASUS/blob/master/firewall.sh
-  curl -fsL --retry 3 --connect-timeout 3 "https://api.hackertarget.com/aslookup/?q=$ASN" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}/[0-9]{1,2}' | awk '{printf "add '"$IPSET_NAME"' %s\n", $1 }' | awk '!x[$0]++' | ipset restore -!
+  curl -fsL --retry 3 --connect-timeout 3 "https://api.bgpview.io/asn/$ASN/prefixes" | grep -oE '.{20}([0-9]{1,3}\.){3}[0-9]{1,3}\\/[0-9]{1,2}' | grep -vF "parent" | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}\\/[0-9]{1,2}' | tr -d "\\" |  awk '{printf "add '"$IPSET_NAME"' %s\n", $1 }' | awk '!x[$0]++' | ipset restore -!
 
 }
 

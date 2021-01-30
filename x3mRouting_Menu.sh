@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 31-December-2020
+# Last Updated Date: 30-January-2021
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -1579,6 +1579,7 @@ Firewall_Start_Update() {
     if ! grep -q "$FW_START_ENTRY" "$FW_START"; then
       awk '/#!\/bin\/sh/{print;print "sh /jffs/addons/x3mRouting/x3mRouting_firewall_start.sh # x3mRouting";next}1' "$FW_START" > "/tmp/firewall_start" && mv "/tmp/firewall_start" "$FW_START"
       printf '\nUpdated %b%s%b\n' "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"
+      [ ! -x "$FW_START" ] && chmod 0755 "$FW_START"
     else
       printf '\nRequired x3mRouting firewall entry already exists in %b%s%b\n' "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"
       printf '\nSkipping update of %b%s%b\n' "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"
@@ -1586,7 +1587,7 @@ Firewall_Start_Update() {
   else
     echo "#!/bin/sh" >"$FW_START"
     echo "FW_START_ENTRY" >>"$FW_START"
-    chmod 755 "$FW_START"
+    chmod 0755 "$FW_START"
     printf 'Added required x3mRouting firewall-start entry to %b%s%b\n' "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"
   fi
 }

@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting_client_config.sh
-# VERSION=2.0.0
+# VERSION=2.0.1
 # Author: Xentrk
-# 23-May-2020
+# 2-February-2020
 #
 #####################################################################################################
 # Description:
@@ -63,6 +63,15 @@ Parse_Hostnames() {
   IFS=$OLDIFS
 }
 
+Clean_Up()
+{
+  [ -f /tmp/static_mac.$$ ] && rm -rf /tmp/static_mac.$$
+  [ -f /tmp/static_ip.$$ ] && rm -rf /tmp/static_ip.$$
+  [ -f /tmp/staticlist.$$ ] && rm -rf /tmp/staticlist.$$
+  [ -f /tmp/hostnames.$$ ] && rm -rf /tmp/hostnames.$$
+  [ -f /tmp/MACIPHOSTNAMES.$$ ] && rm -rf /tmp/MACIPHOSTNAMES.$$
+}
+
 Save_Dnsmasq_Format() {
 
   # Obtain MAC and IP address from dhcp_staticlist and exclude DNS field by filtering using the first three octets of the lan_ipaddr
@@ -72,6 +81,13 @@ Save_Dnsmasq_Format() {
   else # non-HND Routers store dhcp_staticlist in nvram
     nvram get dhcp_staticlist | grep -oE "((([0-9a-fA-F]{2})[ :-]){5}[0-9a-fA-F]{2})|(([0-9a-fA-F]){6}[:-]([0-9a-fA-F]){6})|([0-9a-fA-F]{12})" >/tmp/static_mac.$$
     nvram get dhcp_staticlist | grep -oE "(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" | grep "$(nvram get lan_ipaddr | grep -Eo '([0-9]{1,3}\.[0-9]{1,3}(\.[0-9]{1,3}))')" >/tmp/static_ip.$$
+  fi
+
+  if [ ! -s /tmp/static_mac.$$ ] || [ ! -s /tmp/static_ip.$$ ]; then
+    printf 'Aborting script. No DHCP Static Lease Reservations found.\n'
+    printf 'Please create DHCP Static Leases in the LAN->DHCP Server screen.\n'
+    Clean_Up
+    exit 1
   fi
 
   # output /tmp/static_mac.$$ and /tmp/static_ip.$$ to /tmp/staticlist.$$ in two columns side by side
@@ -93,6 +109,8 @@ Save_Dnsmasq_Format() {
     { print $0, k[$1] }
   ' /tmp/hostnames.$$ /tmp/staticlist.$$ >/tmp/MACIPHOSTNAMES.$$
 }
+
+# Begin
 
 # Check to see if a prior x3mRouting_rules file exists. Make a backup if it does.
 if [ -s "$CONFIG_FILE" ]; then
@@ -117,11 +135,7 @@ done </tmp/MACIPHOSTNAMES.$$
 
 sort -ut '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4n "$CONFIG_FILE" -o "$CONFIG_FILE"
 
-rm -rf /tmp/static_mac.$$
-rm -rf /tmp/static_ip.$$
-rm -rf /tmp/staticlist.$$
-rm -rf /tmp/hostnames.$$
-rm -rf /tmp/MACIPHOSTNAMES.$$
+Clean_Up
 
 # Default all lan clients to OVPNC1 interface
 sed -i -e 's/^/1 /' "$CONFIG_FILE"

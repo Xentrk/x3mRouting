@@ -707,6 +707,11 @@ Update_Addons_Files() {
     fi
   fi
 
+  # may need to repair firewall_start
+  if [ -s "$ADDONS/x3mRouting_firewall_start.sh" ]; then
+    Firewall_Start_Update
+  fi
+
   # Check if version update
   for FILE in mount_files_gui.sh updown-dns.sh x3mvpnrouting.sh x3mRouting_firewall_start.sh; do
     if [ -s "$ADDONS/$FILE" ]; then

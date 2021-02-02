@@ -167,9 +167,6 @@
 			["AES-128-CBC"],
 			["AES-192-CBC"],
 			["AES-256-CBC"],
-			["AES-128-GCM"],
-			["AES-192-GCM"],
-			["AES-256-GCM"],
 			["BF-CBC"],
 			["CAST5-CBC"],
 			["DES-CBC"],
@@ -252,8 +249,7 @@
 			add_option(document.form.vpn_client_digest, "Default", "default", (currentdigest.toLowerCase() == "default"));
 			add_option(document.form.vpn_client_digest, "None", "none", (currentdigest.toLowerCase() == "none"));
 			currentiface = "<% nvram_get("vpn_client_if"); %>";
-			add_option(document.form.vpn_client_if_x, "TUN", "tun", (currentiface.indexOf("tun") != -1));
-			add_option(document.form.vpn_client_if_x, "TAP", "tap", (currentiface.indexOf("tap") != -1));
+			setRadioValue(document.form.vpn_client_if_x, currentiface.substring(0,3).toLowerCase());
 			for (var i = 0; i < ciphersarray.length; i++) {
 				add_option(document.form.vpn_client_cipher,
 					ciphersarray[i][0], ciphersarray[i][0],
@@ -348,7 +344,6 @@
 			tlsremote = getRadioValue(document.form.vpn_client_tlsremote);
 			userauth = (getRadioValue(document.form.vpn_client_userauth) == 1) && (auth == 'tls') ? 1 : 0;
 			useronly = userauth && getRadioValue(document.form.vpn_client_useronly);
-			ncp = document.form.vpn_client_ncp_enable.value;
 			showhide("client_userauth", (auth == "tls"));
 			showhide("client_hmac", (auth == "tls"));
 			showhide("client_username", userauth);
@@ -371,9 +366,8 @@
 			showhide("clientlist_Block", (rgw >= 2));
 			showhide("selectiveTable", (rgw >= 2));
 			showhide("client_enforce", (rgw >= 2));
-			showhide("client_cipher", (ncp != 2));
-			showhide("ncp_enable", (auth == "tls"));
-			showhide("ncp_ciphers", ((ncp > 0) && (auth == "tls")));
+			showhide("ncp_ciphers", (auth == "tls"));
+			showhide("client_cipher", (auth == "secret"));
 		}
 
 		function update_rgw_options() {
@@ -1333,8 +1327,8 @@
 														<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,4);">Interface Type
 															</a></th>
 														<td>
-															<select name="vpn_client_if_x" onclick="update_rgw_options();update_visibility();" class="input_option">
-															</select>
+															<input type="radio" name="vpn_client_if_x" class="input" value="tun" onclick="update_rgw_options();update_visibility();" <% nvram_match_x("", "vpn_client_if_x", "tun", "checked"); %>>TUN
+															<input type="radio" name="vpn_client_if_x" class="input" value="tap" onclick="update_rgw_options();update_visibility();" <% nvram_match_x("", "vpn_client_if_x", "tap", "checked"); %>>TAP
 														</td>
 													</tr>
 													<tr>
@@ -1413,10 +1407,8 @@
 														<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,7);">Authorization Mode
 															</a></th>
 														<td>
-															<select name="vpn_client_crypt" class="input_option" onclick="update_visibility();">
-																<option value="tls" <% nvram_match("vpn_client_crypt","tls","selected"); %>>TLS</option>
-																<option value="secret" <% nvram_match("vpn_client_crypt","secret","selected"); %>>Static Key</option>
-															</select>
+															<input type="radio" name="vpn_client_crypt" class="input" value="tls" <% nvram_match_x("", "vpn_client_crypt", "tls", "checked"); %>>TLS
+															<input type="radio" name="vpn_client_crypt" class="input" value="secret" <% nvram_match_x("", "vpn_client_crypt", "secret", "checked"); %>>Static Key
 														</td>
 													</tr>
 													<tr id="client_userauth">
@@ -1462,24 +1454,14 @@
 															<input type="button" onclick="edit_Keys();" value="Edit..."></td>
 											</td>
 										</tr>
-										<tr id="ncp_enable">
-											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,16);">Cipher Negotiation</a></th>
-											<td>
-												<select name="vpn_client_ncp_enable" onclick="update_visibility();" class="input_option">
-													<option value="0" <% nvram_match("vpn_client_ncp_enable","0","selected"); %>>Disabled</option>
-													<option value="1" <% nvram_match("vpn_client_ncp_enable","1","selected"); %>>Enable (with fallback)</option>
-													<option value="2" <% nvram_match("vpn_client_ncp_enable","2","selected"); %>>Enable</option>
-												</select>
-											</td>
-										</tr>
 										<tr id="ncp_ciphers">
-											<th>Negotiable ciphers</th>
+											<th>Data ciphers</th>
 											<td>
-												<input type="text" maxlength="255" class="input_32_table" name="vpn_client_ncp_ciphers" value="<% nvram_get("vpn_client_ncp_ciphers"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
+												<input type="text" maxlength="127" class="input_32_table" name="vpn_client_ncp_ciphers" value="<% nvram_get("vpn_client_ncp_ciphers"); %>" autocorrect="off" autocapitalize="off" spellcheck="false">
 											</td>
 										</tr>
 										<tr id="client_cipher">
-											<th>Legacy/fallback cipher</th>
+											<th>Cipher</th>
 											<td>
 												<select name="vpn_client_cipher" class="input_option">
 													<option value="<% nvram_get("vpn_client_cipher"); %>" selected><% nvram_get("vpn_client_cipher"); %></option>
@@ -1495,6 +1477,7 @@
 													<option value="0" <% nvram_match("vpn_client_hmac","0","selected"); %>>Incoming Auth (0)</option>
 													<option value="1" <% nvram_match("vpn_client_hmac","1","selected"); %>>Outgoing Auth (1)</option>
 													<option value="3" <% nvram_match("vpn_client_hmac","3","selected"); %>>Encrypt Channel</option>
+													<option value="4" <% nvram_match("vpn_client_hmac","4","selected"); %> >Encrypt Channel V2</option>
 												</select>
 											</td>
 										</tr>
@@ -1514,9 +1497,10 @@
 										</tr>
 									</thead>
 									<tr>
-										<th>Log verbosity<br><i>(0-6, default=3)</i></th>
+										<th>Log verbosity</th>
 										<td>
 											<input type="text" maxlength="2" class="input_6_table" name="vpn_client_verb" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("vpn_client_verb"); %>">
+											<span style="color:#FC0">(Between 0 and 6. Default: 3)</span>
 										</td>
 									</tr>
 									<tr>
@@ -1531,19 +1515,23 @@
 												<option value="adaptive" <% nvram_match("vpn_client_comp","adaptive","selected"); %>>LZO Adaptive</option>
 												<option value="lz4" <% nvram_match("vpn_client_comp","lz4","selected"); %>>LZ4</option>
 												<option value="lz4-v2" <% nvram_match("vpn_client_comp","lz4-v2","selected"); %>>LZ4-V2</option>
+												<option value="stub" <% nvram_match("vpn_client_comp","stub","selected"); %> >Stub</option>
+												<option value="stub-v2" <% nvram_match("vpn_client_comp","stub-v2","selected"); %> >Stub-V2</option>
 											</select>
 										</td>
 									</tr>
 									<tr id="client_reneg">
-										<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,19);">TLS Renegotiation Time<br><i>(in seconds, -1 for default)</a></th>
+										<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,19);">TLS Renegotiation Time</th>
 										<td>
 											<input type="text" maxlength="5" class="input_6_table" name="vpn_client_reneg" value="<% nvram_get("vpn_client_reneg"); %>">
+											<span style="color:#FC0">(in seconds, -1 for default)</span>
 										</td>
 									</tr>
 									<tr>
-										<th>Connection Retry attempts<br><i>(0 for infinite)</th>
+										<th>Connection Retry attempts</th>
 										<td>
 											<input type="text" maxlength="3" class="input_6_table" name="vpn_client_connretry" value="<% nvram_get("vpn_client_connretry"); %>">
+											<span style="color:#FC0">(0 for infinite)</span>
 										</td>
 									</tr>
 									<tr id="client_tlsremote">

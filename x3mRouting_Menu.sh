@@ -1611,6 +1611,7 @@ Firewall_Start_Update() {
   FW_START_ENTRY="sh /jffs/addons/x3mRouting/x3mRouting_firewall_start.sh # x3mRouting"
 
   if [ -s "$FW_START" ]; then # file exists
+    sed -i "\\~FW_START_ENTRY~d" "$NAT_START"
     if ! grep -q "$FW_START_ENTRY" "$FW_START"; then
       awk '/#!\/bin\/sh/{print;print "sh /jffs/addons/x3mRouting/x3mRouting_firewall_start.sh # x3mRouting";next}1' "$FW_START" > "/tmp/firewall_start" && mv "/tmp/firewall_start" "$FW_START"
       printf '\nUpdated %b%s%b\n' "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"

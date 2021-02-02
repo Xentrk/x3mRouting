@@ -1,5 +1,5 @@
 # x3mRouting ~ Selective Routing for Asuswrt-Merlin Firmware
-## Version 2.4.1 (30 December, 2020)
+## Version 2.4.3 (2 February, 2020)
 [![Build Status](https://travis-ci.com/Xentrk/x3mRouting.svg?branch=master)](https://travis-ci.com/Xentrk/x3mRouting)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/561d1570ed1f4d6aab76bba172f6b31f)](https://www.codacy.com/app/Xentrk/x3mRouting?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Xentrk/x3mRouting&amp;utm_campaign=Badge_Grade)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -71,6 +71,8 @@ This command will download and install the installation menu **x3mRouting_Menu.s
 ## x3mRouting Options
 
 ### [1] LAN Client Routing
+**Requirement:** DHCP static lease reservations must first be created for each LAN Client in the LAN-DHCP Screen. 
+
 In the Asuswrt-Merlin firmware, one must type the IP address of each LAN client into the Policy Routing section of the OpenVPN Client Screen in order to assign the LAN client to the VPN Client interface. If you have many LAN clients, the process of entering the IP address and other required information can be time consuming - especially after performing a factory reset.
 
 The x3mRouting LAN Client method is an alternative approach to assigning LAN clients to a WAN or VPN Client interface. If you have many LAN clients to assign to the interface, the scripts will eliminate the manual effort involved in typing the DHCP IP address of each LAN client in the Policy Routing section of the OpenVPN Client Screen. You can still use the OpenVPN Client Screen to assign LAN clients in addition to using this feature. The two methods can coexist.

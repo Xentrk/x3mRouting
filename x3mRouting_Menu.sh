@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 30-January-2021
+# Last Updated Date: 2-February-2021
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -17,7 +17,7 @@
 # shellcheck disable=SC2028
 # shellcheck disable=SC2010 # need to us ls with a grep
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
-VERSION="2.4.2"
+VERSION="2.4.3"
 GIT_REPO="x3mRouting"
 BRANCH="master"
 # Change branch to master after merge
@@ -263,6 +263,26 @@ Check_Firmware_Version() {
         ;;
       esac
     done
+  fi
+}
+
+Download_OpenVPN_Screen() {
+
+  FILE="Advanced_OpenVPNClient_Content.asp"
+  buildno=$(nvram get buildno | sed 's/\.//')
+  buildmajor=$(nvram get buildno | awk '{ string=substr($0, 1, 3); print string;}')
+  if [ "$buildmajor" -ge 386 ]; then
+    Download_File "$ADDONS" "$FILE"
+  else
+    echo "Invalid firmware version detected - $(nvram get buildno). This version of the Advanced OpenVPN Client Content screen requires version 386.1 and above."
+    echo "Downloading 384.xx compatible version of $FILE"
+    STATUS="$(curl --retry 3 -sL -w '%{http_code}' "https://raw.githubusercontent.com/Xentrk/x3mRouting/x3mRouting-384.19/Advanced_OpenVPNClient_Content.asp" -o "$ADDONS/$FILE")"
+    if [ "$STATUS" -eq "200" ]; then
+      printf '\n%b%s%b downloaded successfully\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE"
+    else
+      printf '\n%b%s%b download failed with curl error %s\n' "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" "$STATUS"
+      exit 1
+    fi
   fi
 }
 
@@ -704,7 +724,8 @@ Update_Addons_Files() {
   Remove_Mounts
 
   # Check if md5sum difference
-  for FILE in mount_files_gui.sh updown-dns.sh x3mvpnrouting.sh x3mRouting_firewall_start.sh Advanced_OpenVPNClient_Content.asp ; do
+  # Don't check for updates to Advanced_OpenVPNClient_Content.asp here as it requires checks for firmware version 386.1 and above
+  for FILE in mount_files_gui.sh updown-dns.sh x3mvpnrouting.sh x3mRouting_firewall_start.sh; do
     if [ -s "$ADDONS/$FILE" ]; then
       localmd5="$(md5sum "$ADDONS/$FILE" | awk '{print $1}')"
       remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
@@ -716,6 +737,20 @@ Update_Addons_Files() {
       fi
     fi
   done
+
+  # Check if md5sum difference for Advanced_OpenVPNClient_Content.asp
+  # Advanced_OpenVPNClient_Content.asp requires checks for firmware version 386.1 and above
+  FILE=Advanced_OpenVPNClient_Content.asp
+  if [ -s "$ADDONS/$FILE" ]; then
+    localmd5="$(md5sum "$ADDONS/$FILE" | awk '{print $1}')"
+    remotemd5="$(curl -fsL --retry 3 "$GITHUB_DIR/$FILE" | md5sum | awk '{print $1}')"
+    if [ "$localmd5" != "$remotemd5" ]; then
+      printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " does not match - downloading"
+      Download_OpenVPN_Screen
+    else
+      printf '%s%b%s%b%s\n' "MD5 hash of " "$COLOR_GREEN" "$FILE" "$COLOR_WHITE" " matches GitHub repo file."
+    fi
+  fi
 
   # check up/down openvpn-event files for entries updown-dns.sh entries and remove if exist
   printf '\n%s\n' "Examining contents of VPN Client Up/Down files for deprecated 'updown-dns.sh' entries."
@@ -1690,7 +1725,7 @@ Install_x3mRouting_GUI() {
 
   Check_Requirements
   Download_File "$ADDONS" "x3mvpnrouting.sh"
-  Download_File "$ADDONS" "Advanced_OpenVPNClient_Content.asp"
+  Download_OpenVPN_Screen # Need to perform version check on Advanced_OpenVPNClient_Content.asp"
   Download_File "$ADDONS" "mount_files_gui.sh"
   Download_File "$ADDONS" "x3mRouting_firewall_start.sh"
   Download_File "$LOCAL_REPO" "x3mRouting.sh"

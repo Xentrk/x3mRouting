@@ -17,7 +17,7 @@
 # shellcheck disable=SC2028
 # shellcheck disable=SC2010 # need to us ls with a grep
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
-VERSION="2.4.3"
+VERSION="2.4.4"
 GIT_REPO="x3mRouting"
 BRANCH="master"
 # Change branch to master after merge

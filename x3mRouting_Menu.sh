@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 2-February-2021
+# Last Updated Date: 3-February-2021
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -1617,7 +1617,7 @@ Firewall_Start_Update() {
 
   if [ -s "$FW_START" ]; then # file exists
     # check for defect entry and remove if found
-    sed -i "\\~FW_START_ENTRY~d" "$NAT_START"
+    sed -i "\\~FW_START_ENTRY~d" "$FW_START"
     if ! grep -q "$FW_START_ENTRY" "$FW_START"; then
       awk '/#!\/bin\/sh/{print;print "sh /jffs/addons/x3mRouting/x3mRouting_firewall_start.sh # x3mRouting";next}1' "$FW_START" > "/tmp/firewall_start" && mv "/tmp/firewall_start" "$FW_START"
       printf '\nUpdated %b%s%b\n' "$COLOR_GREEN" "$FW_START" "$COLOR_WHITE"

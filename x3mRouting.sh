@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting.sh
-# VERSION=2.3.10
+# VERSION=2.3.11
 # Author: Xentrk
-# Date: 30-January-2021
+# Date: 15-May-2021
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -740,18 +740,10 @@ Delete_Ipset_List() {
     if [ "$(grep -cw "$IPSET_NAME" "$NAT_START")" -ge 1 ]; then # if true, then one or more lines exist
       sed -i "\~\b$IPSET_NAME\b~d" "$NAT_START"
       logger -t "($(basename "$0"))" $$ "Script entry for $IPSET_NAME deleted from $NAT_START"
-      Check_For_Shebang "$NAT_START"
     else
-      logger -t "($(basename "$0"))" $$ "No $IPSET_NAME references found in $NAT_START"
+        logger -t "($(basename "$0"))" $$ "No $IPSET_NAME references found in $NAT_START."
     fi
-
-    if [ "$(grep -cw "ipset_name=$IPSET_NAME" "$NAT_START")" -ge 1 ]; then
-      sed -i "\~\bipset_name=$IPSET_NAME\b~d" "$NAT_START"
-      logger -t "($(basename "$0"))" $$ "Script entry for $IPSET_NAME deleted from $NAT_START"
-      Check_For_Shebang "$NAT_START"
-    else
-      logger -t "($(basename "$0"))" $$ "No ipset_name=$IPSET_NAME references found in $NAT_START"
-    fi
+    Check_For_Shebang "$NAT_START"
   fi
 
   # Check_Files_For_Entries for any entries related to IPSET_NAME

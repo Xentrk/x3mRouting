@@ -1,9 +1,9 @@
 #!/bin/sh
 ####################################################################################################
 # Script: x3mRouting.sh
-# VERSION=2.3.11
+# VERSION=2.3.12
 # Author: Xentrk
-# Date: 15-May-2021
+# Date: 18-May-2021
 #
 # Grateful:
 #   Thank you to @Martineau on snbforums.com for sharing his Selective Routing expertise,
@@ -49,7 +49,11 @@
 #            ['src='src_ip]
 #            ['src_range='from_ip-to_ip]
 #            ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
-#            ['del']
+#            ['del'] # Delete IPSET list and all configuration settings.
+#                    # **Will prompt** for permission to delete any files if only a shebang exists
+#            ['del=force'] # Force delete the IPSET list and all configuration settings if only
+#                          # a shebang exists. **Will not** prompt for permission before deleting a
+#                          # file if only a shebang exists.
 #_____________________________________________________________________________________________________________
 #
 # Create IPSET List with no Routing Rules:
@@ -63,17 +67,21 @@
 #            ['dnsmasq_file='/path/to/file] # dnsmasq method
 #            ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
 #            ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
-#            ['del']
+#            ['del'] # Delete IPSET list and all configuration settings.
+#                    # **Will prompt** for permission to delete any files if only a shebang exists
+#            ['del=force'] # Force delete the IPSET list and all configuration settings if only
+#                          # a shebang exists. **Will not** prompt for permission before deleting a
+#                          # file if only a shebang exists.
 #____________________________________________________________________________________________________________
 #
 # VPN Server to VPN Client Routing:
 #
-# x3mRouting {'server='1|2|both} {'client='1|2|3|4|5} ['del']
+# x3mRouting {'server='1|2|both} {'client='1|2|3|4|5} ['del'] ['del=force']
 #_____________________________________________________________________________________________________________
 #
 # VPN Server to existing LAN routing rules for one or more IPSET lists
 #
-# x3mRouting {'server='1|2|both} {'ipset_name='IPSET[,IPSET]...} ['del']
+# x3mRouting {'server='1|2|both} {'ipset_name='IPSET[,IPSET]...} ['del'] ['del=force']
 #_____________________________________________________________________________________________________________
 
 # Print between line beginning with '#__' to first blank line inclusive (source: Martineau)
@@ -342,26 +350,31 @@ Check_For_Shebang() {
   fi
 
   if [ "$NOT_EMPTY_LINE_COUNT" -eq 0 ]; then
-    printf '\n\n%s\n' "$CLIENTX_FILE has $SHEBANG_COUNT shebang entry and $EMPTY_LINE_COUNT empty lines."
-    printf '%s\n' "Would you like to remove $CLIENTX_FILE?"
-    printf '%b[1]%b  --> Yes\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    printf '%b[2]%b  --> No\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
-    echo
-    printf '[1-2]: '
-    read -r "OPTION"
-    case "$OPTION" in
-    1)
+    if [ "$DEL_FLAG" = "del" ]; then
+      printf '\n\n%s\n' "$CLIENTX_FILE has $SHEBANG_COUNT shebang entry and $EMPTY_LINE_COUNT empty lines."
+      printf '%s\n' "Would you like to remove $CLIENTX_FILE?"
+      printf '%b[1]%b  --> Yes\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+      printf '%b[2]%b  --> No\n' "${COLOR_GREEN}" "${COLOR_WHITE}"
+      echo
+      printf '[1-2]: '
+      read -r "OPTION"
+      case "$OPTION" in
+        1)
+          rm "$CLIENTX_FILE"
+          echo "$CLIENTX_FILE file deleted"
+          return
+          ;;
+        2)
+          return
+          ;;
+        *)
+          echo "[*] $OPTION Isn't An Option!"
+          ;;
+        esac
+    elif [ "$DEL_FLAG" = "FORCE" ]; then # force delete file w/o prompt
       rm "$CLIENTX_FILE"
-      echo "file deleted"
-      return
-      ;;
-    2)
-      return
-      ;;
-    *)
-      echo "[*] $OPTION Isn't An Option!"
-      ;;
-    esac
+      echo "$CLIENTX_FILE file deleted"
+    fi
   fi
 
 }
@@ -813,25 +826,29 @@ Delete_Ipset_List() {
 
   logger -t "($(basename "$0"))" $$ "Checking if IPSET backup file exists..."
   if [ -s "$DIR/$IPSET_NAME" ]; then
-    while true; do
-      printf '\n%b%s%b\n' "$COLOR_RED" "DANGER ZONE!" "$COLOR_WHITE"
-      printf '\n%s%b%s%b\n' "Delete the backup file in " "$COLOR_GREEN" "$DIR/$IPSET_NAME" "$COLOR_WHITE"
-      printf '%b[1]%b  --> Yes\n' "$COLOR_GREEN" "$COLOR_WHITE"
-      printf '%b[2]%b  --> No\n' "$COLOR_GREEN" "$COLOR_WHITE"
-      echo
-      printf '[1-2]: '
-      read -r "CONFIRM_DEL"
-      case "$CONFIRM_DEL" in
-      1)
-        rm "$DIR/$IPSET_NAME" && printf '\n%b%s%b%s\n' "$COLOR_GREEN" "$DIR/$IPSET_NAME" "$COLOR_WHITE" " file deleted."
+    if [ "$DEL_FLAG" = "del" ]; then
+      while true; do
+        printf '\n%b%s%b\n' "$COLOR_RED" "DANGER ZONE!" "$COLOR_WHITE"
+        printf '\n%s%b%s%b\n' "Delete the backup file in " "$COLOR_GREEN" "$DIR/$IPSET_NAME" "$COLOR_WHITE"
+        printf '%b[1]%b  --> Yes\n' "$COLOR_GREEN" "$COLOR_WHITE"
+        printf '%b[2]%b  --> No\n' "$COLOR_GREEN" "$COLOR_WHITE"
         echo
-        return
-        ;;
-      *)
-        return
-        ;;
-      esac
-    done
+        printf '[1-2]: '
+        read -r "CONFIRM_DEL"
+        case "$CONFIRM_DEL" in
+          1)
+          rm "$DIR/$IPSET_NAME" && printf '\n%b%s%b%s\n' "$COLOR_GREEN" "$DIR/$IPSET_NAME" "$COLOR_WHITE" " file deleted."
+          echo
+          return
+          ;;
+          *)
+          return
+          ;;
+        esac
+      done
+    elif [ "$DEL_FLAG" = "FORCE" ]; then
+      rm "$DIR/$IPSET_NAME" && printf '\n%b%s%b%s\n' "$COLOR_GREEN" "$DIR/$IPSET_NAME" "$COLOR_WHITE" " file deleted."
+    fi
   fi
 
 }
@@ -986,7 +1003,7 @@ VPN_Server_to_VPN_Client() {
     VPN_IP_LIST="${VPN_IP_LIST}$(nvram get vpn_client"$VPN_CLIENT_INSTANCE"_clientlist${n})"
   done
 
-  if [ "$DEL_FLAG" != "del" ]; then # add entry
+  if [ -z "$DEL_FLAG" ]; then # add entry if DEL_FLAG is null
     eval "$IPTABLES_DEL_ENTRY"
     eval "$IPTABLES_ADD_ENTRY"
     # vpnclientX-route-up File
@@ -1073,7 +1090,7 @@ VPN_Server_to_VPN_Client() {
         service restart_vpnclient"${VPN_CLIENT_INSTANCE}"
       fi
     fi
-  else # del parmater passed. Delete routing and routing rules in vpn server up down scripts.
+  else # 'del' or 'del=force' parmater passed. Delete routing and routing rules in vpn server up down scripts.
     iptables -t nat -D POSTROUTING -s "$VPN_SERVER_SUBNET" -o "$IFACE" -j MASQUERADE 2>/dev/null
 
     # vpnserverX-up file
@@ -1157,7 +1174,7 @@ VPN_Server_to_IPSET() {
   VPNC_UP_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-up"
   VPNC_DOWN_FILE="/jffs/scripts/x3mRouting/vpnclient${VPN_CLIENT_INSTANCE}-route-pre-down"
 
-  if [ "$DEL_FLAG" != "del" ]; then #add entry
+  if [ -z "$DEL_FLAG" ]; then #add entry
     if [ -s "$VPNC_UP_FILE" ]; then #file exists
       #Check if an existing entry exists
       for IPTABLES_ENTRY in "$IPTABLES_POSTROUTING_DEL_ENTRY" "$IPTABLES_POSTROUTING_ADD_ENTRY" "$IPTABLES_PREROUTING_DEL_ENTRY" "$IPTABLES_PREROUTING_ADD_ENTRY"; do
@@ -1200,7 +1217,7 @@ VPN_Server_to_IPSET() {
       } >>"$VPNC_DOWN_FILE"
       logger -t "($(basename "$0"))" $$ "iptables entry added to $VPNC_DOWN_FILE"
     fi
-  else # 'del' option specified.
+  else # 'del' or 'del=force' option specified.
     iptables -t mangle -D PREROUTING -i "$VPN_SERVER_TUN" -m set --match-set "$IPSET_NAME" dst -j MARK --set-mark "$TAG_MARK" 2>/dev/null
     iptables -t nat -D POSTROUTING -s "$VPN_SERVER_IP"/24 -o "$IFACE" -j MASQUERADE 2>/dev/null
 
@@ -1308,6 +1325,15 @@ Check_Lock "$@"
 SCR_NAME=$(basename "$0" | sed 's/.sh//')
 NAT_START="/jffs/scripts/nat-start"
 
+# Set DEL_FLAG if user specified 'del=force' parameter
+if [ "$(echo $@ | grep -cw 'del=force')" -ge 1 ]; then
+    DEL_FLAG="FORCE"
+elif [ "$(echo $@ | grep -cw 'del')" -ge 1 ]; then
+    DEL_FLAG="del"
+else
+    DEL_FLAG=
+fi
+
 # Check if user specified 'dir=' parameter
 if [ "$(echo "$@" | grep -c 'dir=')" -gt 0 ]; then
   if [ "$(echo "$@" | grep -c 'asnum=')" -gt 0 ]; then
@@ -1348,13 +1374,14 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
     *) Error_Exit "ERROR 'client=$VPN_CLIENT_INSTANCE' reference should be a 1-5" ;;
     esac
 
-    if [ "$(echo $@ | grep -cw 'del')" -ge 1 ]; then
+    # Delete VPN Server to VPN Client rules?
+    if [ "$(echo $@ | grep -cw 'del')" -ge 1 ] || [ "$(echo $@ | grep -cw 'del=force')" -ge 1 ]; then
       if [ "$SERVER" = "both" ]; then
         for SERVER in 1 2; do
-          VPN_Server_to_VPN_Client "$SERVER" "$IFACE" "$VPN_CLIENT_INSTANCE" "del"
+          VPN_Server_to_VPN_Client "$SERVER" "$IFACE" "$VPN_CLIENT_INSTANCE" "$DEL_FLAG"
         done
       else
-        VPN_Server_to_VPN_Client "$SERVER" "$IFACE" "$VPN_CLIENT_INSTANCE" "del"
+        VPN_Server_to_VPN_Client "$SERVER" "$IFACE" "$VPN_CLIENT_INSTANCE" "$DEL_FLAG"
       fi
     else
       if [ "$SERVER" = "both" ]; then
@@ -1392,13 +1419,13 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
       tun15) VPN_CLIENT_INSTANCE=5 ;;
       esac
 
-      if [ "$(echo $@ | grep -cw 'del')" -ge 1 ]; then
+      if [ "$(echo $@ | grep -cw 'del')" -ge 1 ] || [ "$(echo $@ | grep -cw 'del=force')" -ge 1 ]; then
         if [ "$SERVER" = "both" ]; then
           for SERVER in 1 2; do
-            VPN_Server_to_IPSET "$SERVER" "$VPN_CLIENT_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK" "del"
+            VPN_Server_to_IPSET "$SERVER" "$VPN_CLIENT_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK" "$DEL_FLAG"
           done
         else
-          VPN_Server_to_IPSET "$SERVER" "$VPN_CLIENT_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK" "del"
+          VPN_Server_to_IPSET "$SERVER" "$VPN_CLIENT_INSTANCE" "$IFACE" "$IPSET_NAME" "$TAG_MARK" "$DEL_FLAG"
         fi
       else
         if [ "$SERVER" = "both" ]; then
@@ -1412,7 +1439,7 @@ if [ "$(echo "$@" | grep -c 'server=')" -gt 0 ]; then
     done
     # nat-start File
     SCRIPT_ENTRY="sh /jffs/scripts/x3mRouting/x3mRouting.sh $1 $2"
-    if [ "$(echo $@ | grep -cw 'del')" -eq 0 ]; then
+    if [ "$(echo $@ | grep -cw 'del')" -eq 0 ] || [ "$(echo $@ | grep -cw 'del=force')" -eq 0 ]; then
       if [ -s "$NAT_START" ]; then # file exists
         if [ "$(grep -cw "$SCRIPT_ENTRY" "$NAT_START")" -eq 0 ]; then # if true, then no lines exist
           echo "$SCRIPT_ENTRY" >>"$NAT_START" # add $SCRIPT_ENTRY to $VPNC_UP_FILE
@@ -1446,7 +1473,7 @@ fi
 if [ "$(echo "$@" | grep -c 'ipset_name=')" -gt 0 ]; then
   IPSET_NAME=$(echo "$@" | sed -n "s/^.*ipset_name=//p" | awk '{print $1}') # ipset name
 
-  if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
+  if [ "$(echo $@ | grep -cw 'del')" -ge 1 ] || [ "$(echo $@ | grep -cw 'del=force')" -ge 1 ]; then
     Delete_Ipset_List "$IPSET_NAME" "$DIR"
     Exit_Routine
   fi
@@ -1594,7 +1621,7 @@ esac
 Set_IP_Rule "$DST_IFACE"
 
 # Check if delete option specified
-if [ "$(echo "$@" | grep -cw 'del')" -gt 0 ]; then
+if [ "$(echo $@ | grep -cw 'del')" -ge 1 ] || [ "$(echo $@ | grep -cw 'del=force')" -ge 1 ]; then
   Delete_Ipset_List "$IPSET_NAME" "$DIR"
   Exit_Routine
 fi

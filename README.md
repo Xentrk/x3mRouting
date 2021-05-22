@@ -1,5 +1,5 @@
 # x3mRouting ~ Selective Routing for Asuswrt-Merlin Firmware
-## Version 2.4.4 (3 February, 2020)
+## Version 2.4.5 (23 May, 2021)
 [![Build Status](https://travis-ci.com/Xentrk/x3mRouting.svg?branch=master)](https://travis-ci.com/Xentrk/x3mRouting)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/561d1570ed1f4d6aab76bba172f6b31f)](https://www.codacy.com/app/Xentrk/x3mRouting?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Xentrk/x3mRouting&amp;utm_campaign=Badge_Grade)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
@@ -164,7 +164,12 @@ x3mRouting {ipset_name=}
            ['dnsmasq_file='] # Equivalent to dnsmasq method
            ['ip='ip[,ip][,cidr]...] # Equivalent to manual method
            ['dir='save_restore_location] # if 'dir' not specified, defaults to /opt/tmp
-           ['del']
+           ['del'] # Delete IPSET list and all configuration settings.
+                   # **Will prompt** for permission to delete any files if only a
+                   # shebang exists
+           ['del=force'] # Force delete the IPSET list and all configuration settings
+                         # if only a shebang exists. **Will not** prompt for permission before deleting a
+                         # file if only a shebang exists.
 ````
 #### Create an IPSET List with no Routing Rules Usage Examples
 
@@ -298,7 +303,12 @@ x3mRouting {src iface} (ALL|1|2|3|4|5)
            ['src='src_ip]  # Apply rule to IP address
            ['src_range='from_ip-to_ip]  # Apply rule to IP address range
            ['dir='save_restore_location]  # if 'dir' not specified, defaults to /opt/tmp
-           ['del']
+           ['del'] # Delete IPSET list and all configuration settings.
+                   # **Will prompt** for permission to delete any files if only a
+                   # shebang exists
+           ['del=force'] # Force delete the IPSET list and all configuration settings
+                         # if only a shebang exists. **Will not** prompt for permission before deleting a
+                         # file if only a shebang exists.
 ````
 
 ##### VPN Server to VPN Client Routing

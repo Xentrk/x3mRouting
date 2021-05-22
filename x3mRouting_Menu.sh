@@ -2,7 +2,7 @@
 ####################################################################################################
 # Script: x3mRouting_Menu.sh
 # Author: Xentrk
-# Last Updated Date: 3-February-2021
+# Last Updated Date: 22-May-2021
 #
 # Description:
 #  Install, Update or Remove the x3mRouting repository
@@ -17,7 +17,7 @@
 # shellcheck disable=SC2028
 # shellcheck disable=SC2010 # need to us ls with a grep
 export PATH=/sbin:/bin:/usr/sbin:/usr/bin$PATH
-VERSION="2.4.4"
+VERSION="2.4.5"
 GIT_REPO="x3mRouting"
 BRANCH="master"
 # Change branch to master after merge
@@ -826,6 +826,9 @@ Update_Repo_Files() {
     read -r
     return
   fi
+
+  # Update /jffs/scripts/openvpn-event to updated version 2.4.5 x3mRouting script entry
+  [ -s /jffs/scripts/openvpn-event ] && Update_jffs_Scripts_Openvpn_Event
 
 }
 
@@ -1643,19 +1646,46 @@ Install_x3mRouting_LAN_Clients() {
   Download_File "$ADDONS" "x3mRouting_firewall_start.sh"
 }
 
+Update_jffs_Scripts_Openvpn_Event() {
+
+  EXIT_0_FLAG=""
+
+  if [ "$(grep -cw "\[ \-s /jffs/scripts/x3mRouting/openvpn-event" /jffs/scripts/openvpn-event)" -eq 1 ] && [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" /jffs/scripts/openvpn-event)" -eq 1 ]; then
+    # Correct entry exists in /jffs/scripts/openvpn-event
+    return
+  elif [ "$(grep -cw "\[ \-s /jffs/scripts/x3mRouting/openvpn-event" /jffs/scripts/openvpn-event)" -eq 0 ] && [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" /jffs/scripts/openvpn-event)" -eq 1 ]; then
+    # Original entry exists. Update entry.
+    sed -i "\\~/jffs/scripts/x3mRouting/openvpn-event~d"  "/jffs/scripts/openvpn-event"
+    printf '[ -s /jffs/scripts/x3mRouting/openvpn-event ] && sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
+  elif [ "$(grep -cw "\[ \-s /jffs/scripts/x3mRouting/openvpn-event" /jffs/scripts/openvpn-event)" -eq 0 ] && [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" /jffs/scripts/openvpn-event)" -eq 0 ]; then
+    # Add entry to existing /jffs/scripts/openvpn-event
+    # check if "exit 0" line exists at end of /jffs/scripts/openvpn-event
+    if [ "$(tail -n -1 /jffs/scripts/openvpn-event | grep -cw "exit 0")" -eq 1 ]; then
+      # Delete the last line ONLY if it contains the pattern 'exit 0'
+      sed '${/exit 0/d;}' /jffs/scripts/openvpn-event > /opt/tmp/openvpn-event
+      mv /opt/tmp/openvpn-event /jffs/scripts/openvpn-event && chmod 0755 /jffs/scripts/openvpn-event
+      EXIT_0_FLAG=Yes
+    fi
+    printf '[ -s /jffs/scripts/x3mRouting/openvpn-event ] && sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
+    # Add unnecessary exit 0 command back to /jffs/scripts/openvpn-event after adding x3mRouting entry
+    if [ "$EXIT_0_FLAG" = "Yes" ]; then
+      printf 'exit 0\n' >>/jffs/scripts/openvpn-event
+    fi
+  fi
+}
+
 Install_x3mRouting_OpenVPN_Event() {
 
   Download_File "$LOCAL_REPO" "openvpn-event"
   chmod 0755 "$LOCAL_REPO/openvpn-event"
   if [ -s /jffs/scripts/openvpn-event ]; then
-    if [ "$(grep -cw "sh /jffs/scripts/x3mRouting/openvpn-event" "/jffs/scripts/openvpn-event")" -eq 0 ]; then # see if line exists
-      printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
-    fi
+    Update_jffs_Scripts_Openvpn_Event
   else
+    # Create /jffs/scripts/openvpn-event file and add x3mRouting entry
     echo "#!/bin/sh" >/jffs/scripts/openvpn-event
-    printf 'sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
+    printf '[ -s /jffs/scripts/x3mRouting/openvpn-event ] && sh /jffs/scripts/x3mRouting/openvpn-event $@\n' >>/jffs/scripts/openvpn-event
     chmod 0755 /jffs/scripts/openvpn-event
-  fi
+fi
 }
 
 Check_Requirements() {
